@@ -1,0 +1,57 @@
+# Local editor / assistant settings
+.vscode/
+.idea/
+.claude/
+
+# Secrets and environment
+.env
+.env.*
+!.env.example
+
+# OS / temp
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+*.temp
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Python
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.venv/
+venv/
+apps/api/venv/
+
+# Node / frontend build
+**/node_modules/
+apps/web/.next/
+apps/web/dist/
+*.tsbuildinfo
+
+# Runtime data
+apps/api/*.db
+apps/api/*.sqlite3
+apps/api/*.sqlite3-*
+apps/api/uploads/
+apps/api/app/uploads/
+apps/api/reports/
+apps/api/app/reports/
+apps/api/e2e-logs/
+
+# Local diagnostics / generated artifacts
+apps/api/.codex_*
