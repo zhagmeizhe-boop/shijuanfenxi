@@ -1,0 +1,233 @@
+[
+  {
+    "name": "dim2-school-rectangle-area",
+    "dim_code": "dim2",
+    "question_text": "一个长方形长12厘米，宽8厘米，求它的面积。",
+    "question_summary": "长方形面积基础题",
+    "analysis_facts": {
+      "core_task": "利用长方形面积公式求面积",
+      "core_knowledge_points": ["长方形面积"],
+      "core_methods": ["公式代入"],
+      "visual_elements": ["长方形"],
+      "fact_basis": "题面直接给出长和宽",
+      "image_used": 0,
+      "has_sub_items": 0
+    },
+    "feature": {
+      "band": "4年级及以前校内课本难度",
+      "sublevel": "mid",
+      "evidence_summary": "只涉及长方形面积。",
+      "knowledge_tags": ["长方形面积"],
+      "method_tags": ["面积公式"]
+    },
+    "expected_band": "4年级及以前校内课本难度"
+  },
+  {
+    "name": "dim5-school-cylinder",
+    "dim_code": "dim5",
+    "question_text": "求一个圆柱的表面积和体积。",
+    "question_summary": "圆柱表面积与体积",
+    "analysis_facts": {
+      "core_task": "求圆柱表面积和体积",
+      "core_knowledge_points": ["圆柱", "表面积", "体积"],
+      "core_methods": ["公式综合应用"],
+      "visual_elements": ["圆柱"],
+      "fact_basis": "题面直接要求两个量",
+      "image_used": 0,
+      "has_sub_items": 0
+    },
+    "feature": {
+      "band": "5、6年级校内课本难度",
+      "sublevel": "high",
+      "evidence_summary": "涉及圆柱基础知识。",
+      "knowledge_tags": ["圆柱", "表面积", "体积"],
+      "method_tags": ["公式应用"]
+    },
+    "expected_band": "5、6年级校内课本难度"
+  },
+  {
+    "name": "dim5-olympiad-combinatorics",
+    "dim_code": "dim5",
+    "question_text": "从6个人中选3个人组成小组，一共有多少种不同选法？",
+    "question_summary": "组合计数基础题",
+    "analysis_facts": {
+      "core_task": "计算组合计数结果",
+      "core_knowledge_points": ["组合计数"],
+      "core_methods": ["分类与计数"],
+      "visual_elements": [],
+      "fact_basis": "题面直接给出选人条件",
+      "image_used": 0,
+      "has_sub_items": 0
+    },
+    "feature": {
+      "band": "高思导引超越篇难度",
+      "sublevel": "low",
+      "evidence_summary": "涉及组合计数。",
+      "knowledge_tags": ["组合计数"],
+      "method_tags": ["计数"]
+    },
+    "expected_band": "高思导引超越篇难度"
+  },
+  {
+    "name": "dim1-core-computation-application",
+    "dim_code": "dim1",
+    "question_text": "一辆汽车3小时行了180千米，平均每小时行多少千米？",
+    "question_summary": "单位率计算应用题",
+    "question_type": "application",
+    "analysis_facts": {
+      "core_task": "求平均速度",
+      "core_knowledge_points": ["平均速度"],
+      "core_methods": ["单位率计算"],
+      "visual_elements": [],
+      "fact_basis": "题面直接给出路程和时间",
+      "image_used": 0,
+      "has_sub_items": 0
+    },
+    "feature": {
+      "band": "5、6年级校内课本难度",
+      "sublevel": "mid",
+      "evidence_summary": "需要完成单位率计算才能解题。",
+      "method_tags": ["单位率计算"],
+      "has_core_threshold": 1,
+      "computation_role": "core",
+      "applicability_confidence": 0.85
+    },
+    "expected_applicable": true
+  },
+  {
+    "name": "dim1-supporting-calculation-only",
+    "dim_code": "dim1",
+    "question_text": "观察图形变化规律，判断第10个图形中有多少个黑点。",
+    "question_summary": "图形规律判断题",
+    "question_type": "solution",
+    "analysis_facts": {
+      "core_task": "找出图形规律",
+      "core_knowledge_points": ["规律探究"],
+      "core_methods": ["枚举观察"],
+      "visual_elements": ["图形"],
+      "fact_basis": "题面要求观察图形变化",
+      "image_used": 0,
+      "has_sub_items": 0
+    },
+    "feature": {
+      "band": "5、6年级校内课本难度",
+      "sublevel": "low",
+      "evidence_summary": "虽然最后可能要数点，但核心在于规律发现。",
+      "method_tags": ["规律发现"],
+      "computation_role": "supporting",
+      "applicability_confidence": 0.62
+    },
+    "expected_applicable": false
+  },
+  {
+    "name": "ocr-formula-heavy-fill-blank",
+    "case_type": "ocr",
+    "question_text": "计算：3/4 + 1/6 = ____",
+    "question_type": "fill_blank",
+    "line_count": 1,
+    "expected_formula_attempt": true
+  },
+  {
+    "name": "ocr-plain-application-no-formula-enhance",
+    "case_type": "ocr",
+    "question_text": "一辆汽车3小时行了180千米，平均每小时行多少千米？",
+    "question_type": "application",
+    "line_count": 2,
+    "expected_formula_attempt": false
+  },
+  {
+    "name": "ocr-geometry-visual-required",
+    "case_type": "ocr",
+    "question_text": "如图，求阴影部分的面积。",
+    "question_type": "solution",
+    "line_count": 1,
+    "expected_visual_category": "geometry_visual",
+    "expected_image_required": true,
+    "expected_image_attach": true
+  },
+  {
+    "name": "ocr-table-chart-required",
+    "case_type": "ocr",
+    "question_text": "根据下表完成统计图，并回答问题。",
+    "question_type": "comprehensive",
+    "line_count": 2,
+    "expected_visual_category": "table_chart",
+    "expected_image_required": true,
+    "expected_image_attach": true
+  },
+  {
+    "name": "ocr-geometry-context-attach",
+    "case_type": "ocr",
+    "question_text": "一个圆柱的侧面积是62.8平方厘米，求它的高。",
+    "question_type": "application",
+    "line_count": 1,
+    "expected_visual_category": "geometry_context",
+    "expected_image_required": false,
+    "expected_image_attach": true
+  },
+  {
+    "name": "ocr-text-only-no-image",
+    "case_type": "ocr",
+    "question_text": "学校买来48本练习册，平均分给6个班，每班分到多少本？",
+    "question_type": "application",
+    "line_count": 2,
+    "expected_visual_category": "none",
+    "expected_image_required": false,
+    "expected_image_attach": false
+  }
+,
+  {
+    "name": "paper-count-b-grade-tianhe-shengshi",
+    "case_type": "paper_count",
+    "pdf_path": "参考试卷/【b级学校】2021年广州天河省实摸底数学真卷-无答案.pdf",
+    "expected_total_question_count": 25,
+    "expected_sections": [
+      { "section_index_raw": "一", "count": 8 },
+      { "section_index_raw": "二", "count": 5 },
+      { "section_index_raw": "三", "count": 6 },
+      { "section_index_raw": "四", "count": 6 }
+    ],
+    "layout_type": "mixed",
+    "expected_warning": false
+  },
+  {
+    "name": "paper-count-a-grade-gdfz-entrance-5",
+    "case_type": "paper_count",
+    "pdf_path": "参考试卷/【a级学校】2021年广大附中入学数学真卷(五)-无答案(1).pdf",
+    "expected_total_question_count": 24,
+    "expected_sections": [
+      { "section_index_raw": "一", "count": 10 },
+      { "section_index_raw": "二", "count": 6 },
+      { "section_index_raw": "三", "count": 2 },
+      { "section_index_raw": "四", "count": 6 }
+    ],
+    "layout_type": "dual_column",
+    "expected_warning": false
+  },
+  {
+    "name": "paper-count-a-grade-gdfz-autumn",
+    "case_type": "paper_count",
+    "pdf_path": "参考试卷/【a级学校】广大附中（秋）-无答案.pdf",
+    "expected_total_question_count": 17,
+    "expected_sections": [
+      { "section_index_raw": "一", "count": 10 },
+      { "section_index_raw": "二", "count": 2 },
+      { "section_index_raw": "三", "count": 5 }
+    ],
+    "layout_type": "rotated",
+    "expected_warning": false
+  },
+  {
+    "name": "paper-count-a-grade-liuzhong-autumn",
+    "case_type": "paper_count",
+    "pdf_path": "参考试卷/【a级学校】广州六中试题（秋）-无答案.pdf",
+    "expected_total_question_count": 42,
+    "expected_sections": [
+      { "section_index_raw": "一", "count": 30 },
+      { "section_index_raw": "二", "count": 10 },
+      { "section_index_raw": "三", "count": 2 }
+    ],
+    "layout_type": "multi_page",
+    "expected_warning": false
+  }
+]

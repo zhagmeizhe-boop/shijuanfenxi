@@ -1,0 +1,140 @@
+{
+  "dim2_spatial": {
+    "name": "几何直观与空间想象",
+    "description": "评估几何题在图形识别、关系发现、辅助线、空间重构上的难度",
+    "version": "1.0.0",
+    "scoring": {
+      "max_score": 10.0,
+      "score_granularity": 0.5,
+      "levels": [
+        {"level": 1, "min": 0.0, "max": 2.0, "label": "简单"},
+        {"level": 2, "min": 2.5, "max": 4.0, "label": "较简单"},
+        {"level": 3, "min": 4.5, "max": 6.0, "label": "中等"},
+        {"level": 4, "min": 6.5, "max": 8.0, "label": "较难"},
+        {"level": 5, "min": 8.5, "max": 10.0, "label": "困难"}
+      ]
+    },
+    "fields": {
+      "is_geometry": {
+        "type": "boolean",
+        "default": 0,
+        "description": "是否为几何题"
+      },
+      "figure_familiarity": {
+        "type": "enum",
+        "options": ["regular", "composite", "non_standard"],
+        "labels": {
+          "regular": "基本图形（点、线、线段、长方形、圆）",
+          "composite": "组合图形（轴对称、组合三角形）",
+          "non_standard": "非标准图形（不规则四边形、变形组合）"
+        },
+        "default": "regular"
+      },
+      "need_auxiliary_line": {
+        "type": "enum",
+        "options": ["no", "maybe", "must"],
+        "labels": {
+          "no": "不需要",
+          "maybe": "可能需要",
+          "must": "必须"
+        },
+        "default": "no"
+      },
+      "transform_type": {
+        "type": "enum",
+        "options": ["none", "cut_fill", "translate", "rotate", "symmetry", "equal_area", "equal_quantity", "combined"],
+        "labels": {
+          "none": "无转化",
+          "cut_fill": "割补",
+          "translate": "平移",
+          "rotate": "旋转",
+          "symmetry": "对称",
+          "equal_area": "等积变形",
+          "equal_quantity": "等量代换",
+          "combined": "多种组合"
+        },
+        "default": "none"
+      },
+      "spatial_reconstruction_level": {
+        "type": "enum",
+        "options": ["low", "medium", "high"],
+        "labels": {
+          "low": "低",
+          "medium": "中",
+          "high": "高"
+        },
+        "default": "low"
+      }
+    },
+    "scoring_rules": {
+      "base_score": {
+        "spatial_reconstruction_level": {
+          "low": 1.5,
+          "medium": 4.5,
+          "high": 6.5
+        }
+      },
+      "adjustments": {
+        "figure_familiarity": {
+          "regular": 0.0,
+          "composite": 0.5,
+          "non_standard": 1.0
+        },
+        "need_auxiliary_line": {
+          "no": 0.0,
+          "maybe": 0.5,
+          "must": 1.0
+        },
+        "transform_type": {
+          "none": 0.0,
+          "cut_fill": 0.5,
+          "translate": 0.5,
+          "rotate": 0.5,
+          "symmetry": 0.5,
+          "equal_area": 0.5,
+          "equal_quantity": 0.5,
+          "combined": 1.0
+        }
+      }
+    },
+    "override_rules": [
+      {
+        "name": "强制1档",
+        "condition": {
+          "is_geometry": 1,
+          "figure_familiarity": "regular",
+          "need_auxiliary_line": "no",
+          "transform_type": "none",
+          "spatial_reconstruction_level": "low"
+        },
+        "action": "set_level",
+        "value": 1,
+        "message": "满足所有最基本几何条件，强制判定为1档"
+      },
+      {
+        "name": "强制4档下限",
+        "condition": {
+          "is_geometry": 1,
+          "figure_familiarity": "non_standard",
+          "spatial_reconstruction_level": "high"
+        },
+        "action": "set_min_level",
+        "value": 4,
+        "message": "涉及非标准图形且空间重构级别高，至少判定为4档"
+      },
+      {
+        "name": "强制5档下限",
+        "condition": {
+          "is_geometry": 1,
+          "figure_familiarity": "non_standard",
+          "need_auxiliary_line": "must",
+          "transform_type": "combined",
+          "spatial_reconstruction_level": "high"
+        },
+        "action": "set_min_level",
+        "value": 5,
+        "message": "满足所有最复杂几何条件，至少判定为5档"
+      }
+    ]
+  }
+}

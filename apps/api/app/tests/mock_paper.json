@@ -1,0 +1,156 @@
+{
+  "paper_id": "paper-demo-001",
+  "paper_title": "2024年春季六年级数学分班考试卷（示例）",
+  "total_score": 100,
+  "question_count": 20,
+  "questions": [
+    {
+      "question_id": "q001",
+      "question_no": "一、1",
+      "content": "计算：$\\frac{3}{4} + \\frac{2}{5} - \\frac{1}{2}$",
+      "score": 5,
+      "type": "computation",
+      "difficulty": "medium",
+      "dimensions": {
+        "dim1": {
+          "score": 7.5,
+          "features": {
+            "number_type": "mixed_fraction",
+            "operation_layers": "2-3",
+            "transformation_difficulty": "one",
+            "special_ops": "fraction_decimal_conversion",
+            "error_proneness": "medium"
+          }
+        },
+        "dim2": null,
+        "dim3": null,
+        "dim4": null,
+        "dim5": {
+          "score": 6.0,
+          "features": {
+            "max_knowledge_level": "六年级上册",
+            "knowledge_count": 2,
+            "knowledge_points": ["分数运算", "分数加减"]
+          }
+        },
+        "dim6": {
+          "score": 5.0,
+          "features": {
+            "key_step_count": "2",
+            "has_hidden_relation": 0,
+            "need_reverse_reasoning": 0,
+            "has_branch": 0,
+            "need_case_discussion": 0,
+            "need_validation": 1
+          }
+        }
+      }
+    },
+    {
+      "question_id": "q002",
+      "question_no": "一、2",
+      "content": "计算：$3.25 \\times 0.4 \\div 0.5$",
+      "score": 5,
+      "type": "computation",
+      "difficulty": "medium",
+      "dimensions": {
+        "dim1": {
+          "score": 6.5,
+          "features": {
+            "number_type": "decimal",
+            "operation_layers": "2-3",
+            "transformation_difficulty": "none",
+            "special_ops": "none",
+            "error_proneness": "low"
+          }
+        }
+      }
+    },
+    {
+      "question_id": "q003",
+      "question_no": "二、1",
+      "content": "甲、乙两数的比是3:5，它们的和是48，求这两个数。",
+      "score": 6,
+      "type": "word_problem",
+      "difficulty": "medium",
+      "dimensions": {
+        "dim1": {
+          "score": 4.0,
+          "features": {
+            "number_type": "simple",
+            "operation_layers": "1",
+            "transformation_difficulty": "none",
+            "special_ops": "none",
+            "error_proneness": "low"
+          }
+        },
+        "dim3": {
+          "score": 8.0,
+          "features": {
+            "info_source_type": "text_only",
+            "info_count": "few",
+            "has_noise_info": 0,
+            "condition_scattered": 0,
+            "need_modeling": 1,
+            "relation_complexity": "high"
+          }
+        },
+        "dim5": {
+          "score": 5.5,
+          "features": {
+            "max_knowledge_level": "六年级上册",
+            "knowledge_count": 2,
+            "knowledge_points": ["比和比例", "方程应用"]
+          }
+        }
+      }
+    }
+  ],
+  "aggregated_scores": {
+    "dim1": {
+      "paper_score": 6.0,
+      "level": 3,
+      "level_label": "中等",
+      "question_count": 20
+    },
+    "dim2": {
+      "paper_score": 7.2,
+      "level": 4,
+      "level_label": "较难",
+      "question_count": 8
+    },
+    "dim3": {
+      "paper_score": 7.8,
+      "level": 4,
+      "level_label": "较难",
+      "question_count": 12
+    },
+    "dim4": {
+      "paper_score": 6.5,
+      "level": 3,
+      "level_label": "中等",
+      "question_count": 6
+    },
+    "dim5": {
+      "paper_score": 7.0,
+      "level": 3,
+      "level_label": "中等",
+      "question_count": 20
+    },
+    "dim6": {
+      "paper_score": 7.5,
+      "level": 4,
+      "level_label": "较难",
+      "question_count": 10
+    }
+  },
+  "difficulty_position": {
+    "overall_score": 7.0,
+    "level": 4,
+    "label": "拔高卷",
+    "target_students": "适合基础扎实、希望进一步拔高的学生",
+    "description": "面向思维突破阶段，突出方法创新"
+  },
+  "created_at": "2024-04-07T10:00:00Z",
+  "updated_at": "2024-04-07T10:30:00Z"
+}

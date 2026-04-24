@@ -1,0 +1,132 @@
+{
+  "dim3_information_processing": {
+    "name": "信息提取与转化",
+    "description": "评估应用题从场景信息到数学模型的转化难度",
+    "version": "1.0.0",
+    "scoring": {
+      "max_score": 10.0,
+      "score_granularity": 0.5,
+      "levels": [
+        {"level": 1, "min": 0.0, "max": 2.0, "label": "简单"},
+        {"level": 2, "min": 2.5, "max": 4.0, "label": "较简单"},
+        {"level": 3, "min": 4.5, "max": 6.0, "label": "中等"},
+        {"level": 4, "min": 6.5, "max": 8.0, "label": "较难"},
+        {"level": 5, "min": 8.5, "max": 10.0, "label": "困难"}
+      ]
+    },
+    "fields": {
+      "info_source_type": {
+        "type": "enum",
+        "options": ["text_only", "image_text", "table", "multi_source"],
+        "labels": {
+          "text_only": "纯文字",
+          "image_text": "图文",
+          "table": "表格",
+          "multi_source": "多源混合"
+        },
+        "default": "text_only"
+      },
+      "info_count": {
+        "type": "enum",
+        "options": ["few", "medium", "many"],
+        "labels": {
+          "few": "少",
+          "medium": "中",
+          "many": "多"
+        },
+        "default": "few"
+      },
+      "has_noise_info": {
+        "type": "boolean",
+        "default": 0,
+        "description": "是否有干扰信息"
+      },
+      "condition_scattered": {
+        "type": "boolean",
+        "default": 0,
+        "description": "条件是否分散"
+      },
+      "need_modeling": {
+        "type": "boolean",
+        "default": 0,
+        "description": "是否需要建模"
+      },
+      "relation_complexity": {
+        "type": "enum",
+        "options": ["low", "medium", "high"],
+        "labels": {
+          "low": "低",
+          "medium": "中",
+          "high": "高"
+        },
+        "default": "low"
+      }
+    },
+    "scoring_rules": {
+      "base_score": {
+        "relation_complexity": {
+          "low": 1.5,
+          "medium": 4.5,
+          "high": 6.5
+        }
+      },
+      "adjustments": {
+        "info_source_type": {
+          "text_only": 0.0,
+          "image_text": 0.5,
+          "table": 0.5,
+          "multi_source": 1.0
+        },
+        "info_count": {
+          "few": 0.0,
+          "medium": 0.5,
+          "many": 1.0
+        },
+        "has_noise_info": {
+          "0": 0.0,
+          "1": 0.5
+        },
+        "condition_scattered": {
+          "0": 0.0,
+          "1": 0.5
+        },
+        "need_modeling": {
+          "0": 0.0,
+          "1": 1.0
+        }
+      }
+    },
+    "override_rules": [
+      {
+        "name": "强制1档",
+        "condition": {
+          "info_source_type": "text_only",
+          "info_count": "few",
+          "has_noise_info": 0,
+          "condition_scattered": 0,
+          "need_modeling": 0,
+          "relation_complexity": "low"
+        },
+        "action": "set_level",
+        "value": 1,
+        "message": "满足所有最简单信息处理条件，强制判定为1档"
+      },
+      {
+        "name": "强制5档下限",
+        "condition": {
+          "info_source_type": "multi_source",
+          "info_count": "many",
+          "need_modeling": 1,
+          "relation_complexity": "high",
+          "OR": {
+            "has_noise_info": 1,
+            "condition_scattered": 1
+          }
+        },
+        "action": "set_min_level",
+        "value": 5,
+        "message": "满足所有最复杂信息处理条件，至少判定为5档"
+      }
+    ]
+  }
+}

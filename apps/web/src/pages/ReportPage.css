@@ -1,0 +1,291 @@
+/* 报告页面样式 */
+
+.report-page {
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+/* 加载状态 */
+.report-page.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.report-page.loading p {
+  margin-top: 16px;
+  color: #6b7280;
+}
+
+/* 错误状态 */
+.report-page.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.report-page.error h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  color: #1f2937;
+}
+
+.report-page.error p {
+  margin: 0 0 24px 0;
+  color: #6b7280;
+}
+
+.retry-button {
+  padding: 10px 24px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.retry-button:hover {
+  background: #2563eb;
+}
+
+/* 报告头部 */
+.report-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 24px 32px;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.title-section h1 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.paper-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: #4b5563;
+}
+
+.report-meta {
+  margin: 0;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* PDF导出按钮 */
+.pdf-export-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #1f2937;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.pdf-export-button:hover:not(:disabled) {
+  background: #374151;
+}
+
+.pdf-export-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.pdf-export-button .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.pdf-export-button .progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: #3b82f6;
+  transition: width 0.3s;
+}
+
+.pdf-export-button .button-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* 报告内容 */
+.report-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.report-section {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* 雷达图区域 */
+.radar-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.radar-container {
+  width: 100%;
+  height: 500px;
+}
+
+/* 总结卡片 */
+.summary-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.summary-card p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.8;
+  color: #374151;
+}
+
+/* 建议列表 */
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recommendation-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.recommendation-number {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.recommendation-item p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+/* 报告底部 */
+.report-footer {
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 24px 32px;
+  text-align: center;
+}
+
+.report-footer p {
+  margin: 0;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* 响应式布局 */
+@media (max-width: 1024px) {
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pdf-export-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .report-header,
+  .report-content {
+    padding: 16px;
+  }
+
+  .title-section h1 {
+    font-size: 20px;
+  }
+
+  .radar-container {
+    height: 350px;
+  }
+
+  .recommendation-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

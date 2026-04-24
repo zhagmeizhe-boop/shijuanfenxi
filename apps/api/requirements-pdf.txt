@@ -1,0 +1,4 @@
+# PDF生成依赖
+playwright>=1.40.0
+
+# 其他依赖已在主requirements.txt中包含

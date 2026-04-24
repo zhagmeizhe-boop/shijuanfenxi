@@ -1,0 +1,151 @@
+{
+  "dim1_computation": {
+    "name": "数学运算",
+    "description": "评估题目在计算层面的复杂程度",
+    "version": "1.0.0",
+    "scoring": {
+      "max_score": 10.0,
+      "score_granularity": 0.5,
+      "levels": [
+        {"level": 1, "min": 0.0, "max": 2.0, "label": "简单"},
+        {"level": 2, "min": 2.5, "max": 4.0, "label": "较简单"},
+        {"level": 3, "min": 4.5, "max": 6.0, "label": "中等"},
+        {"level": 4, "min": 6.5, "max": 8.0, "label": "较难"},
+        {"level": 5, "min": 8.5, "max": 10.0, "label": "困难"}
+      ]
+    },
+    "fields": {
+      "number_type": {
+        "type": "enum",
+        "options": ["simple", "mixed_basic", "mixed_complex", "multi_system"],
+        "labels": {
+          "simple": "整数、简单小数、简单分数",
+          "mixed_basic": "多位数、简单异分母分数、小数分数混合",
+          "mixed_complex": "分数、小数、比、百分数开始混合",
+          "multi_system": "多种数系混合，且计算中需要频繁切换"
+        },
+        "default": "simple"
+      },
+      "operation_layers": {
+        "type": "enum",
+        "options": ["1", "2-3", "3-4", "4-5", "6+"],
+        "labels": {
+          "1": "1步",
+          "2-3": "2到3步",
+          "3-4": "3到4步",
+          "4-5": "4到5步",
+          "6+": "6步及以上"
+        },
+        "default": "1"
+      },
+      "transformation_difficulty": {
+        "type": "enum",
+        "options": ["none", "one", "multiple"],
+        "labels": {
+          "none": "无转化",
+          "one": "一次转化",
+          "multiple": "多次转化"
+        },
+        "default": "none"
+      },
+      "special_ops": {
+        "type": "enum",
+        "options": ["none", "one", "multiple"],
+        "labels": {
+          "none": "无",
+          "one": "1类特殊计算操作",
+          "multiple": "2类及以上特殊计算操作"
+        },
+        "default": "none"
+      },
+      "error_proneness": {
+        "type": "enum",
+        "options": ["low", "medium", "high"],
+        "labels": {
+          "low": "低",
+          "medium": "中",
+          "high": "高"
+        },
+        "default": "low"
+      }
+    },
+    "scoring_rules": {
+      "base_score": {
+        "operation_layers": {
+          "1": 1.5,
+          "2-3": 3.0,
+          "3-4": 5.0,
+          "4-5": 6.5,
+          "6+": 8.0
+        }
+      },
+      "adjustments": {
+        "number_type": {
+          "simple": 0.0,
+          "mixed_basic": 0.5,
+          "mixed_complex": 1.0,
+          "multi_system": 1.5
+        },
+        "transformation_difficulty": {
+          "none": 0.0,
+          "one": 0.5,
+          "multiple": 1.0
+        },
+        "special_ops": {
+          "none": 0.0,
+          "one": 0.5,
+          "multiple": 1.0
+        },
+        "error_proneness": {
+          "low": 0.0,
+          "medium": 0.5,
+          "high": 1.0
+        }
+      }
+    },
+    "override_rules": [
+      {
+        "name": "强制1档",
+        "condition": {
+          "number_type": "simple",
+          "operation_layers": "1",
+          "transformation_difficulty": "none",
+          "special_ops": "none",
+          "error_proneness": "low"
+        },
+        "action": "set_level",
+        "value": 1,
+        "message": "满足所有最简单条件，强制判定为1档"
+      },
+      {
+        "name": "强制4档下限",
+        "condition": {
+          "number_type": "multi_system",
+          "transformation_difficulty": "multiple",
+          "AND": {
+            "special_ops": "multiple",
+            "OR": {
+              "error_proneness": "high"
+            }
+          }
+        },
+        "action": "set_min_level",
+        "value": 4,
+        "message": "满足复杂条件组合，至少判定为4档"
+      },
+      {
+        "name": "强制5档下限",
+        "condition": {
+          "operation_layers": "6+",
+          "number_type": "multi_system",
+          "transformation_difficulty": "multiple",
+          "special_ops": "multiple",
+          "error_proneness": "high"
+        },
+        "action": "set_min_level",
+        "value": 5,
+        "message": "满足所有最复杂条件，至少判定为5档"
+      }
+    ]
+  }
+}
