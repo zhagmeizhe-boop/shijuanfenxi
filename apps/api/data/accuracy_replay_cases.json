@@ -229,5 +229,43 @@
     ],
     "layout_type": "multi_page",
     "expected_warning": false
+  },
+  {
+    "name": "paper-count-guangdong-olympic-school-entrance-1",
+    "case_type": "paper_count",
+    "pdf_path": "参考试卷/广东奥林匹克学校初中入学考试数学题(一).pdf",
+    "expected_total_question_count": 24,
+    "expected_sections": [
+      { "section_index_raw": "一", "count": 10 },
+      { "section_index_raw": "二", "count": 5 },
+      { "section_index_raw": "三", "count": 5 },
+      { "section_index_raw": "四", "count": 4 }
+    ],
+    "layout_type": "multi_page",
+    "expected_warning": false
+  },
+  {
+    "name": "paper-count-fenbankao-sim-1",
+    "case_type": "paper_count",
+    "pdf_path": "参考试卷/分班考模拟卷1.pdf",
+    "expected_total_question_count": 26,
+    "expected_sections": [
+      { "section_index_raw": "一", "count": 9 },
+      { "section_index_raw": "二", "count": 8 },
+      { "section_index_raw": "三", "count": 3 },
+      { "section_index_raw": "四", "count": 1 },
+      { "section_index_raw": "五", "count": 5 }
+    ],
+    "layout_type": "multi_page",
+    "expected_warning": false
+  },
+  {
+    "name": "paper-count-fenbankao-sim-3",
+    "case_type": "paper_count",
+    "pdf_path": "参考试卷/分班考模拟卷3.pdf",
+    "expected_total_question_count": 23,
+    "expected_sections": [],
+    "layout_type": "multi_page",
+    "expected_warning": false
   }
 ]

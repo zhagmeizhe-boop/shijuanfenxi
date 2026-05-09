@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # 服务器配置
     APP_HOST: str = "0.0.0.0"
-    APP_PORT: int = 8000
+    APP_PORT: int = 8100
     APP_WORKERS: int = 1
 
     # 安全配置
@@ -43,10 +43,10 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
 
     # 数据库连接池
-    DB_POOL_SIZE: int = 20
-    DB_MAX_OVERFLOW: int = 10
-    DB_POOL_TIMEOUT: int = 30
-    DB_POOL_RECYCLE: int = 3600
+    DB_POOL_SIZE: int = 5
+    DB_MAX_OVERFLOW: int = 5
+    DB_POOL_TIMEOUT: int = 15
+    DB_POOL_RECYCLE: int = 1800
 
     # Redis配置
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -59,12 +59,30 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = "redis://localhost:6379/0"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
     CELERY_TASK_ALWAYS_EAGER: bool = False
-    TASK_STALE_MINUTES: int = 15
+    CELERY_RESULT_EXPIRES: int = 86400
+    CELERY_WORKER_MAX_TASKS_PER_CHILD: int = 20
+    TASK_STALE_MINUTES: int = 45
+    MAX_ACTIVE_ANALYSIS_TASKS: int = 3  # legacy name; use MAX_RUNNING_ANALYSIS_TASKS for new deployments
+    MAX_RUNNING_ANALYSIS_TASKS: Optional[int] = 3
+    MAX_QUEUED_ANALYSIS_TASKS: int = 50
+    ANALYSIS_SLOT_RETRY_SECONDS: int = 30
+    ANALYSIS_SLOT_TTL_SECONDS: int = 14400
 
     # OCR配置
-    OCR_PROVIDER: str = "mock"  # mock, baidu, ali
+    OCR_PROVIDER: str = "vision_llm"  # vision_llm, paddleocr, baidu, mock
     OCR_TIMEOUT: int = 30
     OCR_MAX_RETRIES: int = 3
+    VISION_LLM_MODEL: Optional[str] = None
+    VISION_LLM_CONCURRENCY: int = 6
+    VISION_LLM_PAGE_TIMEOUT: float = 90.0
+    VISION_LLM_RENDER_DPI: int = 180
+    VISION_LLM_MAX_TOKENS: int = 12000
+
+    # PaddleOCR
+    PADDLE_OCR_LANG: str = "ch"
+    PADDLE_OCR_USE_ANGLE_CLS: bool = True
+    PADDLE_OCR_USE_GPU: bool = False
+    PADDLE_OCR_MODEL_DIR: Optional[str] = None
 
     # 百度OCR
     BAIDU_OCR_APP_ID: Optional[str] = None
@@ -90,6 +108,15 @@ class Settings(BaseSettings):
     MOONSHOT_TEMPERATURE: float = 0.3
     MOONSHOT_MAX_TOKENS: int = 2000
     MOONSHOT_TIMEOUT: float = 30.0
+    QUESTION_LLM_CONCURRENCY: int = 15
+    QUESTION_LLM_MAX_TOKENS: int = 2800
+    QUESTION_LLM_TIMEOUT_SECONDS: float = 75.0
+    GLOBAL_LLM_CONCURRENCY: int = 63
+    GLOBAL_VISION_LLM_CONCURRENCY: int = 18
+    GLOBAL_QUESTION_LLM_CONCURRENCY: int = 45
+    GLOBAL_LLM_ACQUIRE_TIMEOUT_SECONDS: float = 120.0
+    GLOBAL_LLM_RETRY_INTERVAL_SECONDS: float = 0.5
+    GLOBAL_LLM_SLOT_TTL_SECONDS: int = 300
 
     # 文件上传配置
     MAX_UPLOAD_SIZE: int = 50 * 1024 * 1024  # 50MB
@@ -105,7 +132,7 @@ class Settings(BaseSettings):
     LOG_FORMAT: str = "json"
 
     # CORS配置
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    CORS_ORIGINS: List[str] = ["http://localhost:3100", "http://127.0.0.1:3100"]
     CORS_ALLOW_CREDENTIALS: bool = True
 
     class Config:
@@ -121,6 +148,8 @@ def get_settings() -> Settings:
     loaded.DATABASE_URL = normalize_database_url(loaded.DATABASE_URL)
     loaded.UPLOAD_DIR = str(resolve_runtime_path(loaded.UPLOAD_DIR))
     loaded.REPORT_OUTPUT_DIR = str(resolve_runtime_path(loaded.REPORT_OUTPUT_DIR))
+    if loaded.PADDLE_OCR_MODEL_DIR:
+        loaded.PADDLE_OCR_MODEL_DIR = str(resolve_runtime_path(loaded.PADDLE_OCR_MODEL_DIR))
     return loaded
 
 

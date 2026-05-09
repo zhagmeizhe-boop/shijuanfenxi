@@ -1,17 +1,14 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
 import { DimensionScoreCards } from '@/components/report/DimensionScoreCards';
 import { SixDimensionsRadar } from '@/components/report/SixDimensionsRadar';
+import {
+  getDifficultyLabel,
+  REPORT_DIMENSIONS,
+  REPORT_DIFFICULTY_META,
+} from '@/components/report/reportMeta';
 import type { DimensionScore } from '@/types/analysis';
-
-vi.mock('echarts', () => ({
-  init: vi.fn(() => ({
-    setOption: vi.fn(),
-    resize: vi.fn(),
-    dispose: vi.fn(),
-  })),
-}));
 
 describe('SixDimensionsRadar', () => {
   const mockDimensions = {
@@ -26,8 +23,52 @@ describe('SixDimensionsRadar', () => {
   it('renders radar panel title', () => {
     render(<SixDimensionsRadar dimensions={mockDimensions} />);
 
-    expect(screen.getByText('六维分布')).toBeInTheDocument();
-    expect(screen.getByText('数学运算')).toBeInTheDocument();
+    expect(screen.getByTestId('radar-svg')).toBeInTheDocument();
+    expect(screen.getByTestId('radar-data-area')).toHaveAttribute('points');
+    expect(screen.getByTestId('radar-data-line')).toHaveAttribute('stroke', '#294766');
+  });
+
+  it('uses zero chart values for not-covered dimensions while keeping labels', () => {
+    const dimensionDetails: DimensionScore[] = [
+      {
+        code: 'dim2',
+        name: REPORT_DIMENSIONS[1].name,
+        score: 0,
+        level: 0,
+        level_label: '未覆盖',
+        score_status: 'not_covered',
+        evidence: '该维度未覆盖。',
+      },
+    ];
+
+    render(<SixDimensionsRadar dimensions={mockDimensions} dimensionDetails={dimensionDetails} />);
+
+    expect(screen.getByText('未覆盖')).toBeInTheDocument();
+    const areaPoints = screen.getByTestId('radar-data-area').getAttribute('points') ?? '';
+    const linePoints = screen.getByTestId('radar-data-line').getAttribute('points') ?? '';
+    const dataPoints = screen.getAllByTestId('radar-data-point');
+
+    expect(`${areaPoints} ${linePoints}`).not.toMatch(/NaN|null/);
+    expect(dataPoints[1]).toHaveAttribute('cx', '180.00');
+    expect(dataPoints[1]).toHaveAttribute('cy', '168.00');
+  });
+
+  it('shows an empty radar state when all dimensions are not covered', () => {
+    const dimensionDetails: DimensionScore[] = REPORT_DIMENSIONS.map((item) => ({
+      code: item.code,
+      name: item.name,
+      score: 0,
+      level: 0,
+      level_label: '未覆盖',
+      score_status: 'not_covered' as const,
+      evidence: '该维度未覆盖。',
+    }));
+
+    render(<SixDimensionsRadar dimensions={mockDimensions} dimensionDetails={dimensionDetails} />);
+
+    expect(screen.getByText('暂无可绘制维度')).toBeInTheDocument();
+    expect(screen.queryByTestId('radar-svg')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('radar-data-line')).not.toBeInTheDocument();
   });
 });
 
@@ -80,5 +121,62 @@ describe('DimensionScoreCards', () => {
 
     expect(screen.getByText('二-4')).toBeInTheDocument();
     expect(screen.queryByText(/第 4 题/)).not.toBeInTheDocument();
+  });
+
+  it('renders compact counted-question text plus full analysis for hover and print', () => {
+    const fullReason = 'L5 高阶结构巧算：完整分析：需要识别结构特征。核心事实：结构特征、依据来源。依据来源：文本。';
+    const displayedFullReason = 'L5：完整分析：需要识别结构特征';
+    const dimensions: DimensionScore[] = [
+      {
+        ...mockDimensions[0],
+        counted_questions: [
+          {
+            question_no: '9',
+            question_display_label: '9',
+            summary: '结构计算',
+            reason: 'L5 高阶结构巧算：短摘要：结构计算题',
+            full_reason: fullReason,
+          },
+        ],
+      },
+    ];
+
+    render(<DimensionScoreCards dimensions={dimensions} />);
+
+    expect(screen.getByText('L5：短摘要：结构计算题')).toBeInTheDocument();
+    const fullReasonNodes = screen.getAllByText(displayedFullReason);
+    expect(fullReasonNodes).toHaveLength(2);
+    expect(screen.queryByText(/高阶结构巧算/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/核心事实：/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/依据来源：/)).not.toBeInTheDocument();
+    expect(
+      fullReasonNodes.some((node: Element) =>
+        node.classList.contains('report-counted-question-tooltip'),
+      ),
+    ).toBe(true);
+    expect(
+      fullReasonNodes.some((node: Element) =>
+        node.classList.contains('report-counted-question-print'),
+      ),
+    ).toBe(true);
+  });
+});
+
+describe('report difficulty metadata', () => {
+  it('uses the unified five paper-level labels', () => {
+    expect(Object.fromEntries(
+      Object.entries(REPORT_DIFFICULTY_META).map(([level, meta]) => [level, meta.label]),
+    )).toEqual({
+      '1': '基础卷',
+      '2': '提升卷',
+      '3': '拔高卷',
+      '4': '选拔卷',
+      '5': '竞赛卷',
+    });
+  });
+
+  it('normalizes historical report labels by known level', () => {
+    expect(getDifficultyLabel(4, '拔高卷')).toBe('选拔卷');
+    expect(getDifficultyLabel(99, '历史标签')).toBe('历史标签');
   });
 });

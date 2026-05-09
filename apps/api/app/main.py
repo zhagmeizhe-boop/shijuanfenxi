@@ -9,7 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import api_router
 from app.core.config import settings
-from app.core.database import close_db, init_db
+from app.core.database import close_db, get_database_preflight_status, init_db
+from app.services.concurrency.analysis_slots import get_analysis_running_limit
+from app.services.ocr.factory import get_ocr_preflight_status
 from app.services.paper_analysis_runner import mark_stale_analysis_tasks
 from app.tasks import get_queue_preflight_status
 
@@ -33,6 +35,12 @@ async def lifespan(app: FastAPI):
             logger.warning("Reconciled %s stale analysis tasks on startup", reconciled_count)
         else:
             logger.info("No stale analysis tasks found on startup")
+
+        ocr_status = await get_ocr_preflight_status()
+        if ocr_status["ocr_ready"]:
+            logger.info("OCR preflight ready provider=%s detail=%s", ocr_status["provider"], ocr_status["message"])
+        else:
+            logger.warning("OCR preflight failed provider=%s detail=%s", ocr_status["provider"], ocr_status["message"])
     except Exception as exc:
         logger.error("Failed to initialize application runtime: %s", exc, exc_info=True)
 
@@ -55,8 +63,8 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
-    allow_credentials=True,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -66,13 +74,36 @@ app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/health")
 async def health_check():
+    database_status = await get_database_preflight_status()
     queue_status = get_queue_preflight_status()
+    ocr_status = await get_ocr_preflight_status()
+    is_ready = (
+        bool(database_status["database_ready"])
+        and queue_status["queue_ready"]
+        and ocr_status["ocr_ready"]
+    )
     return {
-        "status": "healthy",
+        "status": "healthy" if is_ready else "degraded",
         "version": settings.APP_VERSION,
         "timestamp": datetime.now().isoformat(),
+        "database_ready": database_status["database_ready"],
+        "database_kind": database_status["database_kind"],
+        "database_message": database_status["message"],
         "queue_ready": queue_status["queue_ready"],
         "queue_message": queue_status["message"],
+        "app_workers": settings.APP_WORKERS,
+        "db_pool_size": settings.DB_POOL_SIZE,
+        "db_max_overflow": settings.DB_MAX_OVERFLOW,
+        "analysis_running_limit": get_analysis_running_limit(),
+        "analysis_queue_limit": settings.MAX_QUEUED_ANALYSIS_TASKS,
+        "vision_llm_concurrency": settings.VISION_LLM_CONCURRENCY,
+        "question_llm_concurrency": settings.QUESTION_LLM_CONCURRENCY,
+        "global_llm_concurrency": settings.GLOBAL_LLM_CONCURRENCY,
+        "global_vision_llm_concurrency": settings.GLOBAL_VISION_LLM_CONCURRENCY,
+        "global_question_llm_concurrency": settings.GLOBAL_QUESTION_LLM_CONCURRENCY,
+        "ocr_provider": ocr_status["provider"],
+        "ocr_ready": ocr_status["ocr_ready"],
+        "ocr_message": ocr_status["message"],
     }
 
 

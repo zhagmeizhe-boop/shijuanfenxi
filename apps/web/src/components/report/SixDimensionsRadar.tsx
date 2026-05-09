@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react';
-import * as echarts from 'echarts';
+import { useMemo } from 'react';
 import {
   formatScore,
   getRadarValues,
   REPORT_DIMENSIONS,
 } from '@/components/report/reportMeta';
+import type { DimensionScore } from '@/types/analysis';
 
 interface SixDimensionsRadarProps {
   dimensions: {
@@ -15,129 +15,203 @@ interface SixDimensionsRadarProps {
     application: number;
     innovation: number;
   };
+  dimensionDetails?: DimensionScore[];
 }
 
-export function SixDimensionsRadar({ dimensions }: SixDimensionsRadarProps) {
-  const chartRef = useRef<HTMLDivElement>(null);
-  const chartInstance = useRef<echarts.ECharts | null>(null);
+interface RadarPoint {
+  x: number;
+  y: number;
+}
 
-  useEffect(() => {
-    if (!chartRef.current) {
-      return;
-    }
+const VIEW_BOX_WIDTH = 360;
+const VIEW_BOX_HEIGHT = 340;
+const RADAR_CENTER: RadarPoint = { x: 180, y: 168 };
+const RADAR_RADIUS = 108;
+const RADAR_LABEL_RADIUS = 142;
+const RADAR_LEVELS = [0.25, 0.5, 0.75, 1];
 
-    const radarValues = getRadarValues(dimensions);
+function clampRadarValue(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(100, value));
+}
 
-    if (!chartInstance.current) {
-      chartInstance.current = echarts.init(chartRef.current, undefined, { renderer: 'svg' });
-    }
+function getRadarPoint(index: number, radius: number): RadarPoint {
+  const angle = -Math.PI / 2 + (index * 2 * Math.PI) / REPORT_DIMENSIONS.length;
+  return {
+    x: RADAR_CENTER.x + Math.cos(angle) * radius,
+    y: RADAR_CENTER.y + Math.sin(angle) * radius,
+  };
+}
 
-    const option: echarts.EChartsOption = {
-      tooltip: {
-        trigger: 'item',
-        backgroundColor: 'rgba(255, 255, 255, 0.96)',
-        borderColor: '#cfd6dc',
-        textStyle: {
-          color: '#1f2933',
-        },
-        formatter: () =>
-          REPORT_DIMENSIONS.map(
-            (item, index) => `${item.name}: ${formatScore(radarValues[index], 0)} / 100`,
-          ).join('<br/>'),
-      },
-      radar: {
-        indicator: REPORT_DIMENSIONS.map((item) => ({
-          name: item.chartName,
-          max: 100,
-          color: '#43525d',
-        })),
-        shape: 'polygon',
-        splitNumber: 4,
-        radius: '67%',
-        center: ['50%', '48%'],
-        axisName: {
-          fontSize: 12,
-          fontWeight: 600,
-          padding: [0, 0, 8, 0],
-        },
-        splitLine: {
-          lineStyle: {
-            color: '#d6dde3',
-          },
-        },
-        splitArea: {
-          show: true,
-          areaStyle: {
-            color: ['rgba(238, 242, 246, 0.72)', 'rgba(248, 250, 252, 0.28)'],
-          },
-        },
-        axisLine: {
-          lineStyle: {
-            color: '#d6dde3',
-          },
-        },
-      },
-      series: [
-        {
-          name: '六维评价',
-          type: 'radar',
-          data: [
-            {
-              value: radarValues,
-              name: '当前试卷',
-              symbol: 'circle',
-              symbolSize: 7,
-              lineStyle: {
-                width: 2.5,
-                color: '#294766',
-              },
-              areaStyle: {
-                color: 'rgba(41, 71, 102, 0.16)',
-              },
-              itemStyle: {
-                color: '#294766',
-                borderColor: '#fff',
-                borderWidth: 2,
-              },
-            },
-          ],
-        },
-      ],
-    };
+function formatPoint(point: RadarPoint): string {
+  return `${point.x.toFixed(2)},${point.y.toFixed(2)}`;
+}
 
-    chartInstance.current.setOption(option);
+function formatPoints(points: RadarPoint[]): string {
+  return points.map(formatPoint).join(' ');
+}
 
-    const handleResize = () => {
-      chartInstance.current?.resize();
-    };
+function getTextAnchor(x: number): 'start' | 'middle' | 'end' {
+  if (x < RADAR_CENTER.x - 12) {
+    return 'end';
+  }
+  if (x > RADAR_CENTER.x + 12) {
+    return 'start';
+  }
+  return 'middle';
+}
 
-    window.addEventListener('resize', handleResize);
+export function SixDimensionsRadar({ dimensions, dimensionDetails = [] }: SixDimensionsRadarProps) {
+  const notCoveredCodes = useMemo(
+    () =>
+      new Set(
+        dimensionDetails
+          .filter((item) => item.score_status === 'not_covered')
+          .map((item) => item.code),
+      ),
+    [dimensionDetails],
+  );
+  const radarValues = useMemo(
+    () => getRadarValues(dimensions, notCoveredCodes),
+    [dimensions, notCoveredCodes],
+  );
+  const hasDrawableValues = radarValues.some((value) => value !== null);
 
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      chartInstance.current?.dispose();
-      chartInstance.current = null;
-    };
-  }, [dimensions]);
+  const chartValues = useMemo(
+    () => radarValues.map((value) => clampRadarValue(value ?? 0)),
+    [radarValues],
+  );
+  const dataPoints = useMemo(
+    () =>
+      chartValues.map((value, index) =>
+        getRadarPoint(index, RADAR_RADIUS * (value / 100)),
+      ),
+    [chartValues],
+  );
+  const dataPointsString = formatPoints(dataPoints);
 
   return (
     <div className="report-radar-card">
       <div className="report-card-heading">
         <span className="report-card-eyebrow">六维结构</span>
         <h3>六维分布</h3>
-        <p>从整卷视角查看六个评价维度的相对强弱，作为难度定位与后续训练建议的辅助依据。</p>
+        <p>从整卷视角查看六个评价维度的相对强弱，作为难度定位与能力结构判断的辅助依据。</p>
       </div>
 
       <div className="report-radar-card__body">
-        <div ref={chartRef} className="report-radar-chart" />
+        <div className={`report-radar-chart${hasDrawableValues ? '' : ' is-empty'}`}>
+          {!hasDrawableValues ? (
+            <span>暂无可绘制维度</span>
+          ) : (
+            <svg
+              className="report-radar-svg"
+              data-testid="radar-svg"
+              viewBox={`0 0 ${VIEW_BOX_WIDTH} ${VIEW_BOX_HEIGHT}`}
+              role="img"
+              aria-label="六维评价雷达图"
+            >
+              <title>六维评价雷达图</title>
+              {RADAR_LEVELS.map((level, index) => {
+                const gridPoints = REPORT_DIMENSIONS.map((_, dimIndex) =>
+                  getRadarPoint(dimIndex, RADAR_RADIUS * level),
+                );
+                return (
+                  <polygon
+                    key={level}
+                    points={formatPoints(gridPoints)}
+                    fill={index % 2 === 0 ? 'rgba(238, 242, 246, 0.72)' : 'rgba(248, 250, 252, 0.28)'}
+                    stroke="#d6dde3"
+                    strokeWidth="1"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                );
+              })}
+              {REPORT_DIMENSIONS.map((item, index) => {
+                const outerPoint = getRadarPoint(index, RADAR_RADIUS);
+                const labelPoint = getRadarPoint(index, RADAR_LABEL_RADIUS);
+                const lines = item.chartName.split('\n');
+                const firstLineDy = lines.length === 1 ? 0 : -0.45 * (lines.length - 1);
+                return (
+                  <g key={item.code}>
+                    <line
+                      x1={RADAR_CENTER.x}
+                      y1={RADAR_CENTER.y}
+                      x2={outerPoint.x.toFixed(2)}
+                      y2={outerPoint.y.toFixed(2)}
+                      stroke="#d6dde3"
+                      strokeWidth="1"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                    <text
+                      x={labelPoint.x.toFixed(2)}
+                      y={labelPoint.y.toFixed(2)}
+                      textAnchor={getTextAnchor(labelPoint.x)}
+                      dominantBaseline="middle"
+                      fill="#43525d"
+                      fontSize="12"
+                      fontWeight="600"
+                    >
+                      {lines.map((line, lineIndex) => (
+                        <tspan
+                          key={`${item.code}-${lineIndex}`}
+                          x={labelPoint.x.toFixed(2)}
+                          dy={lineIndex === 0 ? `${firstLineDy}em` : '1.15em'}
+                        >
+                          {line}
+                        </tspan>
+                      ))}
+                    </text>
+                  </g>
+                );
+              })}
+              <polygon
+                data-testid="radar-data-area"
+                points={dataPointsString}
+                fill="rgba(41, 71, 102, 0.16)"
+                stroke="none"
+              />
+              <polyline
+                data-testid="radar-data-line"
+                points={`${dataPointsString} ${formatPoint(dataPoints[0])}`}
+                fill="none"
+                stroke="#294766"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
+              />
+              {dataPoints.map((point, index) => (
+                <circle
+                  key={REPORT_DIMENSIONS[index].code}
+                  data-testid="radar-data-point"
+                  cx={point.x.toFixed(2)}
+                  cy={point.y.toFixed(2)}
+                  r="4"
+                  fill="#294766"
+                  stroke="#ffffff"
+                  strokeWidth="2"
+                  vectorEffect="non-scaling-stroke"
+                />
+              ))}
+            </svg>
+          )}
+        </div>
 
         <div className="report-radar-metrics">
-          {REPORT_DIMENSIONS.map((item) => (
-            <div key={item.code} className="report-radar-metric">
-              <strong>{item.name}</strong>
-              <span>{formatScore(dimensions[item.field], 0)} / 100</span>
-            </div>
-          ))}
+          {REPORT_DIMENSIONS.map((item) => {
+            const isNotCovered = dimensionDetails.some(
+              (detail) => detail.code === item.code && detail.score_status === 'not_covered',
+            );
+
+            return (
+              <div key={item.code} className="report-radar-metric">
+                <strong>{item.name}</strong>
+                <span>{isNotCovered ? '未覆盖' : `${formatScore(dimensions[item.field], 0)} / 100`}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

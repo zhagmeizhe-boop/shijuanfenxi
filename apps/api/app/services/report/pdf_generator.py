@@ -8,16 +8,17 @@ optionally persisted file path.
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
+import math
 import os
+import re
 import sys
 from datetime import datetime
 from html import escape
 from pathlib import Path
 from typing import Optional
 
-from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError, sync_playwright
+from playwright.sync_api import sync_playwright
 
 from app.core.config import settings
 
@@ -68,6 +69,11 @@ DIM_META = [
     },
 ]
 
+for _meta in DIM_META:
+    if _meta.get("code") == "dim6":
+        _meta["name"] = "逻辑链条"
+        _meta["chart_name"] = "逻辑链条"
+
 DIFFICULTY_META = {
     1: {
         "label": "基础卷",
@@ -75,34 +81,39 @@ DIFFICULTY_META = {
         "surface": "#f1f7f2",
         "border": "#c9ddce",
         "description": "整体更强调基础概念与常规运算，适合夯实基本能力。",
+        "target_students": "适合基础薄弱、需要巩固基本概念的学生。",
     },
     2: {
-        "label": "常规卷",
+        "label": "提升卷",
         "color": "#356a7c",
         "surface": "#eef5f8",
         "border": "#c7d9e0",
-        "description": "覆盖课程常规要求，兼顾熟练度、理解度与基础应用。",
+        "description": "注重知识覆盖、基本应用和稳定解题能力，适合从课内掌握走向稳步提升。",
+        "target_students": "适合基础一般、希望从课内掌握走向稳定提升的学生。",
     },
     3: {
-        "label": "提升卷",
+        "label": "拔高卷",
         "color": "#8a6b2d",
         "surface": "#fbf6ea",
         "border": "#e6d9b4",
-        "description": "强调综合运用能力，适合从熟练解题向稳定提分过渡。",
+        "description": "强调综合运用、方法迁移和拔高训练，适合基础较好的学生。",
+        "target_students": "适合基础较好、需要强化综合运用和拔高训练的学生。",
     },
     4: {
-        "label": "拔高卷",
+        "label": "选拔卷",
         "color": "#8b5a3c",
         "surface": "#fbf2ee",
         "border": "#e6cfc1",
-        "description": "试题更重视方法迁移、思维跨度与综合判断能力。",
+        "description": "面向选拔区分场景，重视复杂问题解决、策略迁移与稳定性。",
+        "target_students": "适合基础扎实、需要面向选拔场景提升综合稳定性的学生。",
     },
     5: {
-        "label": "选拔卷",
+        "label": "竞赛卷",
         "color": "#6b557f",
         "surface": "#f4f0f8",
         "border": "#d9d0e6",
-        "description": "整体强度较高，适合区分高水平学生的思维品质与稳定性。",
+        "description": "整体强度高，突出竞赛型思维、跨模块综合和高难度解题技巧。",
+        "target_students": "适合成绩优秀、准备挑战竞赛或高强度选拔的学生。",
     },
 }
 
@@ -173,7 +184,6 @@ class PDFExportService:
                     except Exception as exc:
                         raise RuntimeError(self._build_render_error_message("render_html", exc)) from exc
 
-                    self._wait_for_charts_sync(page, report_id)
                     try:
                         return page.pdf(
                             format="A4",
@@ -195,25 +205,11 @@ class PDFExportService:
                 raise
             raise RuntimeError(self._build_render_error_message("render_pdf", exc)) from exc
 
-    def _wait_for_charts_sync(self, page: Page, report_id: str) -> None:
-        """Wait for the embedded radar chart to finish rendering."""
-        try:
-            page.wait_for_function("window.__chartReady === true", timeout=5000)
-        except PlaywrightTimeoutError:
-            logger.warning(
-                "PDF export chart readiness timed out, falling back to fixed delay report=%s",
-                report_id,
-            )
-            page.wait_for_timeout(1500)
-        except Exception as exc:
-            raise RuntimeError(self._build_render_error_message("wait_chart", exc)) from exc
-
     @staticmethod
     def _build_render_error_message(stage: str, exc: Exception) -> str:
         stage_label = {
             "launch_browser": "Chromium 启动",
             "render_html": "HTML 渲染",
-            "wait_chart": "图表等待",
             "render_pdf": "PDF 生成",
         }.get(stage, "PDF 渲染")
 
@@ -257,6 +253,106 @@ class PDFExportService:
             return fallback
 
     @staticmethod
+    def _clamp_radar_value(value: object) -> float:
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            return 0.0
+        if not math.isfinite(numeric):
+            return 0.0
+        return max(0.0, min(100.0, numeric))
+
+    @staticmethod
+    def _radar_svg_point(index: int, radius: float, total: int = 6) -> tuple[float, float]:
+        center_x = 180.0
+        center_y = 168.0
+        angle = -math.pi / 2 + (index * 2 * math.pi) / total
+        return (
+            center_x + math.cos(angle) * radius,
+            center_y + math.sin(angle) * radius,
+        )
+
+    @staticmethod
+    def _format_svg_point(point: tuple[float, float]) -> str:
+        return f"{point[0]:.2f},{point[1]:.2f}"
+
+    def _build_radar_label_html(self, meta: dict, index: int) -> str:
+        label_x, label_y = self._radar_svg_point(index, 142.0, len(DIM_META))
+        if label_x < 168:
+            text_anchor = "end"
+        elif label_x > 192:
+            text_anchor = "start"
+        else:
+            text_anchor = "middle"
+
+        lines = str(meta.get("chart_name") or meta.get("name") or "").splitlines() or [
+            str(meta.get("name") or "")
+        ]
+        first_line_dy = 0 if len(lines) == 1 else -0.45 * (len(lines) - 1)
+        tspan_html = "".join(
+            f'<tspan x="{label_x:.2f}" dy="{first_line_dy:.2f}em">{escape(line)}</tspan>'
+            if line_index == 0
+            else f'<tspan x="{label_x:.2f}" dy="1.15em">{escape(line)}</tspan>'
+            for line_index, line in enumerate(lines)
+        )
+        return (
+            f'<text x="{label_x:.2f}" y="{label_y:.2f}" text-anchor="{text_anchor}" '
+            'dominant-baseline="middle" fill="#43525d" font-size="12" font-weight="600">'
+            f"{tspan_html}</text>"
+        )
+
+    def _build_radar_svg_html(self, chart_values: list[object]) -> str:
+        total = len(DIM_META)
+        values = [self._clamp_radar_value(value) for value in chart_values[:total]]
+        if len(values) < total:
+            values.extend([0.0] * (total - len(values)))
+
+        grid_html_parts: list[str] = []
+        for index, level in enumerate([0.25, 0.5, 0.75, 1.0]):
+            points = " ".join(
+                self._format_svg_point(self._radar_svg_point(dim_index, 108.0 * level, total))
+                for dim_index in range(total)
+            )
+            fill = "rgba(238, 242, 246, 0.72)" if index % 2 == 0 else "rgba(248, 250, 252, 0.28)"
+            grid_html_parts.append(
+                f'<polygon points="{points}" fill="{fill}" stroke="#d6dde3" '
+                'stroke-width="1" vector-effect="non-scaling-stroke" />'
+            )
+
+        axis_html_parts: list[str] = []
+        for index, meta in enumerate(DIM_META):
+            outer_x, outer_y = self._radar_svg_point(index, 108.0, total)
+            axis_html_parts.append(
+                f'<line x1="180.00" y1="168.00" x2="{outer_x:.2f}" y2="{outer_y:.2f}" '
+                'stroke="#d6dde3" stroke-width="1" vector-effect="non-scaling-stroke" />'
+            )
+            axis_html_parts.append(self._build_radar_label_html(meta, index))
+
+        data_points = [
+            self._radar_svg_point(index, 108.0 * (value / 100.0), total)
+            for index, value in enumerate(values)
+        ]
+        data_points_text = " ".join(self._format_svg_point(point) for point in data_points)
+        closed_line_points = f"{data_points_text} {self._format_svg_point(data_points[0])}"
+        marker_html = "".join(
+            f'<circle data-testid="radar-data-point" cx="{point[0]:.2f}" cy="{point[1]:.2f}" '
+            'r="4" fill="#294766" stroke="#ffffff" stroke-width="2" '
+            'vector-effect="non-scaling-stroke" />'
+            for point in data_points
+        )
+
+        return f"""
+        <svg class="report-radar-svg" data-testid="radar-svg" viewBox="0 0 360 340" role="img" aria-label="六维评价雷达图">
+          <title>六维评价雷达图</title>
+          {"".join(grid_html_parts)}
+          {"".join(axis_html_parts)}
+          <polygon data-testid="radar-data-area" points="{data_points_text}" fill="rgba(41, 71, 102, 0.16)" stroke="none" />
+          <polyline data-testid="radar-data-line" points="{closed_line_points}" fill="none" stroke="#294766" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+          {marker_html}
+        </svg>
+        """
+
+    @staticmethod
     def _truncate_text(text: object, max_length: int = 56) -> str:
         normalized = " ".join(str(text or "").split()).strip()
         if not normalized:
@@ -265,33 +361,21 @@ class PDFExportService:
             return normalized
         return f"{normalized[:max_length].rstrip()}…"
 
-    def _build_summary_html(self, summary: object) -> str:
-        paragraphs = [item.strip() for item in str(summary or "").splitlines() if item.strip()]
-        if not paragraphs:
-            paragraphs = ["暂无总体评价。"]
-        return "".join(f"<p>{escape(paragraph)}</p>" for paragraph in paragraphs)
+    @staticmethod
+    def _format_counted_question_analysis(text: object) -> str:
+        normalized = " ".join(str(text or "").split()).strip()
+        for marker in ("依据标签：", "核心事实：", "依据来源："):
+            normalized = normalized.split(marker, 1)[0].strip()
+        normalized = normalized.rstrip(" 。；;，,")
 
-    def _build_advice_note(self, details: list[dict]) -> str:
-        warning_count = sum(1 for item in details if item.get("warning"))
-        if warning_count > 0:
-            return (
-                f"当前六维明细中有 {warning_count} 个维度带有复核提示，"
-                "建议结合题号、题目摘要与计入理由做二次核对后再制定训练重点。"
-            )
-        return "建议先依据整卷等级与综合分确定训练强度，再按六维得分和计入题号安排分层巩固与专项提升。"
+        match = re.match(r"^(L[1-5])\s+[^：:]{1,40}[：:]\s*(.+)$", normalized)
+        if match:
+            normalized = f"{match.group(1)}：{match.group(2).strip()}"
+        return normalized.rstrip(" 。；;，,")
 
     def _build_report_warning_html(self, warnings: list[object]) -> str:
-        normalized = [str(item).strip() for item in warnings if str(item).strip()]
-        if not normalized:
-            return ""
-
-        items = "".join(f"<li>{escape(item)}</li>" for item in normalized)
-        return (
-            '<section class="report-warning-banner">'
-            '<div class="report-warning-banner__header"><strong>OCR 识别提示</strong></div>'
-            f'<ul class="report-warning-banner__list">{items}</ul>'
-            "</section>"
-        )
+        del warnings
+        return ""
 
     def _build_counted_questions_html(self, detail: dict) -> str:
         counted_questions = detail.get("counted_questions", [])
@@ -308,9 +392,13 @@ class PDFExportService:
                     or ""
                 )
             )
-            reason = escape(
-                self._truncate_text(entry.get("reason") or entry.get("summary"), 58)
+            reason_text = self._format_counted_question_analysis(
+                entry.get("full_reason")
+                or entry.get("reason")
+                or entry.get("summary")
+                or ""
             )
+            reason = escape(reason_text)
             rendered_items.append(
                 f"""
                 <li>
@@ -362,11 +450,19 @@ class PDFExportService:
         cards_html: list[str] = []
         for dim_meta in DIM_META:
             detail = details_by_code.get(dim_meta["code"], {})
+            if detail.get("score_status") == "not_covered":
+                detail["warning"] = False
             score = self._safe_float(detail.get("score"))
+            is_not_covered = detail.get("score_status") == "not_covered" or int(detail.get("level") or 0) <= 0
+            score_html = f'<strong style="color:{dim_meta["color"]}">未覆盖</strong>' if is_not_covered else (
+                f'<strong style="color:{dim_meta["color"]}">{self._format_score(score)}</strong><span>/ 10</span>'
+            )
+            meter_width = 0 if is_not_covered else max(0, min(score * 10, 100))
+            evidence_label = "覆盖状态" if is_not_covered else "评分依据摘要"
             level_label = escape(str(detail.get("level_label") or "未评级"))
             evidence = escape(self._truncate_text(detail.get("evidence")))
             warning_html = (
-                '<span class="report-inline-tag report-status-tag">复核提示</span>'
+                '<span class="report-inline-tag report-status-tag">评分提示</span>'
                 if detail.get("warning")
                 else ""
             )
@@ -388,11 +484,10 @@ class PDFExportService:
                     </div>
                   </div>
                   <div class="report-dimension-card__score">
-                    <strong style="color:{dim_meta['color']}">{self._format_score(score)}</strong>
-                    <span>/ 10</span>
+                    {score_html}
                   </div>
                   <div class="report-dimension-card__meter">
-                    <div style="width:{max(0, min(score * 10, 100)):.0f}%;background:{dim_meta['color']}"></div>
+                    <div style="width:{meter_width:.0f}%;background:{dim_meta['color']}"></div>
                   </div>
                   <div class="report-dimension-card__evidence">
                     <span class="report-dimension-card__label">评分依据摘要</span>
@@ -410,29 +505,6 @@ class PDFExportService:
 
         return "".join(rows_html)
 
-    def _build_distribution_html(self, position: dict) -> str:
-        distribution_by_code = {
-            item.get("code", ""): item for item in position.get("dimension_distribution", [])
-        }
-
-        rows: list[str] = []
-        for dim_meta in DIM_META:
-            distribution = distribution_by_code.get(dim_meta["code"], {})
-            percentage = int(self._safe_float(distribution.get("percentage")))
-            color = escape(str(distribution.get("color") or dim_meta["color"]))
-            rows.append(
-                f"""
-                <div class="report-difficulty-row">
-                  <span class="report-difficulty-row__label">{escape(dim_meta['name'])}</span>
-                  <div class="report-difficulty-row__bar">
-                    <div class="report-difficulty-row__fill" style="width:{max(0, min(percentage, 100))}%;background:{color}"></div>
-                  </div>
-                  <span class="report-difficulty-row__value">{percentage}%</span>
-                </div>
-                """
-            )
-        return "".join(rows)
-
     def _build_scale_html(self, difficulty_level: int) -> str:
         blocks: list[str] = []
         for level, meta in DIFFICULTY_META.items():
@@ -449,25 +521,6 @@ class PDFExportService:
             )
         return "".join(blocks)
 
-    def _build_recommendations_html(self, recommendations: list) -> str:
-        if not recommendations:
-            return """
-            <li class="report-advice-item">
-              <span class="report-advice-item__index">01</span>
-              <p>暂无学习建议。</p>
-            </li>
-            """
-
-        return "".join(
-            f"""
-            <li class="report-advice-item">
-              <span class="report-advice-item__index">{str(index + 1).zfill(2)}</span>
-              <p>{escape(str(item))}</p>
-            </li>
-            """
-            for index, item in enumerate(recommendations)
-        )
-
     def _generate_html(self, report_data: dict) -> str:
         dimensions = report_data.get("dimensions", {})
         details = report_data.get("dimension_details", [])
@@ -475,32 +528,70 @@ class PDFExportService:
         details_by_code = {item.get("code", ""): item for item in details}
         position = report_data.get("difficulty_position", {})
 
-        difficulty_level = int(self._safe_float(position.get("level"), 3))
+        raw_difficulty_level = position.get("level")
+        difficulty_level = int(self._safe_float(raw_difficulty_level, 0))
         difficulty_meta = DIFFICULTY_META.get(difficulty_level, DIFFICULTY_META[3])
-        difficulty_label = escape(str(position.get("label") or difficulty_meta["label"]))
-        difficulty_description = escape(
-            str(position.get("description") or difficulty_meta["description"])
+        has_known_difficulty_level = difficulty_level in DIFFICULTY_META
+        difficulty_label_value = (
+            difficulty_meta["label"]
+            if has_known_difficulty_level
+            else position.get("label") or difficulty_meta["label"]
         )
-        target_students = escape(str(position.get("target_students") or "未提供"))
+        difficulty_label = escape(str(difficulty_label_value))
+        difficulty_description_value = (
+            difficulty_meta["description"]
+            if has_known_difficulty_level
+            else position.get("description") or difficulty_meta["description"]
+        )
+        difficulty_description = escape(
+            str(difficulty_description_value)
+        )
+        target_students_value = (
+            difficulty_meta["target_students"]
+            if has_known_difficulty_level
+            else position.get("target_students") or "未提供"
+        )
+        target_students = escape(str(target_students_value))
         overall_score = self._format_score(position.get("overall_score"))
 
         paper_title = escape(str(report_data.get("paper_title") or "未提供"))
 
-        radar_values = json.dumps(
-            [self._safe_float(dimensions.get(meta["field"], 0)) for meta in DIM_META],
-            ensure_ascii=False,
-        )
-        radar_names = json.dumps([meta["name"] for meta in DIM_META], ensure_ascii=False)
-        radar_indicators = json.dumps(
-            [{"name": meta["chart_name"], "max": 100, "color": "#43525d"} for meta in DIM_META],
-            ensure_ascii=False,
+        radar_display_values_raw = []
+        radar_chart_values_raw = []
+        for meta in DIM_META:
+            detail = details_by_code.get(meta["code"], {})
+            is_not_covered = (
+                detail.get("score_status") == "not_covered"
+                or int(detail.get("level") or 0) <= 0
+            )
+            if is_not_covered:
+                radar_display_values_raw.append(None)
+                radar_chart_values_raw.append(0)
+            else:
+                value = self._safe_float(dimensions.get(meta["field"], 0))
+                radar_display_values_raw.append(value)
+                radar_chart_values_raw.append(value)
+
+        radar_has_drawable_values = any(value is not None for value in radar_display_values_raw)
+        radar_empty_class = ' class="is-empty"' if not radar_has_drawable_values else ""
+        radar_chart_html = (
+            self._build_radar_svg_html(radar_chart_values_raw)
+            if radar_has_drawable_values
+            else "<span>暂无可绘制维度</span>"
         )
         warning_banner_html = self._build_report_warning_html(report_warnings)
+
+        def radar_metric_text(meta: dict) -> str:
+            detail = details_by_code.get(meta["code"], {})
+            if detail.get("score_status") == "not_covered" or int(detail.get("level") or 0) <= 0:
+                return "未覆盖"
+            return f"{self._format_score(dimensions.get(meta['field'], 0), 0)} / 100"
+
         radar_metrics_html = "".join(
             f"""
             <div class="report-radar-metric">
               <strong>{escape(meta['name'])}</strong>
-              <span>{self._format_score(dimensions.get(meta['field'], 0), 0)} / 100</span>
+              <span>{radar_metric_text(meta)}</span>
             </div>
             """
             for meta in DIM_META
@@ -512,7 +603,6 @@ class PDFExportService:
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>六维评价分析报告</title>
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
   <style>
     @page {{
       size: A4;
@@ -527,25 +617,6 @@ class PDFExportService:
       print-color-adjust: exact;
     }}
     .report-shell {{ padding: 8px 6px 0; }}
-    .report-warning-banner {{
-      margin-bottom: 12px;
-      padding: 12px 14px;
-      background: linear-gradient(180deg, #fff7e4, #fffbf2);
-      border: 1px solid #e0c27d;
-      border-radius: 12px;
-    }}
-    .report-warning-banner__header {{
-      color: #8f5d12;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-    }}
-    .report-warning-banner__list {{
-      margin: 8px 0 0 18px;
-      color: #7a5a20;
-      font-size: 11px;
-      line-height: 1.6;
-    }}
     .report-header, .report-section, .report-difficulty-card, .report-radar-card {{
       background: #fffdfb;
       border: 1px solid #cfd6dc;
@@ -585,15 +656,15 @@ class PDFExportService:
       gap: 10px;
     }}
     .report-overview-strip {{ grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px; }}
-    .report-overview-item, .report-radar-metric, .report-advice-item,
-    .report-advice-note, .report-prose-block, .report-target-block, .report-score-panel {{
+    .report-overview-item, .report-radar-metric,
+    .report-target-block, .report-score-panel {{
       background: #ffffff;
       border: 1px solid #d5dbe0;
       border-radius: 12px;
     }}
     .report-overview-item {{ padding: 12px 14px; min-height: 68px; }}
     .report-overview-item span, .report-score-panel__label, .report-card-note,
-    .report-target-block span, .report-prose-block__note, .report-dimension-card__label, .report-advice-note strong {{
+    .report-target-block span, .report-dimension-card__label {{
       display: block;
       color: #8a9399;
       font-size: 10px;
@@ -616,6 +687,8 @@ class PDFExportService:
     .report-core-grid > article + article {{ margin-top: 12px; }}
     .report-difficulty-card, .report-radar-card {{
       padding: 18px;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }}
     .report-card-heading {{
       margin-bottom: 14px;
@@ -667,28 +740,46 @@ class PDFExportService:
     .report-difficulty-scale__item {{ flex: 1; min-width: 0; text-align: center; }}
     .report-difficulty-scale__dot {{ width: 10px; height: 10px; margin: 0 auto 8px; border-radius: 999px; }}
     .report-difficulty-scale__item strong {{ display: block; color: #5d6a72; font-size: 11px; font-weight: 600; }}
-    .report-difficulty-scale__item span, .report-difficulty-row__value, .report-radar-metric span {{ color: #8a9399; font-size: 10px; }}
+    .report-difficulty-scale__item span, .report-radar-metric span {{ color: #8a9399; font-size: 10px; }}
     .report-difficulty-scale__item.is-active strong {{ color: #1f2933; }}
-    .report-distribution-list {{ display: grid; gap: 8px; }}
-    .report-difficulty-row {{
-      display: grid;
-      grid-template-columns: 140px 1fr 36px;
-      gap: 8px;
-      align-items: center;
-    }}
-    .report-difficulty-row__label {{ color: #5d6a72; font-size: 12px; line-height: 1.4; }}
-    .report-difficulty-row__bar, .report-dimension-card__meter {{
+    .report-dimension-card__meter {{
       overflow: hidden;
       background: #dde3e7;
       border-radius: 999px;
     }}
-    .report-difficulty-row__bar {{ height: 8px; }}
-    .report-difficulty-row__fill, .report-dimension-card__meter div {{ height: 100%; border-radius: 999px; }}
+    .report-dimension-card__meter div {{ height: 100%; border-radius: 999px; }}
     .report-radar-card__body {{
       display: grid;
       gap: 14px;
     }}
-    #radar-chart {{ width: 100%; height: 220px; }}
+    #radar-chart {{
+      width: 100%;
+      height: 220px;
+      overflow: visible;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }}
+    .report-radar-svg {{
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }}
+    .report-radar-svg text {{
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    }}
+    #radar-chart.is-empty {{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8a9399;
+      font-size: 12px;
+      background: #f8fafc;
+      border: 1px dashed #cfd6dc;
+      border-radius: 12px;
+    }}
     .report-radar-metrics {{ grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }}
     .report-radar-metric {{ padding: 10px 12px; break-inside: avoid; page-break-inside: avoid; }}
     .report-radar-metric strong {{
@@ -773,35 +864,6 @@ class PDFExportService:
       font-size: 11px;
       line-height: 1.55;
     }}
-    .report-prose-block {{ padding: 18px 20px; }}
-    .report-prose-block p {{ color: #1f2933; font-size: 14px; line-height: 1.85; orphans: 3; widows: 3; }}
-    .report-prose-block p + p {{ margin-top: 12px; }}
-    .report-advice-note {{ padding: 12px 14px; break-inside: avoid; page-break-inside: avoid; }}
-    .report-advice-note p {{ margin-top: 8px; color: #5d6a72; font-size: 12px; line-height: 1.65; }}
-    .report-advice-list {{ display: grid; gap: 10px; list-style: none; margin-top: 12px; }}
-    .report-advice-item {{
-      display: grid;
-      grid-template-columns: 52px 1fr;
-      gap: 12px;
-      padding: 12px 14px;
-      break-inside: avoid;
-      page-break-inside: avoid;
-    }}
-    .report-advice-item__index {{
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 38px;
-      height: 38px;
-      border-radius: 999px;
-      border: 1px solid #d5dbe0;
-      background: #ffffff;
-      color: #8a9399;
-      font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
-      font-size: 16px;
-      font-weight: 700;
-    }}
-    .report-advice-item p {{ color: #1f2933; font-size: 13px; line-height: 1.7; }}
     .report-footer {{ padding-top: 0; margin-top: 8px; text-align: center; color: #8a9399; font-size: 10px; }}
     @media print {{
       .report-shell {{ padding: 0; }}
@@ -810,6 +872,14 @@ class PDFExportService:
       .report-difficulty-card,
       .report-radar-card {{
         box-shadow: none;
+      }}
+      .report-radar-card,
+      #radar-chart {{
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }}
+      #radar-chart {{
+        min-height: 220px;
       }}
     }}
   </style>
@@ -862,18 +932,17 @@ class PDFExportService:
           </div>
 
           <div class="report-difficulty-scale">{self._build_scale_html(difficulty_level)}</div>
-          <div class="report-distribution-list">{self._build_distribution_html(position)}</div>
         </article>
 
         <article class="report-radar-card">
           <div class="report-card-heading">
             <span class="report-card-eyebrow">六维结构</span>
             <h3>六维分布</h3>
-            <p>从整卷视角查看六个评价维度的相对强弱，作为难度定位与后续训练建议的辅助依据。</p>
+            <p>从整卷视角查看六个评价维度的相对强弱，作为难度定位与能力结构判断的辅助依据。</p>
           </div>
 
           <div class="report-radar-card__body">
-            <div id="radar-chart"></div>
+            <div id="radar-chart"{radar_empty_class}>{radar_chart_html}</div>
             <div class="report-radar-metrics">{radar_metrics_html}</div>
           </div>
         </article>
@@ -890,87 +959,10 @@ class PDFExportService:
         <div class="report-dimension-list">{self._build_dimension_cards_html(details_by_code)}</div>
       </section>
 
-      <section class="report-section">
-        <div class="report-section__header">
-          <div>
-            <span class="report-section__eyebrow">总体评价</span>
-            <h2>整卷结论</h2>
-          </div>
-          <p>以正文报告块呈现总体判断，弱化普通卡片感，增强正式报告语境下的阅读节奏。</p>
-        </div>
-        <article class="report-prose-block">
-          <span class="report-prose-block__note">报告正文</span>
-          {self._build_summary_html(report_data.get("overall_summary"))}
-        </article>
-      </section>
-
-      <section class="report-section">
-        <div class="report-section__header">
-          <div>
-            <span class="report-section__eyebrow">学习建议</span>
-            <h2>后续训练建议</h2>
-          </div>
-          <p>采用编号建议列表，保留重点提示，但整体视觉层级低于核心结论与总体评价。</p>
-        </div>
-
-        <div class="report-advice-note">
-          <strong>重点提示</strong>
-          <p>{escape(self._build_advice_note(details))}</p>
-        </div>
-
-        <ol class="report-advice-list">{self._build_recommendations_html(report_data.get("recommendations", []))}</ol>
-      </section>
     </main>
 
     <footer class="report-footer">本报告仅调整呈现方式，不涉及六维算法口径与后端接口变更。</footer>
   </div>
 
-  <script>
-    (function () {{
-      var chart = echarts.init(document.getElementById('radar-chart'), null, {{ renderer: 'svg' }});
-      chart.setOption({{
-        tooltip: {{
-          trigger: 'item',
-          backgroundColor: 'rgba(255, 255, 255, 0.96)',
-          borderColor: '#cfd6dc',
-          textStyle: {{ color: '#1f2933' }},
-          formatter: function () {{
-            var rows = [];
-            var names = {radar_names};
-            var values = {radar_values};
-            for (var i = 0; i < names.length; i += 1) {{
-              rows.push(names[i] + ': ' + values[i].toFixed(0) + ' / 100');
-            }}
-            return rows.join('<br/>');
-          }}
-        }},
-        radar: {{
-          indicator: {radar_indicators},
-          shape: 'polygon',
-          splitNumber: 4,
-          radius: '67%',
-          center: ['50%', '48%'],
-          axisName: {{ fontSize: 12, fontWeight: 600, padding: [0, 0, 8, 0] }},
-          splitLine: {{ lineStyle: {{ color: '#d6dde3' }} }},
-          splitArea: {{ show: true, areaStyle: {{ color: ['rgba(238, 242, 246, 0.72)', 'rgba(248, 250, 252, 0.28)'] }} }},
-          axisLine: {{ lineStyle: {{ color: '#d6dde3' }} }}
-        }},
-        series: [{{
-          name: '六维评价',
-          type: 'radar',
-          data: [{{
-            value: {radar_values},
-            name: '当前试卷',
-            symbol: 'circle',
-            symbolSize: 7,
-            lineStyle: {{ width: 2.5, color: '#294766' }},
-            areaStyle: {{ color: 'rgba(41, 71, 102, 0.16)' }},
-            itemStyle: {{ color: '#294766', borderColor: '#ffffff', borderWidth: 2 }}
-          }}]
-        }}]
-      }});
-      window.__chartReady = true;
-    }})();
-  </script>
 </body>
 </html>"""

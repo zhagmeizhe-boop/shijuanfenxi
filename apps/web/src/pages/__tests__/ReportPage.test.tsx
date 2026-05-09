@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ReportPage } from '@/pages/ReportPage';
 import { fetchReportData } from '@/services/reportData';
+import type { FullReportData } from '@/types/analysis';
 
 vi.mock('@/services/reportData', () => ({
   fetchReportData: vi.fn(),
@@ -18,7 +19,7 @@ vi.mock('@/components/report/DimensionScoreCards', () => ({
 describe('ReportPage', () => {
   const mockedFetchReportData = vi.mocked(fetchReportData);
 
-  const mockReportData = {
+  const mockReportData: FullReportData = {
     report_id: 'rpt-test-001',
     paper_id: 'paper-test-001',
     paper_title: '测试试卷',
@@ -41,6 +42,7 @@ describe('ReportPage', () => {
         evidence: '测试证据',
       },
     ],
+    report_warnings: [],
     difficulty_position: {
       level: 4,
       label: '拔高卷',
@@ -74,6 +76,7 @@ describe('ReportPage', () => {
     });
 
     expect(screen.getByText('测试试卷')).toBeInTheDocument();
+    expect(screen.getAllByText('选拔卷').length).toBeGreaterThan(0);
     expect(screen.getByTestId('radar-chart')).toBeInTheDocument();
     expect(screen.getByTestId('score-cards')).toBeInTheDocument();
   });
@@ -90,28 +93,33 @@ describe('ReportPage', () => {
     expect(screen.getByText('Fetch failed')).toBeInTheDocument();
   });
 
-  it('renders overall summary section', async () => {
+  it('does not render overall summary section', async () => {
     mockedFetchReportData.mockResolvedValue(mockReportData);
 
     render(<ReportPage reportId="rpt-test-001" />);
 
     await waitFor(() => {
-      expect(screen.getByText('整卷结论')).toBeInTheDocument();
+      expect(screen.getByText('六维评价分析报告')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('总体评价内容')).toBeInTheDocument();
+    expect(screen.queryByText('总体评价')).not.toBeInTheDocument();
+    expect(screen.queryByText('整卷结论')).not.toBeInTheDocument();
+    expect(screen.queryByText('报告正文')).not.toBeInTheDocument();
+    expect(screen.queryByText('总体评价内容')).not.toBeInTheDocument();
   });
 
-  it('renders recommendations section', async () => {
+  it('does not render recommendations section', async () => {
     mockedFetchReportData.mockResolvedValue(mockReportData);
 
     render(<ReportPage reportId="rpt-test-001" />);
 
     await waitFor(() => {
-      expect(screen.getByText('后续训练建议')).toBeInTheDocument();
+      expect(screen.getByText('六维评价分析报告')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('建议1')).toBeInTheDocument();
-    expect(screen.getByText('建议2')).toBeInTheDocument();
+    expect(screen.queryByText('学习建议')).not.toBeInTheDocument();
+    expect(screen.queryByText('后续训练建议')).not.toBeInTheDocument();
+    expect(screen.queryByText('建议1')).not.toBeInTheDocument();
+    expect(screen.queryByText('建议2')).not.toBeInTheDocument();
   });
 });

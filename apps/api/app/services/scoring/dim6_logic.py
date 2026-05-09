@@ -1,153 +1,366 @@
 """
-维度6：逻辑链条长度评分引擎
+dim6 logic-chain burden scorer.
 
-评估题目解题过程中的逻辑复杂度
+The scorer consumes normalized logic facts and maps them to
+L1-L5 fixed representative scores.
 """
 
-from typing import Any, Dict
+from __future__ import annotations
+
+from typing import Any, Dict, List
 
 from app.services.scoring.base import BaseDimensionScorer, DimensionScore
 
+REASONING_ROLE_VALUES = {"none", "supporting", "core"}
+CHAIN_SPAN_VALUES = {"1", "2", "3-4", "5+"}
+HIDDEN_DEPENDENCY_VALUES = {"none", "local", "cross_condition", "global"}
+BRANCH_CONTROL_VALUES = {"none", "explicit_cases", "multi_branch"}
+REVERSIBILITY_VALUES = {"none", "backward", "bidirectional"}
+VERIFICATION_REQUIREMENT_VALUES = {
+    "none",
+    "result_check",
+    "constraint_backcheck",
+    "full_consistency",
+}
+ABSTRACTION_BRIDGE_COUNT_VALUES = {"0", "1", "2", "3+"}
+CONSTRAINT_COUPLING_VALUES = {"none", "single", "coupled", "nested"}
+CONCLUSION_STABILITY_VALUES = {"direct", "edge_sensitive", "exhaustive"}
+LOGIC_STRUCTURE_TYPE_VALUES = {
+    "work_rate_chain",
+    "queue_growth_chain",
+    "multi_stage_state_change",
+    "percentage_base_shift_chain",
+    "travel_meeting_chasing_chain",
+    "cyclic_schedule_chain",
+    "reverse_process_chain",
+    "bounded_case_enumeration",
+    "optimization_comparison",
+    "global_constraint_system",
+    "periodic_sequence_position",
+    "shared_variable_coupling",
+}
+STATE_TRANSITION_COUNT_VALUES = {"0", "1", "2", "3+"}
+CASE_COUNT_BAND_VALUES = {"none", "2", "3-5", "6+"}
+BACKTRACK_DEPTH_VALUES = {"0", "1", "2", "3+"}
+CONSISTENCY_CONSTRAINT_COUNT_VALUES = {"0", "1", "2-3", "4+"}
+PHASE_COUNT_BAND_VALUES = {"1", "2", "3-4", "5+"}
+OPTIMIZATION_REQUIREMENT_VALUES = {"none", "bounded_choice", "global_minmax"}
+
+DIM6_LEVELS = {
+    "L1": {"score": 2.0, "level": 1, "label": "L1 直接串联"},
+    "L2": {"score": 4.0, "level": 2, "label": "L2 局部推演"},
+    "L3": {"score": 6.0, "level": 3, "label": "L3 多步联结"},
+    "L4": {"score": 8.0, "level": 4, "label": "L4 分支与回查"},
+    "L5": {"score": 9.5, "level": 5, "label": "L5 高阶收束"},
+}
+
+
+def _normalize_choice(value: Any, allowed: set[str]) -> str:
+    normalized = str(value or "").strip().lower()
+    return normalized if normalized in allowed else ""
+
+
+def _normalize_choice_list(value: Any, allowed: set[str]) -> List[str]:
+    if isinstance(value, str):
+        raw_items = value.replace("，", ",").replace("、", ",").split(",")
+    elif isinstance(value, list):
+        raw_items = value
+    else:
+        raw_items = []
+
+    normalized: List[str] = []
+    for item in raw_items:
+        candidate = str(item or "").strip().lower()
+        if candidate in allowed and candidate not in normalized:
+            normalized.append(candidate)
+    return normalized
+
+
+def _normalize_zero_one(value: Any) -> int | None:
+    if value in (0, "0", False):
+        return 0
+    if value in (1, "1", True):
+        return 1
+    return None
+
+
+def _abstraction_rank(value: str) -> int:
+    return {"0": 0, "1": 1, "2": 2, "3+": 3}.get(value, -1)
+
+
+def _band_rank(value: str, mapping: Dict[str, int]) -> int:
+    return mapping.get(value, -1)
+
 
 class Dim6LogicScorer(BaseDimensionScorer):
-    """
-    维度6：逻辑链条长度评分器
-
-    评估题目解题过程中的逻辑复杂度。
-    """
-
     DIMENSION_CODE = "dim6"
-    DIMENSION_NAME = "逻辑链条长度"
+    DIMENSION_NAME = "逻辑链条"
 
     def __init__(self):
         super().__init__(config=None)
 
-    def _get_default_config(self):
-        """获取默认配置"""
-        return {
-            "max_score": 10.0,
-            "score_granularity": 0.5,
-        }
-
-    def score(self, features: Dict[str, Any]) -> DimensionScore:
-        """
-        计算维度6评分
-
-        Args:
-            features: 题目特征
-                - key_step_count: 关键步骤数 (1/2/3/4-5/6+)
-                - has_hidden_relation: 是否有隐藏关系 (0/1)
-                - need_reverse_reasoning: 是否需要反向推理 (0/1)
-                - has_branch: 是否有分支 (0/1)
-                - need_case_discussion: 是否需要分类讨论 (0/1)
-                - need_validation: 是否需要验证 (0/1)
-
-        Returns:
-            DimensionScore: 评分结果
-        """
-        # 检查是否为非适用题
-        if features.get("not_applicable", False):
-            return DimensionScore(
-                dimension_code=self.dimension_code,
-                score=0.0,
-                level=0,
-                level_label="N/A",
-                evidence="该题目不适用此维度",
-                applicable=False,
-            )
-
-        # 提取特征
-        key_step_count = features.get("key_step_count", "1")
-        has_hidden_relation = features.get("has_hidden_relation", 0)
-        need_reverse_reasoning = features.get("need_reverse_reasoning", 0)
-        has_branch = features.get("has_branch", 0)
-        need_case_discussion = features.get("need_case_discussion", 0)
-        need_validation = features.get("need_validation", 0)
-
-        # 计算基础分
-        base_scores = {
-            "1": 1.5,
-            "2": 3.0,
-            "3": 5.0,
-            "4-5": 7.0,
-            "6+": 8.5,
-        }
-        base_score = base_scores.get(key_step_count, 1.5)
-
-        # 计算修正分
-        adjustments = 0.0
-        adjustment_details = []
-
-        if has_hidden_relation == 1:
-            adjustments += 0.5
-            adjustment_details.append("隐藏关系+0.5")
-
-        if need_reverse_reasoning == 1:
-            adjustments += 0.5
-            adjustment_details.append("反向推理+0.5")
-
-        if need_validation == 1:
-            adjustments += 0.5
-            adjustment_details.append("验证要求+0.5")
-
-        # 计算最终分数（先加修正分）
-        final_score = base_score + adjustments
-
-        # 应用最低分限制
-        min_score = 0.0
-        if has_branch == 1 or need_case_discussion == 1:
-            min_score = self.LEVEL_SCORE_MIDPOINTS[4]
-            if final_score < min_score:
-                final_score = min_score
-                adjustment_details.append(f"分支/分类讨论要求最低{min_score}分")
-
-        # 封顶
-        final_score = min(final_score, 10.0)
-
-        # 按 0.5 粒度取整
-        final_score = self.round_score(final_score)
-
-        # 计算等级
-        level, level_label = self.calculate_level(final_score)
-
-        # 生成证据（教师可读的中文叙述）
-        step_desc = {
-            "1": "1个", "2": "2个", "3": "3个", "4-5": "4-5个", "6+": "6个以上"
-        }.get(key_step_count, key_step_count)
-
-        extra = []
-        if has_hidden_relation == 1:
-            extra.append("含隐藏关系需挖掘")
-        if need_reverse_reasoning == 1:
-            extra.append("需逆向推理")
-        if need_validation == 1:
-            extra.append("需验证答案")
-        if has_branch == 1:
-            extra.append("存在解题分支")
-        if need_case_discussion == 1:
-            extra.append("需分类讨论")
-        extra_str = "，" + "、".join(extra) if extra else ""
-
-        floor_str = f"（因存在分支或分类讨论，最低分限制为{min_score}分）" if min_score > 0 and (has_branch == 1 or need_case_discussion == 1) else ""
-
-        evidence = (
-            f"本题需要{step_desc}关键推理步骤{extra_str}。"
-            f"基础分{base_score}，修正分+{adjustments:.1f}{floor_str}，"
-            f"综合评分{final_score}分，难度等级：{level_label}"
-        )
-
+    def _build_score(
+        self,
+        level_code: str,
+        evidence_summary: str,
+        normalized_details: Dict[str, Any] | None = None,
+    ) -> DimensionScore:
+        level = DIM6_LEVELS[level_code]
+        details = {"status": "applicable", "dim6_level": level_code}
+        if normalized_details:
+            details.update(normalized_details)
         return DimensionScore(
-            dimension_code=self.dimension_code,
-            score=final_score,
-            level=level,
-            level_label=level_label,
-            evidence=evidence,
+            dimension_code=self.DIMENSION_CODE,
+            score=level["score"],
+            level=level["level"],
+            level_label=level["label"],
+            evidence=f"{level['label']}：{evidence_summary}",
             applicable=True,
-            details={
-                "base_score": base_score,
-                "adjustments": adjustments,
-                "adjustment_details": adjustment_details,
-                "min_score_applied": min_score if (has_branch == 1 or need_case_discussion == 1) else None,
-                "features": features,
-            },
+            details=details,
         )
+
+    def _invalid_score(self, evidence: str) -> DimensionScore:
+        return DimensionScore(
+            dimension_code=self.DIMENSION_CODE,
+            score=0.0,
+            level=0,
+            level_label="N/A",
+            evidence=evidence,
+            applicable=False,
+            details={"status": "not_applicable", "dim6_level": "N/A"},
+        )
+
+    def _calculate_score(self, features: Dict[str, Any]) -> DimensionScore:
+        reasoning_role = _normalize_choice(features.get("reasoning_role"), REASONING_ROLE_VALUES)
+        chain_span = _normalize_choice(features.get("chain_span"), CHAIN_SPAN_VALUES)
+        hidden_dependency = _normalize_choice(
+            features.get("hidden_dependency"),
+            HIDDEN_DEPENDENCY_VALUES,
+        )
+        branch_control = _normalize_choice(features.get("branch_control"), BRANCH_CONTROL_VALUES)
+        reversibility = _normalize_choice(features.get("reversibility"), REVERSIBILITY_VALUES)
+        verification_requirement = _normalize_choice(
+            features.get("verification_requirement"),
+            VERIFICATION_REQUIREMENT_VALUES,
+        )
+        abstraction_bridge_count = _normalize_choice(
+            features.get("abstraction_bridge_count"),
+            ABSTRACTION_BRIDGE_COUNT_VALUES,
+        )
+        constraint_coupling = _normalize_choice(
+            features.get("constraint_coupling"),
+            CONSTRAINT_COUPLING_VALUES,
+        )
+        global_consistency_required = _normalize_zero_one(
+            features.get("global_consistency_required")
+        )
+        conclusion_stability = _normalize_choice(
+            features.get("conclusion_stability"),
+            CONCLUSION_STABILITY_VALUES,
+        )
+        logic_structure_types = _normalize_choice_list(
+            features.get("logic_structure_types"),
+            LOGIC_STRUCTURE_TYPE_VALUES,
+        )
+        state_transition_count = _normalize_choice(
+            features.get("state_transition_count"),
+            STATE_TRANSITION_COUNT_VALUES,
+        )
+        case_count_band = _normalize_choice(features.get("case_count_band"), CASE_COUNT_BAND_VALUES)
+        backtrack_depth = _normalize_choice(features.get("backtrack_depth"), BACKTRACK_DEPTH_VALUES)
+        consistency_constraint_count = _normalize_choice(
+            features.get("consistency_constraint_count"),
+            CONSISTENCY_CONSTRAINT_COUNT_VALUES,
+        )
+        phase_count_band = _normalize_choice(features.get("phase_count_band"), PHASE_COUNT_BAND_VALUES)
+        periodic_cycle_dependency = _normalize_zero_one(features.get("periodic_cycle_dependency"))
+        optimization_requirement = _normalize_choice(
+            features.get("optimization_requirement"),
+            OPTIMIZATION_REQUIREMENT_VALUES,
+        )
+        evidence_summary = str(features.get("evidence_summary", "")).strip()
+
+        required_values = [
+            reasoning_role,
+            chain_span,
+            hidden_dependency,
+            branch_control,
+            reversibility,
+            verification_requirement,
+            abstraction_bridge_count,
+            constraint_coupling,
+            conclusion_stability,
+            evidence_summary,
+        ]
+        if any(value in ("", None) for value in required_values) or global_consistency_required is None:
+            return self._invalid_score("dim6 关键逻辑事实不完整，无法自动判级。")
+
+        if reasoning_role != "core":
+            return self._invalid_score("该题未满足 dim6 的核心逻辑推进门槛。")
+
+        abstraction_rank = _abstraction_rank(abstraction_bridge_count)
+        state_rank = _band_rank(state_transition_count, {"0": 0, "1": 1, "2": 2, "3+": 3})
+        case_rank = _band_rank(case_count_band, {"none": 0, "2": 2, "3-5": 3, "6+": 6})
+        backtrack_rank = _band_rank(backtrack_depth, {"0": 0, "1": 1, "2": 2, "3+": 3})
+        consistency_rank = _band_rank(
+            consistency_constraint_count,
+            {"0": 0, "1": 1, "2-3": 2, "4+": 4},
+        )
+        phase_rank = _band_rank(phase_count_band, {"1": 1, "2": 2, "3-4": 3, "5+": 5})
+        structures = set(logic_structure_types)
+        normalized_details = {
+            "logic_structure_types": logic_structure_types,
+            "state_transition_count": state_transition_count or "0",
+            "case_count_band": case_count_band or "none",
+            "backtrack_depth": backtrack_depth or "0",
+            "consistency_constraint_count": consistency_constraint_count or "0",
+            "phase_count_band": phase_count_band or "1",
+            "periodic_cycle_dependency": 0
+            if periodic_cycle_dependency is None
+            else periodic_cycle_dependency,
+            "optimization_requirement": optimization_requirement or "none",
+        }
+
+        if (
+            branch_control == "multi_branch"
+            and hidden_dependency == "global"
+            and global_consistency_required == 1
+        ) or (
+            chain_span == "5+"
+            and constraint_coupling == "nested"
+            and verification_requirement == "full_consistency"
+        ) or (
+            reversibility == "bidirectional"
+            and abstraction_rank >= 3
+            and conclusion_stability == "exhaustive"
+        ) or (
+            "global_constraint_system" in structures
+            and consistency_rank >= 4
+            and (
+                constraint_coupling == "nested"
+                or global_consistency_required == 1
+                or verification_requirement == "full_consistency"
+            )
+        ) or (
+            backtrack_rank >= 3
+            and (
+                constraint_coupling == "nested"
+                or state_rank >= 3
+                or "reverse_process_chain" in structures
+            )
+        ) or (
+            case_rank >= 6
+            and (
+                verification_requirement == "full_consistency"
+                or conclusion_stability == "exhaustive"
+                or optimization_requirement == "global_minmax"
+            )
+        ):
+            return self._build_score("L5", evidence_summary, normalized_details)
+
+        if (
+            branch_control in {"explicit_cases", "multi_branch"}
+            and verification_requirement in {"constraint_backcheck", "full_consistency"}
+        ) or (
+            branch_control == "multi_branch"
+            and constraint_coupling in {"coupled", "nested"}
+        ) or (
+            hidden_dependency == "global"
+            and chain_span in {"3-4", "5+"}
+        ) or (
+            reversibility in {"backward", "bidirectional"}
+            and chain_span in {"3-4", "5+"}
+        ) or (
+            "queue_growth_chain" in structures
+        ) or (
+            "travel_meeting_chasing_chain" in structures
+            and (state_rank >= 2 or hidden_dependency in {"cross_condition", "global"})
+        ) or (
+            "cyclic_schedule_chain" in structures
+            and (phase_rank >= 3 or periodic_cycle_dependency == 1)
+        ) or (
+            "optimization_comparison" in structures
+            and optimization_requirement in {"bounded_choice", "global_minmax"}
+        ) or (
+            "multi_stage_state_change" in structures
+            and state_rank >= 3
+        ) or (
+            "percentage_base_shift_chain" in structures
+            and state_rank >= 2
+        ) or (
+            "reverse_process_chain" in structures
+            and backtrack_rank >= 2
+        ) or (
+            "bounded_case_enumeration" in structures
+            and (case_rank >= 3 or verification_requirement in {"constraint_backcheck", "full_consistency"})
+        ) or (
+            "global_constraint_system" in structures
+            and consistency_rank >= 2
+        ) or (
+            "shared_variable_coupling" in structures
+            and consistency_rank >= 2
+            and (state_rank >= 2 or phase_rank >= 3)
+        ) or (
+            "work_rate_chain" in structures
+            and (phase_rank >= 3 or state_rank >= 2 or consistency_rank >= 2)
+        ):
+            return self._build_score("L4", evidence_summary, normalized_details)
+
+        if (
+            branch_control == "explicit_cases"
+        ) or (
+            hidden_dependency == "cross_condition"
+        ) or (
+            verification_requirement in {"constraint_backcheck", "full_consistency"}
+        ) or (
+            abstraction_rank >= 2
+        ) or (
+            chain_span == "3-4"
+        ) or (
+            constraint_coupling == "coupled"
+        ) or (
+            structures
+            & {
+                "work_rate_chain",
+                "percentage_base_shift_chain",
+                "travel_meeting_chasing_chain",
+                "reverse_process_chain",
+                "periodic_sequence_position",
+                "shared_variable_coupling",
+                "multi_stage_state_change",
+            }
+        ) or (
+            state_rank >= 2
+        ) or (
+            backtrack_rank >= 1
+        ) or (
+            consistency_rank >= 2
+        ) or (
+            phase_rank >= 3
+        ) or (
+            periodic_cycle_dependency == 1
+        ):
+            return self._build_score("L3", evidence_summary, normalized_details)
+
+        if (
+            chain_span == "2"
+        ) or (
+            hidden_dependency == "local"
+        ) or (
+            reversibility == "backward"
+        ) or (
+            verification_requirement == "result_check"
+        ) or (
+            abstraction_rank == 1
+        ) or (
+            conclusion_stability == "edge_sensitive"
+        ) or (
+            state_rank == 1
+        ) or (
+            consistency_rank == 1
+        ) or (
+            phase_rank == 2
+        ):
+            return self._build_score("L2", evidence_summary, normalized_details)
+
+        return self._build_score("L1", evidence_summary, normalized_details)

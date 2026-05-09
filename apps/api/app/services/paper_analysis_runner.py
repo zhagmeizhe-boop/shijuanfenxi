@@ -5,12 +5,13 @@ import json
 import logging
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, List, Optional
+from typing import Any, Awaitable, List, Optional
 
 from sqlalchemy import select
+from sqlalchemy.exc import DBAPIError
 
 from app.core.config import settings
-from app.core.database import AsyncSessionLocal
+from app.core.database import AsyncSessionLocal, close_db
 from app.models import (
     DimensionCode as ModelDimensionCode,
     Paper,
@@ -22,10 +23,38 @@ from app.models import (
     QuestionType as ModelQuestionType,
     ReportSnapshot,
 )
-from app.services.ocr.factory import OCRProviderFactory
+from app.services.ocr.field_safety import (
+    MAX_QUESTION_NO_LENGTH,
+    MAX_SECTION_INDEX_RAW_LENGTH,
+    clamp_storage_text,
+    normalize_section_index_raw,
+)
+from app.services.ocr.factory import create_ocr_provider
 from app.services.parser import create_ai_parser
 from app.services.report.report_service import ReportService
-from app.services.scoring.dim1_applicability import evaluate_dim1_applicability
+from app.services.scoring.dim1_applicability import (
+    DIM1_STATUS_APPLICABLE,
+    DIM1_STATUS_REVIEW,
+    evaluate_dim1_applicability,
+)
+from app.services.scoring.dim2_applicability import (
+    DIM2_STATUS_APPLICABLE,
+    build_dim2_visual_fallback_facts,
+    evaluate_dim2_applicability,
+)
+from app.services.scoring.dim3_applicability import (
+    DIM3_STATUS_APPLICABLE,
+    enrich_dim3_text_length_facts,
+    evaluate_dim3_applicability,
+)
+from app.services.scoring.dim4_applicability import (
+    DIM4_STATUS_APPLICABLE,
+    evaluate_dim4_applicability,
+)
+from app.services.scoring.dim6_applicability import (
+    DIM6_STATUS_APPLICABLE,
+    evaluate_dim6_applicability,
+)
 from app.services.scoring.paper_aggregator import QuestionDimensionScore
 
 logger = logging.getLogger(__name__)
@@ -43,17 +72,7 @@ _UNSET = object()
 
 
 def _get_ocr_provider():
-    return OCRProviderFactory.create_provider(
-        provider_name=settings.OCR_PROVIDER,
-        config={
-            "app_id": settings.BAIDU_OCR_APP_ID,
-            "api_key": settings.BAIDU_OCR_API_KEY,
-            "secret_key": settings.BAIDU_OCR_SECRET_KEY,
-            "poppler_path": settings.POPPLER_PATH,
-        }
-        if settings.OCR_PROVIDER == "baidu"
-        else {},
-    )
+    return create_ocr_provider()
 
 
 def _summarize_question(text: str, max_length: int = 52) -> str:
@@ -80,44 +99,135 @@ def _build_question_display_label(
     return normalized_question_no
 
 
+def _safe_question_no_for_storage(value: Any, *, fallback: str, context: str) -> str:
+    normalized = clamp_storage_text(
+        value,
+        MAX_QUESTION_NO_LENGTH,
+        field_name="question_no",
+        logger=logger,
+        context=context,
+    )
+    if normalized:
+        return normalized
+    return fallback[:MAX_QUESTION_NO_LENGTH]
+
+
+def _safe_optional_storage_text(value: Any, *, max_length: int, field_name: str, context: str) -> str | None:
+    normalized = clamp_storage_text(
+        value,
+        max_length,
+        field_name=field_name,
+        logger=logger,
+        context=context,
+    )
+    return normalized or None
+
+
+def _safe_section_index_for_storage(value: Any, *, context: str) -> str | None:
+    normalized = normalize_section_index_raw(value)
+    return _safe_optional_storage_text(
+        normalized,
+        max_length=MAX_SECTION_INDEX_RAW_LENGTH,
+        field_name="section_index_raw",
+        context=context,
+    )
+
+
 def _dimension_declared_or_inferred(dim_code: str, features, feature_dict: dict) -> bool:
     declared = set(getattr(features, "applicable_dimensions", []) or [])
     if dim_code in declared:
         return True
 
     if dim_code == "dim1":
-        return bool(
-            feature_dict.get("has_core_threshold") in (1, True)
-            or feature_dict.get("computation_role") == "core"
-            or (
-                feature_dict.get("band")
-                and feature_dict.get("sublevel")
-                and feature_dict.get("computation_role") != "supporting"
-            )
-        )
+        return feature_dict.get("calc_role") == "core"
     if dim_code == "dim2":
-        return bool(
-            feature_dict.get("has_core_spatial_dependency") in (1, True)
-            or feature_dict.get("spatial_role") == "core"
-            or (
-                feature_dict.get("band")
-                and feature_dict.get("sublevel")
-                and feature_dict.get("spatial_role") != "supporting"
-            )
-        )
-    if dim_code == "dim3":
-        return bool(feature_dict.get("info_source_type") and feature_dict.get("relation_complexity"))
+        return feature_dict.get("spatial_role") == "core"
     if dim_code == "dim4":
-        return bool(feature_dict.get("prototype_distance"))
+        return feature_dict.get("strategy_role") == "core"
     if dim_code == "dim5":
         return bool(feature_dict.get("band") and feature_dict.get("sublevel"))
     if dim_code == "dim6":
-        return bool(feature_dict.get("key_step_count"))
+        return feature_dict.get("reasoning_role") == "core"
     return False
 
 
-def _collect_dimension_warnings(question, features, feature_dict: dict) -> List[str]:
+_TRUE_PARSE_DAMAGE_MARKERS = ("残缺", "缺损", "截断", "识别失败", "公式增强识别失败")
+_NON_DIMENSION_WARNING_MARKERS = ("score_missing", "分值", "裁切", "图片")
+_DIMENSION_SCOPED_WARNING_CODES = {"dim2", "dim3", "dim4", "dim6"}
+
+
+def _dedupe_warnings(warnings: List[str]) -> List[str]:
+    deduped: List[str] = []
+    seen = set()
+    for item in warnings:
+        normalized = str(item).strip()
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        deduped.append(normalized)
+    return deduped
+
+
+def _is_true_parse_damage_warning(item: Any) -> bool:
+    text = str(item or "").strip()
+    if not text:
+        return False
+    if any(marker in text for marker in _NON_DIMENSION_WARNING_MARKERS):
+        return False
+    return any(marker in text for marker in _TRUE_PARSE_DAMAGE_MARKERS)
+
+
+def _dimension_scoped_feature_warnings(features, dim_code: str) -> List[str]:
+    prefix = f"{dim_code} "
+    return [
+        str(item).strip()
+        for item in (getattr(features, "warnings", []) or [])
+        if str(item).strip().startswith(prefix)
+    ]
+
+
+def _collect_applicability_parse_warnings(question) -> List[str]:
+    return [
+        str(item).strip()
+        for item in (getattr(question, "parse_warnings", []) or [])
+        if _is_true_parse_damage_warning(item)
+    ]
+
+
+def _collect_dimension_warnings(
+    question,
+    features,
+    feature_dict: dict,
+    dim_code: str | None = None,
+) -> List[str]:
     warnings: List[str] = []
+    if dim_code == "dim2":
+        if feature_dict.get("fallback_source") != "visual_geometry":
+            warnings.extend(
+                item
+                for item in (getattr(features, "warnings", []) or [])
+                if str(item).strip().startswith("dim2 ")
+            )
+        feature_warning = str(feature_dict.get("warning", "")).strip()
+        if feature_warning:
+            warnings.append(feature_warning)
+        if getattr(features, "image_fallback", False):
+            warnings.append("多模态分析失败，当前题目按纯文本回退判断。")
+
+        return _dedupe_warnings(warnings)
+
+    if dim_code in _DIMENSION_SCOPED_WARNING_CODES:
+        warnings.extend(_dimension_scoped_feature_warnings(features, dim_code))
+        feature_warning = str(feature_dict.get("warning", "")).strip()
+        if feature_warning:
+            warnings.append(feature_warning)
+        if (
+            getattr(features, "image_fallback", False)
+            and str(feature_dict.get("image_dependency", "")).strip() == "required"
+        ):
+            warnings.append("多模态分析失败，当前题目按纯文本回退判断。")
+        return _dedupe_warnings(warnings)
+
     warnings.extend(getattr(question, "parse_warnings", []) or [])
     warnings.extend(getattr(features, "warnings", []) or [])
 
@@ -139,15 +249,7 @@ def _collect_dimension_warnings(question, features, feature_dict: dict) -> List[
     if getattr(features, "image_fallback", False):
         warnings.append("多模态分析失败，当前题目按纯文本回退判断。")
 
-    deduped: List[str] = []
-    seen = set()
-    for item in warnings:
-        normalized = str(item).strip()
-        if not normalized or normalized in seen:
-            continue
-        seen.add(normalized)
-        deduped.append(normalized)
-    return deduped
+    return _dedupe_warnings(warnings)
 
 
 def _list_strings(value: Any) -> List[str]:
@@ -180,6 +282,8 @@ def _build_dimension_reason(dim_code: str, dim_result, feature_dict: dict, featu
     calibration = feature_dict.get("calibration", {})
     if isinstance(calibration, dict) and calibration.get("band_source"):
         source_parts.append(f"规则:{calibration.get('band_source')}")
+    elif isinstance(calibration, dict) and calibration.get("action"):
+        source_parts.append(f"参考校准:{calibration.get('action')}")
 
     if source_parts:
         reason_parts.append(f"依据来源：{' / '.join(source_parts)}。")
@@ -192,7 +296,7 @@ def _build_dimension_reason(dim_code: str, dim_result, feature_dict: dict, featu
     return " ".join(part.strip() for part in reason_parts if part.strip())
 
 
-def _serialize_question_tag_payload(question, features) -> str:
+def _serialize_question_tag_payload(question, features, dimension_statuses: Optional[dict[str, Any]] = None) -> str:
     payload = {
         "question_no": question.question_no,
         "question_label_raw": getattr(question, "question_label_raw", "") or "",
@@ -217,6 +321,7 @@ def _serialize_question_tag_payload(question, features) -> str:
         "image_fallback": getattr(features, "image_fallback", False),
         "visual_mode": getattr(features, "visual_mode", ""),
         "calibration_audits": getattr(features, "calibration_audits", {}),
+        "dimension_statuses": dimension_statuses or {},
     }
     return json.dumps(payload, ensure_ascii=False)
 
@@ -232,9 +337,21 @@ def _highest_grade_hint(features) -> Optional[str]:
 
 def _describe_exception(stage: str, exc: Exception) -> str:
     stage_label = STAGE_LABELS.get(stage, stage)
+    exc_text = str(exc).strip()
+    if stage == "question_persist" and (
+        isinstance(exc, DBAPIError)
+        or "StringDataRightTruncationError" in exc_text
+        or "value too long for type character varying" in exc_text
+    ):
+        return "题目信息保存失败：识别出的题号或栏目标题过长，请重新上传或联系管理员。"
+
     exc_type = exc.__class__.__name__
-    exc_text = str(exc).strip() or exc_type
+    exc_text = exc_text or exc_type
     return f"{stage_label}失败（{exc_type}）：{exc_text}"
+
+
+def _is_failed_question_features(features: Any) -> bool:
+    return bool(getattr(features, "parse_failed", False))
 
 
 async def _update_paper_state(
@@ -248,6 +365,9 @@ async def _update_paper_state(
     page_count: Any = _UNSET,
     total_question_count: Any = _UNSET,
     total_score: Any = _UNSET,
+    progress_current: Any = _UNSET,
+    progress_total: Any = _UNSET,
+    progress_message: Any = _UNSET,
 ) -> None:
     async with AsyncSessionLocal() as db:
         paper = await db.get(Paper, paper_id)
@@ -270,6 +390,12 @@ async def _update_paper_state(
             paper.total_question_count = total_question_count
         if total_score is not _UNSET:
             paper.total_score = total_score
+        if progress_current is not _UNSET:
+            paper.progress_current = progress_current
+        if progress_total is not _UNSET:
+            paper.progress_total = progress_total
+        if progress_message is not _UNSET:
+            paper.progress_message = progress_message
 
         await db.commit()
 
@@ -281,7 +407,7 @@ async def mark_stale_analysis_tasks(stale_minutes: int | None = None) -> int:
     async with AsyncSessionLocal() as db:
         result = await db.execute(
             select(Paper).where(
-                Paper.parse_status.in_([ModelParseStatus.PENDING, ModelParseStatus.PARSING]),
+                Paper.parse_status == ModelParseStatus.PARSING,
                 Paper.updated_at < cutoff,
             )
         )
@@ -298,19 +424,65 @@ async def mark_stale_analysis_tasks(stale_minutes: int | None = None) -> int:
         return len(stale_papers)
 
 
+async def mark_paper_waiting_for_analysis_slot(paper_id: str) -> None:
+    await _update_paper_state(
+        paper_id,
+        parse_status=ModelParseStatus.PENDING,
+        last_stage="queued_waiting_for_analysis_slot",
+        error_message=None,
+        progress_current=None,
+        progress_total=None,
+        progress_message="正在排队等待分析 worker 空闲槽位",
+    )
+
+
+def mark_paper_waiting_for_analysis_slot_sync(paper_id: str) -> None:
+    _run_in_isolated_event_loop(mark_paper_waiting_for_analysis_slot(paper_id))
+
+
+async def _run_with_db_cleanup(awaitable: Awaitable[None]) -> None:
+    try:
+        await awaitable
+    finally:
+        try:
+            await close_db()
+        except Exception:
+            logger.warning("Failed to close async database pool before closing task event loop", exc_info=True)
+
+
+def _run_in_isolated_event_loop(awaitable: Awaitable[None]) -> None:
+    loop = asyncio.new_event_loop()
+    try:
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(_run_with_db_cleanup(awaitable))
+        finally:
+            try:
+                loop.run_until_complete(loop.shutdown_asyncgens())
+            except Exception:
+                logger.warning("Failed to shutdown async generators for task event loop", exc_info=True)
+    finally:
+        asyncio.set_event_loop(None)
+        loop.close()
+
+
 async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
     report_service = ReportService()
     ocr_provider = _get_ocr_provider()
+    logger.info("Executing paper analysis with OCR provider=%s paper=%s", settings.OCR_PROVIDER, paper_id)
     current_stage = "ocr_parse"
 
-    await _update_paper_state(
-        paper_id,
-        parse_status=ModelParseStatus.PARSING,
-        last_stage=current_stage,
-        error_message=None,
-    )
-
     try:
+        await _update_paper_state(
+            paper_id,
+            parse_status=ModelParseStatus.PARSING,
+            last_stage=current_stage,
+            error_message=None,
+            progress_current=None,
+            progress_total=None,
+            progress_message=None,
+        )
+
         async with AsyncSessionLocal() as db:
             paper = await db.get(Paper, paper_id)
             paper_name = paper.paper_name if paper else f"试卷_{paper_id}"
@@ -330,20 +502,43 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
         )
 
         current_stage = "question_persist"
+        logger.info("Entering stage=%s paper=%s total_questions=%s", current_stage, paper_id, len(parsed_paper.questions))
         await _update_paper_state(paper_id, last_stage=current_stage)
 
         question_records: List[tuple[str, Any]] = []
         async with AsyncSessionLocal() as db:
             for question in parsed_paper.questions:
                 question_id = str(uuid.uuid4())
+                field_context = f"paper={paper_id} question_id={question_id}"
+                stored_question_no = _safe_question_no_for_storage(
+                    getattr(question, "question_no", ""),
+                    fallback=question_id,
+                    context=field_context,
+                )
+                stored_question_label_raw = _safe_optional_storage_text(
+                    getattr(question, "question_label_raw", ""),
+                    max_length=50,
+                    field_name="question_label_raw",
+                    context=field_context,
+                )
+                stored_section_index_raw = _safe_section_index_for_storage(
+                    getattr(question, "section_index_raw", ""),
+                    context=field_context,
+                )
+                stored_ocr_text_version = _safe_optional_storage_text(
+                    getattr(question, "ocr_text_version", ""),
+                    max_length=20,
+                    field_name="ocr_text_version",
+                    context=field_context,
+                ) or "v1.0"
                 db.add(
                     Question(
                         question_id=question_id,
                         paper_id=paper_id,
                         page_no=question.page_no,
-                        question_no=question.question_no,
-                        question_label_raw=getattr(question, "question_label_raw", "") or None,
-                        section_index_raw=getattr(question, "section_index_raw", "") or None,
+                        question_no=stored_question_no,
+                        question_label_raw=stored_question_label_raw,
+                        section_index_raw=stored_section_index_raw,
                         question_type=ModelQuestionType(getattr(question.question_type, "value", question.question_type)),
                         raw_text=question.raw_text,
                         image_block_url=question.image_block_url,
@@ -352,29 +547,86 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                         include_in_main_score=question.include_in_main_score,
                         parse_confidence=question.parse_confidence,
                         applicable_dims=[getattr(item, "value", item) for item in question.applicable_dims],
-                        ocr_text_version=question.ocr_text_version,
+                        ocr_text_version=stored_ocr_text_version,
                     )
                 )
                 question_records.append((question_id, question))
             await db.commit()
 
         current_stage = "llm_parse"
-        await _update_paper_state(paper_id, last_stage=current_stage)
+        logger.info("Entering stage=%s paper=%s total_questions=%s", current_stage, paper_id, len(parsed_paper.questions))
+        await _update_paper_state(
+            paper_id,
+            last_stage=current_stage,
+            progress_current=0,
+            progress_total=len(parsed_paper.questions),
+            progress_message="LLM 分析已启动",
+        )
 
         api_key = settings.ANTHROPIC_API_KEY or settings.MOONSHOT_API_KEY
         ai_parser = create_ai_parser(
             api_key=api_key,
             model=settings.CLAUDE_MODEL,
             base_url=settings.LLM_BASE_URL,
+            max_tokens=settings.QUESTION_LLM_MAX_TOKENS,
+            timeout=settings.QUESTION_LLM_TIMEOUT_SECONDS,
+            llm_pool="question",
         )
-        question_features = await ai_parser.parse_paper(parsed_paper)
+        async def _persist_llm_progress(progress: dict[str, Any]) -> None:
+            question_no = str(progress.get("question_no", "")).strip() or "?"
+            completed = int(progress.get("completed", 0) or 0)
+            total = int(progress.get("total", 0) or 0)
+            success = bool(progress.get("success", False))
+            status_suffix = "" if success else "\uff08\u5931\u8d25\uff0c\u5df2\u7ee7\u7eed\uff09"
+            progress_message = "\u6700\u8fd1\u5b8c\u6210\u7b2c %s \u9898%s" % (question_no, status_suffix)
+            logger.info(
+                "LLM progress paper=%s completed=%s/%s question=%s success=%s",
+                paper_id,
+                completed,
+                total,
+                question_no,
+                success,
+            )
+            await _update_paper_state(
+                paper_id,
+                progress_current=completed,
+                progress_total=total,
+                progress_message=progress_message,
+            )
+
+        question_features = await ai_parser.parse_paper(
+            parsed_paper,
+            concurrency=max(1, int(settings.QUESTION_LLM_CONCURRENCY or 1)),
+            progress_callback=_persist_llm_progress,
+            question_timeout_seconds=settings.QUESTION_LLM_TIMEOUT_SECONDS,
+        )
         if len(question_features) != len(question_records):
             raise RuntimeError(
                 f"LLM 结果数量不匹配：题目 {len(question_records)}，特征 {len(question_features)}"
             )
 
+        if question_features and all(_is_failed_question_features(features) for features in question_features):
+            logger.error("All questions failed during llm_parse paper=%s total=%s", paper_id, len(question_features))
+            await _update_paper_state(
+                paper_id,
+                parse_status=ModelParseStatus.PARSE_FAILED,
+                last_stage=current_stage,
+                error_message="LLM 阶段全部失败",
+                progress_current=None,
+                progress_total=None,
+                progress_message=None,
+            )
+            return
+
         current_stage = "report_build"
-        await _update_paper_state(paper_id, last_stage=current_stage)
+        logger.info("Entering stage=%s paper=%s", current_stage, paper_id)
+        await _update_paper_state(
+            paper_id,
+            last_stage=current_stage,
+            progress_current=None,
+            progress_total=None,
+            progress_message=None,
+        )
 
         qds_list: List[QuestionDimensionScore] = []
         paper_report_warnings = list(getattr(parsed_paper, "report_warnings", []) or [])
@@ -389,19 +641,220 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                 dim_reasons = {}
                 dim_warnings = {}
                 dim_confidences = {}
+                dim_statuses = {}
+                dim_details = {}
                 question_dim_rows: List[QuestionDimScore] = []
+                dimension_status_payload: dict[str, Any] = {}
 
                 for dim_code, scorer in report_service.scorers.items():
                     feature_dict = features.get_feature(dim_code) if hasattr(features, "get_feature") else {}
+                    reason = ""
 
                     if dim_code == "dim1":
-                        allowed, reason = evaluate_dim1_applicability(
+                        dim1_status = evaluate_dim1_applicability(
                             question.question_type,
                             question.raw_text,
                             feature_dict,
-                            getattr(features, "applicable_dimensions", []),
+                            llm_confidence=getattr(features, "confidence", 0.0) or 0.0,
+                            parse_warnings=[
+                                *list(getattr(question, "parse_warnings", []) or []),
+                                *list(getattr(features, "warnings", []) or []),
+                            ],
                         )
-                        if not allowed:
+                        dim_status = dim1_status["status"]
+                        reason = dim1_status["reason"]
+                        dim_statuses[dim_code] = dim_status
+                        if dim1_status["warnings"]:
+                            dim_warnings[dim_code] = list(
+                                dict.fromkeys(str(item).strip() for item in dim1_status["warnings"] if str(item).strip())
+                            )
+                            manual_review_needed = True
+                        dimension_status_payload[dim_code] = {
+                            "status": dim_status,
+                            "reason": reason,
+                            "warnings": dim_warnings.get(dim_code, []),
+                            "normalized_facts": feature_dict,
+                        }
+                        if dim_status != DIM1_STATUS_APPLICABLE:
+                            dim_reasons[dim_code] = reason
+                            dim_confidences[dim_code] = _dimension_confidence(feature_dict, features)
+                            if isinstance(feature_dict, dict):
+                                dim_details[dim_code] = feature_dict
+                            question_dim_rows.append(
+                                QuestionDimScore(
+                                    question_id=question_id,
+                                    dim_code=ModelDimensionCode(dim_code),
+                                    dim_score=0.0,
+                                    is_applicable=False,
+                                    score_evidence=reason,
+                                    rule_version="v3.0-accuracy",
+                                    confidence=getattr(features, "confidence", 0.0) or 0.0,
+                                )
+                            )
+                            continue
+                    elif dim_code == "dim2":
+                        dim2_fallback = build_dim2_visual_fallback_facts(
+                            question.raw_text,
+                            feature_dict,
+                            parse_audit=getattr(question, "parse_audit", None),
+                            has_image=bool(getattr(question, "image_block_url", None)),
+                            used_image=getattr(features, "used_image", False),
+                            image_fallback=getattr(features, "image_fallback", False),
+                        )
+                        if dim2_fallback:
+                            feature_dict = dim2_fallback
+                            setattr(features, "dim2_spatial", feature_dict)
+                        dim2_status = evaluate_dim2_applicability(
+                            question.raw_text,
+                            feature_dict,
+                            llm_confidence=getattr(features, "confidence", 0.0) or 0.0,
+                            parse_audit=getattr(question, "parse_audit", None),
+                            used_image=getattr(features, "used_image", False),
+                            image_fallback=getattr(features, "image_fallback", False),
+                            parse_warnings=list(getattr(question, "parse_warnings", []) or []),
+                        )
+                        dim_status = dim2_status["status"]
+                        reason = dim2_status["reason"]
+                        dim_statuses[dim_code] = dim_status
+                        if dim2_status["warnings"]:
+                            dim_warnings[dim_code] = list(
+                                dict.fromkeys(str(item).strip() for item in dim2_status["warnings"] if str(item).strip())
+                            )
+                            manual_review_needed = True
+                        dimension_status_payload[dim_code] = {
+                            "status": dim_status,
+                            "reason": reason,
+                            "warnings": dim_warnings.get(dim_code, []),
+                            "normalized_facts": feature_dict,
+                        }
+                        if dim_status != DIM2_STATUS_APPLICABLE:
+                            dim_reasons[dim_code] = reason
+                            dim_confidences[dim_code] = _dimension_confidence(feature_dict, features)
+                            if isinstance(feature_dict, dict):
+                                dim_details[dim_code] = feature_dict
+                            question_dim_rows.append(
+                                QuestionDimScore(
+                                    question_id=question_id,
+                                    dim_code=ModelDimensionCode(dim_code),
+                                    dim_score=0.0,
+                                    is_applicable=False,
+                                    score_evidence=reason,
+                                    rule_version="v3.0-accuracy",
+                                    confidence=getattr(features, "confidence", 0.0) or 0.0,
+                                )
+                            )
+                            continue
+                    elif dim_code == "dim3":
+                        feature_dict = enrich_dim3_text_length_facts(question.raw_text, feature_dict)
+                        setattr(features, "dim3_information", feature_dict)
+                        dim3_status = evaluate_dim3_applicability(
+                            question.raw_text,
+                            feature_dict,
+                            llm_confidence=getattr(features, "confidence", 0.0) or 0.0,
+                            parse_audit=getattr(question, "parse_audit", None),
+                            used_image=getattr(features, "used_image", False),
+                            image_fallback=getattr(features, "image_fallback", False),
+                            parse_warnings=_collect_applicability_parse_warnings(question),
+                        )
+                        dim_status = dim3_status["status"]
+                        reason = dim3_status["reason"]
+                        dim_statuses[dim_code] = dim_status
+                        if dim3_status["warnings"]:
+                            dim_warnings[dim_code] = list(
+                                dict.fromkeys(str(item).strip() for item in dim3_status["warnings"] if str(item).strip())
+                            )
+                            manual_review_needed = True
+                        dimension_status_payload[dim_code] = {
+                            "status": dim_status,
+                            "reason": reason,
+                            "warnings": dim_warnings.get(dim_code, []),
+                            "normalized_facts": feature_dict,
+                        }
+                        if dim_status != DIM3_STATUS_APPLICABLE:
+                            dim_reasons[dim_code] = reason
+                            dim_confidences[dim_code] = _dimension_confidence(feature_dict, features)
+                            if isinstance(feature_dict, dict):
+                                dim_details[dim_code] = feature_dict
+                            question_dim_rows.append(
+                                QuestionDimScore(
+                                    question_id=question_id,
+                                    dim_code=ModelDimensionCode(dim_code),
+                                    dim_score=0.0,
+                                    is_applicable=False,
+                                    score_evidence=reason,
+                                    rule_version="v3.0-accuracy",
+                                    confidence=getattr(features, "confidence", 0.0) or 0.0,
+                                )
+                            )
+                            continue
+                    elif dim_code == "dim4":
+                        dim4_status = evaluate_dim4_applicability(
+                            question.raw_text,
+                            feature_dict,
+                            llm_confidence=getattr(features, "confidence", 0.0) or 0.0,
+                            parse_audit=getattr(question, "parse_audit", None),
+                            used_image=getattr(features, "used_image", False),
+                            image_fallback=getattr(features, "image_fallback", False),
+                            parse_warnings=_collect_applicability_parse_warnings(question),
+                        )
+                        dim_status = dim4_status["status"]
+                        reason = dim4_status["reason"]
+                        dim_statuses[dim_code] = dim_status
+                        if dim4_status["warnings"]:
+                            dim_warnings[dim_code] = list(
+                                dict.fromkeys(str(item).strip() for item in dim4_status["warnings"] if str(item).strip())
+                            )
+                            manual_review_needed = True
+                        dimension_status_payload[dim_code] = {
+                            "status": dim_status,
+                            "reason": reason,
+                            "warnings": dim_warnings.get(dim_code, []),
+                            "normalized_facts": feature_dict,
+                        }
+                        if dim_status != DIM4_STATUS_APPLICABLE:
+                            dim_reasons[dim_code] = reason
+                            dim_confidences[dim_code] = _dimension_confidence(feature_dict, features)
+                            if isinstance(feature_dict, dict):
+                                dim_details[dim_code] = feature_dict
+                            question_dim_rows.append(
+                                QuestionDimScore(
+                                    question_id=question_id,
+                                    dim_code=ModelDimensionCode(dim_code),
+                                    dim_score=0.0,
+                                    is_applicable=False,
+                                    score_evidence=reason,
+                                    rule_version="v3.0-accuracy",
+                                    confidence=getattr(features, "confidence", 0.0) or 0.0,
+                                )
+                            )
+                            continue
+                    elif dim_code == "dim6":
+                        dim6_status = evaluate_dim6_applicability(
+                            question.raw_text,
+                            feature_dict,
+                            llm_confidence=getattr(features, "confidence", 0.0) or 0.0,
+                            parse_audit=getattr(question, "parse_audit", None),
+                            parse_warnings=_collect_applicability_parse_warnings(question),
+                        )
+                        dim_status = dim6_status["status"]
+                        reason = dim6_status["reason"]
+                        dim_statuses[dim_code] = dim_status
+                        if dim6_status["warnings"]:
+                            dim_warnings[dim_code] = list(
+                                dict.fromkeys(str(item).strip() for item in dim6_status["warnings"] if str(item).strip())
+                            )
+                            manual_review_needed = True
+                        dimension_status_payload[dim_code] = {
+                            "status": dim_status,
+                            "reason": reason,
+                            "warnings": dim_warnings.get(dim_code, []),
+                            "normalized_facts": feature_dict,
+                        }
+                        if dim_status != DIM6_STATUS_APPLICABLE:
+                            dim_reasons[dim_code] = reason
+                            dim_confidences[dim_code] = _dimension_confidence(feature_dict, features)
+                            if isinstance(feature_dict, dict):
+                                dim_details[dim_code] = feature_dict
                             question_dim_rows.append(
                                 QuestionDimScore(
                                     question_id=question_id,
@@ -416,6 +869,11 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                             continue
                     else:
                         if not _dimension_declared_or_inferred(dim_code, features, feature_dict):
+                            dim_statuses[dim_code] = "not_applicable"
+                            dim_reasons[dim_code] = "未满足该维度适用条件。"
+                            dim_confidences[dim_code] = _dimension_confidence(feature_dict, features)
+                            if isinstance(feature_dict, dict):
+                                dim_details[dim_code] = feature_dict
                             question_dim_rows.append(
                                 QuestionDimScore(
                                     question_id=question_id,
@@ -428,16 +886,36 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                                 )
                             )
                             continue
-                        reason = ""
+                        dim_statuses[dim_code] = "applicable"
 
                     dim_result = scorer.score(feature_dict or {})
-                    warning_messages = _collect_dimension_warnings(question, features, feature_dict)
+                    warning_messages = list(
+                        dict.fromkeys(
+                            [
+                                *dim_warnings.get(dim_code, []),
+                                *_collect_dimension_warnings(
+                                    question,
+                                    features,
+                                    feature_dict,
+                                    dim_code=dim_code,
+                                ),
+                            ]
+                        )
+                    )
                     if warning_messages:
                         dim_warnings[dim_code] = warning_messages
                         manual_review_needed = True
 
                     dim_reason = _build_dimension_reason(dim_code, dim_result, feature_dict, features) or reason
                     if not dim_result.applicable:
+                        dim_statuses[dim_code] = "not_applicable"
+                        dim_reasons[dim_code] = dim_reason or reason
+                        dim_confidences[dim_code] = _dimension_confidence(feature_dict, features)
+                        dim_details[dim_code] = dim_result.details or feature_dict
+                        if dim_code in dimension_status_payload:
+                            dimension_status_payload[dim_code]["status"] = "not_applicable"
+                            dimension_status_payload[dim_code]["reason"] = dim_reason or reason
+                            dimension_status_payload[dim_code]["warnings"] = dim_warnings.get(dim_code, [])
                         question_dim_rows.append(
                             QuestionDimScore(
                                 question_id=question_id,
@@ -453,8 +931,22 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
 
                     dim_scores[dim_code] = dim_result.score
                     applicable_dims.append(dim_code)
+                    dim_statuses[dim_code] = "applicable"
                     dim_reasons[dim_code] = dim_reason or reason
                     dim_confidences[dim_code] = _dimension_confidence(feature_dict, features)
+                    dim_details[dim_code] = dim_result.details
+                    if dim_code not in dimension_status_payload:
+                        dimension_status_payload[dim_code] = {
+                            "status": "applicable",
+                            "reason": dim_reason or reason,
+                            "warnings": dim_warnings.get(dim_code, []),
+                            "normalized_facts": feature_dict,
+                        }
+                    else:
+                        dimension_status_payload[dim_code]["status"] = "applicable"
+                        dimension_status_payload[dim_code]["reason"] = dim_reason or reason
+                        dimension_status_payload[dim_code]["warnings"] = dim_warnings.get(dim_code, [])
+                    dimension_status_payload[dim_code]["score_details"] = dim_result.details
                     question_dim_rows.append(
                         QuestionDimScore(
                             question_id=question_id,
@@ -492,23 +984,44 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                         knowledge_points_main=knowledge_tags[:12],
                         knowledge_points_aux=aux_tags,
                         highest_grade_level=_highest_grade_hint(features),
-                        evidence_text=_serialize_question_tag_payload(question, features),
+                        evidence_text=_serialize_question_tag_payload(
+                            question,
+                            features,
+                            dimension_statuses=dimension_status_payload,
+                        ),
                         tag_confidence=getattr(features, "confidence", 0.0) or 0.0,
                     )
                 )
                 for row in question_dim_rows:
                     db.add(row)
 
+                field_context = f"paper={paper_id} question_id={question_id}"
+                stored_question_no = _safe_question_no_for_storage(
+                    getattr(question, "question_no", ""),
+                    fallback=question_id,
+                    context=field_context,
+                )
+                stored_question_label_raw = _safe_optional_storage_text(
+                    getattr(question, "question_label_raw", "") or stored_question_no,
+                    max_length=50,
+                    field_name="question_label_raw",
+                    context=field_context,
+                ) or stored_question_no
+                stored_section_index_raw = _safe_section_index_for_storage(
+                    getattr(question, "section_index_raw", ""),
+                    context=field_context,
+                )
+
                 qds_list.append(
                     QuestionDimensionScore(
                         question_id=question_id,
-                        question_no=question.question_no,
-                        question_label_raw=getattr(question, "question_label_raw", "") or question.question_no,
-                        section_index_raw=getattr(question, "section_index_raw", "") or None,
+                        question_no=stored_question_no,
+                        question_label_raw=stored_question_label_raw,
+                        section_index_raw=stored_section_index_raw,
                         question_display_label=_build_question_display_label(
-                            question.question_no,
-                            getattr(question, "question_label_raw", "") or question.question_no,
-                            getattr(question, "section_index_raw", "") or None,
+                            stored_question_no,
+                            stored_question_label_raw,
+                            stored_section_index_raw,
                         ),
                         score=question.score,
                         dim_scores=dim_scores,
@@ -518,6 +1031,8 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                         dim_reasons=dim_reasons,
                         dim_warnings=dim_warnings,
                         dim_confidences=dim_confidences,
+                        dim_statuses=dim_statuses,
+                        dim_details=dim_details,
                     )
                 )
 
@@ -554,7 +1069,13 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
             await db.commit()
 
         current_stage = "snapshot_save"
-        await _update_paper_state(paper_id, last_stage=current_stage)
+        await _update_paper_state(
+            paper_id,
+            last_stage=current_stage,
+            progress_current=None,
+            progress_total=None,
+            progress_message=None,
+        )
 
         async with AsyncSessionLocal() as db:
             db.add(
@@ -579,15 +1100,21 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
         logger.info("试卷分析完成 paper=%s", paper_id)
     except Exception as exc:
         error_message = _describe_exception(current_stage, exc)
-        await _update_paper_state(
-            paper_id,
-            parse_status=ModelParseStatus.PARSE_FAILED,
-            last_stage=current_stage,
-            error_message=error_message,
-        )
+        try:
+            await _update_paper_state(
+                paper_id,
+                parse_status=ModelParseStatus.PARSE_FAILED,
+                last_stage=current_stage,
+                error_message=error_message,
+                progress_current=None,
+                progress_total=None,
+                progress_message=None,
+            )
+        except Exception:
+            logger.error("Failed to persist parse_failed state paper=%s stage=%s", paper_id, current_stage, exc_info=True)
         logger.error("处理试卷分析任务失败 paper=%s stage=%s: %s", paper_id, current_stage, exc, exc_info=True)
         raise
 
 
 def run_paper_analysis_sync(paper_id: str, file_path: str) -> None:
-    asyncio.run(execute_paper_analysis(paper_id=paper_id, file_path=file_path))
+    _run_in_isolated_event_loop(execute_paper_analysis(paper_id=paper_id, file_path=file_path))

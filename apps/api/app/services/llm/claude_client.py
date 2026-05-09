@@ -10,6 +10,8 @@ from typing import List, Optional
 
 import httpx
 
+from app.services.llm.global_limiter import llm_request_slot
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,6 +32,7 @@ class ClaudeClient:
         temperature: float = 0.3,
         max_tokens: int = 2000,
         timeout: float = 60.0,
+        llm_pool: Optional[str] = None,
     ):
         self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
         if not self.api_key:
@@ -39,8 +42,9 @@ class ClaudeClient:
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.timeout = timeout
+        self.llm_pool = llm_pool
 
-        logger.info(f"ClaudeClient 初始化完成，模型: {model}")
+        logger.info("ClaudeClient initialized model=%s pool=%s", model, self.llm_pool or "global")
 
     async def chat(
         self,
@@ -89,21 +93,23 @@ class ClaudeClient:
             payload["system"] = system_content
 
         try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.post(self.BASE_URL, headers=headers, json=payload)
-                response.raise_for_status()
+            slot_context = llm_request_slot(pool=self.llm_pool) if self.llm_pool else llm_request_slot()
+            async with slot_context:
+                async with httpx.AsyncClient(timeout=self.timeout) as client:
+                    response = await client.post(self.BASE_URL, headers=headers, json=payload)
+                    response.raise_for_status()
 
-                data = response.json()
-                content = data["content"][0]["text"]
+                    data = response.json()
+                    content = data["content"][0]["text"]
 
-                # 记录 token 消耗
-                usage = data.get("usage", {})
-                logger.info(
-                    f"Claude API 调用成功，输入: {usage.get('input_tokens', 0)}, "
-                    f"输出: {usage.get('output_tokens', 0)}"
-                )
+                    # 记录 token 消耗
+                    usage = data.get("usage", {})
+                    logger.info(
+                        f"Claude API 调用成功，输入: {usage.get('input_tokens', 0)}, "
+                        f"输出: {usage.get('output_tokens', 0)}"
+                    )
 
-                return content
+                    return content
 
         except httpx.TimeoutException:
             logger.error("Claude API 调用超时")

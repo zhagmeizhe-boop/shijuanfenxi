@@ -74,6 +74,40 @@ class ReportService:
             return {}
 
     @staticmethod
+    def _sanitize_user_visible_text(text: object) -> str:
+        normalized = str(text or "").strip()
+        if not normalized:
+            return ""
+
+        replacements = {
+            "建议人工复核": "建议检查",
+            "需要人工复核": "需要检查",
+            "需人工复核": "需检查",
+            "人工复核": "检查",
+            "进入复核": "自动评分未覆盖",
+            "转入复核": "自动评分未覆盖",
+            "复核提示": "评分提示",
+            "复核": "检查",
+        }
+        for source, target in replacements.items():
+            normalized = normalized.replace(source, target)
+        return normalized
+
+    @classmethod
+    def _sanitize_report_warnings(cls, warnings: Optional[List[Any]]) -> List[str]:
+        del warnings
+        return []
+
+    @staticmethod
+    def _is_score_value_warning(text: str) -> bool:
+        score_warning_markers = (
+            "缺少明确分值",
+            "未识别到明确分值",
+            "分值格式无法解析",
+        )
+        return any(marker in text for marker in score_warning_markers)
+
+    @staticmethod
     def _parse_warning_messages(audit_payload: Dict[str, Any]) -> List[str]:
         warnings: List[str] = []
         for item in audit_payload.get("parse_warnings", []) or []:
@@ -87,6 +121,11 @@ class ReportService:
         if audit_payload.get("image_fallback"):
             warnings.append("多模态分析失败，当前题目按纯文本回退判断。")
         return list(dict.fromkeys(warnings))
+
+    @staticmethod
+    def _parse_dimension_statuses(audit_payload: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+        raw_statuses = audit_payload.get("dimension_statuses", {})
+        return raw_statuses if isinstance(raw_statuses, dict) else {}
 
     @staticmethod
     def _build_counted_reason(score_evidence: str, audit_payload: Dict[str, Any]) -> str:
@@ -104,6 +143,8 @@ class ReportService:
             for dim_code, payload in calibration_audits.items():
                 if isinstance(payload, dict) and payload.get("band_source"):
                     candidates.append(f"{dim_code}:{payload.get('band_source')}")
+                elif isinstance(payload, dict) and payload.get("action"):
+                    candidates.append(f"{dim_code}:{payload.get('action')}")
             if candidates:
                 source_parts.append("规则:" + " / ".join(candidates[:2]))
 
@@ -128,26 +169,89 @@ class ReportService:
             qid = question.question_id
             audit_payload = self._safe_json_loads(getattr(tag_map.get(qid), "evidence_text", ""))
             rows = grouped_dim_rows.get(qid, [])
+            dimension_statuses_payload = self._parse_dimension_statuses(audit_payload)
 
             dim_scores: Dict[str, float] = {}
             applicable_dims: List[str] = []
             dim_reasons: Dict[str, str] = {}
             dim_warnings: Dict[str, List[str]] = {}
             dim_confidences: Dict[str, float] = {}
+            dim_statuses: Dict[str, str] = {}
+            dim_details: Dict[str, Dict[str, Any]] = {}
             audit_warnings = self._parse_warning_messages(audit_payload)
 
             for row in rows:
                 dim_code = getattr(row.dim_code, "value", row.dim_code)
+                status_payload = dimension_statuses_payload.get(dim_code, {})
+                if not isinstance(status_payload, dict):
+                    status_payload = {}
+                dim_status = (
+                    "applicable"
+                    if row.is_applicable
+                    else str(status_payload.get("status", "not_applicable")).strip() or "not_applicable"
+                )
+                dim_statuses[dim_code] = dim_status
+
+                combined_warnings = list(
+                    dict.fromkeys(
+                        audit_warnings
+                        + [
+                            str(item).strip()
+                            for item in status_payload.get("warnings", []) or []
+                            if str(item).strip()
+                        ]
+                    )
+                )
+                if combined_warnings:
+                    dim_warnings[dim_code] = combined_warnings
+
                 if row.is_applicable:
                     dim_scores[dim_code] = row.dim_score
                     applicable_dims.append(dim_code)
                     dim_reasons[dim_code] = self._build_counted_reason(row.score_evidence or "", audit_payload)
+                    score_details = status_payload.get("score_details")
+                    if isinstance(score_details, dict):
+                        dim_details[dim_code] = score_details
+                    else:
+                        normalized_facts = status_payload.get("normalized_facts")
+                        if isinstance(normalized_facts, dict):
+                            dim_details[dim_code] = normalized_facts
                     try:
                         dim_confidences[dim_code] = float(row.confidence or 0.0)
                     except (TypeError, ValueError):
                         dim_confidences[dim_code] = 0.0
-                if audit_warnings:
-                    dim_warnings[dim_code] = audit_warnings
+                elif dim_status == "review":
+                    dim_reasons[dim_code] = (
+                        str(status_payload.get("reason", "")).strip()
+                        or str(row.score_evidence or "").strip()
+                    )
+                    score_details = status_payload.get("score_details")
+                    if isinstance(score_details, dict):
+                        dim_details[dim_code] = score_details
+                    else:
+                        normalized_facts = status_payload.get("normalized_facts")
+                        if isinstance(normalized_facts, dict):
+                            dim_details[dim_code] = normalized_facts
+                    try:
+                        dim_confidences[dim_code] = float(row.confidence or 0.0)
+                    except (TypeError, ValueError):
+                        dim_confidences[dim_code] = 0.0
+                else:
+                    dim_reasons[dim_code] = (
+                        str(status_payload.get("reason", "")).strip()
+                        or str(row.score_evidence or "").strip()
+                    )
+                    score_details = status_payload.get("score_details")
+                    if isinstance(score_details, dict):
+                        dim_details[dim_code] = score_details
+                    else:
+                        normalized_facts = status_payload.get("normalized_facts")
+                        if isinstance(normalized_facts, dict):
+                            dim_details[dim_code] = normalized_facts
+                    try:
+                        dim_confidences[dim_code] = float(row.confidence or 0.0)
+                    except (TypeError, ValueError):
+                        dim_confidences[dim_code] = 0.0
 
             question_scores.append(
                 QuestionDimensionScore(
@@ -180,10 +284,116 @@ class ReportService:
                     dim_reasons=dim_reasons,
                     dim_warnings=dim_warnings,
                     dim_confidences=dim_confidences,
+                    dim_statuses=dim_statuses,
+                    dim_details=dim_details,
                 )
             )
 
         return question_scores
+
+    @staticmethod
+    def _counted_question_lookup_keys(entry: Dict[str, Any]) -> List[tuple[str, str]]:
+        keys: List[tuple[str, str]] = []
+        for field_name in ("question_display_label", "question_label_raw", "question_no"):
+            value = str(entry.get(field_name) or "").strip()
+            if value:
+                keys.append((field_name, value))
+        return list(dict.fromkeys(keys))
+
+    async def _enrich_snapshot_counted_question_full_reasons(
+        self,
+        db,
+        paper_id: str,
+        report_json: Dict[str, Any],
+        Question,
+        QuestionTag,
+        QuestionDimScore,
+    ) -> None:
+        details = report_json.get("dimension_details", [])
+        if not isinstance(details, list):
+            return
+
+        missing_entries: List[tuple[str, Dict[str, Any]]] = []
+        for detail in details:
+            if not isinstance(detail, dict):
+                continue
+            dim_code = str(detail.get("code") or "").strip()
+            counted_questions = detail.get("counted_questions", [])
+            if not dim_code or not isinstance(counted_questions, list):
+                continue
+            for entry in counted_questions:
+                if isinstance(entry, dict) and not str(entry.get("full_reason") or "").strip():
+                    missing_entries.append((dim_code, entry))
+
+        if not missing_entries:
+            return
+
+        full_reason_lookup: Dict[tuple[str, str, str], str] = {}
+        try:
+            question_result = await db.execute(
+                select(Question)
+                .where(Question.paper_id == paper_id)
+                .order_by(Question.page_no.asc(), Question.question_no.asc())
+            )
+            questions = question_result.scalars().all()
+
+            tag_result = await db.execute(
+                select(QuestionTag)
+                .join(Question, Question.question_id == QuestionTag.question_id)
+                .where(Question.paper_id == paper_id)
+            )
+            tag_map = {row.question_id: row for row in tag_result.scalars().all()}
+
+            dim_row_result = await db.execute(
+                select(QuestionDimScore)
+                .join(Question, Question.question_id == QuestionDimScore.question_id)
+                .where(Question.paper_id == paper_id)
+            )
+            dim_score_rows = dim_row_result.scalars().all()
+
+            if questions and dim_score_rows:
+                rebuilt_question_scores = self._build_question_scores_from_rows(
+                    questions,
+                    tag_map,
+                    dim_score_rows,
+                )
+                aggregated = self.aggregator.aggregate_all_dimensions(rebuilt_question_scores)
+                for dim_code, summary in aggregated.items():
+                    for entry in summary.counted_questions:
+                        if not isinstance(entry, dict):
+                            continue
+                        full_reason = str(
+                            entry.get("full_reason") or entry.get("reason") or entry.get("summary") or ""
+                        ).strip()
+                        if not full_reason:
+                            continue
+                        for field_name, value in self._counted_question_lookup_keys(entry):
+                            full_reason_lookup[(dim_code, field_name, value)] = full_reason
+        except Exception as exc:
+            logger.warning(
+                "补齐报告快照计入题目完整分析失败 paper=%s: %s",
+                paper_id,
+                exc,
+                exc_info=True,
+            )
+
+        for dim_code, entry in missing_entries:
+            full_reason = ""
+            for field_name, value in self._counted_question_lookup_keys(entry):
+                full_reason = full_reason_lookup.get((dim_code, field_name, value), "")
+                if full_reason:
+                    break
+            entry["full_reason"] = full_reason or str(
+                entry.get("reason") or entry.get("summary") or ""
+            ).strip()
+
+    @staticmethod
+    def _merge_dimension_report_warnings(
+        aggregated: Dict[str, Any],
+        report_warnings: Optional[List[str]],
+    ) -> List[str]:
+        del aggregated
+        return ReportService._sanitize_report_warnings(report_warnings)
 
     def _build_dimension_details_from_aggregated(self, aggregated: Dict[str, Any]) -> List[Dict[str, Any]]:
         return [
@@ -193,9 +403,14 @@ class ReportService:
                 "score": round(summary.paper_score, 1),
                 "level": summary.level,
                 "level_label": summary.level_label,
+                "score_status": getattr(summary, "score_status", "scored"),
                 "evidence": summary.evidence,
-                "warning": bool(summary.warning_messages or summary.sample_warning),
+                "warning": bool(
+                    getattr(summary, "score_status", "scored") == "scored"
+                    and (summary.warning_messages or summary.sample_warning)
+                ),
                 "counted_questions": summary.counted_questions,
+                "score_breakdown": getattr(summary, "score_breakdown", {}),
             }
             for dim_code, summary in aggregated.items()
         ]
@@ -209,7 +424,11 @@ class ReportService:
         generated_at: Optional[str] = None,
         report_warnings: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
-        valid_dimension_details = [detail for detail in dimension_details if detail["level"] > 0]
+        valid_dimension_details = [
+            detail
+            for detail in dimension_details
+            if detail.get("score_status", "scored") == "scored" and detail["level"] > 0
+        ]
         overall_score = (
             sum(detail["score"] for detail in valid_dimension_details) / len(valid_dimension_details)
             if valid_dimension_details
@@ -232,7 +451,7 @@ class ReportService:
                 "innovation": round(detail_by_code.get("dim6", {}).get("score", 0.0) * 10, 1),
             },
             "dimension_details": dimension_details,
-            "report_warnings": list(report_warnings or []),
+            "report_warnings": self._sanitize_report_warnings(report_warnings),
             "difficulty_position": {
                 "level": difficulty_level,
                 "label": self._get_difficulty_label(difficulty_level),
@@ -242,7 +461,7 @@ class ReportService:
                 "dimension_distribution": [
                     {"code": "dim1", "name": "数学运算", "percentage": 17, "color": "#3B82F6"},
                     {"code": "dim2", "name": "几何直观", "percentage": 16, "color": "#8B5CF6"},
-                    {"code": "dim3", "name": "信息提取", "percentage": 17, "color": "#EC4899"},
+                    {"code": "dim3", "name": "信息提取与转化", "percentage": 17, "color": "#EC4899"},
                     {"code": "dim4", "name": "实践创新", "percentage": 17, "color": "#10B981"},
                     {"code": "dim5", "name": "知识广度", "percentage": 16, "color": "#F59E0B"},
                     {"code": "dim6", "name": "逻辑链条", "percentage": 17, "color": "#EF4444"},
@@ -314,10 +533,24 @@ class ReportService:
                 report_json.setdefault("benchmark_comparisons", [])
                 report_json.setdefault("knowledge_points", [])
                 report_json.setdefault("representative_questions", [])
-                report_json.setdefault("report_warnings", [])
+                report_json["report_warnings"] = []
                 for detail in report_json.get("dimension_details", []):
                     detail.setdefault("counted_questions", [])
+                    detail.setdefault(
+                        "score_status",
+                        "not_covered" if int(detail.get("level") or 0) <= 0 else "scored",
+                    )
+                    if detail.get("score_status") == "not_covered":
+                        detail["warning"] = False
                     detail["warning"] = bool(detail.get("warning"))
+                await self._enrich_snapshot_counted_question_full_reasons(
+                    db,
+                    paper_id,
+                    report_json,
+                    Question,
+                    QuestionTag,
+                    QuestionDimScore,
+                )
                 return report_json
 
             dim_scores = await db.get(PaperDimScore, paper_id)
@@ -357,7 +590,7 @@ class ReportService:
                 paper_id=paper_id,
                 paper_title=paper.paper_name,
                 dimension_details=dimension_details,
-                report_warnings=[],
+                report_warnings=self._merge_dimension_report_warnings(aggregated, []),
             )
 
         scores = self._dimension_scores_from_db(dim_scores)
@@ -371,6 +604,7 @@ class ReportService:
                     "score": round(summary_score, 1),
                     "level": level,
                     "level_label": level_label,
+                    "score_status": "scored" if level > 0 else "not_covered",
                     "evidence": "",
                     "warning": False,
                     "counted_questions": [],
@@ -419,19 +653,19 @@ class ReportService:
                 },
                 {
                     "code": "dim3",
-                    "name": "逻辑推理力",
+                    "name": "信息提取与转化",
                     "score": 8.0,
                     "level": 4,
                     "level_label": "较难",
-                    "evidence": "信息来源类型为图文混合，信息数量为中等，不含噪音信息，条件分散，需要数学建模，关系复杂度为高。强制规则触发：条件分散+建模需求+高复杂度。",
+                    "evidence": "需要从图文材料中筛选条件，整理数量关系后再转成可求解表示，信息提取与转化负担较高。",
                 },
                 {
                     "code": "dim4",
-                    "name": "空间想象力",
+                    "name": "实践创新",
                     "score": 7.0,
                     "level": 4,
                     "level_label": "较难",
-                    "evidence": "非教材原型，存在情境伪装，需要策略选择。创新程度为中等，基础分5.0，情境伪装+0.5，策略选择+1.0，开放性质+0.5。",
+                    "evidence": "需要跳出直接模板，重新选择解题路径并构造中间对象。策略突破负担中等偏高，存在换路与构造要求。",
                 },
                 {
                     "code": "dim5",
@@ -444,7 +678,7 @@ class ReportService:
                 },
                 {
                     "code": "dim6",
-                    "name": "创新思维力",
+                    "name": "逻辑链条",
                     "score": 8.5,
                     "level": 5,
                     "level_label": "困难",
@@ -454,17 +688,17 @@ class ReportService:
 
             "difficulty_position": {
                 "level": 4,
-                "label": "拔高卷",
+                "label": "选拔卷",
                 "overall_score": 7.1,
-                "target_students": "适合基础扎实、希望进一步拔高的学生。本卷强调思维方法的灵活运用，适合准备参加择校考试或希望进入重点班的学生。",
-                "description": "面向思维突破阶段，突出方法创新",
+                "target_students": "适合基础扎实、需要面向选拔场景提升综合稳定性的学生。",
+                "description": "面向选拔区分阶段，突出多步推进、策略迁移与复杂问题收束。",
                 "dimension_distribution": [
                     {"code": "dim1", "name": "计算", "percentage": 18, "color": "#3B82F6"},
                     {"code": "dim2", "name": "概念", "percentage": 16, "color": "#8B5CF6"},
-                    {"code": "dim3", "name": "逻辑", "percentage": 20, "color": "#EC4899"},
-                    {"code": "dim4", "name": "空间", "percentage": 14, "color": "#10B981"},
+                    {"code": "dim3", "name": "信息提取与转化", "percentage": 20, "color": "#EC4899"},
+                    {"code": "dim4", "name": "实践创新", "percentage": 14, "color": "#10B981"},
                     {"code": "dim5", "name": "应用", "percentage": 16, "color": "#F59E0B"},
-                    {"code": "dim6", "name": "创新", "percentage": 16, "color": "#EF4444"},
+                    {"code": "dim6", "name": "逻辑链条", "percentage": 16, "color": "#EF4444"},
                 ],
             },
 
@@ -498,17 +732,17 @@ class ReportService:
                     "question_no": "第3题",
                     "content": "甲、乙两数的比是3:5，它们的和是48，求这两个数。",
                     "dimension_code": "dim3",
-                    "dimension_name": "逻辑推理力",
+                    "dimension_name": "信息提取与转化",
                     "score": 8.0,
                     "level": 4,
-                    "evidence": "需要理解比例关系并建立方程求解",
+                    "evidence": "需要从文字条件中整理比例关系并转成可求解的等量表示",
                 },
             ],
 
-            "overall_summary": "本试卷整体难度较高，以拔高为主，注重考查学生的综合应用能力和创新思维。计算部分以分数运算为主，概念部分涉及几何与代数，逻辑部分强调推理建模。",
+            "overall_summary": "本试卷整体难度较高，以拔高为主，注重考查学生的综合应用能力、策略突破能力与逻辑链条推进能力。计算部分以分数运算为主，几何部分涉及空间判断，信息提取与转化部分强调条件整理和表示构建。",
             "recommendations": [
                 "建议学生重点复习分数运算和比例应用",
-                "加强逻辑推理和建模能力的训练",
+                "加强条件筛选、关系整理和表示转化训练",
                 "适当拓展几何辅助线的添加技巧",
                 "关注实际应用题的解题策略",
             ],
@@ -561,7 +795,7 @@ class ReportService:
             paper_title=paper_title or f"试卷 {paper_id}",
             dimension_details=dimension_details,
             generated_at=datetime.now().isoformat(),
-            report_warnings=report_warnings or [],
+            report_warnings=self._merge_dimension_report_warnings(aggregated, report_warnings or []),
         )
         report["report_id"] = f"rpt-{datetime.now().strftime('%Y%m%d%H%M%S')}"
         return report
@@ -583,10 +817,10 @@ class ReportService:
         """获取难度标签"""
         labels = {
             1: "基础卷",
-            2: "常规卷",
-            3: "提升卷",
-            4: "拔高卷",
-            5: "选拔卷",
+            2: "提升卷",
+            3: "拔高卷",
+            4: "选拔卷",
+            5: "竞赛卷",
         }
         return labels.get(level, "未知")
 
@@ -594,10 +828,10 @@ class ReportService:
         """获取目标学生描述"""
         descriptions = {
             1: "适合基础薄弱、需要巩固基本概念的学生。",
-            2: "适合基础一般、希望稳步提升的学生。",
-            3: "适合基础较好、希望挑战自我的学生。",
-            4: "适合基础扎实、希望进一步拔高的学生。",
-            5: "适合成绩优秀、准备参加竞赛选拔的学生。",
+            2: "适合基础一般、希望从课内掌握走向稳定提升的学生。",
+            3: "适合基础较好、需要强化综合运用和拔高训练的学生。",
+            4: "适合基础扎实、需要面向选拔场景提升综合稳定性的学生。",
+            5: "适合成绩优秀、准备挑战竞赛或高强度选拔的学生。",
         }
         return descriptions.get(level, "")
 
@@ -605,9 +839,9 @@ class ReportService:
         """获取难度描述"""
         descriptions = {
             1: "侧重基础知识的掌握和基本技能的训练",
-            2: "注重知识点的全面覆盖和基本应用能力",
-            3: "强调知识的灵活运用和综合解题能力",
-            4: "突出思维方法的创新和复杂问题解决",
-            5: "挑战高难度思维和极限解题技巧",
+            2: "注重知识覆盖、基本应用和稳定解题能力",
+            3: "强调知识的灵活运用、综合解题和方法迁移",
+            4: "突出选拔场景下的复杂问题解决和稳定区分度",
+            5: "挑战竞赛型高难思维、跨模块综合和极限解题技巧",
         }
         return descriptions.get(level, "")

@@ -6,7 +6,7 @@ API集成测试
 
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 import json
 
 from app.main import app
@@ -140,12 +140,17 @@ class TestHealthCheck:
 
     def test_health_check(self):
         """测试健康检查"""
-        response = client.get("/health")
+        with patch(
+            "app.main.get_ocr_preflight_status",
+            new=AsyncMock(return_value={"ocr_ready": True, "provider": "paddleocr", "message": "ready"}),
+        ):
+            response = client.get("/health")
 
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "healthy"
         assert "timestamp" in data
+        assert data["ocr_provider"] == "paddleocr"
 
     def test_root_endpoint(self):
         """测试根端点"""

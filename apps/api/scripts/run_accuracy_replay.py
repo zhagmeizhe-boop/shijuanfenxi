@@ -61,11 +61,8 @@ def main() -> int:
     repo_root = Path(__file__).resolve().parents[3]
     sys.path.insert(0, str((repo_root / "apps" / "api").resolve()))
 
-    from app.services.ocr.baidu_provider import BaiduOCRProvider
-    from app.services.ocr.base import QuestionType
     from app.core.config import settings
-    from app.services.parser.reference_standard import get_reference_standard
-    from app.services.scoring.dim1_applicability import evaluate_dim1_applicability
+    from app.services.ocr.factory import create_ocr_provider
 
     parser = argparse.ArgumentParser(description="Run offline accuracy replay checks.")
     parser.add_argument(
@@ -84,15 +81,41 @@ def main() -> int:
 
     case_path = Path(args.cases)
     cases = _load_cases(case_path)
-    standard = get_reference_standard()
-    ocr_provider = BaiduOCRProvider(
-        config={
-            "app_id": settings.BAIDU_OCR_APP_ID,
-            "api_key": settings.BAIDU_OCR_API_KEY,
-            "secret_key": settings.BAIDU_OCR_SECRET_KEY,
-            "poppler_path": settings.POPPLER_PATH,
-        }
-    )
+
+    question_type_enum = None
+    ocr_provider = None
+    reference_standard = None
+    dim1_applicability_evaluator = None
+
+    def _get_question_type_enum():
+        nonlocal question_type_enum
+        if question_type_enum is None:
+            from app.services.ocr.base import QuestionType
+
+            question_type_enum = QuestionType
+        return question_type_enum
+
+    def _get_ocr_provider():
+        nonlocal ocr_provider
+        if ocr_provider is None:
+            ocr_provider = create_ocr_provider(settings.OCR_PROVIDER, use_cache=False)
+        return ocr_provider
+
+    def _get_reference_standard():
+        nonlocal reference_standard
+        if reference_standard is None:
+            from app.services.parser.reference_standard import get_reference_standard
+
+            reference_standard = get_reference_standard()
+        return reference_standard
+
+    def _get_dim1_applicability_evaluator():
+        nonlocal dim1_applicability_evaluator
+        if dim1_applicability_evaluator is None:
+            from app.services.scoring.dim1_applicability import evaluate_dim1_applicability
+
+            dim1_applicability_evaluator = evaluate_dim1_applicability
+        return dim1_applicability_evaluator
 
     total_checks = 0
     passed_checks = 0
@@ -111,7 +134,7 @@ def main() -> int:
                 total_checks += 1
                 continue
 
-            parsed_paper, section_counts = asyncio.run(_run_paper_count_case(ocr_provider, pdf_path))
+            parsed_paper, section_counts = asyncio.run(_run_paper_count_case(_get_ocr_provider(), pdf_path))
 
             total_checks += 1
             expected_total = int(case["expected_total_question_count"])
@@ -146,7 +169,7 @@ def main() -> int:
             continue
 
         if case_type == "ocr":
-            question_type = _normalize_question_type(case.get("question_type", ""), QuestionType)
+            question_type = _normalize_question_type(case.get("question_type", ""), _get_question_type_enum())
             question_text = case.get("question_text", "")
             line_count = int(case.get("line_count", 1) or 1)
             sub_item_candidates = []
@@ -160,7 +183,7 @@ def main() -> int:
 
             if "expected_formula_attempt" in case:
                 total_checks += 1
-                actual = ocr_provider._should_try_formula_enhancement(
+                actual = _get_ocr_provider()._should_try_formula_enhancement(
                     question_text,
                     question_type,
                     line_count,
@@ -176,7 +199,7 @@ def main() -> int:
                 key in case
                 for key in ("expected_visual_category", "expected_image_required", "expected_image_attach")
             ):
-                visual = ocr_provider._classify_visual_need(
+                visual = _get_ocr_provider()._classify_visual_need(
                     question_text,
                     question_type,
                     sub_item_candidates,
@@ -209,7 +232,7 @@ def main() -> int:
 
         dim_code = case["dim_code"]
         feature = dict(case.get("feature", {}))
-        calibrated = standard.calibrate_feature(
+        calibrated = _get_reference_standard().calibrate_feature(
             dim_code,
             feature,
             question_text=case["question_text"],
@@ -229,7 +252,7 @@ def main() -> int:
 
         if dim_code == "dim1" and "expected_applicable" in case:
             total_checks += 1
-            applicable, reason = evaluate_dim1_applicability(
+            applicable, reason = _get_dim1_applicability_evaluator()(
                 case.get("question_type", ""),
                 case["question_text"],
                 calibrated,

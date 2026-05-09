@@ -1,8 +1,10 @@
 import { DifficultyPosition } from '@/types/analysis';
 import {
   formatScore,
+  getDifficultyDescription,
+  getDifficultyLabel,
   getDifficultyMeta,
-  getOrderedDistribution,
+  getDifficultyTargetStudents,
   REPORT_DIFFICULTY_META,
 } from '@/components/report/reportMeta';
 
@@ -12,7 +14,9 @@ interface DifficultyPositioningProps {
 
 export function DifficultyPositioning({ data }: DifficultyPositioningProps) {
   const config = getDifficultyMeta(data.level);
-  const orderedDistribution = getOrderedDistribution(data.dimension_distribution);
+  const levelLabel = getDifficultyLabel(data.level, data.label);
+  const description = getDifficultyDescription(data.level, data.description);
+  const targetStudents = getDifficultyTargetStudents(data.level, data.target_students);
   const levels = Object.entries(REPORT_DIFFICULTY_META).map(([level, meta]) => ({
     level: Number(level),
     label: meta.label,
@@ -28,7 +32,7 @@ export function DifficultyPositioning({ data }: DifficultyPositioningProps) {
       <div className="report-card-heading">
         <span className="report-card-eyebrow">核心结论</span>
         <h3>难度定位</h3>
-        <p>{data.description || config.description}</p>
+        <p>{description}</p>
       </div>
 
       <div className="report-difficulty-card__top">
@@ -53,19 +57,19 @@ export function DifficultyPositioning({ data }: DifficultyPositioningProps) {
               alignSelf: 'flex-start',
             }}
           >
-            {data.label || config.label}
+            {levelLabel}
           </span>
         </div>
 
         <div>
           <span className="report-card-note">结论摘要</span>
           <p style={{ margin: '10px 0 0', color: '#5d6a72', lineHeight: 1.85 }}>
-            {data.description || config.description}
+            {description}
           </p>
 
           <div className="report-target-block">
             <span>目标学生</span>
-            <p>{data.target_students || '未提供目标学生说明。'}</p>
+            <p>{targetStudents}</p>
           </div>
         </div>
       </div>
@@ -88,24 +92,6 @@ export function DifficultyPositioning({ data }: DifficultyPositioningProps) {
             </div>
           );
         })}
-      </div>
-
-      <div className="report-distribution-list">
-        {orderedDistribution.map((item) => (
-          <div key={item.code} className="report-difficulty-row">
-            <span className="report-difficulty-row__label">{item.fullName}</span>
-            <div className="report-difficulty-row__bar">
-              <div
-                className="report-difficulty-row__fill"
-                style={{
-                  width: `${Math.max(0, Math.min(item.percentage, 100))}%`,
-                  backgroundColor: item.color,
-                }}
-              />
-            </div>
-            <span className="report-difficulty-row__value">{item.percentage}%</span>
-          </div>
-        ))}
       </div>
     </div>
   );

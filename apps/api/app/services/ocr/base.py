@@ -1,10 +1,14 @@
+import json
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
+
+IMAGE_MANIFEST_KIND = "image_pages"
 
 
 class ParseStatus(str, Enum):
@@ -272,6 +276,17 @@ class ValidationResult:
     parsed_data: Optional[Dict[str, Any]] = None
 
 
+@dataclass(frozen=True)
+class ImageManifestPage:
+    """One user-ordered image page from a multi-image upload manifest."""
+
+    page_no: int
+    path: str
+    original_filename: str = ""
+    content_type: str = ""
+    size: int = 0
+
+
 class BaseOCRProvider(ABC):
     """
     OCR Provider 抽象基类
@@ -307,6 +322,70 @@ class BaseOCRProvider(ABC):
             dict: 健康状态
         """
         pass
+
+    @classmethod
+    def is_image_manifest_path(cls, file_path: str) -> bool:
+        """Return True when file_path points to a multi-image upload manifest."""
+        path = Path(file_path)
+        if path.suffix.lower() != ".json":
+            return False
+
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            return False
+
+        return isinstance(payload, dict) and payload.get("kind") == IMAGE_MANIFEST_KIND
+
+    @classmethod
+    def load_image_manifest_pages(cls, file_path: str) -> List[ImageManifestPage]:
+        """Load ordered image pages from a multi-image upload manifest."""
+        manifest_path = Path(file_path).resolve()
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict) or payload.get("kind") != IMAGE_MANIFEST_KIND:
+            raise ValueError(f"不是有效的图片上传清单: {file_path}")
+
+        raw_pages = payload.get("pages")
+        if not isinstance(raw_pages, list) or not raw_pages:
+            raise ValueError("图片上传清单没有可解析的页面")
+
+        pages: List[ImageManifestPage] = []
+        for index, item in enumerate(raw_pages, start=1):
+            if not isinstance(item, dict):
+                raise ValueError(f"图片上传清单第 {index} 页格式无效")
+
+            raw_path = str(item.get("path") or item.get("stored_path") or "").strip()
+            if not raw_path:
+                raise ValueError(f"图片上传清单第 {index} 页缺少文件路径")
+
+            page_path = Path(raw_path)
+            if not page_path.is_absolute():
+                page_path = manifest_path.parent / page_path
+            page_path = page_path.resolve()
+            if not page_path.exists():
+                raise ValueError(f"图片上传清单第 {index} 页文件不存在: {page_path}")
+
+            try:
+                page_no = int(item.get("page_no") or index)
+            except (TypeError, ValueError):
+                page_no = index
+
+            try:
+                size = int(item.get("size") or page_path.stat().st_size)
+            except (OSError, TypeError, ValueError):
+                size = 0
+
+            pages.append(
+                ImageManifestPage(
+                    page_no=page_no,
+                    path=str(page_path),
+                    original_filename=str(item.get("original_filename") or ""),
+                    content_type=str(item.get("content_type") or ""),
+                    size=size,
+                )
+            )
+
+        return pages
 
     def validate_upload(
         self,

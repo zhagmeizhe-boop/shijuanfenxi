@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import os
+import threading
+import uuid
 from functools import lru_cache
 from typing import TypedDict
 from urllib.parse import urlsplit
@@ -113,6 +115,16 @@ def get_queue_preflight_status(*, timeout_seconds: float = QUEUE_CHECK_TIMEOUT_S
     broker_display = _sanitize_service_url(broker_url)
     backend_display = _sanitize_service_url(backend_url)
 
+    if settings.CELERY_TASK_ALWAYS_EAGER:
+        return {
+            "queue_ready": True,
+            "message": "CELERY_TASK_ALWAYS_EAGER=true; queue preflight skipped and tasks run synchronously in API process",
+            "broker_kind": broker_kind,
+            "backend_kind": backend_kind,
+            "broker_url": broker_display,
+            "backend_url": backend_display,
+        }
+
     if broker_kind != "redis":
         return {
             "queue_ready": False,
@@ -212,6 +224,7 @@ def get_celery_app():
         broker_connection_retry_on_startup=True,
         task_always_eager=settings.CELERY_TASK_ALWAYS_EAGER,
         task_eager_propagates=True,
+        result_expires=settings.CELERY_RESULT_EXPIRES,
     )
 
     if os.name == "nt":
@@ -221,17 +234,45 @@ def get_celery_app():
     return celery_app
 
 
-def enqueue_paper_analysis_task(*, paper_id: str, file_path: str) -> str:
-    celery_app = get_celery_app()
+# Expose a module-level Celery instance so the Celery CLI can load
+# `app.tasks.celery_app` directly or via `app.tasks.celery_app:celery`.
+celery = get_celery_app()
+app = celery
 
-    if settings.CELERY_TASK_ALWAYS_EAGER:
-        from app.tasks.paper_analysis import paper_analysis_task
 
-        result = paper_analysis_task.delay(paper_id=paper_id, file_path=file_path)
-    else:
-        result = celery_app.send_task(
-            PAPER_ANALYSIS_TASK_NAME,
-            kwargs={"paper_id": paper_id, "file_path": file_path},
+def _run_local_eager_paper_analysis(*, paper_id: str, file_path: str, task_id: str) -> None:
+    try:
+        from app.services.paper_analysis_runner import run_paper_analysis_sync
+
+        run_paper_analysis_sync(paper_id=paper_id, file_path=file_path)
+    except Exception:
+        logger.exception(
+            "Local eager paper analysis task failed paper=%s task_id=%s",
+            paper_id,
+            task_id,
         )
+
+
+def _enqueue_local_eager_paper_analysis(*, paper_id: str, file_path: str) -> str:
+    task_id = f"local-eager-{uuid.uuid4()}"
+    thread = threading.Thread(
+        target=_run_local_eager_paper_analysis,
+        kwargs={"paper_id": paper_id, "file_path": file_path, "task_id": task_id},
+        name=f"paper-analysis-{paper_id}",
+        daemon=True,
+    )
+    thread.start()
+    return task_id
+
+
+def enqueue_paper_analysis_task(*, paper_id: str, file_path: str) -> str:
+    if settings.CELERY_TASK_ALWAYS_EAGER:
+        return _enqueue_local_eager_paper_analysis(paper_id=paper_id, file_path=file_path)
+
+    celery_app = get_celery_app()
+    result = celery_app.send_task(
+        PAPER_ANALYSIS_TASK_NAME,
+        kwargs={"paper_id": paper_id, "file_path": file_path},
+    )
 
     return str(result.id)

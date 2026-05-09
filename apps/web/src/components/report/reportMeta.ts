@@ -1,4 +1,4 @@
-import { DifficultyPosition, SixDimensions } from '@/types/analysis';
+import { SixDimensions } from '@/types/analysis';
 
 export interface ReportDimensionMeta {
   code: string;
@@ -15,6 +15,7 @@ export interface ReportDifficultyMeta {
   surface: string;
   border: string;
   description: string;
+  targetStudents: string;
 }
 
 export const REPORT_DIMENSIONS: ReportDimensionMeta[] = [
@@ -75,34 +76,39 @@ export const REPORT_DIFFICULTY_META: Record<number, ReportDifficultyMeta> = {
     surface: '#f1f7f2',
     border: '#c9ddce',
     description: '整体更强调基础概念与常规运算，适合夯实基本能力。',
+    targetStudents: '适合基础薄弱、需要巩固基本概念的学生。',
   },
   2: {
-    label: '常规卷',
+    label: '提升卷',
     color: '#356a7c',
     surface: '#eef5f8',
     border: '#c7d9e0',
-    description: '覆盖课程常规要求，兼顾熟练度、理解度与基础应用。',
+    description: '注重知识覆盖、基本应用和稳定解题能力，适合从课内掌握走向稳步提升。',
+    targetStudents: '适合基础一般、希望从课内掌握走向稳定提升的学生。',
   },
   3: {
-    label: '提升卷',
+    label: '拔高卷',
     color: '#8a6b2d',
     surface: '#fbf6ea',
     border: '#e6d9b4',
-    description: '强调综合运用能力，适合从熟练解题向稳定提分过渡。',
+    description: '强调综合运用、方法迁移和拔高训练，适合基础较好的学生。',
+    targetStudents: '适合基础较好、需要强化综合运用和拔高训练的学生。',
   },
   4: {
-    label: '拔高卷',
+    label: '选拔卷',
     color: '#8b5a3c',
     surface: '#fbf2ee',
     border: '#e6cfc1',
-    description: '试题更重视方法迁移、思维跨度与综合判断能力。',
+    description: '面向选拔区分场景，重视复杂问题解决、策略迁移与稳定性。',
+    targetStudents: '适合基础扎实、需要面向选拔场景提升综合稳定性的学生。',
   },
   5: {
-    label: '选拔卷',
+    label: '竞赛卷',
     color: '#6b557f',
     surface: '#f4f0f8',
     border: '#d9d0e6',
-    description: '整体强度较高，适合区分高水平学生的思维品质与稳定性。',
+    description: '整体强度高，突出竞赛型思维、跨模块综合和高难度解题技巧。',
+    targetStudents: '适合成绩优秀、准备挑战竞赛或高强度选拔的学生。',
   },
 };
 
@@ -126,6 +132,18 @@ export function getDimensionOrder(code: string): number {
 
 export function getDifficultyMeta(level: number): ReportDifficultyMeta {
   return REPORT_DIFFICULTY_META[level] ?? REPORT_DIFFICULTY_META[3];
+}
+
+export function getDifficultyLabel(level: number, fallback?: string): string {
+  return REPORT_DIFFICULTY_META[level]?.label ?? fallback ?? getDifficultyMeta(level).label;
+}
+
+export function getDifficultyDescription(level: number, fallback?: string): string {
+  return REPORT_DIFFICULTY_META[level]?.description ?? fallback ?? getDifficultyMeta(level).description;
+}
+
+export function getDifficultyTargetStudents(level: number, fallback?: string): string {
+  return REPORT_DIFFICULTY_META[level]?.targetStudents ?? fallback ?? '未提供';
 }
 
 export function formatGeneratedAt(value?: string): string {
@@ -166,27 +184,16 @@ export function formatScore(value: number, digits = 1): string {
   return Number.isFinite(value) ? value.toFixed(digits) : '0.0';
 }
 
-export function getRadarValues(dimensions: SixDimensions): number[] {
+export function getRadarValues(
+  dimensions: SixDimensions,
+  notCoveredCodes: ReadonlySet<string> = new Set(),
+): (number | null)[] {
   return REPORT_DIMENSIONS.map((item) => {
+    if (notCoveredCodes.has(item.code)) {
+      return null;
+    }
+
     const rawValue = dimensions[item.field];
     return Number.isFinite(rawValue) ? rawValue : 0;
-  });
-}
-
-export function getOrderedDistribution(
-  distribution: DifficultyPosition['dimension_distribution'],
-) {
-  const distributionByCode = new Map(distribution.map((item) => [item.code, item]));
-
-  return REPORT_DIMENSIONS.map((item) => {
-    const matched = distributionByCode.get(item.code);
-
-    return {
-      code: item.code,
-      name: matched?.name || item.shortName,
-      percentage: matched?.percentage ?? 0,
-      color: matched?.color || item.color,
-      fullName: item.name,
-    };
   });
 }

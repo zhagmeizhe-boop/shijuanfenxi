@@ -2,6 +2,7 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 from datetime import datetime
+from unittest.mock import AsyncMock, patch
 
 from app.main import app
 from app.services.ocr.mock_provider import MockOCRProvider
@@ -163,11 +164,17 @@ class TestPapersAPI:
     @pytest.mark.asyncio
     async def test_health_endpoint(self, async_client):
         """测试健康检查端点"""
-        response = await async_client.get("/health")
+        with patch(
+            "app.main.get_ocr_preflight_status",
+            new=AsyncMock(return_value={"ocr_ready": True, "provider": "paddleocr", "message": "ready"}),
+        ):
+            response = await async_client.get("/health")
 
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "healthy"
+        assert data["ocr_provider"] == "paddleocr"
+        assert data["ocr_ready"] is True
 
     @pytest.mark.asyncio
     async def test_root_endpoint(self, async_client):

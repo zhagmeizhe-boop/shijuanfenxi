@@ -1,227 +1,382 @@
 """
-维度3：信息提取与转化评分引擎
+dim3 information extraction and conversion burden scorer.
 
-评估应用题从场景信息到数学模型的转化难度
+The scorer consumes normalized information-extraction facts and maps them to
+L1-L5 fixed representative scores.
 """
 
-from typing import Any, Dict, Optional
+from __future__ import annotations
+
+from typing import Any, Dict, Iterable, List
 
 from app.services.scoring.base import BaseDimensionScorer, DimensionScore
 
+INFORMATION_ROLE_VALUES = {"none", "supporting", "core"}
+SOURCE_FORM_VALUES = {"text_only", "table_chart", "image_text", "multi_source"}
+RELEVANT_CONDITION_COUNT_VALUES = {"1-2", "3-4", "5-6", "7+"}
+DISTRACTOR_PRESSURE_VALUES = {"none", "light", "heavy"}
+CONDITION_DISTRIBUTION_VALUES = {"compact", "split", "cross_sentence", "cross_modal"}
+EXTRACTION_DEPTH_VALUES = {"direct", "selected", "reorganized", "inferred"}
+REPRESENTATION_CONVERSION_VALUES = {
+    "none",
+    "direct_mapping",
+    "relation_mapping",
+    "model_mapping",
+    "custom_model",
+}
+CONVERSION_STEP_COUNT_VALUES = {"0", "1", "2", "3+"}
+QUANTITY_RELATION_STRUCTURE_VALUES = {"none", "single_relation", "multi_relation", "nested_relation"}
+TARGET_REPRESENTATION_VALUES = {
+    "none",
+    "direct_formula",
+    "table_list",
+    "equation_relation",
+    "custom_model",
+}
+IMAGE_DEPENDENCY_VALUES = {"none", "helpful", "required"}
+TEXT_LENGTH_BAND_VALUES = {"short", "medium", "long", "very_long"}
+APPLICATION_RELATION_TYPE_VALUES = {
+    "work_rate",
+    "queue_growth",
+    "percentage_base_change",
+    "concentration_mixture",
+    "profit_discount",
+    "ratio_allocation",
+    "travel_meeting_chasing",
+    "chart_table_conversion",
+    "average_total",
+    "equation_setup",
+    "reverse_process",
+    "cycle_period",
+    "optimization_comparison",
+    "multi_object_distribution",
+    "conservation_transfer",
+}
+OBJECT_COUNT_BAND_VALUES = {"1", "2", "3", "4+"}
+APPLICATION_COUNT_VALUES = {"0", "1", "2", "3+"}
+BASE_QUANTITY_SHIFT_VALUES = {"none", "single", "multiple"}
+COMPARISON_CANDIDATE_COUNT_VALUES = {"0", "2", "3+"}
+
+DIM3_LEVELS = {
+    "L1": {"score": 2.0, "level": 1, "label": "L1 直接提取"},
+    "L2": {"score": 4.0, "level": 2, "label": "L2 单次转化"},
+    "L3": {"score": 6.0, "level": 3, "label": "L3 多条件转化"},
+    "L4": {"score": 8.0, "level": 4, "label": "L4 高负担组织"},
+    "L5": {"score": 9.5, "level": 5, "label": "L5 高阶重构建模"},
+}
+
+
+def _normalize_choice(value: Any, allowed: set[str]) -> str:
+    normalized = str(value or "").strip().lower()
+    return normalized if normalized in allowed else ""
+
+
+def _normalize_choice_list(value: Any, allowed: set[str]) -> List[str]:
+    if isinstance(value, str):
+        raw_items: Iterable[Any] = value.replace("，", ",").replace("、", ",").split(",")
+    elif isinstance(value, list):
+        raw_items = value
+    else:
+        raw_items = []
+
+    normalized: List[str] = []
+    for item in raw_items:
+        candidate = str(item or "").strip().lower()
+        if candidate in allowed and candidate not in normalized:
+            normalized.append(candidate)
+    return normalized
+
+
+def _normalize_zero_one(value: Any) -> int | None:
+    if value in (0, "0", False):
+        return 0
+    if value in (1, "1", True):
+        return 1
+    return None
+
+
+def _conversion_rank(value: str) -> int:
+    return {"0": 0, "1": 1, "2": 2, "3+": 3}.get(value, -1)
+
+
+def _condition_count_rank(value: str) -> int:
+    return {"1-2": 1, "3-4": 2, "5-6": 3, "7+": 4}.get(value, -1)
+
+
+def _application_count_rank(value: str) -> int:
+    return {"0": 0, "1": 1, "2": 2, "3+": 3}.get(value, 0)
+
+
+def _object_count_rank(value: str) -> int:
+    return {"1": 1, "2": 2, "3": 3, "4+": 4}.get(value, 0)
+
+
+def _comparison_candidate_rank(value: str) -> int:
+    return {"0": 0, "2": 2, "3+": 3}.get(value, 0)
+
 
 class Dim3InformationScorer(BaseDimensionScorer):
-    """
-    维度3：信息提取与转化评分器
-
-    评估应用题从场景信息到数学模型的转化难度
-    """
-
     DIMENSION_CODE = "dim3"
     DIMENSION_NAME = "信息提取与转化"
 
     def __init__(self):
-        # 维度3使用固定规则，不需要配置文件
         super().__init__(config=None)
 
-    def _get_default_config(self):
-        """获取默认配置（固定规则）"""
-        return {
-            "max_score": 10.0,
-            "score_granularity": 0.5,
-        }
-
-    def score(self, features: Dict[str, Any]) -> DimensionScore:
-        """
-        计算维度3评分
-
-        Args:
-            features: 题目特征
-                - info_source_type: 信息源类型 (text_only/image_text/table/multi_source)
-                - info_count: 信息量 (few/medium/many)
-                - has_noise_info: 是否有干扰信息 (0/1)
-                - condition_scattered: 条件是否分散 (0/1)
-                - need_modeling: 是否需要建模 (0/1)
-                - relation_complexity: 关系复杂度 (low/medium/high)
-
-        Returns:
-            DimensionScore: 评分结果
-        """
-        # 检查是否为非适用题
-        if features.get("not_applicable", False):
-            return DimensionScore(
-                dimension_code=self.dimension_code,
-                score=0.0,
-                level=0,
-                level_label="N/A",
-                evidence="该题目不适用此维度",
-                applicable=False,
-            )
-
-        # 检查强制覆盖规则
-        override = self._check_override_rules(features)
-        if override:
-            return override
-
-        # 计算基础分
-        base_score = self._get_base_score(features)
-
-        # 计算修正分
-        adjustments = self._calculate_adjustments(features)
-        total_adjustment = sum(adjustments.values())
-
-        # 计算最终分数
-        raw_score = base_score + total_adjustment
-        final_score = min(raw_score, 10.0)
-        final_score = self.round_score(final_score)
-
-        # 计算等级
-        level, level_label = self.calculate_level(final_score)
-
-        # 生成证据
-        evidence = self._generate_evidence(
-            features, base_score, adjustments, final_score, level_label
-        )
-
-        return DimensionScore(
-            dimension_code=self.dimension_code,
-            score=final_score,
-            level=level,
-            level_label=level_label,
-            evidence=evidence,
-            applicable=True,
-            details={
-                "base_score": base_score,
-                "adjustments": adjustments,
-                "features": features,
-            },
-        )
-
-    def _check_override_rules(self, features: Dict[str, Any]) -> Optional[DimensionScore]:
-        """检查强制覆盖规则"""
-        # 强制1档规则
-        if (
-            features.get("info_source_type") == "text_only"
-            and features.get("info_count") == "few"
-            and features.get("has_noise_info") == 0
-            and features.get("condition_scattered") == 0
-            and features.get("need_modeling") == 0
-            and features.get("relation_complexity") == "low"
-        ):
-            return DimensionScore(
-                dimension_code=self.dimension_code,
-                score=self.LEVEL_SCORE_MIDPOINTS[1],
-                level=1,
-                level_label="简单",
-                evidence="【强制规则】强制1档：满足所有最简单信息处理条件（纯文字、信息量少、无干扰、条件集中、无需建模、关系复杂度低）",
-                applicable=True,
-            )
-
-        # 强制5档规则
-        if (
-            features.get("info_source_type") == "multi_source"
-            and features.get("info_count") == "many"
-            and features.get("need_modeling") == 1
-            and features.get("relation_complexity") == "high"
-            and (features.get("has_noise_info") == 1 or features.get("condition_scattered") == 1)
-        ):
-            return DimensionScore(
-                dimension_code=self.dimension_code,
-                score=self.LEVEL_SCORE_MIDPOINTS[5],
-                level=5,
-                level_label="困难",
-                evidence="【强制规则】强制5档：满足最复杂信息处理条件（多源混合、信息量大、需要建模、关系复杂度高，且存在干扰信息或条件分散）",
-                applicable=True,
-            )
-
-        return None
-
-    def _get_base_score(self, features: Dict[str, Any]) -> float:
-        """获取基础分"""
-        complexity = features.get("relation_complexity", "low")
-        return {"low": 1.5, "medium": 4.5, "high": 6.5}.get(complexity, 1.5)
-
-    def _calculate_adjustments(self, features: Dict[str, Any]) -> Dict[str, float]:
-        """计算修正分"""
-        adjustments = {}
-
-        # 信息源类型
-        source_type = features.get("info_source_type", "text_only")
-        adjustments["info_source_type"] = {
-            "text_only": 0.0, "image_text": 0.5, "table": 0.5, "multi_source": 1.0
-        }.get(source_type, 0.0)
-
-        # 信息量
-        info_count = features.get("info_count", "few")
-        adjustments["info_count"] = {"few": 0.0, "medium": 0.5, "many": 1.0}.get(info_count, 0.0)
-
-        # 干扰信息
-        if features.get("has_noise_info") == 1:
-            adjustments["has_noise_info"] = 0.5
-
-        # 条件分散
-        if features.get("condition_scattered") == 1:
-            adjustments["condition_scattered"] = 0.5
-
-        # 需要建模
-        if features.get("need_modeling") == 1:
-            adjustments["need_modeling"] = 1.0
-
-        return adjustments
-
-    def _generate_evidence(
-        self, features: Dict[str, Any], base_score: float,
-        adjustments: Dict[str, float], final_score: float, level_label: str
-    ) -> str:
-        """生成评分证据（教师可读的中文叙述）"""
-        info_source_type = features.get("info_source_type", "text_only")
-        info_count = features.get("info_count", "few")
-        has_noise_info = features.get("has_noise_info", 0)
-        condition_scattered = features.get("condition_scattered", 0)
-        need_modeling = features.get("need_modeling", 0)
-        relation_complexity = features.get("relation_complexity", "low")
-
-        source_desc = {
-            "text_only": "纯文字", "image_text": "图文混排",
-            "table": "含表格", "multi_source": "多种来源混合"
-        }.get(info_source_type, info_source_type)
-
-        count_desc = {
-            "few": "较少（≤3条）", "medium": "中等（4-6条）", "many": "较多（>6条）"
-        }.get(info_count, info_count)
-
-        complexity_desc = {
-            "low": "较简单", "medium": "中等", "high": "较复杂"
-        }.get(relation_complexity, relation_complexity)
-
-        extra = []
-        if has_noise_info == 1:
-            extra.append("含干扰信息")
-        if condition_scattered == 1:
-            extra.append("条件分散")
-        if need_modeling == 1:
-            extra.append("需建立数学模型")
-        extra_str = "，" + "、".join(extra) if extra else ""
-
-        adj_total = sum(v for v in adjustments.values() if v > 0)
-        adj_str = f"，修正分+{adj_total:.1f}" if adj_total > 0 else ""
-
-        return (
-            f"本题信息来源为{source_desc}，有效信息{count_desc}，数量关系{complexity_desc}{extra_str}。"
-            f"基础分{base_score}{adj_str}，综合评分{final_score}分，难度等级：{level_label}"
-        )
-
-    def _create_score_result(
-        self, score: float, level: int, evidence: str, details: Dict = None
+    def _build_score(
+        self,
+        level_code: str,
+        evidence_summary: str,
+        *,
+        extra_details: Dict[str, Any] | None = None,
     ) -> DimensionScore:
-        """创建评分结果"""
-        level_labels = {1: "简单", 2: "较简单", 3: "中等", 4: "较难", 5: "困难"}
-
+        level = DIM3_LEVELS[level_code]
+        details = {"status": "applicable", "dim3_level": level_code}
+        if extra_details:
+            details.update(extra_details)
         return DimensionScore(
-            dimension_code=self.dimension_code,
-            score=score,
-            level=level,
-            level_label=level_labels.get(level, "未知"),
-            evidence=evidence,
+            dimension_code=self.DIMENSION_CODE,
+            score=level["score"],
+            level=level["level"],
+            level_label=level["label"],
+            evidence=f"{level['label']}：{evidence_summary}",
             applicable=True,
-            details=details or {},
+            details=details,
         )
+
+    def _invalid_score(self, evidence: str) -> DimensionScore:
+        return DimensionScore(
+            dimension_code=self.DIMENSION_CODE,
+            score=0.0,
+            level=0,
+            level_label="N/A",
+            evidence=evidence,
+            applicable=False,
+            details={"status": "not_applicable", "dim3_level": "N/A"},
+        )
+
+    def _calculate_score(self, features: Dict[str, Any]) -> DimensionScore:
+        information_role = _normalize_choice(features.get("information_role"), INFORMATION_ROLE_VALUES)
+        source_form = _normalize_choice(features.get("source_form"), SOURCE_FORM_VALUES)
+        relevant_condition_count = _normalize_choice(
+            features.get("relevant_condition_count"),
+            RELEVANT_CONDITION_COUNT_VALUES,
+        )
+        distractor_pressure = _normalize_choice(
+            features.get("distractor_pressure"),
+            DISTRACTOR_PRESSURE_VALUES,
+        )
+        condition_distribution = _normalize_choice(
+            features.get("condition_distribution"),
+            CONDITION_DISTRIBUTION_VALUES,
+        )
+        extraction_depth = _normalize_choice(features.get("extraction_depth"), EXTRACTION_DEPTH_VALUES)
+        representation_conversion = _normalize_choice(
+            features.get("representation_conversion"),
+            REPRESENTATION_CONVERSION_VALUES,
+        )
+        conversion_step_count = _normalize_choice(
+            features.get("conversion_step_count"),
+            CONVERSION_STEP_COUNT_VALUES,
+        )
+        quantity_relation_structure = _normalize_choice(
+            features.get("quantity_relation_structure"),
+            QUANTITY_RELATION_STRUCTURE_VALUES,
+        )
+        target_representation = _normalize_choice(
+            features.get("target_representation"),
+            TARGET_REPRESENTATION_VALUES,
+        )
+        global_organizing_required = _normalize_zero_one(features.get("global_organizing_required"))
+        image_dependency = _normalize_choice(features.get("image_dependency"), IMAGE_DEPENDENCY_VALUES)
+        text_length_band = _normalize_choice(features.get("text_length_band"), TEXT_LENGTH_BAND_VALUES)
+        application_relation_types = _normalize_choice_list(
+            features.get("application_relation_types"),
+            APPLICATION_RELATION_TYPE_VALUES,
+        )
+        application_relation_set = set(application_relation_types)
+        object_count_band = _normalize_choice(features.get("object_count_band"), OBJECT_COUNT_BAND_VALUES)
+        state_change_count = _normalize_choice(features.get("state_change_count"), APPLICATION_COUNT_VALUES)
+        implicit_relation_count = _normalize_choice(features.get("implicit_relation_count"), APPLICATION_COUNT_VALUES)
+        base_quantity_shift = _normalize_choice(features.get("base_quantity_shift"), BASE_QUANTITY_SHIFT_VALUES)
+        comparison_candidate_count = _normalize_choice(
+            features.get("comparison_candidate_count"),
+            COMPARISON_CANDIDATE_COUNT_VALUES,
+        )
+        evidence_summary = str(features.get("evidence_summary", "")).strip()
+        application_details = {
+            "application_relation_types": application_relation_types,
+            "object_count_band": object_count_band,
+            "state_change_count": state_change_count,
+            "implicit_relation_count": implicit_relation_count,
+            "base_quantity_shift": base_quantity_shift,
+            "comparison_candidate_count": comparison_candidate_count,
+        }
+        object_rank = _object_count_rank(object_count_band)
+        state_rank = _application_count_rank(state_change_count)
+        implicit_rank = _application_count_rank(implicit_relation_count)
+        comparison_rank = _comparison_candidate_rank(comparison_candidate_count)
+
+        required_values = [
+            information_role,
+            source_form,
+            relevant_condition_count,
+            distractor_pressure,
+            condition_distribution,
+            extraction_depth,
+            representation_conversion,
+            conversion_step_count,
+            quantity_relation_structure,
+            target_representation,
+            image_dependency,
+            evidence_summary,
+        ]
+        if any(value in ("", None) for value in required_values) or global_organizing_required is None:
+            return self._invalid_score("dim3 关键信息提取事实不完整，无法自动判级。")
+
+        if information_role != "core":
+            return self._invalid_score("该题未满足 dim3 的核心信息提取与转化门槛。")
+
+        if (
+            representation_conversion == "custom_model"
+            and target_representation == "custom_model"
+            and quantity_relation_structure == "nested_relation"
+            and global_organizing_required == 1
+        ) or (
+            source_form == "multi_source"
+            and condition_distribution == "cross_modal"
+            and conversion_step_count == "3+"
+            and information_role == "core"
+        ) or (
+            {"reverse_process", "conservation_transfer"}.issubset(application_relation_set)
+            and quantity_relation_structure == "nested_relation"
+            and global_organizing_required == 1
+            and state_rank >= 3
+        ):
+            return self._build_score("L5", evidence_summary, extra_details=application_details)
+
+        if (
+            representation_conversion in {"model_mapping", "custom_model"}
+            and target_representation in {"equation_relation", "custom_model"}
+            and conversion_step_count in {"2", "3+"}
+        ) or (
+            relevant_condition_count in {"5-6", "7+"}
+            and condition_distribution in {"split", "cross_sentence", "cross_modal"}
+            and extraction_depth in {"reorganized", "inferred"}
+        ) or (
+            quantity_relation_structure in {"multi_relation", "nested_relation"}
+            and (
+                distractor_pressure == "heavy"
+                or global_organizing_required == 1
+                or _conversion_rank(conversion_step_count) >= 2
+            )
+        ) or (
+            source_form == "multi_source"
+            and condition_distribution in {"cross_sentence", "cross_modal"}
+            and extraction_depth in {"reorganized", "inferred"}
+        ) or (
+            text_length_band == "very_long"
+        ) or (
+            "queue_growth" in application_relation_set
+            and (implicit_rank >= 2 or state_rank >= 2 or base_quantity_shift in {"single", "multiple"})
+        ) or (
+            "travel_meeting_chasing" in application_relation_set
+            and (state_rank >= 2 or implicit_rank >= 2 or base_quantity_shift == "multiple")
+        ) or (
+            "profit_discount" in application_relation_set
+            and (state_rank >= 2 or implicit_rank >= 2 or object_rank >= 2)
+        ) or (
+            "concentration_mixture" in application_relation_set
+            and (state_rank >= 2 or base_quantity_shift in {"single", "multiple"})
+        ) or (
+            "optimization_comparison" in application_relation_set
+            and comparison_rank >= 3
+        ) or (
+            "multi_object_distribution" in application_relation_set
+            and object_rank >= 3
+            and implicit_rank >= 2
+        ) or (
+            "reverse_process" in application_relation_set
+            and state_rank >= 3
+        ) or (
+            len(application_relation_set) >= 2
+            and (
+                state_rank >= 2
+                or implicit_rank >= 2
+                or object_rank >= 3
+                or comparison_rank >= 3
+            )
+        ):
+            return self._build_score("L4", evidence_summary, extra_details=application_details)
+
+        if (
+            representation_conversion in {"relation_mapping", "model_mapping"}
+        ) or (
+            extraction_depth in {"reorganized", "inferred"}
+            and representation_conversion in {"direct_mapping", "relation_mapping"}
+            and (
+                _conversion_rank(conversion_step_count) >= 1
+                or target_representation in {"direct_formula", "equation_relation", "table_list"}
+                or quantity_relation_structure == "single_relation"
+            )
+        ) or (
+            source_form in {"table_chart", "image_text"}
+            and extraction_depth in {"selected", "reorganized", "inferred"}
+            and _conversion_rank(conversion_step_count) >= 1
+            and _condition_count_rank(relevant_condition_count) >= 2
+        ) or (
+            condition_distribution in {"split", "cross_sentence"}
+        ) or (
+            relevant_condition_count in {"5-6", "7+"}
+        ) or (
+            quantity_relation_structure == "multi_relation"
+        ) or (
+            target_representation in {"table_list", "equation_relation"}
+            and _conversion_rank(conversion_step_count) >= 1
+        ) or (
+            text_length_band == "long"
+        ) or (
+            bool(
+                application_relation_set
+                & {
+                    "work_rate",
+                    "percentage_base_change",
+                    "concentration_mixture",
+                    "profit_discount",
+                    "ratio_allocation",
+                    "travel_meeting_chasing",
+                    "chart_table_conversion",
+                    "equation_setup",
+                    "reverse_process",
+                    "cycle_period",
+                    "multi_object_distribution",
+                    "conservation_transfer",
+                }
+            )
+        ) or (
+            object_rank >= 2
+        ) or (
+            state_rank >= 1
+        ) or (
+            implicit_rank >= 1
+        ) or (
+            base_quantity_shift in {"single", "multiple"}
+        ) or (
+            comparison_rank >= 2
+        ):
+            return self._build_score("L3", evidence_summary, extra_details=application_details)
+
+        if (
+            relevant_condition_count == "3-4"
+        ) or (
+            distractor_pressure == "light"
+        ) or (
+            conversion_step_count == "1"
+        ) or (
+            source_form in {"table_chart", "image_text"}
+            and target_representation in {"direct_formula", "table_list"}
+        ) or (
+            quantity_relation_structure == "single_relation"
+        ):
+            return self._build_score("L2", evidence_summary, extra_details=application_details)
+
+        return self._build_score("L1", evidence_summary, extra_details=application_details)

@@ -78,6 +78,9 @@ class Paper(Base):
     need_manual_review = Column(Boolean, default=False, comment="是否需要人工复核")
     last_stage = Column(String(64), nullable=True, comment="最近执行阶段")
     error_message = Column(Text, nullable=True, comment="最近错误信息")
+    progress_current = Column(Integer, nullable=True, comment="褰撳墠杩涘害")
+    progress_total = Column(Integer, nullable=True, comment="鎬昏杩涘害")
+    progress_message = Column(String(255), nullable=True, comment="杩涘害鎻愮ず")
     created_at = Column(DateTime, default=func.now(), nullable=False)
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
 
@@ -110,7 +113,7 @@ class Question(Base):
     page_no = Column(Integer, nullable=False, default=1, comment="所在页码")
     question_no = Column(String(20), nullable=False, comment="归一化题号")
     question_label_raw = Column(String(50), nullable=True, comment="卷面原样题号")
-    section_index_raw = Column(String(20), nullable=True, comment="卷面区块号")
+    section_index_raw = Column(String(100), nullable=True, comment="卷面区块号")
     question_type = Column(Enum(QuestionType), nullable=False, comment="题目类型")
     raw_text = Column(Text, nullable=False, comment="题目原文")
     image_block_url = Column(String(500), nullable=True, comment="题块图片路径")

@@ -38,6 +38,13 @@ export async function fetchReportData(reportId: string): Promise<FullReportData>
 
   const payload = (await response.json()) as FullReportData;
   payload.report_warnings = Array.isArray(payload.report_warnings) ? payload.report_warnings : [];
+  payload.dimension_details = Array.isArray(payload.dimension_details)
+    ? payload.dimension_details.map((detail) => ({
+        ...detail,
+        score_status:
+          detail.score_status || (detail.level <= 0 || detail.score <= 0 ? 'not_covered' : 'scored'),
+      }))
+    : [];
   return payload;
 }
 

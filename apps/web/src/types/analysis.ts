@@ -19,6 +19,7 @@ export interface CountedQuestion {
   question_display_label?: string;
   summary: string;
   reason: string;
+  full_reason?: string;
 }
 
 export interface DimensionScore {
@@ -27,9 +28,11 @@ export interface DimensionScore {
   score: number;
   level: number;
   level_label: string;
+  score_status?: 'scored' | 'not_covered';
   evidence: string;
   warning?: boolean;
   counted_questions?: CountedQuestion[];
+  score_breakdown?: Record<string, unknown>;
 }
 
 export interface DifficultyPosition {

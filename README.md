@@ -1,12 +1,8 @@
-# 小学数学分班考试卷六维分析系统
+# 小学数学试卷六维分析系统
 
-> 智能试卷分析报告生成平台
+智能试卷分析与报告生成平台。
 
-## 项目简介
-
-本系统是一个面向教育机构的智能试卷分析平台，通过 OCR 识别、智能解析和六维评分模型，自动生成试卷分析报告。
-
-## 快速开始
+## 快速启动
 
 ### 前置要求
 
@@ -16,11 +12,11 @@
 ### 一键启动
 
 ```bash
-# 1. 配置环境变量
+# 1. 准备环境变量
 cp .env.example .env
 
-# 2. 启动所有服务
-docker-compose up -d
+# 2. 启动全部服务
+docker compose up -d --build
 
 # 3. 访问服务
 # - 前端: http://localhost:3000
@@ -28,43 +24,74 @@ docker-compose up -d
 # - API 文档: http://localhost:8000/docs
 ```
 
-### 本地开发
+## 本地开发
 
-```bash
-# 前端
-cd apps/web
-pnpm install
-pnpm dev
+当前仓库的本地开发主路径是：
 
-# 后端
-cd apps/api
-poetry install
-poetry run uvicorn app.main:app --reload
+- 前端使用 `npm + Vite`
+- 后端使用 `apps/api/venv`
+- 本地默认数据库是 SQLite
+- 后台分析依赖 Redis + Celery Worker
+
+### 1. 启动 Redis
+
+```powershell
+docker compose up -d redis
 ```
+
+### 2. 启动后端 API
+
+```powershell
+cd apps/api
+.\venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### 3. 启动 Celery Worker
+
+```powershell
+cd apps/api
+.\venv\Scripts\celery.exe -A app.tasks.celery_app:celery worker --loglevel=info
+```
+
+说明：
+
+- 旧写法 `.\venv\Scripts\celery.exe -A app.tasks.celery_app worker --loglevel=info` 现在也兼容。
+- Windows 下不需要手工加 `--pool=solo`，代码已自动处理。
+
+### 4. 启动前端
+
+```powershell
+cd apps/web
+npm install
+npm run dev
+```
+
+### 本地访问地址
+
+- 前端: `http://localhost:3000`
+- 后端 API: `http://localhost:8000`
+- API 文档: `http://localhost:8000/docs`
 
 ## 目录结构
 
-```
+```text
 .
-├── apps/
-│   ├── web/           # Next.js 前端
-│   └── api/           # FastAPI 后端
-├── packages/
-│   └── shared/        # 共享代码
-├── docs/              # 文档
-├── scripts/           # 脚本
-├── docker-compose.yml
-└── README.md
+|-- apps/
+|   |-- web/   # React + Vite 前端
+|   `-- api/   # FastAPI 后端
+|-- docs/
+|-- scripts/
+|-- docker-compose.yml
+`-- README.md
 ```
 
 ## 技术栈
 
-- **前端**: Next.js 14 + TypeScript + Tailwind CSS
-- **后端**: FastAPI + Python 3.11
-- **数据库**: PostgreSQL + Redis
-- **任务队列**: Celery
-- **部署**: Docker Compose
+- 前端: React + Vite + TypeScript + Tailwind CSS
+- 后端: FastAPI + Python
+- 本地存储: SQLite
+- 容器部署: PostgreSQL + Redis + Celery + Docker Compose
 
-## 许可证
+## License
 
 MIT

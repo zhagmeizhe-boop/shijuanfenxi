@@ -16,7 +16,6 @@ import logging
 import os
 import re
 from collections import Counter
-from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -37,75 +36,9 @@ from app.services.ocr.base import (
     QuestionType,
     SubItemCandidate,
 )
+from app.services.ocr.layout_types import OCRLine, QuestionAnchor, ReadingZone, SectionBlock
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class OCRLine:
-    text: str
-    left: int
-    top: int
-    width: int
-    height: int
-
-    @property
-    def right(self) -> int:
-        return self.left + self.width
-
-    @property
-    def bottom(self) -> int:
-        return self.top + self.height
-
-
-@dataclass
-class QuestionAnchor:
-    line_index: int
-    question_no: str
-    question_label_raw: str
-    line: OCRLine
-
-
-@dataclass
-class ReadingZone:
-    zone_key: str
-    lines: List[OCRLine]
-    left: int
-    top: int
-    right: int
-    bottom: int
-    layout_type: str
-
-    @property
-    def width(self) -> int:
-        return self.right - self.left
-
-    @property
-    def height(self) -> int:
-        return self.bottom - self.top
-
-
-@dataclass
-class SectionBlock:
-    zone_key: str
-    section_index_raw: str
-    heading_text: str
-    lines: List[OCRLine]
-    left: int
-    top: int
-    right: int
-    bottom: int
-    declared_count: Optional[int]
-    layout_type: str
-
-    @property
-    def bbox(self) -> Dict[str, int]:
-        return {
-            "left": self.left,
-            "top": self.top,
-            "width": max(self.right - self.left, 1),
-            "height": max(self.bottom - self.top, 1),
-        }
 
 
 class BaiduOCRProvider(BaseOCRProvider):
@@ -123,6 +56,7 @@ class BaiduOCRProvider(BaseOCRProvider):
     SECTION_HEADING_PATTERN = re.compile(r"^\s*([一二三四五六七八九十]{1,3})\s*[、\.．]\s*(.*)$")
     SECTION_HEADING_PAREN_PATTERN = re.compile(r"^\s*[（(]([一二三四五六七八九十]{1,3})[）)]\s*(.*)$")
     TOP_LEVEL_PLAIN_NO_PATTERN = re.compile(r"^\s*(\d{1,2})\s*(?:[.\uFF0E\u3001\u9898])(?!\d)")
+    WEAK_TOP_LEVEL_NO_PATTERN = re.compile(r"^\s*(\d{1,2})(?=[\u4e00-\u9fff])")
     SECTION_HEADING_KEYWORDS = (
         "填空",
         "选择",
@@ -182,6 +116,16 @@ class BaiduOCRProvider(BaseOCRProvider):
     )
     SPATIAL_SIGNAL_PATTERN = re.compile(
         r"(?:展开图|截面|折叠|旋转|立体|正视图|侧视图|俯视图|从上面看|从侧面看)"
+    )
+    SHORT_GEOMETRY_IMAGE_PATTERN = re.compile(
+        "(?:S\\s*\u9634|S\u9634\u5f71|\u9634\u5f71(?:\u90e8\u5206)?(?:\u9762\u79ef)?|"
+        "\u5706\u5185\u6700\u5927\u6b63\u65b9\u5f62|\u5185\u63a5\u6b63\u65b9\u5f62|"
+        "\u9732\u5728\u5916\u9762\u7684\u9762\u79ef|\u5982\u56fe.*\u6c42\u9762\u79ef|"
+        "\u56fe\u4e2d.*\u6c42\u9762\u79ef|\u6c42\\s*S)"
+    )
+    SHORT_GEOMETRY_3D_PATTERN = re.compile(
+        "(?:\u9732\u5728\u5916\u9762|\u5c0f\u6b63\u65b9\u4f53|\u6b63\u65b9\u4f53|"
+        "\u957f\u65b9\u4f53|\u68f1\u957f|\u7acb\u4f53|\u8868\u9762\u79ef)"
     )
     FORMULA_TRIGGER_PATTERN = re.compile(
         r"(?:=|≈|×|÷|/|%|[+\-*]|列式|竖式|脱式|简便计算|\d+\s*/\s*\d+)"
@@ -461,6 +405,46 @@ class BaiduOCRProvider(BaseOCRProvider):
                 section_index_raw = detected
         return section_index_raw
 
+    def _section_index_to_number(self, section_index_raw: str) -> Optional[int]:
+        normalized = self._normalize_chinese_question_no(str(section_index_raw or "").strip())
+        if not normalized:
+            return None
+        try:
+            return int(normalized)
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _number_to_section_index_raw(section_no: int) -> Optional[str]:
+        mapping = {
+            1: "一",
+            2: "二",
+            3: "三",
+            4: "四",
+            5: "五",
+            6: "六",
+            7: "七",
+            8: "八",
+            9: "九",
+            10: "十",
+        }
+        return mapping.get(int(section_no))
+
+    def _infer_headingless_prefix_section_index(
+        self,
+        carried_section_index_raw: str,
+        first_heading_index_raw: str,
+    ) -> str:
+        carried = str(carried_section_index_raw or "").strip()
+        if carried:
+            return carried
+
+        first_heading_no = self._section_index_to_number(first_heading_index_raw)
+        if first_heading_no is None or first_heading_no <= 1:
+            return ""
+
+        return self._number_to_section_index_raw(first_heading_no - 1) or ""
+
     def _is_valid_plain_question_label(self, question_no: str, remainder: str) -> bool:
         normalized_no = str(question_no or "").strip()
         normalized_remainder = str(remainder or "").lstrip()
@@ -469,6 +453,8 @@ class BaiduOCRProvider(BaseOCRProvider):
             return False
         if not normalized_remainder:
             return True
+        if normalized_remainder.startswith(("..", "...", "\u2026", ".", "\uFF0E")):
+            return False
 
         heading_like_prefixes = (
             "计算",
@@ -494,8 +480,17 @@ class BaiduOCRProvider(BaseOCRProvider):
             return False
 
         if normalized_remainder[0].isdigit():
-            probe = normalized_remainder[:18]
+            digit_prefix = re.match(r"^\d+(?:\.\d+)?", normalized_remainder)
+            tail = normalized_remainder[digit_prefix.end() :] if digit_prefix else normalized_remainder
+            tail = tail.lstrip()
+            probe = normalized_remainder[:24]
             has_formula_signal = bool(re.search(r"[+\-*/=xX()（）\[\]]", probe))
+            if not tail:
+                return False
+            if tail.startswith(("..", "...", "\u2026", ".", "\uFF0E")):
+                return False
+            if tail[0] in "+-*/=\u00D7\u00F7xX:\uFF1A":
+                return False
             if re.match(
                 r"^\d+(?:\.\d+)?\s*(?:元|%|厘米|平方厘米|平方米|立方厘米|立方米|米|千克|吨|分钟|小时|克|m2?|cm2?)",
                 probe,
@@ -505,6 +500,43 @@ class BaiduOCRProvider(BaseOCRProvider):
                 return False
 
         return True
+
+    def _is_valid_weak_question_label(self, question_no: str, remainder: str) -> bool:
+        normalized_no = str(question_no or "").strip()
+        normalized_remainder = str(remainder or "").lstrip()
+
+        if not normalized_no or normalized_no == "0":
+            return False
+        if not normalized_remainder:
+            return False
+        if not re.match(r"^[\u4e00-\u9fff“”‘’《》]", normalized_remainder):
+            return False
+        if not self._is_valid_plain_question_label(question_no, normalized_remainder):
+            return False
+        return True
+
+    def _extract_weak_question_label(
+        self,
+        text: str,
+        *,
+        expected_no: Optional[int] = None,
+    ) -> Optional[Tuple[str, str]]:
+        weak_match = self.WEAK_TOP_LEVEL_NO_PATTERN.match(text)
+        if not weak_match:
+            return None
+
+        question_no = weak_match.group(1)
+        if expected_no is not None:
+            try:
+                if int(question_no) != int(expected_no):
+                    return None
+            except (TypeError, ValueError):
+                return None
+
+        remainder = text[weak_match.end() :]
+        if not self._is_valid_weak_question_label(question_no, remainder):
+            return None
+        return question_no, question_no
 
     def _extract_question_label(self, text: str) -> Optional[Tuple[str, str]]:
         if re.match(
@@ -614,6 +646,79 @@ class BaiduOCRProvider(BaseOCRProvider):
         return repaired
 
     @staticmethod
+    def _anchor_sequence_start_bonus(question_no: int) -> int:
+        if question_no <= 3:
+            return 6
+        if question_no <= 10:
+            return 3
+        return 0
+
+    @staticmethod
+    def _anchor_sequence_transition_score(previous_no: int, current_no: int) -> int:
+        gap = current_no - previous_no
+        if gap <= 0:
+            return -10_000
+        if gap == 1:
+            return 8
+        if gap == 2:
+            return 6
+        if gap == 3:
+            return 3
+        return max(-6, 3 - (gap - 3) * 3)
+
+    def _select_best_anchor_sequence(
+        self,
+        anchors: Sequence[QuestionAnchor],
+    ) -> List[QuestionAnchor]:
+        if len(anchors) <= 1:
+            return list(anchors)
+
+        numeric_values: List[Optional[int]] = []
+        for anchor in anchors:
+            try:
+                numeric_values.append(int(str(anchor.question_no).strip()))
+            except (TypeError, ValueError):
+                numeric_values.append(None)
+
+        if sum(1 for value in numeric_values if value is not None) <= 1:
+            return list(anchors)
+
+        best_scores: List[int] = []
+        previous_indices: List[Optional[int]] = []
+        for index, current_no in enumerate(numeric_values):
+            if current_no is None:
+                best_scores.append(-10_000)
+                previous_indices.append(None)
+                continue
+
+            score = 8 + self._anchor_sequence_start_bonus(current_no)
+            previous_index: Optional[int] = None
+            for candidate_index, previous_no in enumerate(numeric_values[:index]):
+                if previous_no is None or previous_no >= current_no:
+                    continue
+                candidate_score = (
+                    best_scores[candidate_index]
+                    + self._anchor_sequence_transition_score(previous_no, current_no)
+                )
+                if candidate_score > score:
+                    score = candidate_score
+                    previous_index = candidate_index
+
+            best_scores.append(score)
+            previous_indices.append(previous_index)
+
+        best_end_index = max(range(len(best_scores)), key=lambda item: best_scores[item])
+        selected_indices: List[int] = []
+        while best_end_index is not None and best_scores[best_end_index] > -10_000:
+            selected_indices.append(best_end_index)
+            best_end_index = previous_indices[best_end_index]
+
+        if not selected_indices:
+            return list(anchors)
+        selected_indices.reverse()
+        return [anchors[index] for index in selected_indices]
+
+    @staticmethod
     def _score_anchor_candidate_group(
         candidates: Sequence[Tuple[int, OCRLine, Tuple[str, str]]],
     ) -> int:
@@ -652,6 +757,7 @@ class BaiduOCRProvider(BaseOCRProvider):
         anchors: Sequence[QuestionAnchor],
         page_questions: Sequence[ParsedQuestion],
         existing_questions: Sequence[ParsedQuestion],
+        section_state: Optional[Dict[str, Any]] = None,
     ) -> bool:
         normalized_section = str(section_index_raw or "").strip()
         if not normalized_section or not anchors:
@@ -667,15 +773,50 @@ class BaiduOCRProvider(BaseOCRProvider):
             except (TypeError, ValueError):
                 continue
 
-        if last_question_no is None:
-            return False
-
         try:
             first_anchor_no = int(str(anchors[0].question_no).strip())
         except (TypeError, ValueError):
             return False
 
-        return last_question_no < first_anchor_no <= last_question_no + 2
+        if last_question_no is not None:
+            return last_question_no < first_anchor_no <= last_question_no + 2
+
+        if not section_state:
+            return False
+
+        declared_count = section_state.get("declared_count")
+        if not section_state.get("entered"):
+            return False
+        detected_numbers = []
+        for value in section_state.get("detected_numbers", []) or []:
+            try:
+                detected_numbers.append(int(str(value).strip()))
+            except (TypeError, ValueError, AttributeError):
+                continue
+        if detected_numbers:
+            last_detected_no = max(detected_numbers)
+            return last_detected_no < first_anchor_no <= last_detected_no + 2
+
+        anchor_values: List[int] = []
+        for anchor in anchors[:3]:
+            try:
+                anchor_values.append(int(str(anchor.question_no).strip()))
+            except (TypeError, ValueError):
+                continue
+        if len(anchor_values) >= 2 and all(
+            0 < anchor_values[index + 1] - anchor_values[index] <= 2
+            for index in range(len(anchor_values) - 1)
+        ):
+            return True
+
+        if declared_count is None:
+            return True
+
+        try:
+            declared_total = int(declared_count)
+        except (TypeError, ValueError):
+            return True
+        return 1 <= first_anchor_no <= declared_total
 
     def _detect_question_start_indices(self, lines: Sequence[OCRLine]) -> List[int]:
         if not lines:
@@ -1012,6 +1153,15 @@ class BaiduOCRProvider(BaseOCRProvider):
                 "reason": "题面文本为空",
             }
 
+        if self.SHORT_GEOMETRY_IMAGE_PATTERN.search(normalized):
+            category = "spatial_3d" if self.SHORT_GEOMETRY_3D_PATTERN.search(normalized) else "geometry_visual"
+            return {
+                "required": True,
+                "attach_recommended": True,
+                "category": category,
+                "reason": "短文本图形题需要结合题块图片判断",
+            }
+
         if self.TABLE_CHART_SIGNAL_PATTERN.search(normalized):
             return {
                 "required": True,
@@ -1143,17 +1293,23 @@ class BaiduOCRProvider(BaseOCRProvider):
         if page_no == question.page_no:
             question.block_bbox = self._merge_bbox(question.block_bbox, extra_bbox)
 
-        continuation_warning = f"第 {page_no} 页内容并入题号 {question.question_no}，该题存在跨页续写。"
-        if continuation_warning not in question.parse_warnings:
-            question.parse_warnings.append(continuation_warning)
+        if page_no != question.page_no:
+            continuation_warning = f"第 {page_no} 页内容并入题号 {question.question_no}，该题存在跨页续写。"
+            if continuation_warning not in question.parse_warnings:
+                question.parse_warnings.append(continuation_warning)
 
         if question.parse_audit is None:
             question.parse_audit = ParseAudit()
-        question.parse_audit.cross_page_merged = True
         question.parse_audit.line_count += len(lines)
-        question.parse_audit.notes.append(f"merged_page_{page_no}")
-        if "cross_page_merge" not in question.parse_audit.warning_codes:
-            question.parse_audit.warning_codes.append("cross_page_merge")
+        if page_no == question.page_no:
+            question.parse_audit.notes.append(f"merged_same_page_{page_no}")
+            if "same_page_merge" not in question.parse_audit.warning_codes:
+                question.parse_audit.warning_codes.append("same_page_merge")
+        else:
+            question.parse_audit.cross_page_merged = True
+            question.parse_audit.notes.append(f"merged_page_{page_no}")
+            if "cross_page_merge" not in question.parse_audit.warning_codes:
+                question.parse_audit.warning_codes.append("cross_page_merge")
         question.parse_confidence = self._calculate_question_confidence(question.parse_audit)
 
     def _build_parse_audit(
@@ -1256,20 +1412,320 @@ class BaiduOCRProvider(BaseOCRProvider):
                     return int(match.group(1))
                 except ValueError:
                     return None
+
+        score_match = re.search(
+            r"每小题\s*(\d+(?:\.\d+)?)\s*分[^共]*共\s*(\d+(?:\.\d+)?)\s*分",
+            normalized,
+        )
+        if score_match:
+            try:
+                score_per_question = float(score_match.group(1))
+                total_score = float(score_match.group(2))
+            except (TypeError, ValueError):
+                return None
+            if score_per_question > 0:
+                declared_count = total_score / score_per_question
+                if declared_count.is_integer() and 1 <= declared_count <= 60:
+                    return int(declared_count)
         return None
 
-    def _detect_reading_zones(self, lines: Sequence[OCRLine]) -> List[ReadingZone]:
-        if not lines:
+    @staticmethod
+    def _extract_question_numbers_from_heading_text(text: str) -> List[int]:
+        normalized = str(text or "").strip()
+        if not normalized:
             return []
 
-        page_width, page_height = self._page_metrics(lines)
-        seed_lines = [line for line in lines if self._is_zone_seed_line(line)]
-        if len(seed_lines) < 2:
-            seed_lines = list(lines)
+        numbers: List[int] = []
+        for match in re.finditer(r"(\d{1,2})\s*(?:[-~～—－至])\s*(\d{1,2})(?:\s*(?:小题|题))?", normalized):
+            try:
+                start_no = int(match.group(1))
+                end_no = int(match.group(2))
+            except (TypeError, ValueError):
+                continue
+            if start_no <= 0 or end_no <= 0 or end_no < start_no or end_no - start_no > 20:
+                continue
+            numbers.extend(range(start_no, end_no + 1))
 
+        for match in re.finditer(r"(?:^|[（(，,、及和])\s*(\d{1,2})\s*(?:小题|题)\b", normalized):
+            try:
+                value = int(match.group(1))
+            except (TypeError, ValueError):
+                continue
+            if value > 0:
+                numbers.append(value)
+
+        return sorted(dict.fromkeys(numbers))
+
+    @staticmethod
+    def _extract_question_numbers_from_figure_captions(lines: Sequence[OCRLine]) -> List[int]:
+        numbers: List[int] = []
+        for line in lines:
+            compact = re.sub(r"\s+", "", str(line.text or ""))
+            match = re.match(r"^第?(\d{1,2})题图$", compact)
+            if not match:
+                continue
+            try:
+                numbers.append(int(match.group(1)))
+            except (TypeError, ValueError):
+                continue
+        return sorted(dict.fromkeys(numbers))
+
+    def _extract_expected_question_numbers(
+        self,
+        heading_text: str,
+        lines: Sequence[OCRLine],
+    ) -> List[int]:
+        heading_numbers = self._extract_question_numbers_from_heading_text(heading_text)
+        if not heading_numbers:
+            return []
+
+        caption_numbers = self._extract_question_numbers_from_figure_captions(lines)
+        if not caption_numbers:
+            return heading_numbers
+
+        return sorted(dict.fromkeys([*heading_numbers, *caption_numbers]))
+
+    def _looks_like_section_heading_without_index(self, text: str) -> bool:
+        normalized = re.sub(r"\s+", "", str(text or ""))
+        if not normalized:
+            return False
+        if self._extract_section_index_raw(normalized):
+            return False
+        return any(keyword in normalized for keyword in self.SECTION_HEADING_KEYWORDS) and (
+            "每小题" in normalized
+            or "本大题" in normalized
+            or "共" in normalized
+        )
+
+    def _infer_expected_question_numbers_from_declared_count(
+        self,
+        anchors: Sequence[QuestionAnchor],
+        declared_count: Optional[int],
+    ) -> List[int]:
+        if declared_count is None or not anchors:
+            return []
+
+        try:
+            declared_total = int(str(declared_count).strip())
+        except (TypeError, ValueError, AttributeError):
+            return []
+        if declared_total <= 0:
+            return []
+
+        numeric_anchor_values: List[int] = []
+        for anchor in anchors:
+            try:
+                numeric_anchor_values.append(int(str(anchor.question_no).strip()))
+            except (TypeError, ValueError):
+                continue
+        if not numeric_anchor_values:
+            return []
+
+        min_anchor = min(numeric_anchor_values)
+        max_anchor = max(numeric_anchor_values)
+        if 1 <= min_anchor and max_anchor <= declared_total:
+            return list(range(1, declared_total + 1))
+
+        if max_anchor - min_anchor < declared_total:
+            return list(range(min_anchor, min_anchor + declared_total))
+
+        return []
+
+    @staticmethod
+    def _is_sub_item_like_line(text: str) -> bool:
+        normalized = str(text or "").strip()
+        if not normalized:
+            return False
+        return bool(
+            re.match(r"^[（(][1-9]\d{0,1}[)）]", normalized)
+            or re.match(r"^[A-Za-z][.．、)]", normalized)
+        )
+
+    def _is_viable_continuation_cluster(
+        self,
+        cluster: Sequence[Tuple[int, OCRLine]],
+    ) -> bool:
+        if not cluster:
+            return False
+
+        texts = [str(line.text or "").strip() for _, line in cluster if str(line.text or "").strip()]
+        if not texts:
+            return False
+
+        compact_text = "".join(re.sub(r"\s+", "", text) for text in texts)
+        chinese_hits = len(re.findall(r"[\u4e00-\u9fff]", compact_text))
+        if len(compact_text) < 16 or chinese_hits < 6:
+            return False
+
+        first_text = texts[0]
+        if self._is_sub_item_like_line(first_text) and chinese_hits < 12:
+            return False
+
+        if all(
+            self._is_short_calculation_block_line(text)
+            or self._is_preamble_noise_line(text)
+            for text in texts
+        ):
+            return False
+
+        return True
+
+    @staticmethod
+    def _extract_formula_prefixed_question_no(text: str) -> Optional[int]:
+        normalized = str(text or "").strip()
+        match = re.match(r"^(\d{1,2})\s*[.．、]\s*(?=[\d(（+\-])", normalized)
+        if not match:
+            return None
+        if len(re.findall(r"[+\-=\u00D7\u00F7xX*/]", normalized)) < 1:
+            return None
+        try:
+            return int(match.group(1))
+        except (TypeError, ValueError):
+            return None
+
+    def _recover_formula_prefixed_declared_anchors(
+        self,
+        section_lines: Sequence[OCRLine],
+        anchors: Sequence[QuestionAnchor],
+        declared_count: Optional[int],
+    ) -> List[QuestionAnchor]:
+        if anchors or declared_count is None:
+            return list(anchors)
+
+        try:
+            declared_total = int(str(declared_count).strip())
+        except (TypeError, ValueError, AttributeError):
+            return list(anchors)
+        if declared_total <= 0:
+            return list(anchors)
+
+        candidates: List[QuestionAnchor] = []
+        for line_index, line in enumerate(section_lines):
+            if self._extract_section_index_raw(line.text) or self._is_figure_caption(line.text):
+                continue
+            question_no = self._extract_formula_prefixed_question_no(line.text)
+            if question_no is None:
+                continue
+            candidates.append(
+                QuestionAnchor(
+                    line_index=line_index,
+                    question_no=str(question_no),
+                    question_label_raw=f"{question_no}.",
+                    line=line,
+                    force_use_label=True,
+                    recovery_reason="formula_declared_anchor",
+                )
+            )
+
+        if not candidates:
+            return list(anchors)
+
+        candidates = self._select_best_anchor_sequence(candidates)
+        numeric_values: List[int] = []
+        for anchor in candidates:
+            try:
+                numeric_values.append(int(str(anchor.question_no).strip()))
+            except (TypeError, ValueError):
+                continue
+        if not numeric_values:
+            return list(anchors)
+
+        if (
+            len(candidates) >= 2
+            and len(candidates) <= declared_total
+            and all(
+                0 < numeric_values[index + 1] - numeric_values[index] <= 2
+                for index in range(len(numeric_values) - 1)
+            )
+        ):
+            return list(candidates)
+
+        if len(candidates) == declared_total:
+            return list(candidates)
+
+        return list(anchors)
+
+    def _consume_leading_section_metadata(
+        self,
+        lines: Sequence[OCRLine],
+        declared_count: Optional[int],
+    ) -> Tuple[List[OCRLine], Optional[int]]:
+        remaining_lines = list(lines)
+        resolved_declared_count = declared_count
+        consumed_count = 0
+
+        for line in remaining_lines[:6]:
+            text = str(line.text or "").strip()
+            if not text:
+                consumed_count += 1
+                continue
+
+            detected_count = self._extract_declared_question_count(text)
+            if detected_count is not None:
+                resolved_declared_count = detected_count
+                consumed_count += 1
+                continue
+
+            if (
+                re.match(r"^[（(].{0,40}[)）]$", text)
+                or self._is_preamble_noise_line(text)
+                or self._looks_like_section_heading_without_index(text)
+            ):
+                consumed_count += 1
+                continue
+            break
+
+        if consumed_count:
+            remaining_lines = remaining_lines[consumed_count:]
+        return remaining_lines, resolved_declared_count
+
+    @staticmethod
+    def _split_line_clusters(
+        indexed_lines: Sequence[Tuple[int, OCRLine]],
+    ) -> List[List[Tuple[int, OCRLine]]]:
+        if not indexed_lines:
+            return []
+
+        heights = sorted(max(line.height, 1) for _, line in indexed_lines)
+        median_height = heights[len(heights) // 2]
+        gap_threshold = max(96, int(median_height * 2.4))
+
+        clusters: List[List[Tuple[int, OCRLine]]] = [[indexed_lines[0]]]
+        for item in indexed_lines[1:]:
+            previous_line = clusters[-1][-1][1]
+            current_line = item[1]
+            if current_line.top - previous_line.bottom >= gap_threshold:
+                clusters.append([item])
+            else:
+                clusters[-1].append(item)
+
+        return clusters
+
+    @staticmethod
+    def _section_state(
+        section_contexts: Dict[str, Dict[str, Any]],
+        section_index_raw: str,
+    ) -> Dict[str, Any]:
+        return section_contexts.setdefault(
+            section_index_raw,
+            {
+                "entered": False,
+                "declared_count": None,
+                "last_question_no": None,
+                "detected_numbers": [],
+            },
+        )
+
+    def _build_seed_groups_from_lines(
+        self,
+        seed_lines: Sequence[OCRLine],
+        page_width: int,
+    ) -> List[Dict[str, Any]]:
         sorted_seeds = sorted(seed_lines, key=lambda item: (item.left, item.top))
-        gap_threshold = max(96, int(page_width * 0.10))
+        if len(sorted_seeds) < 2:
+            return []
 
+        gap_threshold = max(96, int(page_width * 0.10))
         seed_groups: List[Dict[str, Any]] = []
         for line in sorted_seeds:
             anchor_left = line.left
@@ -1325,6 +1781,19 @@ class BaiduOCRProvider(BaseOCRProvider):
                     {"positions": left_positions, "max_left": max(left_positions)},
                     {"positions": right_positions, "max_left": max(right_positions)},
                 ]
+
+        return seed_groups
+
+    def _detect_reading_zones(self, lines: Sequence[OCRLine]) -> List[ReadingZone]:
+        if not lines:
+            return []
+
+        page_width, page_height = self._page_metrics(lines)
+        seed_lines = [line for line in lines if self._is_zone_seed_line(line)]
+        seed_groups = self._build_seed_groups_from_lines(seed_lines, page_width)
+        fallback_groups = self._build_seed_groups_from_lines(lines, page_width)
+        if len(seed_groups) <= 1 and len(fallback_groups) > 1:
+            seed_groups = fallback_groups
 
         if len(seed_groups) <= 1:
             bbox = self._bbox_from_lines(lines) or {"left": 0, "top": 0, "width": 0, "height": 0}
@@ -1403,11 +1872,12 @@ class BaiduOCRProvider(BaseOCRProvider):
 
     @staticmethod
     def _is_margin_zone(zone: ReadingZone, page_width: int, page_height: int) -> bool:
-        narrow = zone.width <= max(90, int(page_width * 0.1))
+        narrow = zone.width <= max(120, int(page_width * 0.13))
         short = zone.height <= max(240, int(page_height * 0.45))
         sparse = len(zone.lines) <= 4
         edge_zone = zone.left <= page_width * 0.05 or zone.right >= page_width * 0.95
-        return narrow and sparse and short and edge_zone
+        short_text = sum(len(re.sub(r"\s+", "", str(line.text or ""))) for line in zone.lines) <= 20
+        return narrow and sparse and short and edge_zone and short_text
 
     def _build_zone_sections(
         self,
@@ -1439,14 +1909,19 @@ class BaiduOCRProvider(BaseOCRProvider):
                 )
             return sections
 
-        if heading_indices[0] > 0 and carried_section_index_raw:
+        first_heading_index_raw = self._extract_section_index_raw(lines[heading_indices[0]].text) or ""
+        if heading_indices[0] > 0:
             leading_lines = [line for line in lines[: heading_indices[0]] if line.text.strip()]
+            leading_section_index_raw = self._infer_headingless_prefix_section_index(
+                carried_section_index_raw,
+                first_heading_index_raw,
+            )
             bbox = self._bbox_from_lines(leading_lines)
             if bbox:
                 sections.append(
                     SectionBlock(
                         zone_key=zone.zone_key,
-                        section_index_raw=carried_section_index_raw,
+                        section_index_raw=leading_section_index_raw,
                         heading_text="",
                         lines=leading_lines,
                         left=bbox["left"],
@@ -1455,13 +1930,28 @@ class BaiduOCRProvider(BaseOCRProvider):
                         bottom=bbox["top"] + bbox["height"],
                         declared_count=None,
                         layout_type=zone.layout_type,
+                        is_headingless_prefix=bool(leading_section_index_raw and not carried_section_index_raw),
                     )
                 )
 
         current_section = carried_section_index_raw
         for offset, heading_index in enumerate(heading_indices):
             heading_line = lines[heading_index]
-            current_section = self._extract_section_index_raw(heading_line.text) or current_section
+            detected_section = self._extract_section_index_raw(heading_line.text) or current_section
+            previous_section_no = self._section_index_to_number(current_section)
+            detected_section_no = self._section_index_to_number(detected_section)
+            if (
+                previous_section_no is not None
+                and detected_section_no is not None
+                and detected_section_no < previous_section_no
+            ):
+                current_section = (
+                    self._number_to_section_index_raw(previous_section_no + 1)
+                    or detected_section
+                    or current_section
+                )
+            else:
+                current_section = detected_section or current_section
             next_heading = heading_indices[offset + 1] if offset + 1 < len(heading_indices) else len(lines)
             content_lines = [
                 line
@@ -1505,10 +1995,88 @@ class BaiduOCRProvider(BaseOCRProvider):
         operator_hits = len(re.findall(r"[+\-脳xX梅*/=]", normalized))
         return digit_groups >= 2 and (operator_hits >= 1 or self.FORMULA_TRIGGER_PATTERN.search(normalized))
 
+    @staticmethod
+    def _coerce_question_number_list(values: Optional[Sequence[int]]) -> List[int]:
+        if not values:
+            return []
+
+        normalized: List[int] = []
+        for value in values:
+            try:
+                numeric = int(str(value).strip())
+            except (TypeError, ValueError):
+                continue
+            if numeric <= 0 or numeric in normalized:
+                continue
+            normalized.append(numeric)
+        return sorted(normalized)
+
+    def _align_anchors_to_expected_numbers(
+        self,
+        anchors: Sequence[QuestionAnchor],
+        expected_question_numbers: Optional[Sequence[int]],
+    ) -> List[QuestionAnchor]:
+        expected_values = self._coerce_question_number_list(expected_question_numbers)
+        if not anchors or not expected_values:
+            return list(anchors)
+
+        aligned: List[QuestionAnchor] = []
+        used_numbers: set[int] = set()
+        last_expected: Optional[int] = None
+
+        for anchor in anchors:
+            try:
+                current_no = int(str(anchor.question_no).strip())
+            except (TypeError, ValueError):
+                continue
+
+            candidate_no: Optional[int] = None
+            if current_no in expected_values and current_no not in used_numbers:
+                candidate_no = current_no
+            elif current_no < 10:
+                suffix_matches = [
+                    number
+                    for number in expected_values
+                    if number % 10 == current_no and number not in used_numbers
+                ]
+                if last_expected is not None:
+                    suffix_matches = [number for number in suffix_matches if number > last_expected] or suffix_matches
+                if len(suffix_matches) == 1:
+                    candidate_no = suffix_matches[0]
+
+            if candidate_no is None:
+                continue
+            if last_expected is not None and candidate_no <= last_expected:
+                continue
+
+            if candidate_no == current_no:
+                normalized_anchor = anchor
+            else:
+                normalized_anchor = QuestionAnchor(
+                    line_index=anchor.line_index,
+                    question_no=str(candidate_no),
+                    question_label_raw=self._format_corrected_question_label(
+                        anchor.question_label_raw,
+                        candidate_no,
+                    ),
+                    line=anchor.line,
+                    force_use_label=anchor.force_use_label,
+                    recovery_reason=anchor.recovery_reason,
+                )
+
+            aligned.append(normalized_anchor)
+            used_numbers.add(candidate_no)
+            last_expected = candidate_no
+
+        return aligned
+
     def _detect_question_anchors(
         self,
         lines: Sequence[OCRLine],
         zone_left: int,
+        *,
+        expected_question_numbers: Optional[Sequence[int]] = None,
+        allow_parenthesized: bool = True,
     ) -> List[QuestionAnchor]:
         if not lines:
             return []
@@ -1522,11 +2090,13 @@ class BaiduOCRProvider(BaseOCRProvider):
             if not label:
                 continue
             if self.TOP_LEVEL_PAREN_NO_PATTERN.match(line.text):
+                if not allow_parenthesized:
+                    continue
                 paren_candidates.append((index, line, label))
             else:
                 plain_candidates.append((index, line, label))
 
-        candidates = plain_candidates or paren_candidates
+        candidates = plain_candidates or (paren_candidates if allow_parenthesized else [])
 
         if not candidates:
             return []
@@ -1600,7 +2170,462 @@ class BaiduOCRProvider(BaseOCRProvider):
                 )
             )
 
+        if expected_question_numbers:
+            anchors = self._align_anchors_to_expected_numbers(anchors, expected_question_numbers)
+        else:
+            anchors = self._select_best_anchor_sequence(anchors)
         return self._repair_anchor_sequence(anchors)
+
+    def _recover_gap_weak_anchors(
+        self,
+        section_lines: Sequence[OCRLine],
+        anchors: Sequence[QuestionAnchor],
+        zone_left: int,
+    ) -> List[QuestionAnchor]:
+        if len(anchors) < 2:
+            return list(anchors)
+
+        local_right = max((line.right for line in section_lines), default=zone_left)
+        local_width = max(local_right - zone_left, 1)
+        left_tolerance = max(72, int(local_width * 0.28))
+
+        recovered: List[QuestionAnchor] = []
+        for index, anchor in enumerate(anchors[:-1]):
+            recovered.append(anchor)
+            next_anchor = anchors[index + 1]
+            try:
+                current_no = int(str(anchor.question_no).strip())
+                next_no = int(str(next_anchor.question_no).strip())
+            except (TypeError, ValueError):
+                continue
+
+            if next_no - current_no <= 1:
+                continue
+
+            used_indices: set[int] = set()
+            for expected_no in range(current_no + 1, next_no):
+                candidate_line_index: Optional[int] = None
+                candidate_line: Optional[OCRLine] = None
+
+                for line_index in range(anchor.line_index + 1, next_anchor.line_index):
+                    if line_index in used_indices:
+                        continue
+                    line = section_lines[line_index]
+                    if line.left > zone_left + left_tolerance:
+                        continue
+                    if not self._extract_weak_question_label(line.text, expected_no=expected_no):
+                        continue
+                    candidate_line_index = line_index
+                    candidate_line = line
+                    break
+
+                if candidate_line_index is None or candidate_line is None:
+                    continue
+
+                used_indices.add(candidate_line_index)
+                recovered.append(
+                    QuestionAnchor(
+                        line_index=candidate_line_index,
+                        question_no=str(expected_no),
+                        question_label_raw=str(expected_no),
+                        line=candidate_line,
+                        force_use_label=True,
+                        recovery_reason="weak_gap_anchor",
+                    )
+                )
+
+        recovered.append(anchors[-1])
+        recovered.sort(
+            key=lambda item: (
+                item.line_index,
+                int(str(item.question_no).strip()) if str(item.question_no).strip().isdigit() else 999,
+            )
+        )
+        return recovered
+
+    def _recover_gap_synthetic_anchors(
+        self,
+        section_lines: Sequence[OCRLine],
+        anchors: Sequence[QuestionAnchor],
+    ) -> List[QuestionAnchor]:
+        if len(anchors) < 2:
+            return list(anchors)
+
+        recovered: List[QuestionAnchor] = []
+        for index, anchor in enumerate(anchors[:-1]):
+            recovered.append(anchor)
+            next_anchor = anchors[index + 1]
+            try:
+                current_no = int(str(anchor.question_no).strip())
+                next_no = int(str(next_anchor.question_no).strip())
+            except (TypeError, ValueError):
+                continue
+
+            missing_numbers = list(range(current_no + 1, next_no))
+            if not missing_numbers:
+                continue
+
+            indexed_orphans = [
+                (line_index, section_lines[line_index])
+                for line_index in range(anchor.line_index + 1, next_anchor.line_index)
+                if section_lines[line_index].text.strip()
+                and not self._extract_section_index_raw(section_lines[line_index].text)
+                and not self._is_figure_caption(section_lines[line_index].text)
+            ]
+            if not indexed_orphans:
+                continue
+
+            clusters = self._split_line_clusters(indexed_orphans)
+            if not clusters:
+                continue
+
+            if len(clusters) >= len(missing_numbers):
+                selected_clusters = clusters[: len(missing_numbers)]
+            elif len(missing_numbers) == 1:
+                selected_clusters = [max(clusters, key=lambda items: len(items))]
+            else:
+                selected_clusters = []
+
+            for missing_no, cluster in zip(missing_numbers, selected_clusters):
+                line_index, line = cluster[0]
+                recovered.append(
+                    QuestionAnchor(
+                        line_index=line_index,
+                        question_no=str(missing_no),
+                        question_label_raw=str(missing_no),
+                        line=line,
+                        force_use_label=True,
+                        recovery_reason="synthetic_gap_anchor",
+                    )
+                )
+
+        recovered.append(anchors[-1])
+        recovered.sort(
+            key=lambda item: (
+                item.line_index,
+                int(str(item.question_no).strip()) if str(item.question_no).strip().isdigit() else 999,
+            )
+        )
+        return recovered
+
+    def _recover_expected_tail_anchors(
+        self,
+        section_lines: Sequence[OCRLine],
+        anchors: Sequence[QuestionAnchor],
+        expected_question_numbers: Optional[Sequence[int]],
+    ) -> List[QuestionAnchor]:
+        expected_values = self._coerce_question_number_list(expected_question_numbers)
+        if not anchors or not expected_values:
+            return list(anchors)
+
+        try:
+            last_anchor_no = int(str(anchors[-1].question_no).strip())
+        except (TypeError, ValueError):
+            return list(anchors)
+
+        trailing_numbers = [number for number in expected_values if number > last_anchor_no]
+        if not trailing_numbers:
+            return list(anchors)
+
+        indexed_orphans = [
+            (line_index, section_lines[line_index])
+            for line_index in range(anchors[-1].line_index + 1, len(section_lines))
+            if section_lines[line_index].text.strip()
+            and not self._extract_section_index_raw(section_lines[line_index].text)
+            and not self._is_figure_caption(section_lines[line_index].text)
+        ]
+        if not indexed_orphans:
+            return list(anchors)
+
+        clusters = self._split_line_clusters(indexed_orphans)
+        if not clusters:
+            return list(anchors)
+        if len(clusters) < len(trailing_numbers) and len(trailing_numbers) > 1:
+            return list(anchors)
+
+        selected_clusters = (
+            clusters[: len(trailing_numbers)]
+            if len(clusters) >= len(trailing_numbers)
+            else [max(clusters, key=lambda items: len(items))]
+        )
+
+        recovered = list(anchors)
+        for question_no, cluster in zip(trailing_numbers, selected_clusters):
+            line_index, line = cluster[0]
+            recovered.append(
+                QuestionAnchor(
+                    line_index=line_index,
+                    question_no=str(question_no),
+                    question_label_raw=str(question_no),
+                    line=line,
+                    force_use_label=True,
+                    recovery_reason="synthetic_gap_anchor",
+                )
+            )
+
+        recovered.sort(
+            key=lambda item: (
+                item.line_index,
+                int(str(item.question_no).strip()) if str(item.question_no).strip().isdigit() else 999,
+            )
+        )
+        return recovered
+
+    def _recover_declared_count_tail_anchors(
+        self,
+        section_lines: Sequence[OCRLine],
+        anchors: Sequence[QuestionAnchor],
+        declared_count: Optional[int],
+    ) -> List[QuestionAnchor]:
+        if declared_count is None or not anchors:
+            return list(anchors)
+
+        try:
+            declared_total = int(str(declared_count).strip())
+        except (TypeError, ValueError, AttributeError):
+            return list(anchors)
+        if declared_total <= 0:
+            return list(anchors)
+
+        numeric_anchor_values: List[int] = []
+        for anchor in anchors:
+            try:
+                numeric_anchor_values.append(int(str(anchor.question_no).strip()))
+            except (TypeError, ValueError):
+                continue
+        if not numeric_anchor_values:
+            return list(anchors)
+        if max(numeric_anchor_values) > declared_total or min(numeric_anchor_values) < 1:
+            return list(anchors)
+
+        trailing_numbers = [
+            number
+            for number in range(max(numeric_anchor_values) + 1, declared_total + 1)
+            if number not in numeric_anchor_values
+        ]
+        if not trailing_numbers:
+            return list(anchors)
+
+        indexed_orphans = [
+            (line_index, section_lines[line_index])
+            for line_index in range(anchors[-1].line_index + 1, len(section_lines))
+            if section_lines[line_index].text.strip()
+            and not self._extract_section_index_raw(section_lines[line_index].text)
+            and not self._is_figure_caption(section_lines[line_index].text)
+        ]
+        if not indexed_orphans:
+            return list(anchors)
+
+        clusters = self._split_line_clusters(indexed_orphans)
+        if not clusters:
+            return list(anchors)
+        if len(clusters) < len(trailing_numbers) and len(trailing_numbers) > 1:
+            return list(anchors)
+
+        selected_clusters = (
+            clusters[: len(trailing_numbers)]
+            if len(clusters) >= len(trailing_numbers)
+            else [max(clusters, key=lambda items: len(items))]
+        )
+
+        recovered = list(anchors)
+        for question_no, cluster in zip(trailing_numbers, selected_clusters):
+            line_index, line = cluster[0]
+            recovered.append(
+                QuestionAnchor(
+                    line_index=line_index,
+                    question_no=str(question_no),
+                    question_label_raw=str(question_no),
+                    line=line,
+                    force_use_label=True,
+                    recovery_reason="synthetic_gap_anchor",
+                )
+            )
+
+        recovered.sort(
+            key=lambda item: (
+                item.line_index,
+                int(str(item.question_no).strip()) if str(item.question_no).strip().isdigit() else 999,
+            )
+        )
+        return recovered
+
+    def _recover_missing_question_anchors(
+        self,
+        section_lines: Sequence[OCRLine],
+        anchors: Sequence[QuestionAnchor],
+        zone_left: int,
+        *,
+        expected_question_numbers: Optional[Sequence[int]] = None,
+        declared_count: Optional[int] = None,
+    ) -> List[QuestionAnchor]:
+        recovered = self._recover_formula_prefixed_declared_anchors(
+            section_lines,
+            anchors,
+            declared_count,
+        )
+        inferred_expected_numbers = self._coerce_question_number_list(expected_question_numbers)
+        if not inferred_expected_numbers:
+            inferred_expected_numbers = self._infer_expected_question_numbers_from_declared_count(
+                recovered,
+                declared_count,
+            )
+
+        recovered = self._recover_gap_weak_anchors(section_lines, recovered, zone_left)
+        recovered = self._recover_gap_synthetic_anchors(section_lines, recovered)
+        recovered = self._recover_expected_tail_anchors(
+            section_lines,
+            recovered,
+            inferred_expected_numbers,
+        )
+        recovered = self._recover_declared_count_tail_anchors(
+            section_lines,
+            recovered,
+            declared_count,
+        )
+        return self._repair_anchor_sequence(recovered)
+
+    def _recover_sectionless_continuation_anchors(
+        self,
+        section_lines: Sequence[OCRLine],
+        *,
+        section_state: Optional[Dict[str, Any]],
+    ) -> List[QuestionAnchor]:
+        if not section_state or not section_state.get("entered"):
+            return []
+
+        try:
+            last_question_no = int(str(section_state.get("last_question_no")).strip())
+        except (TypeError, ValueError, AttributeError):
+            last_question_no = None
+
+        declared_count = section_state.get("declared_count")
+        try:
+            declared_total = int(str(declared_count).strip()) if declared_count is not None else None
+        except (TypeError, ValueError, AttributeError):
+            declared_total = None
+
+        detected_numbers: List[int] = []
+        for number in section_state.get("detected_numbers", []) or []:
+            try:
+                detected_numbers.append(int(str(number).strip()))
+            except (TypeError, ValueError, AttributeError):
+                continue
+
+        remaining_needed = None
+        if declared_total is not None:
+            remaining_needed = max(declared_total - len(set(detected_numbers)), 0)
+
+        indexed_lines = [
+            (line_index, line)
+            for line_index, line in enumerate(section_lines)
+            if line.text.strip()
+            and not self._extract_section_index_raw(line.text)
+            and not self._is_figure_caption(line.text)
+        ]
+        if not indexed_lines:
+            return []
+
+        clusters = self._split_line_clusters(indexed_lines)
+        if not clusters:
+            return []
+        viable_clusters = [
+            cluster
+            for cluster in clusters
+            if self._is_viable_continuation_cluster(cluster)
+        ]
+        if not viable_clusters:
+            return []
+
+        detected_set = set(detected_numbers)
+        caption_numbers = self._extract_question_numbers_from_figure_captions(section_lines)
+        suggested_numbers = [
+            number
+            for number in caption_numbers
+            if (last_question_no is None or number > last_question_no)
+            and number not in detected_set
+        ]
+        if suggested_numbers:
+            target_no = suggested_numbers[0]
+            line_index, line = viable_clusters[-1][0]
+            return [
+                QuestionAnchor(
+                    line_index=line_index,
+                    question_no=str(target_no),
+                    question_label_raw=str(target_no),
+                    line=line,
+                    force_use_label=True,
+                    recovery_reason="synthetic_continuation_anchor",
+                )
+            ]
+
+        if remaining_needed is not None and remaining_needed <= 0:
+            return []
+
+        if remaining_needed is None:
+            if last_question_no is None or len(viable_clusters) < 1:
+                return []
+            synthetic_count = 1
+        else:
+            synthetic_count = min(remaining_needed, len(viable_clusters))
+            if synthetic_count <= 0:
+                return []
+
+        selected_clusters = viable_clusters[-synthetic_count:]
+        if not selected_clusters:
+            return []
+
+        start_no = last_question_no + 1 if last_question_no is not None else 1
+        anchors: List[QuestionAnchor] = []
+        for offset, cluster in enumerate(selected_clusters):
+            synthetic_no = start_no + offset
+            if declared_total is not None and synthetic_no > declared_total:
+                break
+            line_index, line = cluster[0]
+            anchors.append(
+                QuestionAnchor(
+                    line_index=line_index,
+                    question_no=str(synthetic_no),
+                    question_label_raw=str(synthetic_no),
+                    line=line,
+                    force_use_label=True,
+                    recovery_reason="synthetic_continuation_anchor",
+                )
+            )
+
+        return anchors
+
+    def _trim_overlapping_continuation_anchors(
+        self,
+        anchors: Sequence[QuestionAnchor],
+        *,
+        section_state: Optional[Dict[str, Any]],
+    ) -> List[QuestionAnchor]:
+        if not anchors or not section_state:
+            return list(anchors)
+
+        detected_values: List[int] = []
+        for value in section_state.get("detected_numbers", []) or []:
+            try:
+                detected_values.append(int(str(value).strip()))
+            except (TypeError, ValueError, AttributeError):
+                continue
+        if not detected_values:
+            return list(anchors)
+
+        max_detected = max(detected_values)
+        detected_set = set(detected_values)
+        trimmed = list(anchors)
+        while trimmed:
+            try:
+                current_no = int(str(trimmed[0].question_no).strip())
+            except (TypeError, ValueError):
+                break
+            if current_no in detected_set or current_no <= max_detected:
+                trimmed = trimmed[1:]
+                continue
+            break
+        return trimmed
 
     def _recover_leading_calculation_anchors(
         self,
@@ -1623,26 +2648,39 @@ class BaiduOCRProvider(BaseOCRProvider):
         leading_candidates = [
             (index, line)
             for index, line in enumerate(section_lines[: anchors[0].line_index])
-            if self._is_formula_heavy_line(line.text) and not self._extract_question_label(line.text)
+            if (
+                line.text.strip()
+                and not self._extract_question_label(line.text)
+                and not self._extract_section_index_raw(line.text)
+                and not self._is_figure_caption(line.text)
+                and not self._is_preamble_noise_line(line.text)
+                and self._is_short_calculation_block_line(line.text)
+            )
         ]
-        if len(leading_candidates) != missing_before:
-            leading_candidates = [
+        leading_clusters = self._split_line_clusters(leading_candidates) if leading_candidates else []
+        if len(leading_clusters) != missing_before:
+            generic_candidates = [
                 (index, line)
                 for index, line in enumerate(section_lines[: anchors[0].line_index])
                 if (
                     line.text.strip()
                     and not self._extract_question_label(line.text)
+                    and not self._extract_section_index_raw(line.text)
                     and not self._is_figure_caption(line.text)
-                    and len(re.sub(r"\s+", "", line.text)) >= 2
+                    and not self._is_preamble_noise_line(line.text)
                 )
             ]
-        if len(leading_candidates) != missing_before:
-            return section_lines, anchors
+            if not generic_candidates:
+                return section_lines, anchors
+            leading_clusters = self._split_line_clusters(generic_candidates)
+            if len(leading_clusters) != missing_before:
+                return section_lines, anchors
 
         updated_lines = list(section_lines)
         synthetic_anchors: List[QuestionAnchor] = []
         start_no = first_anchor_no - missing_before
-        for offset, (line_index, line) in enumerate(leading_candidates):
+        for offset, cluster in enumerate(leading_clusters):
+            line_index, line = cluster[0]
             synthetic_no = str(start_no + offset)
             synthetic_text = f"{synthetic_no}. {line.text}"
             synthetic_line = OCRLine(
@@ -1662,7 +2700,140 @@ class BaiduOCRProvider(BaseOCRProvider):
                 )
             )
 
+        synthetic_tail_index = leading_clusters[-1][-1][0]
+        if synthetic_anchors and synthetic_tail_index + 1 < anchors[0].line_index:
+            pre_anchor_lines = [
+                (index, line)
+                for index, line in enumerate(section_lines[synthetic_tail_index + 1 : anchors[0].line_index], start=synthetic_tail_index + 1)
+                if (
+                    line.text.strip()
+                    and not self._extract_question_label(line.text)
+                    and not self._extract_section_index_raw(line.text)
+                    and not self._is_figure_caption(line.text)
+                )
+            ]
+            if pre_anchor_lines:
+                last_pre_anchor_line = pre_anchor_lines[-1][1]
+                if anchors[0].line.top - last_pre_anchor_line.bottom <= max(48, anchors[0].line.height * 2):
+                    anchors = [
+                        QuestionAnchor(
+                            line_index=pre_anchor_lines[0][0],
+                            question_no=anchors[0].question_no,
+                            question_label_raw=anchors[0].question_label_raw,
+                            line=anchors[0].line,
+                            force_use_label=True,
+                            recovery_reason="pre_anchor_merge",
+                        ),
+                        *anchors[1:],
+                    ]
+
         return updated_lines, synthetic_anchors + anchors
+
+    @staticmethod
+    def _is_preamble_noise_line(text: str) -> bool:
+        compact = re.sub(r"\s+", "", str(text or ""))
+        if not compact:
+            return True
+
+        noise_keywords = (
+            "姓名",
+            "班级",
+            "学校",
+            "考号",
+            "满分",
+            "时间",
+            "建议时长",
+            "考试",
+            "真卷",
+            "模拟卷",
+            "错题笔记",
+            "答案",
+            "填空题",
+            "选择题",
+            "计算题",
+            "应用题",
+            "解答题",
+        )
+        return any(keyword in compact for keyword in noise_keywords)
+
+    @staticmethod
+    def _is_short_calculation_block_line(text: str) -> bool:
+        normalized = " ".join(str(text or "").split())
+        if not normalized:
+            return False
+
+        compact = normalized.replace(" ", "")
+        chinese_hits = len(re.findall(r"[\u4e00-\u9fff]", compact))
+        digit_hits = len(re.findall(r"\d", compact))
+        formula_operator_hits = len(re.findall(r"[+\-=\u00D7\u00F7xX*/]", compact))
+        ratio_operator_hits = len(re.findall(r"[:\uFF1A]", compact))
+        if digit_hits == 0:
+            return False
+        if re.fullmatch(r"[=＝]?\d+(?:\.\d+)?", compact):
+            return True
+        if formula_operator_hits >= 1 and chinese_hits <= 4:
+            return True
+        if ratio_operator_hits >= 1 and formula_operator_hits == 0 and chinese_hits <= 1:
+            return True
+        return False
+
+    def _recover_pre_anchor_content_lines(
+        self,
+        section_lines: Sequence[OCRLine],
+        anchors: Sequence[QuestionAnchor],
+    ) -> List[QuestionAnchor]:
+        if len(anchors) <= 1:
+            return list(anchors)
+
+        adjusted_anchors = list(anchors)
+        for index in range(1, len(adjusted_anchors)):
+            previous_anchor = adjusted_anchors[index - 1]
+            current_anchor = adjusted_anchors[index]
+            if current_anchor.line_index <= previous_anchor.line_index + 1:
+                continue
+
+            candidate_block: List[Tuple[int, OCRLine]] = []
+            next_top = section_lines[current_anchor.line_index].top
+            next_height = section_lines[current_anchor.line_index].height
+            for line_index in range(current_anchor.line_index - 1, previous_anchor.line_index, -1):
+                line = section_lines[line_index]
+                if (
+                    not line.text.strip()
+                    or self._extract_question_label(line.text)
+                    or self._extract_section_index_raw(line.text)
+                    or self._is_figure_caption(line.text)
+                ):
+                    break
+                gap = next_top - line.bottom
+                gap_threshold = max(72, int(max(line.height, next_height) * 2.2))
+                if gap > gap_threshold:
+                    break
+                candidate_block.append((line_index, line))
+                next_top = line.top
+                next_height = line.height
+
+            if not candidate_block:
+                continue
+
+            candidate_block.reverse()
+            previous_bottom = section_lines[previous_anchor.line_index].bottom
+            separation_threshold = max(
+                96,
+                int(max(candidate_block[0][1].height, section_lines[previous_anchor.line_index].height) * 2.4),
+            )
+            if candidate_block[0][1].top - previous_bottom <= separation_threshold:
+                continue
+
+            adjusted_anchors[index] = QuestionAnchor(
+                line_index=candidate_block[0][0],
+                question_no=current_anchor.question_no,
+                question_label_raw=current_anchor.question_label_raw,
+                line=current_anchor.line,
+                force_use_label=True,
+                recovery_reason="pre_anchor_merge",
+            )
+
+        return adjusted_anchors
 
     @staticmethod
     def _find_missing_numbers(anchor_numbers: Sequence[str]) -> List[str]:
@@ -1738,6 +2909,8 @@ class BaiduOCRProvider(BaseOCRProvider):
         layout_type: str,
         secondary_pass_used: bool,
         has_embedded_anchor: bool = False,
+        body_line_count: int = 0,
+        continuation_skipped: bool = False,
     ) -> QuestionCountAudit:
         anchor_numbers = [anchor.question_no for anchor in anchors]
         duplicates = [
@@ -1754,8 +2927,12 @@ class BaiduOCRProvider(BaseOCRProvider):
             mismatch_reasons.append(f"题号不连续，缺少 {'/'.join(missing_numbers[:8])}")
         if duplicates:
             mismatch_reasons.append(f"题号重复 {'/'.join(duplicates[:8])}")
+        if body_line_count > 0 and not anchor_numbers:
+            mismatch_reasons.append("section 存在正文但未识别到题号")
         if has_embedded_anchor and (missing_numbers or duplicates or declared_count is not None):
             mismatch_reasons.append("题块内混入疑似后续题号")
+        if continuation_skipped:
+            mismatch_reasons.append("同一 section 的跨页续接被跳过")
 
         return QuestionCountAudit(
             page_no=page_no,
@@ -1778,6 +2955,16 @@ class BaiduOCRProvider(BaseOCRProvider):
             penalty += abs(audit.declared_count - audit.detected_count) * 3
         penalty += len(audit.missing_numbers) * 3
         penalty += len(audit.duplicate_numbers) * 3
+        if audit.detected_count == 0 and audit.mismatch_reason:
+            penalty += 12
+            if audit.declared_count is not None:
+                penalty += 6
+        if "section 存在正文但未识别到题号" in audit.mismatch_reason:
+            penalty += 8
+        if "同一 section 的跨页续接被跳过" in audit.mismatch_reason:
+            penalty += 6
+        if "题块内混入疑似后续题号" in audit.mismatch_reason:
+            penalty += 4
         if audit.mismatch_reason and not (audit.missing_numbers or audit.duplicate_numbers):
             penalty += 2
         return penalty
@@ -1938,21 +3125,52 @@ class BaiduOCRProvider(BaseOCRProvider):
                 )
                 for line in crop_lines
             ]
-            anchors = self._detect_question_anchors(adjusted_lines, section.left)
+            adjusted_lines = [
+                line for line in adjusted_lines if not self._extract_section_index_raw(line.text)
+            ]
+            adjusted_lines, resolved_declared_count = self._consume_leading_section_metadata(
+                adjusted_lines,
+                section.declared_count,
+            )
+            expected_question_numbers = self._extract_expected_question_numbers(
+                section.heading_text,
+                adjusted_lines,
+            )
+            if resolved_declared_count is None and expected_question_numbers:
+                resolved_declared_count = len(expected_question_numbers)
+            section.declared_count = resolved_declared_count
+            anchors = self._detect_question_anchors(
+                adjusted_lines,
+                section.left,
+                expected_question_numbers=expected_question_numbers,
+                allow_parenthesized=not bool(
+                    section.section_index_raw
+                    and not str(section.heading_text or "").strip()
+                    and not section.is_headingless_prefix
+                ),
+            )
             adjusted_lines, anchors = await self._recover_formula_leading_anchors_from_crop(
                 crop_path,
                 adjusted_lines,
                 anchors,
+            )
+            anchors = self._recover_missing_question_anchors(
+                adjusted_lines,
+                anchors,
+                section.left,
+                expected_question_numbers=expected_question_numbers,
+                declared_count=resolved_declared_count,
             )
             audit = self._build_question_count_audit(
                 page_no=page_no,
                 zone_key=section.zone_key,
                 section_index_raw=section.section_index_raw,
                 anchors=anchors,
-                declared_count=section.declared_count,
+                declared_count=resolved_declared_count,
                 layout_type=section.layout_type,
                 secondary_pass_used=True,
                 has_embedded_anchor=self._section_has_unassigned_anchor(adjusted_lines, anchors, section.left),
+                body_line_count=len([line for line in adjusted_lines if line.text.strip()]),
             )
             return adjusted_lines, anchors, audit
         except Exception as exc:
@@ -1977,6 +3195,12 @@ class BaiduOCRProvider(BaseOCRProvider):
             return primary_lines, primary_anchors, primary_audit
 
         secondary_lines, secondary_anchors, secondary_audit = secondary_result
+        if primary_anchors and not secondary_anchors:
+            primary_audit.secondary_pass_used = True
+            return primary_lines, primary_anchors, primary_audit
+        if secondary_anchors and not primary_anchors:
+            return secondary_lines, secondary_anchors, secondary_audit
+
         primary_penalty = self._audit_penalty(primary_audit)
         secondary_penalty = self._audit_penalty(secondary_audit)
 
@@ -2011,6 +3235,16 @@ class BaiduOCRProvider(BaseOCRProvider):
             mismatch_reason = str(audit.mismatch_reason or "").strip()
             if not mismatch_reason:
                 continue
+            if (
+                not audit.anchor_numbers
+                and "section 存在正文但未识别到题号" in mismatch_reason
+                and audit.layout_type in {"dual_column", "multi_zone"}
+                and any(
+                    other.page_no == audit.page_no and getattr(other, "anchor_numbers", [])
+                    for other in audits
+                )
+            ):
+                continue
             problematic_messages.append(f"第 {audit.page_no} 页：{mismatch_reason}")
 
         for section_key, items in grouped_audits.items():
@@ -2044,7 +3278,29 @@ class BaiduOCRProvider(BaseOCRProvider):
                 mismatch_reasons.append(f"题号重复 {'/'.join(duplicates[:8])}")
 
             if mismatch_reasons:
-                problematic_messages.append(f"{section_key} 部分：{'；'.join(mismatch_reasons)}")
+                has_empty_section = any(
+                    "section 存在正文但未识别到题号" in str(item.mismatch_reason or "")
+                    for item in items
+                )
+                skipped_continuation = any(
+                    "同一 section 的跨页续接被跳过" in str(item.mismatch_reason or "")
+                    for item in items
+                )
+                embedded_followup = any(
+                    "题块内混入疑似后续题号" in str(item.mismatch_reason or "")
+                    for item in items
+                )
+                if has_empty_section:
+                    mismatch_reasons.append("section 存在正文但未识别到题号")
+                if skipped_continuation:
+                    mismatch_reasons.append("同一 section 的跨页续接被跳过")
+                if embedded_followup:
+                    mismatch_reasons.append("题块内混入疑似后续题号")
+
+            if mismatch_reasons:
+                problematic_messages.append(
+                    f"{section_key} 部分：{'；'.join(dict.fromkeys(mismatch_reasons))}"
+                )
 
         if not problematic_messages:
             return []
@@ -2054,6 +3310,83 @@ class BaiduOCRProvider(BaseOCRProvider):
             warnings.append(message)
         return list(dict.fromkeys(warnings))
 
+    @staticmethod
+    def _is_decorative_sidebar_line(line: OCRLine) -> bool:
+        text = str(line.text or "").strip()
+        if not text:
+            return True
+        if line.height >= 160 and line.height >= int(line.width * 0.4):
+            return True
+        if line.width <= 160 and line.height >= 120:
+            return True
+        return False
+
+    def _pick_best_question_for_orphan_lines(
+        self,
+        orphan_lines: Sequence[OCRLine],
+        *,
+        page_no: int,
+        page_questions: Sequence[ParsedQuestion],
+        existing_questions: Sequence[ParsedQuestion],
+    ) -> Optional[ParsedQuestion]:
+        orphan_bbox = self._bbox_from_lines(orphan_lines)
+        if not orphan_bbox:
+            return None
+
+        candidates = [
+            question
+            for question in [*page_questions, *existing_questions]
+            if int(getattr(question, "page_no", 0) or 0) == page_no and getattr(question, "block_bbox", None)
+        ]
+        if not candidates:
+            return page_questions[-1] if page_questions else (existing_questions[-1] if existing_questions else None)
+
+        orphan_top = orphan_bbox["top"]
+        orphan_bottom = orphan_bbox["top"] + orphan_bbox["height"]
+        orphan_center = (orphan_top + orphan_bottom) / 2
+
+        def candidate_key(question: ParsedQuestion) -> Tuple[int, float]:
+            bbox = dict(question.block_bbox or {})
+            question_top = int(bbox.get("top", 0) or 0)
+            question_bottom = question_top + int(bbox.get("height", 0) or 0)
+            overlap = max(0, min(orphan_bottom, question_bottom) - max(orphan_top, question_top))
+            question_center = (question_top + question_bottom) / 2
+            return overlap, -abs(question_center - orphan_center)
+
+        return max(candidates, key=candidate_key)
+
+    def _append_orphan_section_lines(
+        self,
+        lines: Sequence[OCRLine],
+        *,
+        page_no: int,
+        page_questions: Sequence[ParsedQuestion],
+        existing_questions: Sequence[ParsedQuestion],
+    ) -> bool:
+        orphan_lines = [
+            line
+            for line in lines
+            if line.text.strip() and not self._is_decorative_sidebar_line(line)
+        ]
+        if not orphan_lines:
+            return False
+
+        target_question = self._pick_best_question_for_orphan_lines(
+            orphan_lines,
+            page_no=page_no,
+            page_questions=page_questions,
+            existing_questions=existing_questions,
+        )
+        if target_question is None:
+            return False
+
+        self._append_lines_to_question(
+            target_question,
+            orphan_lines,
+            page_no=page_no,
+        )
+        return True
+
     async def _build_question_from_lines(
         self,
         block_lines: Sequence[OCRLine],
@@ -2062,6 +3395,10 @@ class BaiduOCRProvider(BaseOCRProvider):
         image_path: str,
         section_index_raw: str,
         zone_left: int,
+        forced_question_no: Optional[str] = None,
+        forced_question_label_raw: Optional[str] = None,
+        force_use_label: bool = False,
+        recovery_reason: str = "",
     ) -> Tuple[Optional[ParsedQuestion], bool]:
         if not block_lines:
             return None, False
@@ -2071,10 +3408,19 @@ class BaiduOCRProvider(BaseOCRProvider):
             return None, False
 
         question_label = self._extract_question_label(block_lines[0].text)
+        if forced_question_no and (force_use_label or not question_label):
+            question_label = (
+                str(forced_question_no).strip(),
+                str(forced_question_label_raw or forced_question_no).strip(),
+            )
         if not question_label:
             return None, True
 
         question_no, question_label_raw = question_label
+        if force_use_label and question_text:
+            visible_prefix = question_label_raw if question_label_raw.endswith((".", "．", "、")) else f"{question_no}."
+            if not question_text.startswith(visible_prefix):
+                question_text = f"{visible_prefix} {question_text}".strip()
         bbox = self._bbox_from_lines(block_lines)
         line_count = len(block_lines)
         question_text = self._normalize_formula_text(question_text)
@@ -2134,6 +3480,18 @@ class BaiduOCRProvider(BaseOCRProvider):
             parse_audit.notes.append("embedded_followup_anchor")
             parse_audit.warning_codes.append("embedded_followup_anchor")
             review_required = True
+        if recovery_reason == "weak_gap_anchor":
+            parse_warnings.append("OCR 弱题号恢复：按连续题号补出题号。")
+            parse_audit.notes.append("weak_gap_anchor")
+            review_required = True
+        elif recovery_reason == "synthetic_gap_anchor":
+            parse_warnings.append("OCR 缺号恢复：按断号区间补出题号。")
+            parse_audit.notes.append("synthetic_gap_anchor")
+            review_required = True
+        elif recovery_reason == "synthetic_continuation_anchor":
+            parse_warnings.append("OCR 跨页缺号恢复：按 section 连续性补出题号。")
+            parse_audit.notes.append("synthetic_continuation_anchor")
+            review_required = True
 
         question_block = QuestionBlock(
             page_no=page_no,
@@ -2165,6 +3523,8 @@ class BaiduOCRProvider(BaseOCRProvider):
             sub_item_candidates=sub_item_candidates,
         )
         question.parse_confidence = self._calculate_question_confidence(parse_audit)
+        if recovery_reason:
+            question.parse_confidence = min(question.parse_confidence, 0.72 if "synthetic" in recovery_reason else 0.78)
         return question, review_required
 
     async def _parse_page_questions(
@@ -2359,6 +3719,7 @@ class BaiduOCRProvider(BaseOCRProvider):
         page_no: int,
         image_path: str,
         existing_questions: List[ParsedQuestion],
+        section_contexts: Optional[Dict[str, Dict[str, Any]]] = None,
     ) -> Tuple[List[ParsedQuestion], bool, List[QuestionCountAudit], List[str]]:
         lines = self._extract_ocr_lines(ocr_result)
         if not lines:
@@ -2369,6 +3730,8 @@ class BaiduOCRProvider(BaseOCRProvider):
         review_required = False
         page_questions: List[ParsedQuestion] = []
         page_count_audits: List[QuestionCountAudit] = []
+        if section_contexts is None:
+            section_contexts = {}
         current_section_index_raw = (
             str(getattr(existing_questions[-1], "section_index_raw", "") or "")
             if existing_questions
@@ -2384,34 +3747,151 @@ class BaiduOCRProvider(BaseOCRProvider):
                 section_index_raw = section.section_index_raw or current_section_index_raw
                 if section_index_raw:
                     current_section_index_raw = section_index_raw
+                section_state = (
+                    self._section_state(section_contexts, section_index_raw)
+                    if section_index_raw
+                    else None
+                )
+                if section_state and (str(section.heading_text or "").strip() or section.is_headingless_prefix):
+                    section_state["entered"] = True
 
                 section_lines = list(section.lines)
-                anchors = self._detect_question_anchors(section_lines, section.left)
+                section_lines, resolved_declared_count = self._consume_leading_section_metadata(
+                    section_lines,
+                    section.declared_count,
+                )
+                if section_state and resolved_declared_count is None:
+                    section_declared_count = section_state.get("declared_count")
+                    try:
+                        resolved_declared_count = (
+                            int(str(section_declared_count).strip())
+                            if section_declared_count is not None
+                            else None
+                        )
+                    except (TypeError, ValueError, AttributeError):
+                        resolved_declared_count = None
+                expected_question_numbers = self._extract_expected_question_numbers(
+                    section.heading_text,
+                    section_lines,
+                )
+                if resolved_declared_count is None and expected_question_numbers:
+                    resolved_declared_count = len(expected_question_numbers)
+                section.declared_count = resolved_declared_count
+                if section_state and resolved_declared_count is not None:
+                    section_state["declared_count"] = resolved_declared_count
+                body_line_count = len([line for line in section_lines if line.text.strip()])
+                anchors = self._detect_question_anchors(
+                    section_lines,
+                    section.left,
+                    expected_question_numbers=expected_question_numbers,
+                    allow_parenthesized=not bool(
+                        section_index_raw
+                        and not str(section.heading_text or "").strip()
+                        and not section.is_headingless_prefix
+                    ),
+                )
                 section_lines, anchors = self._recover_leading_calculation_anchors(
                     section_lines,
                     anchors,
                     section.heading_text,
                 )
+                anchors = self._recover_missing_question_anchors(
+                    section_lines,
+                    anchors,
+                    section.left,
+                    expected_question_numbers=expected_question_numbers,
+                    declared_count=resolved_declared_count,
+                )
+                anchors = self._recover_pre_anchor_content_lines(section_lines, anchors)
+                if not str(section.heading_text or "").strip() and not section_index_raw and anchors:
+                    current_page_numbers: List[int] = []
+                    for question in page_questions:
+                        if int(getattr(question, "page_no", 0) or 0) != page_no:
+                            continue
+                        try:
+                            current_page_numbers.append(int(str(getattr(question, "question_no", "")).strip()))
+                        except (TypeError, ValueError):
+                            continue
+                    try:
+                        first_anchor_no = int(str(anchors[0].question_no).strip())
+                    except (TypeError, ValueError):
+                        first_anchor_no = None
+                    if (
+                        current_page_numbers
+                        and first_anchor_no is not None
+                        and first_anchor_no <= max(current_page_numbers)
+                    ):
+                        anchors = []
                 if (
                     not str(section.heading_text or "").strip()
                     and section_index_raw
-                    and not self._should_keep_sectionless_continuation(
-                        section_index_raw,
-                        anchors,
-                        page_questions,
-                        existing_questions,
-                    )
+                    and not section.is_headingless_prefix
                 ):
-                    continue
+                    anchors = self._trim_overlapping_continuation_anchors(
+                        anchors,
+                        section_state=section_state,
+                    )
+                    if not anchors:
+                        anchors = self._recover_sectionless_continuation_anchors(
+                            section_lines,
+                            section_state=section_state,
+                        )
+                    keep_section = (
+                        self._should_keep_sectionless_continuation(
+                            section_index_raw,
+                            anchors,
+                            page_questions,
+                            existing_questions,
+                            section_state=section_state,
+                        )
+                        if anchors
+                        else bool(section_state and section_state.get("entered") and body_line_count)
+                    )
+                    if not keep_section:
+                        if section_state and section_state.get("declared_count") is not None:
+                            try:
+                                declared_total = int(str(section_state.get("declared_count")).strip())
+                            except (TypeError, ValueError, AttributeError):
+                                declared_total = None
+                            detected_total = len(
+                                {
+                                    str(number).strip()
+                                    for number in (section_state.get("detected_numbers", []) or [])
+                                    if str(number).strip()
+                                }
+                            )
+                            if declared_total is not None and detected_total >= declared_total:
+                                continue
+                        skipped_audit = self._build_question_count_audit(
+                            page_no=page_no,
+                            zone_key=section.zone_key,
+                            section_index_raw=section_index_raw,
+                            anchors=anchors,
+                            declared_count=resolved_declared_count,
+                            layout_type=section.layout_type,
+                            secondary_pass_used=False,
+                            has_embedded_anchor=self._section_has_unassigned_anchor(
+                                section_lines,
+                                anchors,
+                                section.left,
+                            ),
+                            body_line_count=body_line_count,
+                            continuation_skipped=True,
+                        )
+                        page_count_audits.append(skipped_audit)
+                        if skipped_audit.mismatch_reason:
+                            review_required = True
+                        continue
                 primary_audit = self._build_question_count_audit(
                     page_no=page_no,
                     zone_key=section.zone_key,
                     section_index_raw=section_index_raw,
                     anchors=anchors,
-                    declared_count=section.declared_count,
+                    declared_count=resolved_declared_count,
                     layout_type=section.layout_type,
                     secondary_pass_used=False,
                     has_embedded_anchor=self._section_has_unassigned_anchor(section_lines, anchors, section.left),
+                    body_line_count=body_line_count,
                 )
 
                 secondary_result = None
@@ -2434,13 +3914,20 @@ class BaiduOCRProvider(BaseOCRProvider):
 
                 if not anchors:
                     if section_lines and (page_questions or existing_questions):
-                        target_question = page_questions[-1] if page_questions else existing_questions[-1]
-                        self._append_lines_to_question(
-                            target_question,
+                        merged = self._append_orphan_section_lines(
                             section_lines,
                             page_no=page_no,
+                            page_questions=page_questions,
+                            existing_questions=existing_questions,
                         )
-                        review_required = True
+                        if not merged:
+                            target_question = page_questions[-1] if page_questions else existing_questions[-1]
+                            self._append_lines_to_question(
+                                target_question,
+                                section_lines,
+                                page_no=page_no,
+                            )
+                            review_required = True
                     continue
 
                 if anchors[0].line_index > 0 and (page_questions or existing_questions):
@@ -2469,16 +3956,45 @@ class BaiduOCRProvider(BaseOCRProvider):
                     else:
                         next_anchor_index = anchors[offset + 1].line_index if offset + 1 < len(anchors) else len(section_lines)
                         block_lines = section_lines[anchor.line_index : next_anchor_index]
+                    if anchor.force_use_label and block_lines and block_lines[0] is not anchor.line:
+                        block_lines = [
+                            line
+                            for line in block_lines
+                            if line is block_lines[0] or line is not anchor.line
+                        ]
                     question, question_review = await self._build_question_from_lines(
                         block_lines,
                         page_no=page_no,
                         image_path=image_path,
                         section_index_raw=section_index_raw,
                         zone_left=section.left,
+                        forced_question_no=anchor.question_no,
+                        forced_question_label_raw=anchor.question_label_raw,
+                        force_use_label=anchor.force_use_label,
+                        recovery_reason=anchor.recovery_reason,
                     )
                     review_required = review_required or question_review
                     if question is not None:
                         page_questions.append(question)
+
+                if section_state:
+                    section_state["entered"] = True
+                    if final_audit.declared_count is not None:
+                        section_state["declared_count"] = final_audit.declared_count
+                    detected_numbers = [
+                        str(number).strip()
+                        for number in [*section_state.get("detected_numbers", []), *final_audit.anchor_numbers]
+                        if str(number).strip()
+                    ]
+                    section_state["detected_numbers"] = list(dict.fromkeys(detected_numbers))
+                    numeric_anchor_values: List[int] = []
+                    for anchor in anchors:
+                        try:
+                            numeric_anchor_values.append(int(str(anchor.question_no).strip()))
+                        except (TypeError, ValueError):
+                            continue
+                    if numeric_anchor_values:
+                        section_state["last_question_no"] = max(numeric_anchor_values)
 
         page_warnings = self._build_report_warnings(page_count_audits)
         logger.info("OCR layout-aware parsing page=%s questions=%s zones=%s", page_no, len(page_questions), len(zones))
@@ -2490,7 +4006,20 @@ class BaiduOCRProvider(BaseOCRProvider):
 
         logger.info("开始解析试卷 %s, 文件: %s", paper_id, file_path)
         file_ext = os.path.splitext(file_path)[1].lower()
-        image_paths = self._pdf_to_images(file_path) if file_ext == ".pdf" else [file_path]
+        if self.is_image_manifest_path(file_path):
+            manifest_pages = self.load_image_manifest_pages(file_path)
+            validation = self.validate_image_count(len(manifest_pages))
+            if not validation.is_valid:
+                raise ValueError(validation.error_message)
+            file_ext = ".images"
+            image_paths = [page.path for page in manifest_pages]
+            page_inputs = [(page.page_no, page.path) for page in manifest_pages]
+        elif file_ext == ".pdf":
+            image_paths = self._pdf_to_images(file_path)
+            page_inputs = [(page_index + 1, image_path) for page_index, image_path in enumerate(image_paths)]
+        else:
+            image_paths = [file_path]
+            page_inputs = [(1, file_path)]
 
         all_questions: List[ParsedQuestion] = []
         all_count_audits: List[QuestionCountAudit] = []
@@ -2499,10 +4028,10 @@ class BaiduOCRProvider(BaseOCRProvider):
         processed_pages = 0
         needs_manual_review = False
         cleanup_candidates: List[str] = []
+        section_contexts: Dict[str, Dict[str, Any]] = {}
 
-        for page_index, image_path in enumerate(image_paths):
-            page_no = page_index + 1
-            logger.info("识别第 %s/%s 页", page_no, len(image_paths))
+        for page_index, (page_no, image_path) in enumerate(page_inputs):
+            logger.info("识别第 %s/%s 页", page_index + 1, len(page_inputs))
             try:
                 normalized_image_path, ocr_result, rotation_applied = await self._normalize_page_orientation(
                     image_path,
@@ -2516,6 +4045,7 @@ class BaiduOCRProvider(BaseOCRProvider):
                     page_no=page_no,
                     image_path=normalized_image_path,
                     existing_questions=all_questions,
+                    section_contexts=section_contexts,
                 )
                 all_questions.extend(page_questions)
                 all_count_audits.extend(page_count_audits)
@@ -2553,12 +4083,12 @@ class BaiduOCRProvider(BaseOCRProvider):
             paper_name=paper_name,
             total_question_count=len(all_questions),
             total_score=sum(question.score for question in all_questions),
-            page_count=len(image_paths),
+            page_count=len(page_inputs),
             parse_status=parse_status,
             parse_confidence=avg_confidence,
             need_manual_review=needs_manual_review,
             questions=all_questions,
-            file_type="pdf" if file_ext == ".pdf" else "image",
+            file_type="pdf" if file_ext == ".pdf" else ("images" if file_ext == ".images" else "image"),
             source_file_url=file_path,
             report_warnings=list(dict.fromkeys(report_warnings)),
             question_count_audits=all_count_audits,

@@ -6,7 +6,8 @@ import { PDFExportButton } from '@/components/report/PDFExportButton';
 import { SixDimensionsRadar } from '@/components/report/SixDimensionsRadar';
 import {
   formatScore,
-  getDifficultyMeta,
+  getDifficultyTargetStudents,
+  getDifficultyLabel,
 } from '@/components/report/reportMeta';
 import './ReportTheme.css';
 
@@ -27,36 +28,16 @@ interface ReportErrorStateProps {
   onBack?: () => void;
 }
 
-function getSummaryParagraphs(summary: string): string[] {
-  const paragraphs = summary
-    .split(/\n+/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-  if (paragraphs.length > 0) {
-    return paragraphs;
-  }
-
-  return ['暂无总体评价。'];
-}
-
-function getAdviceNote(reportData: FullReportData): string {
-  const warningCount = reportData.dimension_details.filter((item) => item.warning).length;
-
-  if (warningCount > 0) {
-    return `当前六维明细中有 ${warningCount} 个维度带有复核提示，建议结合题号、题目摘要与计入理由做二次核对后再制定训练重点。`;
-  }
-
-  return '建议先依据整卷等级与综合分确定训练强度，再按六维得分和计入题号安排分层巩固与专项提升。';
-}
-
 export function ReportLayout({ reportData, exportId, onBack }: ReportLayoutProps) {
-  const difficultyMeta = getDifficultyMeta(reportData.difficulty_position.level);
-  const overallLevel = reportData.difficulty_position.label || difficultyMeta.label;
-  const summaryParagraphs = getSummaryParagraphs(reportData.overall_summary);
-  const adviceNote = getAdviceNote(reportData);
+  const overallLevel = getDifficultyLabel(
+    reportData.difficulty_position.level,
+    reportData.difficulty_position.label,
+  );
+  const targetStudents = getDifficultyTargetStudents(
+    reportData.difficulty_position.level,
+    reportData.difficulty_position.target_students,
+  );
   const pdfExportId = exportId || reportData.paper_id || reportData.report_id;
-  const reportWarnings = reportData.report_warnings || [];
 
   return (
     <div className="report-shell">
@@ -94,29 +75,18 @@ export function ReportLayout({ reportData, exportId, onBack }: ReportLayoutProps
             </div>
             <div className="report-overview-item">
               <span>目标学生</span>
-              <strong>{reportData.difficulty_position.target_students || '未提供'}</strong>
+              <strong>{targetStudents}</strong>
             </div>
           </div>
         </header>
 
         <main className="report-body">
-          {reportWarnings.length > 0 ? (
-            <section className="report-warning-banner" aria-label="OCR warnings">
-              <div className="report-warning-banner__header">
-                <AlertCircle size={18} />
-                <strong>OCR 识别提示</strong>
-              </div>
-              <ul className="report-warning-banner__list">
-                {reportWarnings.map((warning, index) => (
-                  <li key={`${index}-${warning.slice(0, 12)}`}>{warning}</li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-
           <section className="report-core-grid">
             <DifficultyPositioning data={reportData.difficulty_position} />
-            <SixDimensionsRadar dimensions={reportData.dimensions} />
+            <SixDimensionsRadar
+              dimensions={reportData.dimensions}
+              dimensionDetails={reportData.dimension_details}
+            />
           </section>
 
           <section className="report-section">
@@ -130,46 +100,6 @@ export function ReportLayout({ reportData, exportId, onBack }: ReportLayoutProps
             <DimensionScoreCards dimensions={reportData.dimension_details} />
           </section>
 
-          <section className="report-section">
-            <div className="report-section__header">
-              <div>
-                <span className="report-section__eyebrow">总体评价</span>
-                <h2>整卷结论</h2>
-              </div>
-              <p>以正文报告块呈现总体判断，弱化普通卡片感，增强正式报告语境下的阅读节奏。</p>
-            </div>
-
-            <article className="report-prose-block">
-              <span className="report-prose-block__note">报告正文</span>
-              {summaryParagraphs.map((paragraph, index) => (
-                <p key={`${index}-${paragraph.slice(0, 8)}`}>{paragraph}</p>
-              ))}
-            </article>
-          </section>
-
-          <section className="report-section report-section--light">
-            <div className="report-section__header">
-              <div>
-                <span className="report-section__eyebrow">学习建议</span>
-                <h2>后续训练建议</h2>
-              </div>
-              <p>采用编号建议列表，保留重点提示，但整体视觉层级低于核心结论与总体评价。</p>
-            </div>
-
-            <div className="report-advice-note">
-              <strong>重点提示</strong>
-              <p>{adviceNote}</p>
-            </div>
-
-            <ol className="report-advice-list">
-              {reportData.recommendations.map((recommendation, index) => (
-                <li key={`${index}-${recommendation.slice(0, 8)}`} className="report-advice-item">
-                  <span className="report-advice-item__index">{String(index + 1).padStart(2, '0')}</span>
-                  <p>{recommendation}</p>
-                </li>
-              ))}
-            </ol>
-          </section>
         </main>
 
         <footer className="report-footer">

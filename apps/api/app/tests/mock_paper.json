@@ -147,9 +147,9 @@
   "difficulty_position": {
     "overall_score": 7.0,
     "level": 4,
-    "label": "拔高卷",
-    "target_students": "适合基础扎实、希望进一步拔高的学生",
-    "description": "面向思维突破阶段，突出方法创新"
+    "label": "选拔卷",
+    "target_students": "适合基础扎实、需要面向选拔场景提升综合稳定性的学生",
+    "description": "面向选拔区分阶段，突出方法创新"
   },
   "created_at": "2024-04-07T10:00:00Z",
   "updated_at": "2024-04-07T10:30:00Z"

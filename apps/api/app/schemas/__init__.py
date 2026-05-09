@@ -146,6 +146,9 @@ class PaperStatusResponse(BaseModel):
     updated_at: datetime
     last_stage: Optional[str] = None
     error_message: Optional[str] = None
+    progress_current: Optional[int] = None
+    progress_total: Optional[int] = None
+    progress_message: Optional[str] = None
 
 
 class ParsedPaperResponse(BaseModel):

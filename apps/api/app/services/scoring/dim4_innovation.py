@@ -1,226 +1,332 @@
 """
-维度4：实践与创新评分引擎
+dim4 practice-innovation scorer.
 
-评估题目相对课本原型的变化程度（变化难度），
-核心驱动字段为 prototype_distance（原题变化程度）。
+Primary semantics: identify the knowledge point first, then score how far the
+question varies from the basic template inside that knowledge point.
 """
 
-from typing import Any, Dict, Optional
+from __future__ import annotations
+
+from typing import Any, Dict
 
 from app.services.scoring.base import BaseDimensionScorer, DimensionScore
+from app.services.scoring.dim4_topic_levels import (
+    DIM4_TOPIC_LEVELS,
+    calibrate_dim4_competition_variant_level,
+    normalize_dim4_level,
+    normalize_dim4_level_source,
+)
+
+STRATEGY_ROLE_VALUES = {"none", "supporting", "core"}
+TEMPLATE_FIT_VALUES = {"direct", "adapted", "reframed", "non_routine"}
+BREAKTHROUGH_TYPE_VALUES = {
+    "none",
+    "local_trick",
+    "strategy_shift",
+    "constructive",
+    "exploratory_search",
+}
+STRATEGY_SHIFT_COUNT_VALUES = {"0", "1", "2", "3+"}
+CONSTRUCTION_REQUIREMENT_VALUES = {
+    "none",
+    "simple_setup",
+    "case_construction",
+    "custom_construction",
+}
+EXPLORATION_SPACE_VALUES = {"none", "bounded", "branched", "open"}
+REPRESENTATION_REFRAME_VALUES = {"none", "minor", "structural", "creative"}
+TRANSFER_DISTANCE_VALUES = {"near", "medium", "far"}
+PATH_OPENNESS_VALUES = {"single", "multiple_paths", "multiple_answers"}
+DEAD_END_RISK_VALUES = {"low", "medium", "high"}
+IMAGE_DEPENDENCY_VALUES = {"none", "helpful", "required"}
+
+DIM4_LEVELS = DIM4_TOPIC_LEVELS
+DIM4_NUMERIC_LEVELS = {str(index): f"L{index}" for index in range(1, 6)}
+
+
+def _normalize_choice(value: Any, allowed: set[str]) -> str:
+    normalized = str(value or "").strip().lower()
+    return normalized if normalized in allowed else ""
+
+
+def _normalize_zero_one(value: Any) -> int | None:
+    if value in (0, "0", False):
+        return 0
+    if value in (1, "1", True):
+        return 1
+    return None
+
+
+def _shift_rank(value: str) -> int:
+    return {"0": 0, "1": 1, "2": 2, "3+": 3}.get(value, -1)
 
 
 class Dim4InnovationScorer(BaseDimensionScorer):
-    """
-    维度4：实践与创新评分器
-
-    以"变化难度"为核心，评估题目相对课本原型的变化程度。
-    """
-
     DIMENSION_CODE = "dim4"
-    DIMENSION_NAME = "实践与创新"
+    DIMENSION_NAME = "实践创新"
 
     def __init__(self):
         super().__init__(config=None)
 
-    def _get_default_config(self):
-        """获取默认配置"""
-        return {
-            "max_score": 10.0,
-            "score_granularity": 0.5,
-        }
+    @staticmethod
+    def _normalize_level_code(value: Any) -> str:
+        text = str(value or "").strip().upper()
+        if text in DIM4_LEVELS:
+            return text
+        if text in DIM4_NUMERIC_LEVELS:
+            return DIM4_NUMERIC_LEVELS[text]
+        return ""
 
-    def score(self, features: Dict[str, Any]) -> DimensionScore:
-        """
-        计算维度4评分
-
-        Args:
-            features: 题目特征
-                - prototype_distance: 原题变化程度
-                    original / surface / structural / deep
-                - disguise_level: 情境伪装程度 (none/light/heavy)
-                - is_reverse: 是否逆向提问 (0/1)
-                - is_open_ended: 是否开放题 (0/1)
-                - decode_difficulty: 题意解码难度 (low/medium/high)
-
-        Returns:
-            DimensionScore: 评分结果
-        """
-        # 先检查 Force-5（开放+深度变形）
-        override = self._check_force5(features)
-        if override:
-            return override
-
-        # 再检查 Force-1（课本原题，完全无包装）
-        override = self._check_force1(features)
-        if override:
-            return override
-
-        # 计算基础分
-        base_score = self._get_base_score(features)
-
-        # 计算修正分
-        adjustments = self._calculate_adjustments(features)
-        total_adjustment = sum(adjustments.values())
-
-        # 计算最终分数
-        raw_score = base_score + total_adjustment
-        final_score = min(raw_score, 10.0)
-        final_score = self.round_score(final_score)
-
-        # Force-4：结构变形+深度伪装，最低 L4
-        override = self._check_force4(features, final_score)
-        if override:
-            return override
-
-        # 计算等级
-        level, level_label = self.calculate_level(final_score)
-
-        # 生成证据
-        evidence = self._generate_evidence(features, base_score, adjustments, final_score, level_label)
-
+    def _build_score(
+        self,
+        level_code: str,
+        evidence_summary: str,
+        *,
+        calibration: Dict[str, Any] | None = None,
+        calibrated: bool = False,
+    ) -> DimensionScore:
+        level = DIM4_LEVELS[level_code]
+        details: Dict[str, Any] = {"status": "applicable", "dim4_level": level_code}
+        if isinstance(calibration, dict) and calibration:
+            details["reference_calibration"] = calibration
+            details["reference_calibrated"] = calibrated
+            if calibration.get("model_level"):
+                details["dim4_local_level"] = calibration.get("model_level")
+            if calibration.get("reference_level"):
+                details["dim4_reference_level"] = calibration.get("reference_level")
+            if calibration.get("action"):
+                details["reference_calibration_action"] = calibration.get("action")
+        evidence = f"{level['label']}：{evidence_summary}"
+        if calibrated and isinstance(calibration, dict):
+            evidence = f"{evidence} 高思题目级参考画像已校准到 {level_code}。"
         return DimensionScore(
-            dimension_code=self.dimension_code,
-            score=final_score,
-            level=level,
-            level_label=level_label,
+            dimension_code=self.DIMENSION_CODE,
+            score=level["score"],
+            level=level["level"],
+            level_label=level["label"],
             evidence=evidence,
             applicable=True,
-            details={
-                "base_score": base_score,
-                "adjustments": adjustments,
-                "features": features,
-            },
+            details=details,
         )
 
-    def _check_force5(self, features: Dict[str, Any]) -> Optional[DimensionScore]:
-        """Force-5：深度变形且为开放题 → 最低 9.0"""
-        if (
-            features.get("prototype_distance") == "deep"
-            and features.get("is_open_ended") == 1
-        ):
-            return DimensionScore(
-                dimension_code=self.dimension_code,
-                score=self.LEVEL_SCORE_MIDPOINTS[5],
-                level=5,
-                level_label="困难",
-                evidence="【强制规则】强制5档：深度变形且为开放题，变化难度最高",
-                applicable=True,
-            )
-        return None
-
-    def _check_force1(self, features: Dict[str, Any]) -> Optional[DimensionScore]:
-        """Force-1：课本原题，无伪装，非逆向，非开放 → 固定 1.0"""
-        if (
-            features.get("prototype_distance") == "original"
-            and features.get("disguise_level", "none") == "none"
-            and features.get("is_reverse", 0) == 0
-            and features.get("is_open_ended", 0) == 0
-        ):
-            return DimensionScore(
-                dimension_code=self.dimension_code,
-                score=self.LEVEL_SCORE_MIDPOINTS[1],
-                level=1,
-                level_label="简单",
-                evidence="【强制规则】强制1档：课本原题，无情境伪装，非逆向，非开放题",
-                applicable=True,
-            )
-        return None
-
-    def _check_force4(self, features: Dict[str, Any], current_score: float) -> Optional[DimensionScore]:
-        """Force-4：结构/深度变形且深度伪装 → 最低 L4 分值"""
-        min_l4 = self.LEVEL_SCORE_MIDPOINTS[4]
-        if (
-            features.get("prototype_distance") in ["structural", "deep"]
-            and features.get("disguise_level") == "heavy"
-            and current_score < min_l4
-        ):
-            _, level_label = self.calculate_level(min_l4)
-            return DimensionScore(
-                dimension_code=self.dimension_code,
-                score=min_l4,
-                level=4,
-                level_label=level_label,
-                evidence="【强制规则】强制4档：结构或深度变形且情境深度伪装，至少判定为4档",
-                applicable=True,
-            )
-        return None
-
-    def _get_base_score(self, features: Dict[str, Any]) -> float:
-        """获取基础分（以 prototype_distance 为主驱动）"""
-        prototype_distance = features.get("prototype_distance", "surface")
-        return {
-            "original": 1.0,
-            "surface": 3.0,
-            "structural": 6.0,
-            "deep": 8.5,
-        }.get(prototype_distance, 3.0)
-
-    def _calculate_adjustments(self, features: Dict[str, Any]) -> Dict[str, float]:
-        """计算修正分"""
-        adjustments = {}
-
-        disguise_level = features.get("disguise_level", "none")
-        if disguise_level == "light":
-            adjustments["disguise_level"] = 0.5
-        elif disguise_level == "heavy":
-            adjustments["disguise_level"] = 1.5
-
-        if features.get("is_reverse", 0) == 1:
-            adjustments["is_reverse"] = 0.5
-
-        decode_difficulty = features.get("decode_difficulty", "low")
-        if decode_difficulty == "medium":
-            adjustments["decode_difficulty"] = 0.5
-        elif decode_difficulty == "high":
-            adjustments["decode_difficulty"] = 1.0
-
-        if features.get("is_open_ended", 0) == 1:
-            adjustments["is_open_ended"] = 0.5
-
-        return adjustments
-
-    def _generate_evidence(
-        self, features: Dict[str, Any], base_score: float,
-        adjustments: Dict[str, float], final_score: float, level_label: str
-    ) -> str:
-        """生成评分证据（教师可读的中文叙述）"""
-        prototype_distance = features.get("prototype_distance", "surface")
-        disguise_level = features.get("disguise_level", "none")
-        is_reverse = features.get("is_reverse", 0)
-        is_open_ended = features.get("is_open_ended", 0)
-        decode_difficulty = features.get("decode_difficulty", "low")
-
-        distance_desc = {
-            "original": "课本原题（无变化）",
-            "surface": "表面变形（换数字或情境，解题结构不变）",
-            "structural": "结构变形（变换题型或问法，需重组解题路径）",
-            "deep": "深度变形（多步重组或创新组合，与原型差异显著）",
-        }.get(prototype_distance, prototype_distance)
-
-        disguise_desc = {
-            "none": "无情境伪装",
-            "light": "轻度情境包装",
-            "heavy": "深度情境伪装（知识点不易识别）",
-        }.get(disguise_level, disguise_level)
-
-        decode_desc = {
-            "low": "题意直接明了",
-            "medium": "题意需要一定转化",
-            "high": "题意隐晦，需多次转化",
-        }.get(decode_difficulty, decode_difficulty)
-
-        extra = []
-        if is_reverse == 1:
-            extra.append("逆向提问")
-        if is_open_ended == 1:
-            extra.append("开放题")
-        extra_str = "，" + "、".join(extra) if extra else ""
-
-        adj_total = sum(v for v in adjustments.values() if v > 0)
-        adj_str = f"，修正分+{adj_total:.1f}" if adj_total > 0 else ""
-
-        return (
-            f"本题为{distance_desc}，{disguise_desc}，{decode_desc}{extra_str}。"
-            f"基础分{base_score}{adj_str}，综合评分{final_score}分，难度等级：{level_label}"
+    def _invalid_score(self, evidence: str) -> DimensionScore:
+        return DimensionScore(
+            dimension_code=self.DIMENSION_CODE,
+            score=0.0,
+            level=0,
+            level_label="N/A",
+            evidence=evidence,
+            applicable=False,
+            details={"status": "not_applicable", "dim4_level": "N/A"},
         )
+
+    def _calculate_score(self, features: Dict[str, Any]) -> DimensionScore:
+        topic_level_code = normalize_dim4_level(features.get("topic_level"))
+        level_source = normalize_dim4_level_source(features.get("level_source"))
+        if topic_level_code and level_source != "review_failed":
+            knowledge_point = str(features.get("knowledge_point") or "").strip()
+            anchor_evidence = str(features.get("anchor_evidence") or "").strip()
+            evidence_summary = (
+                str(features.get("evidence_summary") or "").strip()
+                or anchor_evidence
+                or "已按知识点内部 L1-L5 标尺完成定位。"
+            )
+            local_variant_calibration = calibrate_dim4_competition_variant_level(
+                features,
+                topic_level_code,
+            )
+            if local_variant_calibration:
+                topic_level_code = local_variant_calibration.get("topic_level", topic_level_code)
+                calibration_reason = str(local_variant_calibration.get("reason") or "").strip()
+                if calibration_reason and calibration_reason not in evidence_summary:
+                    evidence_summary = f"{evidence_summary} {calibration_reason}".strip()
+            result = self._build_score(
+                topic_level_code,
+                evidence_summary,
+                calibration=features.get("calibration") if isinstance(features.get("calibration"), dict) else None,
+            )
+            result.details.update(
+                {
+                    "knowledge_point": knowledge_point,
+                    "topic_level": topic_level_code,
+                    "level_source": level_source or "knowledge_anchor",
+                    "anchor_evidence": anchor_evidence,
+                    "fallback_used": features.get("fallback_used") in (1, "1", True),
+                }
+            )
+            if local_variant_calibration:
+                result.details["local_variant_calibration"] = local_variant_calibration
+                result.details["variant_signal_group"] = local_variant_calibration.get(
+                    "variant_signal_group",
+                    "",
+                )
+                result.details["upshift_reason"] = local_variant_calibration.get("reason", "")
+                result.details["previous_topic_level"] = local_variant_calibration.get(
+                    "previous_level",
+                    "",
+                )
+                result.details["calibrated_topic_level"] = local_variant_calibration.get(
+                    "calibrated_level",
+                    local_variant_calibration.get("topic_level", ""),
+                )
+            for key in ("reference_matches", "fallback_confidence", "fallback_error"):
+                if features.get(key) not in ("", None, [], {}):
+                    result.details[key] = features.get(key)
+            if knowledge_point:
+                result.evidence = (
+                    f"{result.level_label}：知识点“{knowledge_point}”内定位为 "
+                    f"{topic_level_code}。{evidence_summary}"
+                )
+            return result
+
+        strategy_role = _normalize_choice(features.get("strategy_role"), STRATEGY_ROLE_VALUES)
+        template_fit = _normalize_choice(features.get("template_fit"), TEMPLATE_FIT_VALUES)
+        breakthrough_type = _normalize_choice(
+            features.get("breakthrough_type"),
+            BREAKTHROUGH_TYPE_VALUES,
+        )
+        strategy_shift_count = _normalize_choice(
+            features.get("strategy_shift_count"),
+            STRATEGY_SHIFT_COUNT_VALUES,
+        )
+        construction_requirement = _normalize_choice(
+            features.get("construction_requirement"),
+            CONSTRUCTION_REQUIREMENT_VALUES,
+        )
+        exploration_space = _normalize_choice(
+            features.get("exploration_space"),
+            EXPLORATION_SPACE_VALUES,
+        )
+        representation_reframe = _normalize_choice(
+            features.get("representation_reframe"),
+            REPRESENTATION_REFRAME_VALUES,
+        )
+        transfer_distance = _normalize_choice(
+            features.get("transfer_distance"),
+            TRANSFER_DISTANCE_VALUES,
+        )
+        path_openness = _normalize_choice(
+            features.get("path_openness"),
+            PATH_OPENNESS_VALUES,
+        )
+        dead_end_risk = _normalize_choice(features.get("dead_end_risk"), DEAD_END_RISK_VALUES)
+        global_strategy_required = _normalize_zero_one(
+            features.get("global_strategy_required")
+        )
+        image_dependency = _normalize_choice(
+            features.get("image_dependency"),
+            IMAGE_DEPENDENCY_VALUES,
+        )
+        evidence_summary = str(features.get("evidence_summary", "")).strip()
+        calibration = features.get("calibration", {})
+
+        required_values = [
+            strategy_role,
+            template_fit,
+            breakthrough_type,
+            strategy_shift_count,
+            construction_requirement,
+            exploration_space,
+            representation_reframe,
+            transfer_distance,
+            path_openness,
+            dead_end_risk,
+            image_dependency,
+            evidence_summary,
+        ]
+        if any(value in ("", None) for value in required_values) or global_strategy_required is None:
+            return self._invalid_score("dim4 关键策略创新事实不完整，无法自动判级。")
+
+        if strategy_role != "core":
+            return self._invalid_score("该题未满足 dim4 的核心策略突破门槛。")
+
+        reference_level_code = self._normalize_level_code(features.get("reference_calibrated_level"))
+        if reference_level_code:
+            return self._build_score(
+                reference_level_code,
+                evidence_summary,
+                calibration=calibration if isinstance(calibration, dict) else None,
+                calibrated=True,
+            )
+
+        strategy_shift_rank = _shift_rank(strategy_shift_count)
+
+        if (
+            breakthrough_type == "exploratory_search"
+            and exploration_space in {"branched", "open"}
+            and global_strategy_required == 1
+        ) or (
+            template_fit == "non_routine"
+            and strategy_shift_rank >= 3
+            and path_openness in {"multiple_paths", "multiple_answers"}
+        ) or (
+            transfer_distance == "far"
+            and representation_reframe == "creative"
+            and dead_end_risk == "high"
+        ):
+            return self._build_score("L5", evidence_summary, calibration=calibration if isinstance(calibration, dict) else None)
+
+        if (
+            breakthrough_type in {"constructive", "exploratory_search"}
+            and strategy_shift_rank >= 2
+        ) or (
+            template_fit == "non_routine"
+            and representation_reframe in {"structural", "creative"}
+        ) or (
+            construction_requirement == "custom_construction"
+        ) or (
+            exploration_space == "branched"
+            and dead_end_risk in {"medium", "high"}
+        ) or (
+            global_strategy_required == 1
+            and transfer_distance == "far"
+        ) or (
+            template_fit == "reframed"
+            and (
+                strategy_shift_rank >= 2
+                or construction_requirement == "case_construction"
+                or path_openness == "multiple_paths"
+                or dead_end_risk == "high"
+            )
+        ) or (
+            representation_reframe == "structural"
+            and path_openness == "multiple_paths"
+        ):
+            return self._build_score("L4", evidence_summary, calibration=calibration if isinstance(calibration, dict) else None)
+
+        if (
+            breakthrough_type in {"local_trick", "strategy_shift"}
+        ) or (
+            template_fit == "reframed"
+        ) or (
+            strategy_shift_rank == 1
+        ) or (
+            construction_requirement == "case_construction"
+        ) or (
+            representation_reframe == "structural"
+        ) or (
+            transfer_distance == "medium"
+        ) or (
+            exploration_space == "bounded"
+            and (
+                template_fit in {"adapted", "reframed"}
+                or path_openness == "multiple_paths"
+                or dead_end_risk == "medium"
+            )
+        ):
+            return self._build_score("L3", evidence_summary, calibration=calibration if isinstance(calibration, dict) else None)
+
+        if (
+            template_fit == "adapted"
+        ) or (
+            construction_requirement == "simple_setup"
+        ) or (
+            representation_reframe == "minor"
+        ) or (
+            exploration_space == "bounded"
+        ) or (
+            dead_end_risk == "medium"
+        ):
+            return self._build_score("L2", evidence_summary, calibration=calibration if isinstance(calibration, dict) else None)
+
+        return self._build_score("L1", evidence_summary, calibration=calibration if isinstance(calibration, dict) else None)
