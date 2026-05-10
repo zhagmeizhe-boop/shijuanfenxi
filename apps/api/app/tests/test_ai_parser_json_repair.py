@@ -446,6 +446,26 @@ def test_parse_response_does_not_retry_when_dim5_band_is_valid():
     assert fake_llm.calls == []
 
 
+def test_parse_response_adds_dim4_l1_for_stable_known_topic_without_llm():
+    fake_llm = FakeLLM()
+    parser = make_parser(fake_llm)
+    question = make_question("12a")
+
+    features = asyncio.run(
+        parser._parse_response_with_repairs(
+            dim5_retry_test_payload({"band": list(BAND_SCORE_MAP.keys())[0], "sublevel": "low"}),
+            question,
+        )
+    )
+
+    assert features.parse_failed is False
+    assert features.dim4_innovation["knowledge_point"] == "比例百分数应用"
+    assert features.dim4_innovation["topic_level"] == "L1"
+    assert features.dim4_innovation["level_source"] == "knowledge_anchor"
+    assert "dim4" in features.applicable_dimensions
+    assert fake_llm.calls == []
+
+
 def test_parse_response_retries_when_dim5_sublevel_is_missing():
     valid_band = list(BAND_SCORE_MAP.keys())[0]
     fake_llm = FakeLLM(

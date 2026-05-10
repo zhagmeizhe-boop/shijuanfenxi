@@ -125,6 +125,42 @@ RECTANGLE_REVERSE_AREA_PATTERN = re.compile(
     "(?=.*\u5bbd(?:\u51cf\u5c11|\u7f29\u77ed))(?=.*\u9762\u79ef.*\u51cf\u5c11)"
     "(?=.*\u6b63\u65b9\u5f62)"
 )
+DIRECT_FORMULA_SOLID_SHAPE_PATTERN = re.compile(
+    "(?:\u957f\u65b9\u4f53|\u6b63\u65b9\u4f53|\u7acb\u65b9\u4f53|\u5706\u67f1|\u5706\u9525)"
+)
+DIRECT_FORMULA_CIRCLE_SHAPE_PATTERN = re.compile("(?:\u5706|\u6247\u5f62|\u534a\u5f84|\u76f4\u5f84|\u5706\u5fc3\u89d2)")
+DIRECT_FORMULA_BASIC_2D_SHAPE_PATTERN = re.compile(
+    "(?:\u957f\u65b9\u5f62|\u6b63\u65b9\u5f62|\u4e09\u89d2\u5f62|"
+    "\u5e73\u884c\u56db\u8fb9\u5f62|\u68af\u5f62|\u591a\u8fb9\u5f62)"
+)
+DIRECT_FORMULA_TARGET_PATTERN = re.compile(
+    "(?:(?:\u6c42|\u8ba1\u7b97).{0,16}(?:\u9762\u79ef|\u5468\u957f|\u4f53\u79ef|\u8868\u9762\u79ef|\u5bb9\u79ef)|"
+    "(?:\u9762\u79ef|\u5468\u957f|\u4f53\u79ef|\u8868\u9762\u79ef|\u5bb9\u79ef).{0,16}"
+    "(?:\u662f\u591a\u5c11|\u4e3a\u591a\u5c11|\u662f|\\?|\uff1f))"
+)
+DIRECT_FORMULA_DIMENSION_PATTERN = re.compile(
+    "(?:\u957f|\u5bbd|\u5e95|\u9ad8|\u534a\u5f84|\u76f4\u5f84|\u8fb9\u957f|"
+    "\u68f1\u957f|\u5e95\u9762\u79ef|\u5e95\u9762\u534a\u5f84)"
+)
+DIRECT_FORMULA_DIMENSION_VALUE_PATTERN = re.compile(
+    "(?:(?:\u957f|\u5bbd|\u5e95|\u9ad8|\u534a\u5f84|\u76f4\u5f84|\u8fb9\u957f|"
+    "\u68f1\u957f|\u5e95\u9762\u79ef|\u5e95\u9762\u534a\u5f84).{0,6}"
+    "(?:\\d+(?:\\.\\d+)?|[\u4e00\u4e8c\u4e24\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e\u5343\u4e07]+)|"
+    "(?:\\d+(?:\\.\\d+)?|[\u4e00\u4e8c\u4e24\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e\u5343\u4e07]+).{0,6}"
+    "(?:\u5398\u7c73|\u7c73|\u5206\u7c73|\u5e73\u65b9\u5398\u7c73|\u5e73\u65b9\u7c73|"
+    "\u7acb\u65b9\u5398\u7c73|\u7acb\u65b9\u7c73))"
+)
+DIRECT_FORMULA_VALUE_PATTERN = re.compile(
+    "(?:\\d+(?:\\.\\d+)?|[\u4e00\u4e8c\u4e24\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e\u5343\u4e07]+)"
+)
+DIRECT_FORMULA_BLOCKER_PATTERN = re.compile(
+    "(?:\u5982\u56fe|\u4e0b\u56fe|\u56fe\u4e2d|\u9634\u5f71|\u6a21\u578b|"
+    "\u8774\u8776|\u71d5\u5c3e|\u4e00\u534a\u6a21\u578b|\u9e1f\u5934|\u6c99\u6f0f|"
+    "\u5272\u8865|\u683c\u70b9|\u7b49\u9ad8|\u5171\u8fb9|\u6c34\u4f4d|\u5012\u653e|"
+    "\u5012\u7f6e|\u5c55\u5f00\u56fe|\u622a\u9762|\u4e09\u89c6\u56fe|\u89c6\u56fe|"
+    "\u5207\u62fc|\u65cb\u8f6c|\u5e73\u79fb|\u5bf9\u79f0|\u5185\u63a5|\u5916\u63a5|"
+    "\u6700\u5927|\u9732\u5728\u5916\u9762|\u4e4b\u6bd4|\u6bd4\u4f8b|\u6bd4\u662f|\u6bd4\u4e3a|:)"
+)
 
 
 def _normalize_choice(value: Any, allowed: set[str]) -> str:
@@ -266,6 +302,83 @@ def _should_replace_with_visual_fallback(feature: Dict[str, Any]) -> bool:
         or spatial_role in {"", "none"}
         or (confidence is not None and confidence < DIM2_REVIEW_CONFIDENCE_THRESHOLD)
     )
+
+
+def _has_direct_formula_geometry_signal(raw_text: str) -> bool:
+    text = str(raw_text or "")
+    has_shape = bool(
+        DIRECT_FORMULA_SOLID_SHAPE_PATTERN.search(text)
+        or DIRECT_FORMULA_CIRCLE_SHAPE_PATTERN.search(text)
+        or DIRECT_FORMULA_BASIC_2D_SHAPE_PATTERN.search(text)
+    )
+    return (
+        has_shape
+        and bool(DIRECT_FORMULA_TARGET_PATTERN.search(text))
+        and bool(DIRECT_FORMULA_DIMENSION_PATTERN.search(text))
+        and bool(DIRECT_FORMULA_DIMENSION_VALUE_PATTERN.search(text))
+        and bool(DIRECT_FORMULA_VALUE_PATTERN.search(text))
+        and not DIRECT_FORMULA_BLOCKER_PATTERN.search(text)
+    )
+
+
+def _direct_formula_model_type(raw_text: str) -> tuple[str, str]:
+    text = str(raw_text or "")
+    if DIRECT_FORMULA_SOLID_SHAPE_PATTERN.search(text):
+        return "solid_3d", "solid_formula"
+    if DIRECT_FORMULA_CIRCLE_SHAPE_PATTERN.search(text):
+        return "basic_2d", "circle_sector_formula"
+    return "basic_2d", "basic_area_formula"
+
+
+def _should_replace_with_text_geometry_fallback(feature: Dict[str, Any]) -> bool:
+    spatial_role = _normalize_choice(feature.get("spatial_role"), SPATIAL_ROLE_VALUES)
+    confidence = _normalize_float(feature.get("applicability_confidence"))
+    return (
+        not _feature_present(feature)
+        or bool(_missing_fields(feature))
+        or spatial_role in {"", "none"}
+        or (confidence is not None and confidence < DIM2_REVIEW_CONFIDENCE_THRESHOLD)
+    )
+
+
+def build_dim2_text_geometry_fallback_facts(
+    raw_text: str,
+    dim2_feature: Dict[str, Any] | None = None,
+) -> Dict[str, Any] | None:
+    """Build conservative L1 dim2 facts for text-only direct formula geometry."""
+    feature = dim2_feature or {}
+    if not _has_direct_formula_geometry_signal(raw_text):
+        return None
+    if not _should_replace_with_text_geometry_fallback(feature):
+        return None
+
+    figure_complexity, model_type = _direct_formula_model_type(raw_text)
+    return {
+        "task_form": "text_only_geometry",
+        "spatial_role": "core",
+        "figure_complexity": figure_complexity,
+        "relation_hops": "1",
+        "hidden_relation_count": "0",
+        "visual_operation_count": "0",
+        "structural_visual_method": "none",
+        "measurement_dependency": "direct",
+        "global_view_required": 0,
+        "image_dependency": "none",
+        "geometry_model_types": [model_type],
+        "geometry_model_count": "1",
+        "model_recognition_role": "none",
+        "area_relation_chain": "none",
+        "model_combination_complexity": "none",
+        "evidence_summary": "\u7a33\u5b9a\u8bc6\u522b\u4e3a\u6587\u672c\u51e0\u4f55\u76f4\u63a5\u516c\u5f0f\u9898\uff0c\u6309\u4f4e\u8d1f\u62c5\u51e0\u4f55\u6837\u672c\u8ba1\u5165 dim2\u3002",
+        "evidence_tags": [
+            "\u76f4\u63a5\u516c\u5f0f",
+            "\u4f4e\u8d1f\u62c5\u51e0\u4f55",
+        ],
+        "applicability_confidence": 0.72,
+        "need_manual_review": 0,
+        "warning": "",
+        "fallback_source": "text_geometry_formula",
+    }
 
 
 def build_dim2_visual_fallback_facts(
@@ -514,6 +627,18 @@ def _simple_direct_geometry(feature: Dict[str, Any]) -> bool:
     )
 
 
+def _has_stable_geometry_scope(raw_text: str, feature: Dict[str, Any], parse_audit: Any) -> bool:
+    task_form = _normalize_choice(feature.get("task_form"), TASK_FORM_VALUES)
+    figure_complexity = _normalize_choice(feature.get("figure_complexity"), FIGURE_COMPLEXITY_VALUES)
+    model_types = _normalize_choice_list(feature.get("geometry_model_types"), GEOMETRY_MODEL_TYPE_VALUES)
+    return (
+        task_form in {"explicit_visual", "geometry_embedded", "text_only_geometry"}
+        or figure_complexity in {"basic_2d", "composite_2d", "solid_3d", "net_section_multi_view"}
+        or bool(model_types)
+        or _has_geometry_signal(raw_text, parse_audit)
+    )
+
+
 def _has_high_burden_signal(feature: Dict[str, Any]) -> bool:
     return any(
         [
@@ -556,8 +681,6 @@ def _has_internal_conflict(feature: Dict[str, Any], parse_audit: Any) -> bool:
     has_core_model = _has_core_geometry_model(feature)
 
     if spatial_role == "none" and _has_high_burden_signal(feature) and not has_core_model:
-        return True
-    if spatial_role == "core" and _simple_direct_geometry(feature) and not _has_low_barrier_formula_model(feature):
         return True
     if task_form == "explicit_visual" and image_dependency == "none":
         return True
@@ -662,6 +785,19 @@ def evaluate_dim2_applicability(
             "status": DIM2_STATUS_REVIEW,
             "reason": "dim2 空间事实缺失、冲突或图像依赖不稳定，当前题目转入人工复核。",
             "warnings": list(dict.fromkeys(item for item in warnings if item)),
+        }
+
+    stable_geometry_scope = _has_stable_geometry_scope(raw_text, feature, parse_audit)
+    if stable_geometry_scope and task_form != "nonvisual":
+        reason = (
+            "\u5df2\u7a33\u5b9a\u8bc6\u522b\u51e0\u4f55/\u56fe\u5f62\u8303\u56f4\uff0c\u6309\u4f4e\u8d1f\u62c5\u51e0\u4f55\u6837\u672c\u8ba1\u5165 dim2\u3002"
+            if _simple_direct_geometry(feature)
+            else "\u7a7a\u95f4\u8868\u5f81\u6216\u56fe\u5f62\u5173\u7cfb\u8bfb\u53d6\u6784\u6210\u8be5\u9898\u95e8\u69db\uff0cdim2 \u9002\u7528\u3002"
+        )
+        return {
+            "status": DIM2_STATUS_APPLICABLE,
+            "reason": reason,
+            "warnings": [],
         }
 
     if (spatial_role == "core" or model_recognition_role == "core") and not _simple_direct_geometry(feature):

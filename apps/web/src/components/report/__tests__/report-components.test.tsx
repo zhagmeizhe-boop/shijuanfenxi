@@ -160,6 +160,61 @@ describe('DimensionScoreCards', () => {
       ),
     ).toBe(true);
   });
+
+  it('hides dim4 level distribution in evidence summary built from breakdown', () => {
+    const dimensions: DimensionScore[] = [
+      {
+        code: 'dim4',
+        name: '实践创新',
+        score: 8.0,
+        level: 4,
+        level_label: '拔高',
+        evidence: '共 15 道题纳入实践创新均分；L3 1 道、L4 13 道、L5 1 道；人工复核 1 道未计入；题级均分 8.0 分，判定为 拔高。',
+        score_breakdown: {
+          valid_score_question_count: 15,
+          review_count: 1,
+          level_counts: {
+            L3: 1,
+            L4: 13,
+            L5: 1,
+          },
+        },
+      },
+    ];
+
+    render(<DimensionScoreCards dimensions={dimensions} />);
+
+    const evidence = screen.getByText(/共 15 道题纳入实践创新均分/);
+    expect(evidence).toHaveTextContent('题级均分 8.0 分');
+    expect(evidence).toHaveTextContent('人工复核 1 道未计入');
+    expect(screen.queryByText(/L3 1 道/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/L4 13 道/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/L5 1 道/)).not.toBeInTheDocument();
+    expect(evidence.getAttribute('title')).not.toContain('L3 1 道');
+  });
+
+  it('cleans dim4 level distribution from historical evidence without breakdown', () => {
+    const dimensions: DimensionScore[] = [
+      {
+        code: 'dim4',
+        name: '实践创新',
+        score: 8.0,
+        level: 4,
+        level_label: '拔高',
+        evidence: '共 15 道题计入实践创新均分；L3 1 道、L4 13 道、L5 1 道；排除不适用题 4 道；人工复核 1 道未计入；题级均分 8.0 分，判定为 拔高。',
+      },
+    ];
+
+    render(<DimensionScoreCards dimensions={dimensions} />);
+
+    const evidence = screen.getByText(/共 15 道题计入实践创新均分/);
+    expect(evidence).toHaveTextContent('排除不适用题 4 道');
+    expect(evidence).toHaveTextContent('题级均分 8.0 分');
+    expect(screen.queryByText(/L3 1 道/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/L4 13 道/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/L5 1 道/)).not.toBeInTheDocument();
+    expect(evidence.getAttribute('title')).not.toContain('L4 13 道');
+  });
 });
 
 describe('report difficulty metadata', () => {

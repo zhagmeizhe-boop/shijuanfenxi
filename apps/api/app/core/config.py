@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # 服务器配置
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8100
-    APP_WORKERS: int = 1
+    APP_WORKERS: int = 2
 
     # 安全配置
     SECRET_KEY: str = Field(default="your-secret-key-change-this-in-production")
@@ -61,10 +61,10 @@ class Settings(BaseSettings):
     CELERY_TASK_ALWAYS_EAGER: bool = False
     CELERY_RESULT_EXPIRES: int = 86400
     CELERY_WORKER_MAX_TASKS_PER_CHILD: int = 20
-    TASK_STALE_MINUTES: int = 45
-    MAX_ACTIVE_ANALYSIS_TASKS: int = 3  # legacy name; use MAX_RUNNING_ANALYSIS_TASKS for new deployments
-    MAX_RUNNING_ANALYSIS_TASKS: Optional[int] = 3
-    MAX_QUEUED_ANALYSIS_TASKS: int = 50
+    TASK_STALE_MINUTES: int = 60
+    MAX_ACTIVE_ANALYSIS_TASKS: int = 2  # legacy name; use MAX_RUNNING_ANALYSIS_TASKS for new deployments
+    MAX_RUNNING_ANALYSIS_TASKS: Optional[int] = 2
+    MAX_QUEUED_ANALYSIS_TASKS: int = 20
     ANALYSIS_SLOT_RETRY_SECONDS: int = 30
     ANALYSIS_SLOT_TTL_SECONDS: int = 14400
 
@@ -73,7 +73,7 @@ class Settings(BaseSettings):
     OCR_TIMEOUT: int = 30
     OCR_MAX_RETRIES: int = 3
     VISION_LLM_MODEL: Optional[str] = None
-    VISION_LLM_CONCURRENCY: int = 6
+    VISION_LLM_CONCURRENCY: int = 2
     VISION_LLM_PAGE_TIMEOUT: float = 90.0
     VISION_LLM_RENDER_DPI: int = 180
     VISION_LLM_MAX_TOKENS: int = 12000
@@ -108,19 +108,19 @@ class Settings(BaseSettings):
     MOONSHOT_TEMPERATURE: float = 0.3
     MOONSHOT_MAX_TOKENS: int = 2000
     MOONSHOT_TIMEOUT: float = 30.0
-    QUESTION_LLM_CONCURRENCY: int = 15
+    QUESTION_LLM_CONCURRENCY: int = 10
     QUESTION_LLM_MAX_TOKENS: int = 2800
     QUESTION_LLM_TIMEOUT_SECONDS: float = 75.0
-    GLOBAL_LLM_CONCURRENCY: int = 63
-    GLOBAL_VISION_LLM_CONCURRENCY: int = 18
-    GLOBAL_QUESTION_LLM_CONCURRENCY: int = 45
+    GLOBAL_LLM_CONCURRENCY: int = 24
+    GLOBAL_VISION_LLM_CONCURRENCY: int = 4
+    GLOBAL_QUESTION_LLM_CONCURRENCY: int = 20
     GLOBAL_LLM_ACQUIRE_TIMEOUT_SECONDS: float = 120.0
     GLOBAL_LLM_RETRY_INTERVAL_SECONDS: float = 0.5
     GLOBAL_LLM_SLOT_TTL_SECONDS: int = 300
 
     # 文件上传配置
     MAX_UPLOAD_SIZE: int = 50 * 1024 * 1024  # 50MB
-    MAX_PDF_PAGES: int = 30
+    MAX_PDF_PAGES: int = 6
     MAX_IMAGE_COUNT: int = 20
     SINGLE_IMAGE_MAX_SIZE: int = 10 * 1024 * 1024  # 10MB
     ALLOWED_EXTENSIONS: List[str] = [".pdf", ".jpg", ".jpeg", ".png"]

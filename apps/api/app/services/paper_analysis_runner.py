@@ -39,6 +39,7 @@ from app.services.scoring.dim1_applicability import (
 )
 from app.services.scoring.dim2_applicability import (
     DIM2_STATUS_APPLICABLE,
+    build_dim2_text_geometry_fallback_facts,
     build_dim2_visual_fallback_facts,
     evaluate_dim2_applicability,
 )
@@ -693,14 +694,16 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                             )
                             continue
                     elif dim_code == "dim2":
-                        dim2_fallback = build_dim2_visual_fallback_facts(
-                            question.raw_text,
-                            feature_dict,
-                            parse_audit=getattr(question, "parse_audit", None),
-                            has_image=bool(getattr(question, "image_block_url", None)),
-                            used_image=getattr(features, "used_image", False),
-                            image_fallback=getattr(features, "image_fallback", False),
-                        )
+                        dim2_fallback = build_dim2_text_geometry_fallback_facts(question.raw_text, feature_dict)
+                        if not dim2_fallback:
+                            dim2_fallback = build_dim2_visual_fallback_facts(
+                                question.raw_text,
+                                feature_dict,
+                                parse_audit=getattr(question, "parse_audit", None),
+                                has_image=bool(getattr(question, "image_block_url", None)),
+                                used_image=getattr(features, "used_image", False),
+                                image_fallback=getattr(features, "image_fallback", False),
+                            )
                         if dim2_fallback:
                             feature_dict = dim2_fallback
                             setattr(features, "dim2_spatial", feature_dict)

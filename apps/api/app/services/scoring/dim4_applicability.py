@@ -390,21 +390,6 @@ def evaluate_dim4_applicability(
                 "reason": "dim4 知识点内等级判定存在低置信或题块质量风险，当前题目转入人工复核。",
                 "warnings": list(dict.fromkeys(item for item in warnings if item)),
             }
-        if topic_level == "L1" and not _has_core_innovation_evidence(feature, raw_text):
-            return {
-                "status": DIM4_STATUS_NOT_APPLICABLE,
-                "reason": "dim4 知识点内等级为 L1 基础模板，未形成核心策略突破，不计入实践创新均分。",
-                "warnings": [],
-            }
-        if topic_level == "L2" and not (
-            _has_light_variant_evidence(feature, raw_text)
-            or _has_core_innovation_evidence(feature, raw_text)
-        ):
-            return {
-                "status": DIM4_STATUS_NOT_APPLICABLE,
-                "reason": "dim4 知识点内等级为 L2，但缺少明确轻变式证据，不计入实践创新均分。",
-                "warnings": [],
-            }
         return {
             "status": DIM4_STATUS_APPLICABLE,
             "reason": "已稳定识别题目所属知识点，并完成该知识点内部 L1-L5 创新等级定位，dim4 适用。",

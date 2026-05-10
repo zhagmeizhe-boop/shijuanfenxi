@@ -99,6 +99,9 @@ dim2 判定补充：
 - 如果识别这些模型是解题核心门槛，model_recognition_role 应为 core；如果只是辅助说明，写 supporting；普通套长方形、三角形、圆、扇形、长方体/正方体公式不应写成核心模型，即使写入 basic_area_formula / circle_sector_formula / solid_formula，也不能把直接公式题抬高为高负担 dim2。
 - 单一稳定模型通常是 single_model / single；模型叠加割补、辅助线或面积比链写 model_plus_operation 或 multi；多模型嵌套、复杂面积比反推写 nested_model / nested。
 
+dim2 coverage update:
+- Stable geometry/figure questions must fill dim2_spatial facts even when they are low-burden direct formula substitutions. For rectangle/triangle/circle/sector/cuboid/cube/cylinder/cone direct formula questions, use task_form=text_only_geometry, spatial_role=core, relation_hops=1, hidden_relation_count=0, visual_operation_count=0, structural_visual_method=none, measurement_dependency=direct, image_dependency=none. Keep direct formula models low burden; do not promote them as high-load model recognition.
+
 dim3_information 只输出以下字段：
 - information_role：只能是 "none" / "supporting" / "core"
 - source_form：只能是 "text_only" / "table_chart" / "image_text" / "multi_source"
@@ -148,6 +151,8 @@ dim5_knowledge 额外字段：
 - core_knowledge_units 优先使用可匹配教材目录的具体知识单元，例如“牛吃草问题”“分数数列计算”“立体几何”，不要只写“奥数”“综合应用”“思维训练”这类泛化词
 - “高思导引 / 奥数 / 竞赛备考 / 压轴题”是来源或体系信号，不是自动超越篇信号；应统一归入某年级高思导引，再结合题面和参考题相似度区分兴趣篇/拓展篇/超越篇
 - 高思导引同一专题下可能同时存在兴趣篇、拓展篇、超越篇题目；不要仅凭“牛吃草/行程/工程”等专题名判定拓展篇或超越篇，必须结合题面实际知识门槛和具体参考题相似度
+- WMO/竞赛卷中常见的“定义新运算、裂项/长链消去、差分/递推、抽屉、组合计数、博弈必胜、不变量、同余、极值构造、复杂几何割补、规则反推”等，如果是解题必经核心知识，应优先视为高年级高思拓展或超越篇候选，不要误归为普通校内知识
+- 普通课内公式题、直接百分数题、直接圆柱圆锥体积比题，即使出现在竞赛卷或名校卷，也不要因为来源抬高 band
 - 不要因为计算链长、策略新颖或题目包装直接抬高 dim5 band
 
 dim4_innovation 只输出以下字段：

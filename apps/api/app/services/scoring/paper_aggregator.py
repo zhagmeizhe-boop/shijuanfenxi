@@ -3,6 +3,7 @@ Paper-level aggregation helpers.
 
 Current rule:
 - each dimension score is the simple average of applicable question scores
+- dim4 is averaged over every non-review question with a legal L1-L5 question score
 - dim5 keeps paper-level knowledge-source composition as explanation, not as the scoring rule
 - counted_questions should surface representative, auditable examples
 """
@@ -362,17 +363,23 @@ class PaperAggregator:
         return "L1" in reason and ("基础模板" in reason or "模板" in reason)
 
     @staticmethod
+    def _valid_dim4_question_score(question: QuestionDimensionScore) -> float | None:
+        raw_score = question.dim_scores.get("dim4")
+        try:
+            score = float(raw_score)
+        except (TypeError, ValueError):
+            return None
+        if 0.0 < score <= 10.0:
+            return score
+        return None
+
+    @staticmethod
     def _average_dimension_score(questions: List[QuestionDimensionScore], dimension_code: str) -> float:
         if not questions:
             return 0.0
         return sum(question.dim_scores.get(dimension_code, 0.0) for question in questions) / len(questions)
 
     def _aggregate_dim4(self, question_scores: List[QuestionDimensionScore]) -> PaperDimensionSummary:
-        applicable_questions = [
-            question
-            for question in question_scores
-            if self._dimension_status(question, "dim4") == "applicable"
-        ]
         review_questions = [
             question
             for question in question_scores
@@ -387,17 +394,28 @@ class PaperAggregator:
         level_counts = {f"L{index}": 0 for index in range(1, 6)}
         source_counts: Dict[str, int] = {}
         unknown_level_count = 0
-        for question in applicable_questions:
+        scored_questions: List[QuestionDimensionScore] = []
+        unscored_question_count = 0
+        for question in question_scores:
+            if self._dimension_status(question, "dim4") == "review":
+                continue
+            question_score = self._valid_dim4_question_score(question)
             level = self._dim4_level_for_question(question)
+            if question_score is None:
+                unscored_question_count += 1
+                continue
             if level in level_counts:
                 level_counts[level] += 1
+                scored_questions.append(question)
             else:
                 unknown_level_count += 1
+                unscored_question_count += 1
+                continue
 
             source = self._dim4_source_for_question(question) or "rule_score"
             source_counts[source] = source_counts.get(source, 0) + 1
 
-        question_count = len(applicable_questions)
+        question_count = len(scored_questions)
         review_question_count = len(review_questions)
         not_applicable_count = len(not_applicable_questions)
         l1_excluded_count = sum(1 for question in not_applicable_questions if self._dim4_is_l1_excluded(question))
@@ -413,12 +431,26 @@ class PaperAggregator:
             "not_applicable_count": not_applicable_count,
             "review_count": review_question_count,
             "l1_excluded_count": l1_excluded_count,
+            "valid_score_question_count": question_count,
+            "unscored_question_count": unscored_question_count,
             "unknown_level_count": unknown_level_count,
             "high_level_question_count": level_counts["L4"] + level_counts["L5"],
-            "aggregation_rule": "仅统计明确适用 dim4 的知识点内变式题；L1 普通模板题不进入均分。",
+            "aggregation_rule": "所有可稳定判定 L1-L5 的题均纳入实践创新均分；复核或缺少合法题级分的题不按 0 分计入。",
         }
 
         if question_count == 0:
+            not_covered_warnings: List[str] = []
+            evidence_parts = ["实践创新没有可纳入均分的合法 L1-L5 题级分"]
+            if review_question_count:
+                evidence_parts.append(f"人工复核 {review_question_count} 道未计入")
+                not_covered_warnings.append(
+                    f"实践创新有 {review_question_count} 道题转入人工复核，未计入均分。"
+                )
+            if unscored_question_count:
+                evidence_parts.append(f"缺少合法题级分 {unscored_question_count} 道未计入")
+                not_covered_warnings.append(
+                    f"实践创新有 {unscored_question_count} 道题缺少合法 L1-L5 题级分，未按 0 分计入。"
+                )
             return PaperDimensionSummary(
                 dimension_code="dim4",
                 dimension_name=self.DIMENSION_NAMES["dim4"],
@@ -428,25 +460,27 @@ class PaperAggregator:
                 total_question_score=0.0,
                 question_count=0,
                 sample_warning=False,
-                evidence="实践创新自动评分未覆盖，未计入综合分。",
-                warning_messages=[],
+                evidence="；".join(evidence_parts) + "，未计入综合分。",
+                warning_messages=not_covered_warnings,
                 counted_questions=[],
                 review_question_count=review_question_count,
                 score_status="not_covered",
                 score_breakdown=breakdown,
             )
 
-        score_sum = sum(question.dim_scores.get("dim4", 0.0) for question in applicable_questions)
-        total_question_score = sum(question.score for question in applicable_questions)
+        score_sum = sum(self._valid_dim4_question_score(question) or 0.0 for question in scored_questions)
+        total_question_score = sum(question.score for question in scored_questions)
         paper_score = score_sum / question_count
         level, level_label = self._calculate_level(paper_score)
         sample_warning = 0 < question_count < 2
 
         warning_messages: List[str] = []
-        for question in applicable_questions:
+        for question in scored_questions:
             warning_messages.extend(question.dim_warnings.get("dim4", []))
         if review_question_count:
             warning_messages.append(f"实践创新有 {review_question_count} 道题转入人工复核，未计入均分。")
+        if unscored_question_count:
+            warning_messages.append(f"实践创新有 {unscored_question_count} 道题缺少合法 L1-L5 题级分，未按 0 分计入。")
         if sample_warning:
             warning_messages.append("该维度当前样本题量偏少，整卷结论稳定性有限。")
         deduped_warnings = list(
@@ -454,12 +488,14 @@ class PaperAggregator:
         )
 
         evidence_parts = [
-            f"共 {question_count} 道题计入实践创新均分",
-            f"L3 {level_counts['L3']} 道、L4 {level_counts['L4']} 道、L5 {level_counts['L5']} 道",
-            f"排除不适用题 {not_applicable_count} 道",
+            f"共 {question_count} 道题纳入实践创新均分",
+            (
+                f"L1 {level_counts['L1']} 道、L2 {level_counts['L2']} 道、"
+                f"L3 {level_counts['L3']} 道、L4 {level_counts['L4']} 道、L5 {level_counts['L5']} 道"
+            ),
         ]
-        if l1_excluded_count:
-            evidence_parts.append(f"其中 L1 普通模板题 {l1_excluded_count} 道未计入")
+        if unscored_question_count:
+            evidence_parts.append(f"缺少合法题级分 {unscored_question_count} 道未计入")
         if review_question_count:
             evidence_parts.append(f"人工复核 {review_question_count} 道未计入")
         evidence_parts.append(f"题级均分 {paper_score:.1f} 分，判定为 {level_label}")
@@ -476,7 +512,7 @@ class PaperAggregator:
             sample_warning=sample_warning,
             evidence=evidence,
             warning_messages=deduped_warnings,
-            counted_questions=self._select_representative_questions(applicable_questions, "dim4"),
+            counted_questions=self._select_representative_questions(scored_questions, "dim4"),
             review_question_count=review_question_count,
             score_breakdown=breakdown,
         )

@@ -647,6 +647,58 @@ def test_gaosi_question_extension_entry_calibrates_to_mid_sublevel():
     assert "need_manual_review" not in feature
 
 
+def test_gaosi_question_high_similarity_with_specific_anchor_can_calibrate_dim5():
+    reference_text = "牧场上有一片草地，每天都匀速生长，若8头牛12天吃完，10头牛8天吃完，问几头牛6天吃完？"
+    question_text = "牧场有一片草地，每天都匀速生长，若8头牛12天吃完，10头牛8天吃完，问多少头牛6天吃完？"
+    standard = _build_standard(
+        [
+            ReferenceEntry(
+                source=GAOSI_QUESTION_SOURCE,
+                sheet_name="高思导引PDF题目",
+                category="应用题",
+                title="牛吃草问题",
+                track="拓展篇",
+                grade_hint="五年级",
+                keywords=("牛吃草问题", "草地匀速生长", "拓展篇"),
+                section_level="extension",
+                section_label="拓展篇",
+                question_text=reference_text,
+                ocr_confidence=0.93,
+                dimension_profiles={
+                    "dim5": {
+                        "knowledge_anchor_terms": ["牛吃草问题", "草地匀速生长"],
+                        "dim5_reference_band": BAND_LABELS[4],
+                        "dim5_reference_sublevel": "mid",
+                        "match_safety_level": "auto",
+                    }
+                },
+            )
+        ]
+    )
+
+    feature = standard.calibrate_feature(
+        "dim5",
+        {
+            "band": BAND_LABELS[2],
+            "sublevel": "low",
+            "evidence_summary": "模型主判偏低。",
+            "knowledge_tags": ["牛吃草问题"],
+            "core_knowledge_units": ["牛吃草问题"],
+        },
+        question_text=question_text,
+        question_summary="牛吃草问题",
+        analysis_facts={"core_task": "牛吃草模型", "core_knowledge_points": ["牛吃草问题"]},
+    )
+
+    calibration = feature["calibration"]
+
+    assert feature["band"] == BAND_LABELS[4]
+    assert feature["sublevel"] == "mid"
+    assert calibration["question_level_match"] is True
+    assert calibration["question_level_match_type"] == "high_similarity"
+    assert calibration["band_source"] == "question_bank"
+
+
 def test_gaosi_question_extension_star_does_not_raise_sublevel_to_high():
     question_text = "牧场上有一片草地，每天都匀速生长，若8头牛12天吃完，10头牛8天吃完，问几头牛6天吃完？"
     standard = _build_standard(

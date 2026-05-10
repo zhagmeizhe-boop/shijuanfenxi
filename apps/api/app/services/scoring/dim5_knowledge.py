@@ -16,6 +16,14 @@ LOW_GAOSI_BAND = "4年级及以前高思导引拓展篇及以下难度"
 HIGH_GAOSI_OR_JUNIOR_BAND = "5、6年级及以前高思导引拓展篇及以下难度 或 七年级及以上校内课本难度"
 BEYOND_BAND = "高思导引超越篇难度"
 
+BAND_RANKS = {
+    SCHOOL_LOW_BAND: 1,
+    SCHOOL_HIGH_BAND: 2,
+    LOW_GAOSI_BAND: 3,
+    HIGH_GAOSI_OR_JUNIOR_BAND: 4,
+    BEYOND_BAND: 5,
+}
+
 DIM5_BUCKET_LABELS = {
     "school": "校内教材",
     "low_gaosi": "低段高思拓展",
@@ -48,6 +56,49 @@ _CHINESE_GRADE_VALUES = {
     "五": 5,
     "六": 6,
 }
+
+_HIGH_GAOSI_KNOWLEDGE_GROUPS = {
+    "defined_operation": ("定义新运算", "规定一种运算", "自定义运算", "运算规则展开"),
+    "telescoping": ("裂项", "非相邻裂项", "长链消去", "首尾项提取", "结构求和"),
+    "recurrence": ("递推", "差分", "周期数列", "循环周期", "数列求余"),
+    "pigeonhole": ("抽屉", "抽屉原理"),
+    "combinatorics": ("组合计数", "容斥", "分类计数"),
+    "number_theory": ("同余", "整除约束", "余数周期", "不变量", "奇偶性"),
+    "game": ("博弈", "必胜", "必败", "对称策略", "制胜策略"),
+    "construction": ("极值构造", "规则反推", "染色", "全局构造", "最优性"),
+    "advanced_geometry": (
+        "几何割补",
+        "面积比链",
+        "辅助线",
+        "复杂几何",
+        "鸟头",
+        "沙漏",
+        "蝴蝶模型",
+        "立体极值",
+    ),
+}
+
+_BEYOND_KNOWLEDGE_GROUPS = {
+    "telescoping",
+    "recurrence",
+    "pigeonhole",
+    "combinatorics",
+    "number_theory",
+    "game",
+    "construction",
+    "advanced_geometry",
+}
+
+_DIRECT_SCHOOL_FORMULA_SIGNALS = (
+    "直接公式",
+    "普通公式",
+    "圆柱圆锥体积比",
+    "圆柱和圆锥体积",
+    "圆锥体积",
+    "圆柱体积",
+    "长方形面积",
+    "百分数直接应用",
+)
 
 
 class Dim5KnowledgeScorer(BaseDimensionScorer):
@@ -91,6 +142,96 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
         ]
         combined = " ".join(str(part or "") for part in text_parts)
         return any(signal in combined for signal in signals)
+
+    @classmethod
+    def _combined_evidence_text(cls, feature: Dict[str, Any]) -> str:
+        text_parts = [
+            feature.get("evidence_summary", ""),
+            feature.get("competition_signal", ""),
+            feature.get("knowledge_integration", ""),
+            feature.get("novel_definition_dependency", ""),
+            cls._flatten_text(feature.get("evidence_tags", [])),
+            cls._flatten_text(feature.get("knowledge_tags", [])),
+            cls._flatten_text(feature.get("core_knowledge_units", [])),
+            cls._flatten_text(feature.get("supporting_knowledge_units", [])),
+            cls._flatten_text(feature.get("analysis_facts", {})),
+        ]
+        return " ".join(str(part or "") for part in text_parts)
+
+    @classmethod
+    def _matched_knowledge_groups(cls, feature: Dict[str, Any]) -> list[str]:
+        combined = cls._combined_evidence_text(feature)
+        matched: list[str] = []
+        for group, signals in _HIGH_GAOSI_KNOWLEDGE_GROUPS.items():
+            if any(signal in combined for signal in signals):
+                matched.append(group)
+        return matched
+
+    @classmethod
+    def _has_direct_school_formula_signal(cls, feature: Dict[str, Any]) -> bool:
+        combined = cls._combined_evidence_text(feature)
+        return any(signal in combined for signal in _DIRECT_SCHOOL_FORMULA_SIGNALS)
+
+    @classmethod
+    def _knowledge_anchor_override(cls, features: Dict[str, Any]) -> Dict[str, Any]:
+        """Conservative local correction for explicit WMO-style knowledge anchors.
+
+        This does not use contest names or file sources. It only reacts to specific
+        core knowledge units that are already present in the per-question facts.
+        """
+        current_band = _normalize_band(features.get("band"))
+        current_rank = BAND_RANKS.get(current_band, 0)
+        if current_rank <= 0 or current_rank >= BAND_RANKS[BEYOND_BAND]:
+            return {}
+
+        if cls._has_direct_school_formula_signal(features):
+            return {}
+
+        matched_groups = cls._matched_knowledge_groups(features)
+        if not matched_groups:
+            return {}
+
+        beyond_group_count = sum(1 for group in matched_groups if group in _BEYOND_KNOWLEDGE_GROUPS)
+        strong_competition_structure = (
+            features.get("competition_signal") == "strong"
+            or features.get("knowledge_integration") in {"cross_family_combo", "cross_domain_bridge"}
+            or features.get("novel_definition_dependency") == "strong"
+        )
+        beyond_override = (
+            current_rank >= BAND_RANKS[HIGH_GAOSI_OR_JUNIOR_BAND]
+            and beyond_group_count >= 2
+            and strong_competition_structure
+        )
+
+        if beyond_override:
+            sublevel = "high" if beyond_group_count >= 3 else "mid"
+            return {
+                "band": BEYOND_BAND,
+                "sublevel": sublevel,
+                "band_source": "knowledge_anchor",
+                "knowledge_anchor_override": {
+                    "original_band": current_band,
+                    "original_sublevel": str(features.get("sublevel") or "").strip().lower(),
+                    "matched_groups": matched_groups,
+                    "reason": "强竞赛知识锚点组合达到超越篇候选门槛",
+                },
+            }
+
+        if current_rank < BAND_RANKS[HIGH_GAOSI_OR_JUNIOR_BAND]:
+            sublevel = "high" if len(matched_groups) >= 2 else "mid"
+            return {
+                "band": HIGH_GAOSI_OR_JUNIOR_BAND,
+                "sublevel": sublevel,
+                "band_source": "knowledge_anchor",
+                "knowledge_anchor_override": {
+                    "original_band": current_band,
+                    "original_sublevel": str(features.get("sublevel") or "").strip().lower(),
+                    "matched_groups": matched_groups,
+                    "reason": "明确高年级高思/竞赛型知识锚点，不按校内题处理",
+                },
+            }
+
+        return {}
 
     @staticmethod
     def _parse_gaosi_grade(value: Any) -> int | None:
@@ -190,6 +331,14 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
                 "original_sublevel": original_sublevel,
             }
 
+        knowledge_anchor_override = {}
+        if not section_override:
+            knowledge_anchor_override = self._knowledge_anchor_override(score_features)
+            if knowledge_anchor_override:
+                score_features["band"] = knowledge_anchor_override["band"]
+                score_features["sublevel"] = knowledge_anchor_override["sublevel"]
+                score_features["band_source"] = knowledge_anchor_override["band_source"]
+
         result = score_banded_dimension(
             self,
             score_features,
@@ -219,6 +368,10 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
                 result.details[key] = score_features.get(key)
         if section_override:
             result.details["gaosi_section_override"] = section_override
+        if knowledge_anchor_override:
+            result.details["knowledge_anchor_override"] = knowledge_anchor_override[
+                "knowledge_anchor_override"
+            ]
         calibration = score_features.get("calibration", {})
         if isinstance(calibration, dict) and calibration.get("question_level_match"):
             matched_entries = calibration.get("matched_entries", [])

@@ -323,6 +323,7 @@ Only judge the highest core knowledge threshold required by the question.
 Do not use calculation workload, reasoning chain length, strategy novelty, or overall problem difficulty to raise dim5.
 If the question belongs to GaoSi Guide / olympiad / contest-prep / final-challenge style, normalize it as GaoSi Guide grade + section.
 Do not map "olympiad", "contest-prep", or "final challenge" directly to beyond; only GaoSi challenge section maps to beyond.
+Treat explicit core knowledge anchors such as defined operations, telescoping cancellation, recurrence/difference, pigeonhole principle, combinatorics, game winning strategy, invariant, modular arithmetic, extremal construction, complex geometric cut-and-fill, and rule reverse-engineering as GaoSi Guide candidates. Use them to decide between extension and challenge only when the question text or local candidates support that threshold.
 """
 DIM5_BAND_RETRY_USER_PROMPT_TEMPLATE = """
 Question metadata:
@@ -354,6 +355,11 @@ GaoSi mapping rule:
 - 兴趣篇 -> corresponding grade GaoSi band, sublevel low
 - 拓展篇 -> corresponding grade GaoSi band, sublevel mid
 - 超越篇 -> 高思导引超越篇难度, sublevel high
+
+WMO/contest-style knowledge anchors:
+- 定义新运算、裂项/长链消去、差分/递推、抽屉、组合计数、博弈必胜、不变量、同余、极值构造、复杂几何割补、规则反推 should usually be classified as GaoSi Guide extension or challenge candidates rather than ordinary school textbook knowledge.
+- Direct textbook formula problems, direct percentage applications, and direct cylinder/cone volume-ratio problems must stay in the school band unless a concrete GaoSi question-level candidate or a genuinely advanced knowledge structure supports a higher band.
+- Do not use a contest name, file title, or general "olympiad" wording alone to choose challenge/beyond.
 
 Return strict JSON with exactly these keys:
 {{
@@ -1203,6 +1209,13 @@ class AIParser:
             and feature.get("global_view_required") == 0
         )
 
+    @classmethod
+    def _dim2_has_stable_geometry_scope(cls, feature: Dict[str, Any]) -> bool:
+        return feature.get("task_form") in {"explicit_visual", "geometry_embedded", "text_only_geometry"} and (
+            feature.get("figure_complexity") not in {"", None, "none"}
+            or bool(feature.get("geometry_model_types") or [])
+        )
+
     def _dim2_should_validate(self, feature: Dict[str, Any], question: ParsedQuestion) -> bool:
         if any(
             feature.get(key)
@@ -1272,12 +1285,6 @@ class AIParser:
         has_core_model = self._dim2_has_core_geometry_model(feature)
         if spatial_role == "none" and self._dim2_has_high_burden_signal(feature) and not has_core_model:
             warnings.append("dim2 标记为 none，但空间负担特征明显偏高。")
-        if (
-            spatial_role == "core"
-            and self._dim2_is_simple_direct_geometry(feature)
-            and not self._dim2_has_low_barrier_formula_model(feature)
-        ):
-            warnings.append("dim2 标记为 core，但当前更像直接公式代入型几何题。")
         if task_form == "explicit_visual" and feature.get("image_dependency") == "none":
             warnings.append("dim2 标记为 explicit_visual，但 image_dependency 为 none。")
         if task_form == "nonvisual" and feature.get("image_dependency") == "required":
@@ -1931,6 +1938,7 @@ class AIParser:
         dim4_feature: Dict[str, Any],
         dim5_feature: Optional[Dict[str, Any]] = None,
         applicable_dimensions: List[Any],
+        knowledge_point: str = "",
     ) -> bool:
         level_source = normalize_dim4_level_source(dim4_feature.get("level_source"))
         if self._dim4_has_valid_topic_level(dim4_feature) and level_source in {
@@ -1941,6 +1949,8 @@ class AIParser:
             return False
         if level_source == "review_failed":
             return False
+        if knowledge_point and classify_dim4_topic_level(knowledge_point, raw_text, dim4_feature):
+            return True
         if any(str(item).strip() == "dim4" for item in applicable_dimensions if isinstance(applicable_dimensions, list)):
             return True
         if dim4_feature.get("strategy_role") == "core":
@@ -2044,8 +2054,6 @@ class AIParser:
             strength = int(candidate.get("similarity_strength") or 0)
             quality = str(candidate.get("match_quality") or "").strip()
             if strength >= 2 and quality in {"", "ok", "diagram_partial_match"}:
-                return True
-            if strength == 1:
                 return True
         return False
 
@@ -2159,11 +2167,17 @@ class AIParser:
         applicable_dimensions: List[Any],
     ) -> None:
         dim4_feature = normalized_features["dim4_innovation"]
+        knowledge_point = self._dim4_candidate_knowledge_point(
+            analysis_facts=analysis_facts,
+            dim4_feature=dim4_feature,
+            dim5_feature=normalized_features["dim5_knowledge"],
+        )
         if not self._dim4_should_attempt_topic_level(
             raw_text=question.raw_text,
             dim4_feature=dim4_feature,
             dim5_feature=normalized_features["dim5_knowledge"],
             applicable_dimensions=applicable_dimensions,
+            knowledge_point=knowledge_point,
         ):
             return
 
@@ -2654,7 +2668,8 @@ class AIParser:
         if (
             dim2.get("spatial_role") == "core"
             or cls._dim2_has_core_geometry_model(dim2)
-        ) and not cls._dim2_is_simple_direct_geometry(dim2):
+            or cls._dim2_has_stable_geometry_scope(dim2)
+        ):
             inferred.append("dim2")
 
         dim3 = features["dim3_information"]

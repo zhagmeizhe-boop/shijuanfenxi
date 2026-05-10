@@ -87,6 +87,17 @@ STABLE_AREA_MODEL_TYPES = {
     "figure_transformation",
     "geometric_counting",
 }
+OLYMPIAD_AREA_MODEL_TYPES = {
+    "butterfly_area",
+    "swallowtail_area",
+    "half_area",
+    "equal_height_area",
+    "shared_base_area",
+    "equal_area_transform",
+    "kite_area",
+    "bird_head_sandglass",
+    "pyramid_sandglass",
+}
 LOW_BARRIER_GEOMETRY_MODEL_TYPES = {
     "basic_area_formula",
     "circle_sector_formula",
@@ -260,7 +271,10 @@ class Dim2SpatialScorer(BaseDimensionScorer):
         if any(value in ("", None) for value in required_values) or global_view_required is None:
             return self._invalid_score("dim2 关键空间事实不完整，无法自动判级。")
 
-        effective_spatial_core = spatial_role == "core" or model_recognition_role == "core"
+        stable_geometry_scope = task_form in {"explicit_visual", "geometry_embedded", "text_only_geometry"} and (
+            figure_complexity != "none" or bool(geometry_model_types)
+        )
+        effective_spatial_core = spatial_role == "core" or model_recognition_role == "core" or stable_geometry_scope
         if not effective_spatial_core:
             return self._invalid_score("该题未满足 dim2 的核心空间负担条件。")
 
@@ -269,6 +283,9 @@ class Dim2SpatialScorer(BaseDimensionScorer):
         visual_operation_rank = _visual_operation_rank(visual_operation_count)
         model_count_rank = _model_count_rank(geometry_model_count, geometry_model_types)
         stable_model_count = len([item for item in geometry_model_types if item in STABLE_AREA_MODEL_TYPES])
+        olympiad_area_model_count = len(
+            [item for item in geometry_model_types if item in OLYMPIAD_AREA_MODEL_TYPES]
+        )
         high_burden_model_count = len(
             [item for item in geometry_model_types if item in HIGH_BURDEN_GEOMETRY_MODEL_TYPES]
         )
@@ -330,6 +347,7 @@ class Dim2SpatialScorer(BaseDimensionScorer):
                 or area_relation_chain == "multi"
                 or ("area_ratio_chain" in geometry_model_types and hidden_relation_count in {"1", "2+"})
                 or (has_stable_area_model and visual_operation_count in {"2", "3+"})
+                or olympiad_area_model_count > 0
                 or high_burden_model_count > 0
             )
         ):
