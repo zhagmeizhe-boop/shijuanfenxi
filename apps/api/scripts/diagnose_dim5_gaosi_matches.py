@@ -65,12 +65,23 @@ def main() -> None:
             "core_methods": case.get("core_methods", []),
             "visual_elements": case.get("visual_elements", []),
         }
-        candidates = standard.gaosi_question_candidates(
+        question_level_candidates = standard.gaosi_question_candidates(
             feature,
             question_text=question_text,
             question_summary=question_summary,
             analysis_facts=analysis_facts,
             limit=args.limit,
+        )
+        topic_structure_candidates = (
+            standard.dim5_topic_structure_candidates(
+                feature,
+                question_text=question_text,
+                question_summary=question_summary,
+                analysis_facts=analysis_facts,
+                limit=args.limit,
+            )
+            if hasattr(standard, "dim5_topic_structure_candidates")
+            else []
         )
         calibrated = standard.calibrate_feature(
             "dim5",
@@ -87,9 +98,12 @@ def main() -> None:
                 "final_sublevel": calibrated.get("sublevel", ""),
                 "band_source": calibrated.get("band_source")
                 or calibrated.get("calibration", {}).get("band_source", ""),
+                "final_action": calibrated.get("calibration", {}).get("match_action", ""),
+                "match_scope": calibrated.get("calibration", {}).get("match_scope", ""),
                 "need_manual_review": bool(calibrated.get("need_manual_review")),
                 "calibration": calibrated.get("calibration", {}),
-                "candidates": candidates,
+                "question_level_candidates": question_level_candidates,
+                "topic_structure_candidates": topic_structure_candidates,
             }
         )
 

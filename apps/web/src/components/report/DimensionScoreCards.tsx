@@ -71,9 +71,15 @@ function formatDimensionEvidence(dim: DimensionScore): string {
     getDim4LevelCountTotal(breakdown);
 
   if (includedCount !== null) {
-    const parts = [`共 ${includedCount} 道题纳入实践创新均分`];
+    const weightedAverage = getBreakdownNumber(breakdown, 'weighted_question_average');
+    const usesWeightedScore = weightedAverage !== null;
+    const parts = [`共 ${includedCount} 道题纳入实践创新${usesWeightedScore ? '评分' : '均分'}`];
+    if (usesWeightedScore) {
+      parts.push('按高阶创新等级权重计算');
+    }
     if (dim.score_status !== 'not_covered' && dim.level > 0) {
-      parts.push(`题级均分 ${formatScore(dim.score)} 分`);
+      const displayScore = usesWeightedScore ? weightedAverage : dim.score;
+      parts.push(`${usesWeightedScore ? '权重得分' : '题级均分'} ${formatScore(displayScore)} 分`);
     }
 
     const reviewCount =

@@ -2215,7 +2215,7 @@ class TestDim4InnovationScorer:
         assert result.level == 5
         assert result.level_label == "L5 压轴创新"
 
-    def test_non_core_strategy_returns_na(self, scorer):
+    def test_non_core_strategy_gets_low_level_fallback(self, scorer):
         result = scorer.score(
             {
                 "strategy_role": "supporting",
@@ -2234,8 +2234,9 @@ class TestDim4InnovationScorer:
             }
         )
 
-        assert result.applicable is False
-        assert result.score == 0.0
+        assert result.applicable is True
+        assert result.score == 4.0
+        assert result.level == 2
 
     def test_reference_calibrated_level_overrides_local_dim4_level(self, scorer):
         result = scorer.score(
@@ -3016,7 +3017,7 @@ class TestDim4Applicability:
 
         assert result["status"] == "applicable"
 
-    def test_direct_template_problem_is_not_applicable(self):
+    def test_direct_template_problem_gets_l1_fallback(self):
         result = evaluate_dim4_applicability(
             "按常规方法求长方形面积。",
             {
@@ -3038,7 +3039,8 @@ class TestDim4Applicability:
             llm_confidence=0.92,
         )
 
-        assert result["status"] == "not_applicable"
+        assert result["status"] == "applicable"
+        assert "L1/L2" in result["reason"]
 
     def test_missing_dim4_facts_go_to_review(self):
         result = evaluate_dim4_applicability(
@@ -3104,7 +3106,7 @@ class TestDim4Applicability:
 
         assert result["status"] == "applicable"
 
-    def test_low_confidence_low_burden_dim4_is_not_applicable(self):
+    def test_low_confidence_low_burden_dim4_can_use_l1_fallback(self):
         result = evaluate_dim4_applicability(
             "按常规模板求平均数。",
             {
@@ -3126,7 +3128,7 @@ class TestDim4Applicability:
             llm_confidence=0.3,
         )
 
-        assert result["status"] == "not_applicable"
+        assert result["status"] == "applicable"
 
     def test_reference_review_required_goes_to_review(self):
         result = evaluate_dim4_applicability(
@@ -4426,7 +4428,14 @@ class TestPaperAggregator:
 
         assert result.question_count == 5
         assert result.review_question_count == 1
-        assert abs(result.paper_score - ((2.0 + 4.0 + 6.0 + 8.0 + 9.5) / 5)) < 0.01
+        expected_weighted = (
+            2.0 * 1
+            + 4.0 * 2
+            + 6.0 * 7
+            + 8.0 * 12
+            + 9.5 * 15
+        ) / (1 + 2 + 7 + 12 + 15)
+        assert result.paper_score == pytest.approx(expected_weighted)
         assert result.score_breakdown["level_counts"] == {
             "L1": 1,
             "L2": 1,
@@ -4438,11 +4447,28 @@ class TestPaperAggregator:
         assert result.score_breakdown["l1_excluded_count"] == 0
         assert result.score_breakdown["valid_score_question_count"] == 5
         assert result.score_breakdown["high_level_question_count"] == 2
-        assert "L1 1 道、L2 1 道、L3 1 道、L4 1 道、L5 1 道" in result.evidence
-        assert "共 5 道题纳入实践创新均分" in result.evidence
+        assert result.score_breakdown["level_weights"] == {
+            "L1": 1,
+            "L2": 2,
+            "L3": 7,
+            "L4": 12,
+            "L5": 15,
+        }
+        assert result.score_breakdown["raw_question_average"] == pytest.approx(
+            (2.0 + 4.0 + 6.0 + 8.0 + 9.5) / 5,
+            abs=0.0001,
+        )
+        assert result.score_breakdown["weighted_question_average"] == pytest.approx(
+            expected_weighted,
+            abs=0.0001,
+        )
+        assert "共 5 道题纳入实践创新评分" in result.evidence
+        assert "按高阶创新等级权重计算" in result.evidence
+        assert "权重得分" in result.evidence
 
     def test_dim4_aggregation_uses_all_twenty_stable_topic_levels(self, aggregator):
         level_scores = {"L1": 2.0, "L2": 4.0, "L3": 6.0, "L4": 8.0, "L5": 9.5}
+        level_weights = {"L1": 1, "L2": 2, "L3": 7, "L4": 12, "L5": 15}
         levels = ["L1"] * 4 + ["L2"] * 5 + ["L3"] * 6 + ["L4"] * 4 + ["L5"]
         questions = [
             self._dim4_question(index, level, level_scores[level])
@@ -4460,8 +4486,11 @@ class TestPaperAggregator:
             "L4": 4,
             "L5": 1,
         }
-        assert result.paper_score == pytest.approx(sum(level_scores[level] for level in levels) / 20)
-        assert "共 20 道题纳入实践创新均分" in result.evidence
+        expected_weighted = sum(level_scores[level] * level_weights[level] for level in levels) / sum(
+            level_weights[level] for level in levels
+        )
+        assert result.paper_score == pytest.approx(expected_weighted)
+        assert "共 20 道题纳入实践创新评分" in result.evidence
 
     def test_dim4_review_and_missing_score_are_not_zero_filled(self, aggregator):
         questions = [
@@ -4486,10 +4515,51 @@ class TestPaperAggregator:
         result = aggregator.aggregate(questions, "dim4")
 
         assert result.question_count == 2
-        assert result.paper_score == pytest.approx(5.0)
+        assert result.paper_score == pytest.approx((2.0 * 1 + 8.0 * 12) / (1 + 12))
+        assert result.score_breakdown["raw_question_average"] == pytest.approx(5.0)
         assert result.review_question_count == 1
         assert result.score_breakdown["unscored_question_count"] == 1
         assert any("缺少合法 L1-L5 题级分" in item for item in result.warning_messages)
+
+    def test_dim4_weighted_score_matches_wmo_full_twenty_distribution(self, aggregator):
+        level_scores = {"L1": 2.0, "L2": 4.0, "L3": 6.0, "L4": 8.0, "L5": 9.5}
+        levels = ["L1"] + ["L2"] * 3 + ["L3"] * 4 + ["L4"] * 10 + ["L5"] * 2
+        questions = [
+            self._dim4_question(index, level, level_scores[level])
+            for index, level in enumerate(levels, start=1)
+        ]
+
+        result = aggregator.aggregate(questions, "dim4")
+
+        assert result.question_count == 20
+        assert result.score_breakdown["level_counts"] == {
+            "L1": 1,
+            "L2": 3,
+            "L3": 4,
+            "L4": 10,
+            "L5": 2,
+        }
+        assert result.paper_score == pytest.approx(1439 / 185)
+
+    def test_dim4_weighted_score_matches_guangda_full_distribution(self, aggregator):
+        level_scores = {"L1": 2.0, "L2": 4.0, "L3": 6.0, "L4": 8.0, "L5": 9.5}
+        levels = ["L1"] * 7 + ["L2"] * 5 + ["L3"] * 5 + ["L4"] * 6
+        questions = [
+            self._dim4_question(index, level, level_scores[level])
+            for index, level in enumerate(levels, start=1)
+        ]
+
+        result = aggregator.aggregate(questions, "dim4")
+
+        assert result.question_count == 23
+        assert result.score_breakdown["level_counts"] == {
+            "L1": 7,
+            "L2": 5,
+            "L3": 5,
+            "L4": 6,
+            "L5": 0,
+        }
+        assert result.paper_score == pytest.approx(840 / 124)
 
     def test_dim4_wmo_grade6_regression_reaches_eight_without_paper_bonus(self, aggregator):
         scorer = Dim4InnovationScorer()

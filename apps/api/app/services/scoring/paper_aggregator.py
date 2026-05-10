@@ -3,7 +3,7 @@ Paper-level aggregation helpers.
 
 Current rule:
 - each dimension score is the simple average of applicable question scores
-- dim4 is averaged over every non-review question with a legal L1-L5 question score
+- dim4 uses a level-weighted average over every non-review question with a legal L1-L5 question score
 - dim5 keeps paper-level knowledge-source composition as explanation, not as the scoring rule
 - counted_questions should surface representative, auditable examples
 """
@@ -72,6 +72,13 @@ class PaperAggregator:
 
     REPRESENTATIVE_LIMIT = 3
     REPRESENTATIVE_CONFIDENCE_THRESHOLD = 0.45
+    DIM4_LEVEL_WEIGHTS = {
+        "L1": 1,
+        "L2": 2,
+        "L3": 7,
+        "L4": 12,
+        "L5": 15,
+    }
     IMAGE_FALLBACK_HINTS = ("纯文本回退", "多模态分析失败")
     DIM2_GEOMETRY_HINTS = (
         "几何",
@@ -424,10 +431,26 @@ class PaperAggregator:
             level: round(self._ratio(count, question_count), 4)
             for level, count in level_counts.items()
         }
+        score_sum = sum(self._valid_dim4_question_score(question) or 0.0 for question in scored_questions)
+        raw_question_average = score_sum / question_count if question_count else 0.0
+        weighted_score_sum = 0.0
+        total_weight = 0.0
+        for question in scored_questions:
+            question_score = self._valid_dim4_question_score(question) or 0.0
+            level = self._dim4_level_for_question(question)
+            weight = float(self.DIM4_LEVEL_WEIGHTS.get(level, 0))
+            weighted_score_sum += question_score * weight
+            total_weight += weight
+        weighted_question_average = weighted_score_sum / total_weight if total_weight else 0.0
         breakdown = {
             "level_counts": level_counts,
             "level_ratios": level_ratios,
             "source_counts": source_counts,
+            "level_weights": self.DIM4_LEVEL_WEIGHTS,
+            "raw_question_average": round(raw_question_average, 4),
+            "weighted_question_average": round(weighted_question_average, 4),
+            "weighted_score_sum": round(weighted_score_sum, 4),
+            "total_weight": round(total_weight, 4),
             "not_applicable_count": not_applicable_count,
             "review_count": review_question_count,
             "l1_excluded_count": l1_excluded_count,
@@ -435,7 +458,7 @@ class PaperAggregator:
             "unscored_question_count": unscored_question_count,
             "unknown_level_count": unknown_level_count,
             "high_level_question_count": level_counts["L4"] + level_counts["L5"],
-            "aggregation_rule": "所有可稳定判定 L1-L5 的题均纳入实践创新均分；复核或缺少合法题级分的题不按 0 分计入。",
+            "aggregation_rule": "所有可稳定判定 L1-L5 的题均纳入实践创新评分；卷级主分按高阶创新等级权重计算；复核或缺少合法题级分的题不按 0 分计入。",
         }
 
         if question_count == 0:
@@ -468,9 +491,8 @@ class PaperAggregator:
                 score_breakdown=breakdown,
             )
 
-        score_sum = sum(self._valid_dim4_question_score(question) or 0.0 for question in scored_questions)
         total_question_score = sum(question.score for question in scored_questions)
-        paper_score = score_sum / question_count
+        paper_score = weighted_question_average
         level, level_label = self._calculate_level(paper_score)
         sample_warning = 0 < question_count < 2
 
@@ -488,17 +510,14 @@ class PaperAggregator:
         )
 
         evidence_parts = [
-            f"共 {question_count} 道题纳入实践创新均分",
-            (
-                f"L1 {level_counts['L1']} 道、L2 {level_counts['L2']} 道、"
-                f"L3 {level_counts['L3']} 道、L4 {level_counts['L4']} 道、L5 {level_counts['L5']} 道"
-            ),
+            f"共 {question_count} 道题纳入实践创新评分",
+            "按高阶创新等级权重计算",
         ]
         if unscored_question_count:
             evidence_parts.append(f"缺少合法题级分 {unscored_question_count} 道未计入")
         if review_question_count:
             evidence_parts.append(f"人工复核 {review_question_count} 道未计入")
-        evidence_parts.append(f"题级均分 {paper_score:.1f} 分，判定为 {level_label}")
+        evidence_parts.append(f"权重得分 {paper_score:.1f} 分，判定为 {level_label}")
         evidence = "；".join(evidence_parts) + "。"
 
         return PaperDimensionSummary(

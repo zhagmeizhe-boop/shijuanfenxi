@@ -70,6 +70,78 @@ GAOSI_QUESTION_EXACT_STRENGTH = 3
 GAOSI_QUESTION_TEXT_EXCERPT_LENGTH = 140
 DIM5_QUESTION_UNSAFE_FLAGS = {"low_ocr_confidence", "short_question_text"}
 DIM5_QUESTION_REVIEW_FLAGS = {"has_diagram", "cross_page_question", "diagram_partial_match"}
+DIM5_TOPIC_TERM_MAX_LENGTH = 30
+DIM5_GENERIC_TOPIC_TERMS = {
+    "位置",
+    "找规律",
+    "整数",
+    "根据",
+    "应用题",
+    "计算",
+    "问题",
+    "数学",
+    "基础",
+    "综合",
+}
+DIM5_DIRECT_FORMULA_BLOCK_SIGNALS = (
+    "直接公式",
+    "普通公式",
+    "公式代入",
+    "直接代入",
+    "圆柱圆锥体积比",
+    "圆柱和圆锥体积",
+    "圆柱与圆锥体积",
+    "圆柱体积",
+    "圆锥体积",
+    "长方形面积",
+    "百分数直接应用",
+)
+DIM5_TOPIC_STRUCTURE_GROUPS: Dict[str, Dict[str, Tuple[str, ...]]] = {
+    "grazing": {
+        "topics": ("牛吃草", "牛吃草问题", "草生长", "增长消耗", "排队检票"),
+        "signals": ("生长", "增长", "流进", "增加", "抽干", "水泵", "吃完", "消耗", "每天", "每分钟", "原有"),
+    },
+    "work_rate": {
+        "topics": ("工程问题", "工程", "合作工程", "工作效率", "效率"),
+        "signals": ("效率", "合作", "共同", "单独", "完成", "工作量", "工程", "天完成", "小时完成"),
+    },
+    "travel": {
+        "topics": ("行程", "相遇", "追及", "流水行船", "速度"),
+        "signals": ("相遇", "追及", "速度变化", "变速", "流水", "相向", "同向", "返回", "同时出发", "同时", "出发"),
+    },
+    "concentration": {
+        "topics": ("浓度", "浓度问题", "溶液", "混合", "盐水"),
+        "signals": ("浓度", "溶液", "盐水", "含盐", "加水", "蒸发", "混合", "百分之"),
+    },
+    "combinatorics": {
+        "topics": ("组合计数", "排列组合", "枚举", "计数", "容斥", "选法"),
+        "signals": ("选", "选法", "组成", "排列", "分类", "枚举", "情况", "共有", "多少种", "容斥"),
+    },
+    "number_theory": {
+        "topics": ("数论", "整除", "余数", "同余", "质因数", "因数", "倍数", "奇偶"),
+        "signals": ("整除", "余数", "同余", "质因数", "因数", "倍数", "奇数", "偶数", "约数"),
+    },
+    "sequence": {
+        "topics": ("数列", "周期数列", "周期", "递推", "数表"),
+        "signals": ("数列", "周期", "第", "项", "排列", "余数", "递推", "循环", "第几行", "第几列"),
+    },
+    "defined_operation": {
+        "topics": ("定义新运算", "新运算", "规定运算"),
+        "signals": ("定义", "规定", "新运算", "运算符号", "表示"),
+    },
+    "pigeonhole": {
+        "topics": ("抽屉", "抽屉原理"),
+        "signals": ("至少", "保证", "放入", "分成", "必有"),
+    },
+    "game": {
+        "topics": ("博弈", "必胜", "必败", "对称策略"),
+        "signals": ("甲乙", "轮流", "取", "胜", "败", "策略", "对称", "必胜", "必败"),
+    },
+    "advanced_geometry": {
+        "topics": ("几何割补", "组合图形", "面积关系", "蝴蝶模型", "鸟头", "沙漏", "立体几何"),
+        "signals": ("阴影", "面积", "如图", "辅助线", "割补", "重叠", "正方形", "三角形", "圆", "图形", "体积"),
+    },
+}
 
 
 @dataclass(frozen=True)
@@ -160,6 +232,10 @@ class CalibrationResult:
     question_level_match_strength: int = 0
     question_level_match_type: str = ""
     reference_sublevel: str = ""
+    topic_match_terms: List[str] = field(default_factory=list)
+    structure_match_terms: List[str] = field(default_factory=list)
+    match_scope: str = ""
+    match_action: str = ""
 
     def to_dict(self) -> Dict[str, object]:
         payload = asdict(self)
@@ -849,6 +925,367 @@ class WorkbookReferenceStandard:
         return cls._has_olympiad_signal(combined_text)
 
     @classmethod
+    def _dim5_direct_formula_blocked(cls, feature: Dict[str, object], combined_text: str) -> bool:
+        if any(signal in combined_text for signal in DIM5_DIRECT_FORMULA_BLOCK_SIGNALS):
+            return True
+        if "圆柱" in combined_text and "圆锥" in combined_text and "体积比" in combined_text:
+            return True
+        if "直接" in combined_text and any(term in combined_text for term in ("公式", "百分数", "面积", "体积")):
+            return True
+
+        fact_text = _normalize_match_text(
+            " ".join(
+                str(part or "")
+                for part in (
+                    feature.get("evidence_summary", ""),
+                    " ".join(str(item) for item in feature.get("evidence_tags", []) or []),
+                    " ".join(str(item) for item in feature.get("knowledge_tags", []) or []),
+                    " ".join(str(item) for item in feature.get("core_knowledge_units", []) or []),
+                )
+            )
+        )
+        return any(signal in fact_text for signal in DIM5_DIRECT_FORMULA_BLOCK_SIGNALS)
+
+    @staticmethod
+    def _dim5_is_generic_topic_term(term: str) -> bool:
+        normalized = _normalize_match_text(term)
+        return len(normalized) < 2 or normalized in DIM5_GENERIC_TOPIC_TERMS
+
+    @staticmethod
+    def _dim5_is_group_topic_term(term: str) -> bool:
+        normalized = _normalize_match_text(term)
+        return any(
+            normalized == _normalize_match_text(topic)
+            for group in DIM5_TOPIC_STRUCTURE_GROUPS.values()
+            for topic in group["topics"]
+        )
+
+    @classmethod
+    def _dim5_canonical_topic_term(
+        cls,
+        term: str,
+        *,
+        feature_topic_terms: Sequence[str] = (),
+    ) -> str:
+        normalized = _normalize_match_text(term)
+        if not normalized or cls._dim5_is_generic_topic_term(normalized):
+            return ""
+
+        group_hits: List[str] = []
+        for group in DIM5_TOPIC_STRUCTURE_GROUPS.values():
+            for topic in group["topics"]:
+                normalized_topic = _normalize_match_text(topic)
+                if (
+                    normalized_topic
+                    and not cls._dim5_is_generic_topic_term(normalized_topic)
+                    and normalized_topic in normalized
+                ):
+                    group_hits.append(normalized_topic)
+        if group_hits:
+            feature_related_hits = [
+                hit
+                for hit in group_hits
+                if any(
+                    feature_term
+                    and len(feature_term) >= 2
+                    and (
+                        hit == feature_term
+                        or hit in feature_term
+                        or feature_term in hit
+                    )
+                    for feature_term in feature_topic_terms
+                )
+            ]
+            if feature_related_hits:
+                return max(feature_related_hits, key=len)
+            return max(group_hits, key=len)
+
+        feature_hits = [
+            feature_term
+            for feature_term in feature_topic_terms
+            if (
+                feature_term
+                and len(feature_term) <= DIM5_TOPIC_TERM_MAX_LENGTH
+                and not cls._dim5_is_generic_topic_term(feature_term)
+                and (
+                    feature_term in normalized
+                    or normalized in feature_term
+                )
+            )
+        ]
+        if feature_hits:
+            return max(feature_hits, key=len)
+
+        if len(normalized) <= DIM5_TOPIC_TERM_MAX_LENGTH:
+            return normalized
+        return ""
+
+    @classmethod
+    def _dim5_feature_topic_terms(
+        cls,
+        feature: Dict[str, object],
+        *,
+        question_summary: str,
+        analysis_facts: Dict[str, object],
+    ) -> List[str]:
+        terms: List[str] = []
+        values: List[object] = [question_summary]
+        for key in ("knowledge_tags", "core_knowledge_units", "supporting_knowledge_units", "method_tags"):
+            values.extend(feature.get(key, []) or [])
+        for key in ("core_knowledge_points", "core_methods"):
+            values.extend(analysis_facts.get(key, []) or [])
+        values.append(analysis_facts.get("core_task", ""))
+
+        for value in values:
+            for term in _compact_terms(value):
+                if cls._dim5_is_generic_topic_term(term):
+                    continue
+                if term not in terms:
+                    terms.append(term)
+        combined = _normalize_match_text(" ".join(str(value or "") for value in values))
+        for group in DIM5_TOPIC_STRUCTURE_GROUPS.values():
+            for topic in group["topics"]:
+                normalized_topic = _normalize_match_text(topic)
+                if (
+                    normalized_topic
+                    and normalized_topic in combined
+                    and not cls._dim5_is_generic_topic_term(normalized_topic)
+                    and normalized_topic not in terms
+                ):
+                    terms.append(normalized_topic)
+        return terms
+
+    @classmethod
+    def _dim5_entry_topic_terms(cls, entry: ReferenceEntry) -> List[str]:
+        values: List[object] = [
+            entry.title,
+            entry.lecture_title,
+            entry.topic_category,
+            entry.category,
+        ]
+        values.extend(entry.keywords)
+        dim5_profile = cls._dim5_profile(entry)
+        for key in ("knowledge_anchor_terms", "core_knowledge_units", "knowledge_tags"):
+            values.extend(dim5_profile.get(key, []) or [])
+
+        terms: List[str] = []
+        for value in values:
+            for term in _compact_terms(value):
+                if cls._dim5_is_generic_topic_term(term):
+                    continue
+                if term not in terms:
+                    terms.append(term)
+        return terms
+
+    @classmethod
+    def _dim5_topic_match_terms(
+        cls,
+        entry: ReferenceEntry,
+        *,
+        feature_topic_terms: Sequence[str],
+        combined_text: str,
+    ) -> List[str]:
+        matched: List[str] = []
+        entry_terms = cls._dim5_entry_topic_terms(entry)
+        feature_terms = list(feature_topic_terms)
+
+        def add_match(term: str) -> None:
+            canonical = cls._dim5_canonical_topic_term(
+                term,
+                feature_topic_terms=feature_terms,
+            )
+            feature_related = any(
+                feature_term
+                and len(feature_term) >= 2
+                and (
+                    canonical == feature_term
+                    or canonical in feature_term
+                    or feature_term in canonical
+                )
+                for feature_term in feature_terms
+            )
+            is_group_topic = cls._dim5_is_group_topic_term(canonical)
+            if canonical:
+                if not is_group_topic and not feature_related:
+                    return
+                if is_group_topic and len(canonical) < SPECIFIC_TERM_MIN_LENGTH and not feature_related:
+                    return
+            if canonical and canonical not in matched:
+                matched.append(canonical)
+
+        for entry_term in entry_terms:
+            if entry_term in combined_text:
+                add_match(entry_term)
+                continue
+            for feature_term in feature_terms:
+                if (
+                    entry_term == feature_term
+                    or (
+                        len(entry_term) >= 2
+                        and entry_term in feature_term
+                    )
+                    or (
+                        len(feature_term) >= 2
+                        and feature_term in entry_term
+                    )
+                ):
+                    add_match(entry_term)
+                    break
+
+        return sorted(dict.fromkeys(matched))
+
+    @classmethod
+    def _dim5_structure_match_terms(
+        cls,
+        *,
+        topic_terms: Sequence[str],
+        entry: ReferenceEntry,
+        combined_text: str,
+    ) -> List[str]:
+        entry_terms = cls._dim5_entry_topic_terms(entry)
+        all_topic_terms = list(dict.fromkeys([*topic_terms, *entry_terms]))
+        matched_signals: List[str] = []
+
+        for group in DIM5_TOPIC_STRUCTURE_GROUPS.values():
+            topic_hit = any(
+                topic in term or term in topic
+                for topic in group["topics"]
+                for term in all_topic_terms
+                if len(term) >= 2
+            )
+            if not topic_hit:
+                continue
+            for signal in group["signals"]:
+                normalized_signal = _normalize_match_text(signal)
+                if normalized_signal and normalized_signal in combined_text:
+                    matched_signals.append(signal)
+
+        return list(dict.fromkeys(matched_signals))
+
+    @classmethod
+    def _dim5_topic_structure_band_for_entry(cls, entry: ReferenceEntry) -> Optional[str]:
+        reference_band = cls._dim5_band_for_entry(entry)
+        if reference_band not in BAND_ORDER:
+            return None
+        if reference_band in {BAND_LABELS[1], BAND_LABELS[2]}:
+            return None
+
+        grade_text = _normalize_text(entry.grade or entry.grade_hint or cls._gaosi_grade_text(entry))
+        grade = int(grade_text) if grade_text.isdigit() else _parse_grade_hint(grade_text)
+        if reference_band == BAND_LABELS[5]:
+            return BAND_LABELS[3] if grade is not None and grade <= 4 else BAND_LABELS[4]
+        if grade is not None and grade <= 4:
+            return BAND_LABELS[3]
+        return BAND_LABELS[4] if reference_band == BAND_LABELS[4] else reference_band
+
+    def _dim5_topic_structure_match_candidates(
+        self,
+        feature: Dict[str, object],
+        *,
+        question_summary: str,
+        analysis_facts: Dict[str, object],
+        combined_text: str,
+        limit: int = 5,
+    ) -> List[Tuple[int, ReferenceEntry, List[str], List[str], str]]:
+        feature_topic_terms = self._dim5_feature_topic_terms(
+            feature,
+            question_summary=question_summary,
+            analysis_facts=analysis_facts,
+        )
+        if not feature_topic_terms:
+            return []
+
+        candidates: List[Tuple[int, ReferenceEntry, List[str], List[str], str]] = []
+        for entry in self.entries:
+            target_band = self._dim5_topic_structure_band_for_entry(entry)
+            if not target_band:
+                continue
+            if self._is_gaosi_question_entry(entry) and self._dim5_entry_match_safety_level(entry) != "auto":
+                continue
+
+            topic_terms = self._dim5_topic_match_terms(
+                entry,
+                feature_topic_terms=feature_topic_terms,
+                combined_text=combined_text,
+            )
+            if not topic_terms:
+                continue
+
+            structure_terms = self._dim5_structure_match_terms(
+                topic_terms=topic_terms,
+                entry=entry,
+                combined_text=combined_text,
+            )
+            if not structure_terms:
+                continue
+
+            score = sum(len(term) for term in topic_terms) + sum(len(term) for term in structure_terms)
+            title_key = _normalize_match_text(entry.title)
+            if title_key and title_key in topic_terms:
+                score += max(4, len(title_key))
+            if self._is_gaosi_question_entry(entry):
+                score += 4
+            if entry.track in {"经典奥数", "竞赛备考", "普奥", "奥数"}:
+                score += 3
+            if self._is_gaosi_challenge_entry(entry):
+                score += 1
+            candidates.append((score, entry, topic_terms, structure_terms, target_band))
+
+        candidates.sort(key=lambda item: item[0], reverse=True)
+        return candidates[: max(limit, 0)]
+
+    def dim5_topic_structure_candidates(
+        self,
+        feature: Dict[str, object],
+        *,
+        question_text: str,
+        question_summary: str,
+        analysis_facts: Optional[Dict[str, object]] = None,
+        limit: int = 5,
+    ) -> List[Dict[str, object]]:
+        analysis_facts = analysis_facts or {}
+        combined_text = self._build_question_match_text(
+            feature,
+            question_text=question_text,
+            question_summary=question_summary,
+            analysis_facts=analysis_facts,
+        )
+        if not combined_text or self._dim5_direct_formula_blocked(feature, combined_text):
+            return []
+
+        candidates = self._dim5_topic_structure_match_candidates(
+            feature,
+            question_summary=question_summary,
+            analysis_facts=analysis_facts,
+            combined_text=combined_text,
+            limit=limit,
+        )
+        return [
+            {
+                "source": entry.source,
+                "book_name": entry.book_name,
+                "grade": entry.grade,
+                "grade_hint": entry.grade_hint,
+                "lecture_no": entry.lecture_no,
+                "lecture_title": entry.lecture_title,
+                "topic_category": entry.topic_category,
+                "section_level": entry.section_level,
+                "section_label": entry.section_label,
+                "track": entry.track,
+                "title": entry.title,
+                "question_no": entry.question_no,
+                "page_no": entry.page_no,
+                "topic_match_terms": list(topic_terms),
+                "structure_match_terms": list(structure_terms),
+                "dim5_reference_band": self._dim5_band_for_entry(entry),
+                "dim5_topic_structure_band": target_band,
+                "match_scope": "topic_structure",
+                "match_action": "raise_band",
+            }
+            for _, entry, topic_terms, structure_terms, target_band in candidates
+        ]
+
+    @classmethod
     def _dim5_beyond_question_override_match(
         cls,
         question_level_entries: Sequence[Tuple[int, ReferenceEntry, List[str], int]],
@@ -1051,6 +1488,9 @@ class WorkbookReferenceStandard:
 
         grade = cls._gaosi_grade_text(entry)
         section_level, section_label = cls._gaosi_section_level_and_label(entry)
+        if calibration.match_scope == "topic_structure" and section_level == "challenge":
+            section_level = ""
+            section_label = ""
         if grade:
             feature["gaosi_grade"] = grade
         if section_level:
@@ -1390,6 +1830,23 @@ class WorkbookReferenceStandard:
         if not combined_text:
             return result
         olympiad_heavy = self._has_olympiad_signal(combined_text)
+        direct_formula_blocked = (
+            dim_code == "dim5" and self._dim5_direct_formula_blocked(feature, combined_text)
+        )
+        if direct_formula_blocked:
+            result.match_scope = "direct_formula_guard"
+            result.match_action = "blocked_by_direct_formula"
+        topic_structure_candidates = (
+            []
+            if dim_code != "dim5" or direct_formula_blocked
+            else self._dim5_topic_structure_match_candidates(
+                feature,
+                question_summary=question_summary,
+                analysis_facts=analysis_facts,
+                combined_text=combined_text,
+                limit=5,
+            )
+        )
 
         scored_entries: List[Tuple[int, ReferenceEntry, List[str], int]] = []
         for entry in self.entries:
@@ -1433,6 +1890,25 @@ class WorkbookReferenceStandard:
             scored_entries.append((score, entry, matched_terms, question_match_strength))
 
         if not scored_entries:
+            if topic_structure_candidates:
+                _, entry, topic_terms, structure_terms, target_band = topic_structure_candidates[0]
+                result.matched_entries = [entry]
+                result.matched_terms = list(topic_terms)
+                result.strong_terms = list(topic_terms)
+                result.rule_band = target_band
+                result.stable = True
+                result.can_override_model = True
+                result.topic_match_terms = list(topic_terms)
+                result.structure_match_terms = list(structure_terms)
+                result.match_scope = "topic_structure"
+                result.match_action = "raise_band"
+                if self._is_gaosi_challenge_entry(entry):
+                    result.warning = self._merge_warning(
+                        result.warning,
+                        "仅达到专题+结构命中，未达到题目级超越篇相似；按高思拓展档纠偏并建议复核。",
+                    )
+                    result.needs_manual_review = True
+                return result
             return result
 
         scored_entries.sort(key=lambda item: item[0], reverse=True)
@@ -1552,7 +2028,10 @@ class WorkbookReferenceStandard:
             bool(override_question_matches)
             and bool(exact_band_votes)
         )
-        if high_quality_question_matches and not override_question_matches and dim_code == "dim5":
+        question_level_conflict = (
+            bool(high_quality_question_matches) and not override_question_matches and dim_code == "dim5"
+        )
+        if question_level_conflict:
             result.warning = self._merge_warning(
                 result.warning,
                 "题目级高思候选存在篇章/档位冲突或安全画像不足，保留为审计线索，不直接纠偏模型档位。",
@@ -1570,6 +2049,37 @@ class WorkbookReferenceStandard:
             top_band = min(band_votes, key=lambda band: BAND_ORDER[band])
             stable = False
 
+        topic_structure_match = topic_structure_candidates[0] if topic_structure_candidates else None
+        if topic_structure_match and not question_level_override:
+            _, topic_entry, topic_terms, structure_terms, topic_band = topic_structure_match
+            if (
+                BAND_ORDER.get(topic_band, 0) > BAND_ORDER.get(top_band, 0)
+                or (
+                    self._is_gaosi_challenge_entry(topic_entry)
+                    and BAND_ORDER.get(top_band, 0) > BAND_ORDER.get(topic_band, 0)
+                )
+            ):
+                top_band = topic_band
+                stable = True
+            result.matched_entries = [
+                topic_entry,
+                *[entry for entry in result.matched_entries if entry != topic_entry],
+            ][:5]
+            result.matched_terms = sorted(
+                dict.fromkeys([*result.matched_terms, *topic_terms])
+            )
+            result.strong_terms = sorted(dict.fromkeys([*result.strong_terms, *topic_terms]))
+            result.topic_match_terms = list(topic_terms)
+            result.structure_match_terms = list(structure_terms)
+            result.match_scope = "topic_structure"
+            result.match_action = "raise_band"
+            if self._is_gaosi_challenge_entry(topic_entry):
+                result.warning = self._merge_warning(
+                    result.warning,
+                    "仅达到专题+结构命中，未达到题目级超越篇相似；按高思拓展档纠偏并建议复核。",
+                )
+                result.needs_manual_review = True
+
         result.rule_band = top_band
         result.stable = stable
         if False and not stable:
@@ -1582,12 +2092,17 @@ class WorkbookReferenceStandard:
         result.can_override_model = question_level_override or exact_title_override or (
             stable and dim5_specific_anchor and (len(result.strong_terms) >= 2 or specific_strong_hit)
         )
+        topic_structure_override = bool(topic_structure_match and not question_level_conflict)
+        if topic_structure_override:
+            result.can_override_model = True
         if result.question_level_match and not question_level_override:
             result.can_override_model = False
             result.warning = self._merge_warning(
                 result.warning,
                 "题目级高思参考只达到部分相似，保留为审计线索，不直接纠偏模型档位。",
             )
+            if topic_structure_override:
+                result.can_override_model = True
         if dim_code == "dim5":
             has_topic_only_gaosi = any(
                 self._is_dim5_gaosi_topic_entry(dim_code, entry)
@@ -1597,12 +2112,26 @@ class WorkbookReferenceStandard:
                 not self._is_dim5_gaosi_topic_entry(dim_code, entry)
                 for _, entry, _, _ in scored_entries
             )
-            if has_topic_only_gaosi and not result.question_level_match and not has_non_gaosi_override_source:
+            if (
+                has_topic_only_gaosi
+                and not topic_structure_override
+                and not result.question_level_match
+                and not has_non_gaosi_override_source
+            ):
                 result.can_override_model = False
                 result.warning = self._merge_warning(
                     result.warning,
                     "高思导引仅命中专题/目录，保留为审计线索，不直接判为拓展篇或超越篇。",
                 )
+
+        if direct_formula_blocked and result.rule_band not in {BAND_LABELS[1], BAND_LABELS[2]}:
+            result.can_override_model = False
+            result.match_scope = "direct_formula_guard"
+            result.match_action = "blocked_by_direct_formula"
+            result.warning = self._merge_warning(
+                result.warning,
+                "直接公式类题目不因本地库专题或竞赛来源抬高知识广度档位。",
+            )
 
         if result.weak_terms and not result.strong_terms:
             result.warning = self._merge_warning(
@@ -1826,6 +2355,40 @@ class WorkbookReferenceStandard:
             calibrated["band"] = calibration.rule_band
             calibration.final_band = calibration.rule_band
             calibration.band_source = "question_bank"
+        elif (
+            dim_code == "dim5"
+            and calibration.rule_band
+            and calibration.match_scope == "topic_structure"
+            and calibration.can_override_model
+        ):
+            if model_band in BAND_ORDER:
+                calibration.band_gap = abs(BAND_ORDER[calibration.rule_band] - BAND_ORDER[model_band])
+                should_raise = BAND_ORDER[calibration.rule_band] > BAND_ORDER[model_band]
+            else:
+                calibration.band_gap = None
+                should_raise = True
+
+            if should_raise:
+                calibrated["band"] = calibration.rule_band
+                calibrated["band_source"] = "topic_structure_match"
+                calibration.final_band = calibration.rule_band
+                calibration.band_source = "topic_structure_match"
+                topic_text = "、".join(calibration.topic_match_terms[:3])
+                structure_text = "、".join(calibration.structure_match_terms[:4])
+                evidence_note = (
+                    f"本地库命中专题：{topic_text}；结构信号：{structure_text}。"
+                    if topic_text and structure_text
+                    else ""
+                )
+                if evidence_note:
+                    calibrated["evidence_summary"] = self._merge_warning(
+                        str(calibrated.get("evidence_summary", "")),
+                        evidence_note,
+                    )
+            else:
+                calibration.final_band = model_band
+                calibration.band_source = "model_confirmed"
+                calibration.match_action = "confirm_model"
         elif calibration.rule_band and model_band in BAND_ORDER:
             calibration.band_gap = abs(BAND_ORDER[calibration.rule_band] - BAND_ORDER[model_band])
             if calibration.band_gap == 0:
@@ -1875,6 +2438,14 @@ class WorkbookReferenceStandard:
         else:
             calibration.final_band = model_band
             calibration.band_source = "model_only" if model_band else ""
+
+        if not calibration.match_action:
+            if calibration.band_source == "audit_only":
+                calibration.match_action = "audit_only"
+            elif calibration.final_band and model_band and calibration.final_band != model_band:
+                calibration.match_action = "raise_band"
+            elif calibration.final_band and model_band and calibration.final_band == model_band:
+                calibration.match_action = "confirm_model"
 
         if (
             dim_code == "dim5"

@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from app.services.parser.reference_standard import (
     BAND_LABELS,
     DATA_FILE_NAME,
@@ -992,6 +994,205 @@ def test_competition_reference_maps_to_gaosi_band_not_beyond():
     assert feature["band"] != BAND_LABELS[5]
     assert feature["gaosi_grade"] == "6"
     assert feature["gaosi_classification_source"] == "knowledge_base"
+
+
+@pytest.mark.parametrize(
+    ("title", "keywords", "question_text", "summary", "knowledge_units", "expected_band"),
+    [
+        (
+            "牛吃草问题",
+            ("牛吃草问题", "草生长"),
+            "草地每天匀速生长，若8头牛12天吃完，10头牛8天吃完，求6天吃完需要多少头牛。",
+            "增长消耗型牛吃草",
+            ["牛吃草问题"],
+            BAND_LABELS[4],
+        ),
+        (
+            "工程问题",
+            ("工程问题", "工作效率"),
+            "甲单独完成工程需12天，乙单独完成需18天，两人合作若干天后求剩余工作量。",
+            "工程合作效率",
+            ["工程问题"],
+            BAND_LABELS[4],
+        ),
+        (
+            "行程问题",
+            ("行程问题", "相遇追及"),
+            "甲乙两人同时从两地相向出发，速度不同，相遇后继续前进并比较路程。",
+            "行程相遇追及",
+            ["行程问题"],
+            BAND_LABELS[4],
+        ),
+        (
+            "浓度问题",
+            ("浓度问题", "溶液混合"),
+            "将两种不同浓度的盐水混合后又加水，求最后溶液的浓度。",
+            "浓度混合",
+            ["浓度问题"],
+            BAND_LABELS[4],
+        ),
+        (
+            "组合计数",
+            ("组合计数", "分类计数"),
+            "从若干人中选出小组，按对象分类后计数，问共有多少种不同选法。",
+            "组合计数分类",
+            ["组合计数"],
+            BAND_LABELS[4],
+        ),
+    ],
+)
+def test_dim5_topic_structure_match_raises_same_topic_variant(
+    title,
+    keywords,
+    question_text,
+    summary,
+    knowledge_units,
+    expected_band,
+):
+    standard = _build_standard(
+        [
+            ReferenceEntry(
+                source="competition",
+                sheet_name="竞赛备考章节序",
+                category="应用题",
+                title=title,
+                track="竞赛备考",
+                grade_hint="六年级",
+                keywords=keywords,
+            )
+        ]
+    )
+
+    feature = standard.calibrate_feature(
+        "dim5",
+        {
+            "band": BAND_LABELS[2],
+            "sublevel": "mid",
+            "evidence_summary": "模型主判为校内高年级。",
+            "knowledge_tags": knowledge_units,
+            "core_knowledge_units": knowledge_units,
+        },
+        question_text=question_text,
+        question_summary=summary,
+        analysis_facts={
+            "core_knowledge_points": knowledge_units,
+            "core_methods": keywords,
+            "core_task": summary,
+        },
+    )
+
+    calibration = feature["calibration"]
+
+    assert feature["band"] == expected_band
+    assert feature["band_source"] == "topic_structure_match"
+    assert calibration["band_source"] == "topic_structure_match"
+    assert calibration["match_scope"] == "topic_structure"
+    assert calibration["match_action"] == "raise_band"
+    assert calibration["topic_match_terms"]
+    assert calibration["structure_match_terms"]
+    assert "本地库命中专题" in feature["evidence_summary"]
+
+
+def test_dim5_generic_topic_match_does_not_auto_raise():
+    standard = _build_standard(
+        [
+            ReferenceEntry(
+                source="guide",
+                sheet_name="高思导引章节序",
+                category="计算问题",
+                title="找规律",
+                track="高思导引",
+                grade_hint="六年级",
+                keywords=("找规律",),
+            )
+        ]
+    )
+
+    feature = standard.calibrate_feature(
+        "dim5",
+        {
+            "band": BAND_LABELS[2],
+            "sublevel": "mid",
+            "knowledge_tags": ["找规律"],
+            "core_knowledge_units": ["找规律"],
+        },
+        question_text="将正整数依次按表中规律排成5列，求2016排在第几行第几列。",
+        question_summary="找规律数表位置",
+        analysis_facts={"core_knowledge_points": ["找规律"], "core_task": "数表位置"},
+    )
+
+    assert feature["band"] == BAND_LABELS[2]
+    assert feature["calibration"]["band_source"] in {"audit_only", "model_only"}
+    assert feature["calibration"]["match_scope"] != "topic_structure"
+
+
+def test_dim5_challenge_topic_structure_caps_at_high_gaosi_with_review():
+    standard = _build_standard(
+        [
+            ReferenceEntry(
+                source="guide",
+                sheet_name="高思导引章节序",
+                category="数列问题",
+                title="周期数列",
+                track="超越篇",
+                grade_hint="六年级",
+                keywords=("周期数列", "超越篇"),
+            )
+        ]
+    )
+
+    feature = standard.calibrate_feature(
+        "dim5",
+        {
+            "band": BAND_LABELS[2],
+            "sublevel": "mid",
+            "knowledge_tags": ["周期数列"],
+            "core_knowledge_units": ["周期数列"],
+        },
+        question_text="一列数按周期循环排列，求第2026项除以7的余数。",
+        question_summary="周期数列求余",
+        analysis_facts={"core_knowledge_points": ["周期数列"], "core_task": "周期数列求余"},
+    )
+
+    assert feature["band"] == BAND_LABELS[4]
+    assert feature["band"] != BAND_LABELS[5]
+    assert feature["band_source"] == "topic_structure_match"
+    assert feature["need_manual_review"] is True
+    assert "未达到题目级超越篇相似" in feature["warning"]
+
+
+def test_dim5_direct_formula_blocks_topic_structure_raise():
+    standard = _build_standard(
+        [
+            ReferenceEntry(
+                source="competition",
+                sheet_name="竞赛备考章节序",
+                category="几何问题",
+                title="圆柱圆锥体积比",
+                track="竞赛备考",
+                grade_hint="六年级",
+                keywords=("圆柱圆锥体积比", "圆柱", "圆锥"),
+            )
+        ]
+    )
+
+    feature = standard.calibrate_feature(
+        "dim5",
+        {
+            "band": BAND_LABELS[2],
+            "sublevel": "high",
+            "evidence_summary": "直接圆柱圆锥体积比公式题。",
+            "knowledge_tags": ["圆柱圆锥体积比"],
+            "core_knowledge_units": ["圆柱圆锥体积比"],
+        },
+        question_text="高相同的圆柱与圆锥，底面半径之比为2:3，则它们的体积比是多少？",
+        question_summary="圆柱圆锥体积比",
+        analysis_facts={"core_knowledge_points": ["圆柱圆锥体积比"], "core_task": "直接公式求体积比"},
+    )
+
+    assert feature["band"] == BAND_LABELS[2]
+    assert feature["calibration"]["match_action"] == "blocked_by_direct_formula"
+    assert "不因本地库专题或竞赛来源抬高" in feature["warning"]
 
 
 def test_gaosi_question_low_confidence_match_is_audit_only():

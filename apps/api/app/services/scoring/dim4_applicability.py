@@ -249,6 +249,39 @@ def _has_high_burden_signal(feature: Dict[str, Any]) -> bool:
     )
 
 
+def _has_upper_burden_signal(feature: Dict[str, Any]) -> bool:
+    return any(
+        [
+            _normalize_choice(feature.get("template_fit"), TEMPLATE_FIT_VALUES) == "non_routine",
+            _normalize_choice(feature.get("breakthrough_type"), BREAKTHROUGH_TYPE_VALUES)
+            in {"constructive", "exploratory_search"},
+            _shift_rank(
+                _normalize_choice(
+                    feature.get("strategy_shift_count"),
+                    STRATEGY_SHIFT_COUNT_VALUES,
+                )
+            )
+            >= 2,
+            _normalize_choice(
+                feature.get("construction_requirement"),
+                CONSTRUCTION_REQUIREMENT_VALUES,
+            )
+            == "custom_construction",
+            _normalize_choice(feature.get("exploration_space"), EXPLORATION_SPACE_VALUES)
+            in {"branched", "open"},
+            _normalize_choice(
+                feature.get("representation_reframe"),
+                REPRESENTATION_REFRAME_VALUES,
+            )
+            == "creative",
+            _normalize_choice(feature.get("transfer_distance"), TRANSFER_DISTANCE_VALUES) == "far",
+            _normalize_choice(feature.get("path_openness"), PATH_OPENNESS_VALUES)
+            in {"multiple_paths", "multiple_answers"},
+            _normalize_choice(feature.get("dead_end_risk"), DEAD_END_RISK_VALUES) == "high",
+        ]
+    )
+
+
 def _is_low_barrier_direct_template(feature: Dict[str, Any]) -> bool:
     return (
         _normalize_choice(feature.get("template_fit"), TEMPLATE_FIT_VALUES) == "direct"
@@ -301,9 +334,9 @@ def _has_internal_conflict(feature: Dict[str, Any], raw_text: str) -> bool:
         CONSTRUCTION_REQUIREMENT_VALUES,
     )
 
-    if strategy_role == "none" and (_has_high_burden_signal(feature) or _has_strategy_signal(raw_text)):
+    if strategy_role == "none" and _has_upper_burden_signal(feature):
         return True
-    if strategy_role == "supporting" and _has_high_burden_signal(feature):
+    if strategy_role == "supporting" and _has_upper_burden_signal(feature):
         return True
     if template_fit == "direct" and (
         breakthrough_type in {"constructive", "exploratory_search"}
@@ -410,9 +443,9 @@ def evaluate_dim4_applicability(
 
     if not _feature_present(feature) and not _has_strategy_signal(raw_text):
         return {
-            "status": DIM4_STATUS_NOT_APPLICABLE,
-            "reason": "该题没有稳定的策略突破与构造创新负担，dim4 不适用。",
-            "warnings": [],
+            "status": DIM4_STATUS_REVIEW,
+            "reason": "dim4 缺少稳定的知识点内 L1-L5 判级事实，当前题目转入人工复核。",
+            "warnings": ["dim4 未获得可稳定兜底判级的策略创新事实字段。"],
         }
 
     missing_fields = _missing_fields(feature)
@@ -438,8 +471,6 @@ def evaluate_dim4_applicability(
         warnings.append("题块完整度不足，当前 dim4 结果需人工复核。")
     if _has_ocr_damage_signals(parse_warnings):
         warnings.append("dim4 题面存在 OCR 或题块质量问题，当前结果需人工复核。")
-    if _has_strategy_signal(raw_text) and strategy_role in {"none", "supporting"}:
-        warnings.append("题面存在明显构造、试探或换路信号，但 dim4 标记偏低。")
     if _has_internal_conflict(feature, raw_text):
         warnings.append("dim4 策略角色与策略突破特征冲突，当前结果需人工复核。")
 
@@ -459,13 +490,13 @@ def evaluate_dim4_applicability(
 
     if strategy_role in {"none", "supporting"} or _is_low_barrier_direct_template(feature):
         return {
-            "status": DIM4_STATUS_NOT_APPLICABLE,
-            "reason": "该题的策略突破与构造创新不是核心门槛，dim4 不适用。",
+            "status": DIM4_STATUS_APPLICABLE,
+            "reason": "已稳定识别题目属于低创新负担模板或轻度变式，dim4 按 L1/L2 兜底纳入评分。",
             "warnings": [],
         }
 
     return {
-        "status": DIM4_STATUS_NOT_APPLICABLE,
-        "reason": "dim4 边界题尚未形成稳定自动判分依据，当前维度不纳入自动评分。",
-        "warnings": [],
+        "status": DIM4_STATUS_REVIEW,
+        "reason": "dim4 边界题尚未形成稳定自动判分依据，当前题目转入人工复核。",
+        "warnings": ["dim4 边界题缺少稳定自动判级依据。"],
     }

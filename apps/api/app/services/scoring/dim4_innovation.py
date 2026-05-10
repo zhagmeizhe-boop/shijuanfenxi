@@ -237,9 +237,6 @@ class Dim4InnovationScorer(BaseDimensionScorer):
         if any(value in ("", None) for value in required_values) or global_strategy_required is None:
             return self._invalid_score("dim4 关键策略创新事实不完整，无法自动判级。")
 
-        if strategy_role != "core":
-            return self._invalid_score("该题未满足 dim4 的核心策略突破门槛。")
-
         reference_level_code = self._normalize_level_code(features.get("reference_calibrated_level"))
         if reference_level_code:
             return self._build_score(
