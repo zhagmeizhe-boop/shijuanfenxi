@@ -28,6 +28,7 @@ from app.services.parser.prompts import (
 )
 from app.services.parser.reference_standard import get_reference_standard
 from app.services.scoring.banded_dimension import BAND_SCORE_MAP, _normalize_band, _normalize_sublevel
+from app.services.scoring.dim5_canonical import canonicalize_dim5_knowledge, normalize_dim5_knowledge_level
 from app.services.scoring.dim4_topic_levels import (
     DIM4_LEVEL_SOURCE_VALUES,
     classify_dim4_topic_level,
@@ -316,6 +317,24 @@ DIM5_LOW_GAOSI_BAND = "4年级及以前高思导引拓展篇及以下难度"
 DIM5_HIGH_GAOSI_BAND = "5、6年级及以前高思导引拓展篇及以下难度 或 七年级及以上校内课本难度"
 DIM5_BEYOND_BAND = "高思导引超越篇难度"
 DIM5_REVIEW_CONFIDENCE_THRESHOLD = 0.55
+DIM5_RELIABLE_BAND_SOURCES = {
+    "question_bank",
+    "knowledge_anchor",
+    "topic_structure_match",
+    "rule_corrected",
+    "rule_corrected_with_review",
+    "llm_dim5_retry",
+    "gaosi_section_override",
+}
+DIM5_DIRECT_FORMULA_RETRY_BLOCK_PATTERN = re.compile(
+    r"(?:直接公式|普通公式|直接代入|套用公式|长方形面积|三角形面积|圆(?:的)?面积|扇形面积|"
+    r"圆柱(?:和圆锥)?体积|圆锥体积|体积比|百分数直接应用|直接百分数)"
+)
+DIM5_OLYMPIAD_ANCHOR_PATTERN = re.compile(
+    r"(?:定义新运算|规定一种运算|裂项|长链消去|递推|差分|抽屉|组合计数|容斥|博弈|"
+    r"必胜|不变量|同余|整除约束|极值构造|规则反推|牛吃草|复杂几何|几何割补|"
+    r"面积比链|蝴蝶模型|燕尾模型|鸟头|沙漏|奥数|竞赛备考|压轴)"
+)
 DIM5_BAND_RETRY_SYSTEM_PROMPT = """
 You only classify the knowledge-breadth band for one elementary math question.
 Return exactly one JSON object. Do not solve the problem.
@@ -340,6 +359,8 @@ Initial analysis facts:
 Initial dim5_knowledge:
 {dim5_feature_json}
 
+If canonical_knowledge_point/canonical_knowledge_family are present in Initial dim5_knowledge, treat them as the normalized knowledge anchor. Use that anchor before relying on free-form knowledge wording.
+
 Local reference candidates:
 {reference_candidates_json}
 
@@ -360,6 +381,7 @@ WMO/contest-style knowledge anchors:
 - 定义新运算、裂项/长链消去、差分/递推、抽屉、组合计数、博弈必胜、不变量、同余、极值构造、复杂几何割补、规则反推 should usually be classified as GaoSi Guide extension or challenge candidates rather than ordinary school textbook knowledge.
 - Direct textbook formula problems, direct percentage applications, and direct cylinder/cone volume-ratio problems must stay in the school band unless a concrete GaoSi question-level candidate or a genuinely advanced knowledge structure supports a higher band.
 - Do not use a contest name, file title, or general "olympiad" wording alone to choose challenge/beyond.
+- Use medium-relaxed judgement: when a concrete olympiad knowledge point or topic+structure candidate is present, do not keep the question in ordinary school band solely because the original analysis was conservative.
 
 Return strict JSON with exactly these keys:
 {{
@@ -371,6 +393,7 @@ Return strict JSON with exactly these keys:
   "evidence_summary": "short reason based only on core knowledge threshold",
   "knowledge_tags": ["specific knowledge tags"],
   "core_knowledge_units": ["specific core knowledge units"],
+  "primary_knowledge_point": "one most important knowledge point",
   "confidence": 0.0
 }}
 """
@@ -975,6 +998,26 @@ class AIParser:
                 feature.get("gaosi_classification_source"),
                 DIM5_GAOSI_CLASSIFICATION_SOURCE_VALUES,
             ),
+            "primary_knowledge_point": str(feature.get("primary_knowledge_point", "")).strip(),
+            "knowledge_point_source": str(feature.get("knowledge_point_source", "")).strip(),
+            "knowledge_level": normalize_dim5_knowledge_level(feature.get("knowledge_level")),
+            "canonical_knowledge_domain": str(feature.get("canonical_knowledge_domain", "")).strip(),
+            "canonical_knowledge_point": str(feature.get("canonical_knowledge_point", "")).strip(),
+            "canonical_knowledge_family": str(feature.get("canonical_knowledge_family", "")).strip(),
+            "level_source": str(feature.get("level_source", "")).strip(),
+            "level_evidence": str(feature.get("level_evidence", "")).strip(),
+            "canonical_match_source": str(feature.get("canonical_match_source", "")).strip(),
+            "canonical_match_confidence": self._normalize_confidence(
+                feature.get("canonical_match_confidence")
+            ),
+            "canonical_alias_hits": self._normalize_string_list(feature.get("canonical_alias_hits")),
+            "canonical_structure_hits": self._normalize_string_list(
+                feature.get("canonical_structure_hits")
+            ),
+            "canonical_direct_formula_guard": feature.get("canonical_direct_formula_guard")
+            in (1, "1", True),
+            "dim5_fallback_mode": str(feature.get("dim5_fallback_mode", "")).strip(),
+            "dim5_upshift_reason": str(feature.get("dim5_upshift_reason", "")).strip(),
         }
 
     def _normalize_dim6_feature(self, value: Any) -> Dict[str, Any]:
@@ -1619,11 +1662,11 @@ class AIParser:
         for item in getattr(question, "parse_warnings", []) or []:
             text = str(item).strip()
             if any(marker in text for marker in ("残缺", "缺损", "截断", "识别失败", "公式增强识别失败")):
-                warnings.append("dim4 题面存在 OCR 或题块质量问题，当前结果需人工复核。")
+                warnings.append("dim4 题面存在 OCR 或题块质量问题，自动评分结果需要谨慎解读。")
                 break
 
         if getattr(audit, "block_completeness", 1.0) < 0.65:
-            warnings.append("题块完整度不足，当前 dim4 结果需人工复核。")
+            warnings.append("题块完整度不足，dim4 自动评分结果需要谨慎解读。")
 
         return warnings
 
@@ -1857,8 +1900,21 @@ class AIParser:
         feature: Dict[str, Any],
         *,
         analysis_facts: Dict[str, Any],
+        question_text: str = "",
+        question_summary: str = "",
     ) -> Dict[str, Any]:
         normalized = dict(feature or {})
+        primary_knowledge_point = self._dim5_primary_knowledge_point(
+            normalized,
+            analysis_facts=analysis_facts,
+        )
+        if primary_knowledge_point and not normalized.get("primary_knowledge_point"):
+            normalized["primary_knowledge_point"] = primary_knowledge_point
+            normalized["knowledge_point_source"] = self._dim5_primary_knowledge_source(
+                primary_knowledge_point,
+                normalized,
+                analysis_facts=analysis_facts,
+            )
         core_units = list(normalized.get("core_knowledge_units") or [])
         if not core_units:
             core_units = self._normalize_string_list(analysis_facts.get("core_knowledge_points"))
@@ -1874,7 +1930,6 @@ class AIParser:
         if normalized.get("dim5_excluded_reason") == "retry_failed":
             normalized["band"] = ""
             normalized["sublevel"] = ""
-            return normalized
 
         inferred_sublevel = self._infer_dim5_sublevel(normalized)
         current_sublevel = normalized.get("sublevel", "")
@@ -1892,7 +1947,141 @@ class AIParser:
                 )
                 normalized["need_manual_review"] = 1
 
+        canonical = canonicalize_dim5_knowledge(
+            normalized,
+            analysis_facts=analysis_facts,
+            question_text=question_text,
+            question_summary=question_summary,
+        )
+        if canonical:
+            normalized.update(canonical)
+            canonical_point = canonical.get("canonical_knowledge_point")
+            if canonical_point and not normalized.get("primary_knowledge_point"):
+                normalized["primary_knowledge_point"] = canonical_point
+                normalized["knowledge_point_source"] = "canonical"
+            for key in ("core_knowledge_units", "knowledge_tags"):
+                values = list(normalized.get(key) or [])
+                if canonical_point and canonical_point not in values:
+                    values.insert(0, canonical_point)
+                normalized[key] = list(dict.fromkeys(item for item in values if item))
+            family = canonical.get("canonical_knowledge_family")
+            if family and not normalized.get("dim5_upshift_reason"):
+                normalized["dim5_upshift_reason"] = "标准知识点归一后进入相邻高档候选。"
+
         return normalized
+
+    @staticmethod
+    def _dim5_first_nonempty(items: List[str]) -> str:
+        return next((item.strip() for item in items if str(item or "").strip()), "")
+
+    def _dim5_primary_knowledge_point(
+        self,
+        feature: Dict[str, Any],
+        *,
+        analysis_facts: Dict[str, Any],
+    ) -> str:
+        candidates: List[str] = []
+        raw_points = analysis_facts.get("core_knowledge_points", [])
+        if isinstance(raw_points, list):
+            candidates.extend(str(item).strip() for item in raw_points if str(item).strip())
+        for key in ("core_knowledge_units", "knowledge_tags", "supporting_knowledge_units"):
+            raw = feature.get(key, [])
+            if isinstance(raw, list):
+                candidates.extend(str(item).strip() for item in raw if str(item).strip())
+        return self._dim5_first_nonempty(candidates)
+
+    def _dim5_primary_knowledge_source(
+        self,
+        primary_knowledge_point: str,
+        feature: Dict[str, Any],
+        *,
+        analysis_facts: Dict[str, Any],
+    ) -> str:
+        if not primary_knowledge_point:
+            return ""
+        for item in analysis_facts.get("core_knowledge_points", []) or []:
+            if str(item).strip() == primary_knowledge_point:
+                return "analysis_facts"
+        for key, source in (
+            ("core_knowledge_units", "core_knowledge_units"),
+            ("knowledge_tags", "knowledge_tags"),
+            ("supporting_knowledge_units", "supporting_knowledge_units"),
+        ):
+            for item in feature.get(key, []) or []:
+                if str(item).strip() == primary_knowledge_point:
+                    return source
+        return "derived"
+
+    @classmethod
+    def _dim5_combined_signal_text(
+        cls,
+        feature: Dict[str, Any],
+        *,
+        analysis_facts: Dict[str, Any],
+        question_text: str = "",
+        question_summary: str = "",
+    ) -> str:
+        parts: List[str] = [
+            question_text,
+            question_summary,
+            str(feature.get("primary_knowledge_point") or ""),
+            str(feature.get("canonical_knowledge_point") or ""),
+            str(feature.get("canonical_knowledge_family") or ""),
+            str(feature.get("evidence_summary") or ""),
+            str(feature.get("competition_signal") or ""),
+        ]
+        for key in (
+            "knowledge_tags",
+            "core_knowledge_units",
+            "supporting_knowledge_units",
+            "method_tags",
+            "evidence_tags",
+            "canonical_alias_hits",
+            "canonical_structure_hits",
+        ):
+            raw = feature.get(key, [])
+            if isinstance(raw, list):
+                parts.extend(str(item) for item in raw if str(item).strip())
+        for key in ("core_knowledge_points", "core_methods", "visual_elements"):
+            raw = analysis_facts.get(key, [])
+            if isinstance(raw, list):
+                parts.extend(str(item) for item in raw if str(item).strip())
+        parts.append(str(analysis_facts.get("core_task") or ""))
+        return " ".join(part for part in parts if str(part).strip())
+
+    @classmethod
+    def _dim5_has_direct_formula_guard(
+        cls,
+        feature: Dict[str, Any],
+        *,
+        analysis_facts: Dict[str, Any],
+        question_text: str = "",
+        question_summary: str = "",
+    ) -> bool:
+        signal_text = cls._dim5_combined_signal_text(
+            feature,
+            analysis_facts=analysis_facts,
+            question_text=question_text,
+            question_summary=question_summary,
+        )
+        return bool(DIM5_DIRECT_FORMULA_RETRY_BLOCK_PATTERN.search(signal_text))
+
+    @classmethod
+    def _dim5_has_olympiad_anchor(
+        cls,
+        feature: Dict[str, Any],
+        *,
+        analysis_facts: Dict[str, Any],
+        question_text: str = "",
+        question_summary: str = "",
+    ) -> bool:
+        signal_text = cls._dim5_combined_signal_text(
+            feature,
+            analysis_facts=analysis_facts,
+            question_text=question_text,
+            question_summary=question_summary,
+        )
+        return bool(DIM5_OLYMPIAD_ANCHOR_PATTERN.search(signal_text))
 
     @staticmethod
     def _dim5_band_values() -> List[str]:
@@ -1907,6 +2096,10 @@ class AIParser:
         band = _normalize_band(feature.get("band"))
         sublevel = _normalize_sublevel(feature.get("sublevel"))
         return band in BAND_SCORE_MAP and sublevel in DIM5_SUBLEVEL_VALUES
+
+    @staticmethod
+    def _dim5_has_valid_knowledge_level(feature: Dict[str, Any]) -> bool:
+        return bool(normalize_dim5_knowledge_level(feature.get("knowledge_level")))
 
     @staticmethod
     def _dim4_has_valid_topic_level(feature: Dict[str, Any]) -> bool:
@@ -2135,9 +2328,8 @@ class AIParser:
         if confidence < DIM4_REVIEW_CONFIDENCE_THRESHOLD:
             merged["warning"] = self._merge_feature_warning(
                 merged.get("warning", ""),
-                f"dim4 知识点内等级兜底判定置信度低于 {DIM4_REVIEW_CONFIDENCE_THRESHOLD:.2f}，当前结果需人工复核。",
+                f"dim4 知识点内等级兜底判定置信度低于 {DIM4_REVIEW_CONFIDENCE_THRESHOLD:.2f}，自动评分结果需要谨慎解读。",
             )
-            merged["need_manual_review"] = 1
         return self._normalize_dim4_feature(merged)
 
     def _mark_dim4_topic_fallback_failed(
@@ -2153,7 +2345,7 @@ class AIParser:
         merged["fallback_error"] = str(fallback_error or "")[:240]
         merged["warning"] = self._merge_feature_warning(
             merged.get("warning", ""),
-            "dim4 知识点内等级兜底判定失败，当前题目需人工复核。",
+            "dim4 知识点内等级兜底判定失败，已按保守 L1 自动纳入实践创新评分。",
         )
         merged["applicability_confidence"] = 0.0
         return self._normalize_dim4_feature(merged)
@@ -2288,14 +2480,18 @@ class AIParser:
         analysis_facts: Dict[str, Any],
         dim5_feature: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
+        candidates: List[Dict[str, Any]] = []
         if hasattr(self.reference_standard, "gaosi_question_candidates"):
             try:
-                return self.reference_standard.gaosi_question_candidates(
-                    dim5_feature,
-                    question_text=question.raw_text,
-                    question_summary=question_summary,
-                    analysis_facts=analysis_facts,
-                    limit=5,
+                candidates.extend(
+                    self.reference_standard.gaosi_question_candidates(
+                        dim5_feature,
+                        question_text=question.raw_text,
+                        question_summary=question_summary,
+                        analysis_facts=analysis_facts,
+                        limit=5,
+                    )
+                    or []
                 )
             except Exception as exc:
                 logger.warning(
@@ -2303,6 +2499,46 @@ class AIParser:
                     question.question_no,
                     exc,
                 )
+
+        if hasattr(self.reference_standard, "dim5_topic_structure_candidates"):
+            try:
+                topic_structure_candidates = self.reference_standard.dim5_topic_structure_candidates(
+                    dim5_feature,
+                    question_text=question.raw_text,
+                    question_summary=question_summary,
+                    analysis_facts=analysis_facts,
+                    limit=5,
+                ) or []
+                seen = {
+                    (
+                        str(candidate.get("source") or ""),
+                        str(candidate.get("grade") or candidate.get("grade_hint") or ""),
+                        str(candidate.get("lecture_title") or ""),
+                        str(candidate.get("section_label") or candidate.get("track") or ""),
+                        str(candidate.get("question_no") or ""),
+                    )
+                    for candidate in candidates
+                }
+                for candidate in topic_structure_candidates:
+                    key = (
+                        str(candidate.get("source") or ""),
+                        str(candidate.get("grade") or candidate.get("grade_hint") or ""),
+                        str(candidate.get("lecture_title") or ""),
+                        str(candidate.get("section_label") or candidate.get("track") or ""),
+                        str(candidate.get("question_no") or ""),
+                    )
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    candidates.append(candidate)
+            except Exception as exc:
+                logger.warning(
+                    "dim5 topic-structure candidate lookup failed question=%s error=%s",
+                    question.question_no,
+                    exc,
+                )
+        if candidates:
+            return candidates[:5]
 
         if not hasattr(self.reference_standard, "match_dimension"):
             return []
@@ -2322,7 +2558,6 @@ class AIParser:
             )
             return []
 
-        candidates: List[Dict[str, Any]] = []
         for entry in getattr(calibration, "matched_entries", [])[:5]:
             candidates.append(
                 {
@@ -2338,6 +2573,66 @@ class AIParser:
                 }
             )
         return candidates
+
+    @classmethod
+    def _dim5_has_topic_structure_candidate(cls, candidates: List[Dict[str, Any]]) -> bool:
+        return any(
+            str(candidate.get("match_scope") or "") == "topic_structure"
+            or str(candidate.get("match_action") or "") == "raise_band"
+            or bool(candidate.get("dim5_topic_structure_band"))
+            for candidate in candidates
+        )
+
+    def _dim5_should_retry_for_relaxed_hit(
+        self,
+        dim5_feature: Dict[str, Any],
+        *,
+        question: ParsedQuestion,
+        question_summary: str,
+        analysis_facts: Dict[str, Any],
+        reference_candidates: List[Dict[str, Any]],
+    ) -> bool:
+        if self._dim5_has_direct_formula_guard(
+            dim5_feature,
+            analysis_facts=analysis_facts,
+            question_text=question.raw_text or "",
+            question_summary=question_summary,
+        ):
+            return False
+        if self._dim5_feature_is_beyond(dim5_feature):
+            return False
+
+        band_source = str(dim5_feature.get("band_source") or "").strip()
+        if band_source in DIM5_RELIABLE_BAND_SOURCES:
+            return False
+
+        has_gaosi_section = bool(
+            self._normalize_gaosi_section_level(
+                dim5_feature.get("gaosi_section_level") or dim5_feature.get("gaosi_section_label")
+            )
+        )
+        if has_gaosi_section:
+            return False
+
+        if self._dim5_has_topic_structure_candidate(reference_candidates):
+            return True
+        has_relaxation_context = (
+            dim5_feature.get("competition_signal") in {"weak", "strong"}
+            or dim5_feature.get("knowledge_integration") in {
+                "same_family_combo",
+                "cross_family_combo",
+                "cross_domain_bridge",
+            }
+            or dim5_feature.get("novel_definition_dependency") in {"local", "strong"}
+        )
+        if not has_relaxation_context:
+            return False
+        return self._dim5_has_olympiad_anchor(
+            dim5_feature,
+            analysis_facts=analysis_facts,
+            question_text=question.raw_text or "",
+            question_summary=question_summary,
+        )
 
     def _build_dim5_retry_messages(
         self,
@@ -2422,6 +2717,8 @@ class AIParser:
                 "knowledge_tags": payload.get("knowledge_tags"),
                 "core_knowledge_units": payload.get("core_knowledge_units"),
                 "applicability_confidence": payload.get("confidence"),
+                "primary_knowledge_point": payload.get("primary_knowledge_point"),
+                "knowledge_point_source": payload.get("knowledge_point_source"),
             }
         )
         normalized_payload["band"] = _normalize_band(normalized_payload.get("band"))
@@ -2448,6 +2745,8 @@ class AIParser:
             "gaosi_grade",
             "gaosi_section_level",
             "gaosi_section_label",
+            "primary_knowledge_point",
+            "knowledge_point_source",
         ):
             value = normalized_payload.get(key)
             if value not in ("", None, [], {}):
@@ -2458,6 +2757,9 @@ class AIParser:
         merged["gaosi_classification_source"] = "llm_retry"
         merged["dim5_retry_used"] = True
         merged["dim5_retry_confidence"] = retry_confidence
+        merged["dim5_fallback_mode"] = "llm_band_retry"
+        if not merged.get("dim5_upshift_reason"):
+            merged["dim5_upshift_reason"] = "LLM 兜底在核心知识点下完成知识广度档位判定。"
         if retry_confidence < DIM5_RETRY_LOW_CONFIDENCE_THRESHOLD:
             merged["warning"] = self._merge_feature_warning(
                 merged.get("warning", ""),
@@ -2515,6 +2817,8 @@ class AIParser:
         normalized_candidate = self._finalize_dim5_feature(
             self._normalize_dim5_feature(candidate),
             analysis_facts=analysis_facts,
+            question_text=question.raw_text,
+            question_summary=question_summary,
         )
         if not self._dim5_has_valid_band_and_sublevel(normalized_candidate):
             return False
@@ -2539,6 +2843,9 @@ class AIParser:
         dim5_feature = normalized_features["dim5_knowledge"]
         reference_candidates: Optional[List[Dict[str, Any]]] = None
         optional_beyond_retry = False
+        relaxed_retry = False
+        if self._dim5_has_valid_knowledge_level(dim5_feature):
+            return
         if not retry_required and self._dim5_has_valid_band_and_sublevel(dim5_feature):
             if self._dim5_feature_is_beyond(dim5_feature):
                 return
@@ -2549,10 +2856,24 @@ class AIParser:
                 dim5_feature=dim5_feature,
             )
             if not self._has_dim5_beyond_retry_candidate(reference_candidates):
-                return
-            optional_beyond_retry = True
+                relaxed_retry = self._dim5_should_retry_for_relaxed_hit(
+                    dim5_feature,
+                    question=question,
+                    question_summary=question_summary,
+                    analysis_facts=analysis_facts,
+                    reference_candidates=reference_candidates,
+                )
+                if not relaxed_retry:
+                    return
+            else:
+                optional_beyond_retry = True
 
-        if not retry_required and not optional_beyond_retry and self._dim5_has_valid_band_and_sublevel(dim5_feature):
+        if (
+            not retry_required
+            and not optional_beyond_retry
+            and not relaxed_retry
+            and self._dim5_has_valid_band_and_sublevel(dim5_feature)
+        ):
             return
 
         messages, used_image = self._build_dim5_retry_messages(
@@ -2594,6 +2915,18 @@ class AIParser:
                 )
                 kept["need_manual_review"] = 1
                 normalized_features["dim5_knowledge"] = kept
+            elif relaxed_retry and self._dim5_has_valid_band_and_sublevel(dim5_feature):
+                kept = dict(dim5_feature)
+                kept["dim5_retry_used"] = True
+                kept["dim5_retry_error"] = str(exc)[:240]
+                kept["band_source"] = kept.get("band_source") or "model_with_relaxed_retry_failed"
+                kept["dim5_fallback_mode"] = "relaxed_retry_failed_kept_model"
+                kept["warning"] = self._merge_feature_warning(
+                    kept.get("warning", ""),
+                    "dim5 中度放宽二次判定失败，已保留模型原始知识档位，当前结果需人工复核。",
+                )
+                kept["need_manual_review"] = 1
+                normalized_features["dim5_knowledge"] = kept
             else:
                 normalized_features["dim5_knowledge"] = self._mark_dim5_retry_failed(
                     dim5_feature,
@@ -2610,9 +2943,10 @@ class AIParser:
         warnings: List[str] = []
         if feature.get("dim5_excluded_reason") == "retry_failed":
             return warnings
-        if not feature.get("band"):
+        has_knowledge_level = self._dim5_has_valid_knowledge_level(feature)
+        if not has_knowledge_level and not feature.get("band"):
             warnings.append("dim5 缺少知识门槛 band，当前结果需人工复核。")
-        if not feature.get("sublevel"):
+        if not has_knowledge_level and not feature.get("sublevel"):
             warnings.append("dim5 缺少档内层级 sublevel，当前结果需人工复核。")
 
         stable_knowledge_evidence = (
@@ -2620,7 +2954,7 @@ class AIParser:
             or feature.get("knowledge_tags")
             or analysis_facts.get("core_knowledge_points")
         )
-        if feature.get("band") and not stable_knowledge_evidence:
+        if (feature.get("band") or has_knowledge_level) and not stable_knowledge_evidence:
             warnings.append("dim5 缺少稳定知识点依据，当前结果需人工复核。")
 
         dim5_confidence = feature.get("applicability_confidence", 0.0) or confidence
@@ -2676,18 +3010,15 @@ class AIParser:
         if dim3.get("information_role") == "core" and not cls._dim3_is_low_barrier_direct_extraction(dim3):
             inferred.append("dim3")
 
-        dim4 = features["dim4_innovation"]
-        if normalize_dim4_level_source(dim4.get("level_source")) == "review_failed":
-            pass
-        elif normalize_dim4_level(dim4.get("topic_level")):
-            inferred.append("dim4")
-        elif dim4.get("strategy_role") == "core" and not cls._dim4_is_low_barrier_direct_template(dim4):
-            inferred.append("dim4")
+        inferred.append("dim4")
 
         dim5 = features["dim5_knowledge"]
         if (
-            dim5.get("dim5_excluded_reason") != "retry_failed"
-            and cls._dim5_has_valid_band_and_sublevel(dim5)
+            cls._dim5_has_valid_knowledge_level(dim5)
+            or (
+                dim5.get("dim5_excluded_reason") != "retry_failed"
+                and cls._dim5_has_valid_band_and_sublevel(dim5)
+            )
         ):
             inferred.append("dim5")
 
@@ -3101,6 +3432,12 @@ class AIParser:
                 question_summary=question_summary,
                 analysis_facts=analysis_facts,
             )
+            normalized_features[feature_key] = self._finalize_dim5_feature(
+                normalized_features[feature_key],
+                analysis_facts=analysis_facts,
+                question_text=question.raw_text,
+                question_summary=question_summary,
+            )
             calibration_audits[dim_code] = normalized_features[feature_key].get("calibration", {})
         return calibration_audits
 
@@ -3116,9 +3453,12 @@ class AIParser:
         normalized_features = self._normalize_dimension_features(feature_map)
         analysis_facts = self._normalize_analysis_facts(data.get("analysis_facts"))
         confidence = float(data.get("confidence", 0.0) or 0.0)
+        question_summary = str(data.get("question_summary", "")).strip() or question.raw_text[:80]
         normalized_features["dim5_knowledge"] = self._finalize_dim5_feature(
             normalized_features["dim5_knowledge"],
             analysis_facts=analysis_facts,
+            question_text=question.raw_text,
+            question_summary=question_summary,
         )
 
         if not analysis_facts:
@@ -3129,7 +3469,6 @@ class AIParser:
             applicable_dimensions = []
             warnings.append("LLM 未返回合法的适用维度列表，已按事实和特征字段推断。")
 
-        question_summary = str(data.get("question_summary", "")).strip() or question.raw_text[:80]
         calibration_audits = self._apply_reference_calibration(
             normalized_features,
             question=question,
@@ -3152,24 +3491,14 @@ class AIParser:
             dim_code = str(item).strip()
             if dim_code not in DIMENSION_FEATURE_KEYS:
                 continue
-            if dim_code == "dim4":
-                dim4 = normalized_features["dim4_innovation"]
-                if (
-                    normalize_dim4_level_source(dim4.get("level_source")) == "review_failed"
-                    or (
-                        not self._dim4_has_valid_topic_level(dim4)
-                        and not (
-                            dim4.get("strategy_role") == "core"
-                            and not self._dim4_is_low_barrier_direct_template(dim4)
-                        )
-                    )
-                ):
-                    continue
             if dim_code == "dim5":
                 dim5 = normalized_features["dim5_knowledge"]
                 if (
-                    dim5.get("dim5_excluded_reason") == "retry_failed"
-                    or not self._dim5_has_valid_band_and_sublevel(dim5)
+                    not self._dim5_has_valid_knowledge_level(dim5)
+                    and (
+                        dim5.get("dim5_excluded_reason") == "retry_failed"
+                        or not self._dim5_has_valid_band_and_sublevel(dim5)
+                    )
                 ):
                     continue
             provided_dimensions.add(dim_code)
@@ -3186,11 +3515,11 @@ class AIParser:
             warning = str(feature.get("warning", "")).strip()
             if warning:
                 per_dim_warnings.append(f"{dim_code} {warning}")
-            if feature.get("need_manual_review") in (1, True):
+            if dim_code != "dim4" and feature.get("need_manual_review") in (1, True):
                 need_manual_review = True
         warnings.extend(per_dim_warnings)
 
-        if any(message.startswith(("dim1 ", "dim2 ", "dim3 ", "dim4 ", "dim5 ", "dim6 ")) for message in warnings):
+        if any(message.startswith(("dim1 ", "dim2 ", "dim3 ", "dim5 ", "dim6 ")) for message in warnings):
             need_manual_review = True
 
         return QuestionFeatures(
@@ -3231,9 +3560,16 @@ class AIParser:
         normalized_features["dim5_knowledge"] = self._finalize_dim5_feature(
             normalized_features["dim5_knowledge"],
             analysis_facts=analysis_facts,
+            question_text=question.raw_text,
+            question_summary=question_summary,
         )
+        if self._dim5_has_valid_knowledge_level(normalized_features["dim5_knowledge"]):
+            dim5_retry_required = False
         dim5_reference_filled = False
-        if not self._dim5_has_valid_band_and_sublevel(normalized_features["dim5_knowledge"]):
+        if (
+            not self._dim5_has_valid_knowledge_level(normalized_features["dim5_knowledge"])
+            and not self._dim5_has_valid_band_and_sublevel(normalized_features["dim5_knowledge"])
+        ):
             dim5_reference_filled = self._try_fill_dim5_from_reference(
                 normalized_features,
                 question=question,

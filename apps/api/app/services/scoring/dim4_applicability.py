@@ -1,10 +1,9 @@
 """
 dim4 applicability gating.
 
-dim4 evaluates topic-internal practice innovation. It is tri-state:
-- applicable
-- review
-- not_applicable
+dim4 evaluates topic-internal practice innovation. Product behavior tries to
+score every question, but questions with no stable automatic facts are ignored
+instead of being sent to manual review.
 """
 
 from __future__ import annotations
@@ -378,9 +377,15 @@ def evaluate_dim4_applicability(
     if level_source == "review_failed":
         reason = str(feature.get("fallback_error") or "").strip()
         warnings.append(reason or "dim4 知识点内等级兜底判定失败。")
+        if not _feature_present(feature) and not _has_strategy_signal(raw_text):
+            return {
+                "status": DIM4_STATUS_NOT_APPLICABLE,
+                "reason": "dim4 未获得稳定策略创新事实，已自动未覆盖。",
+                "warnings": list(dict.fromkeys(item for item in warnings if item)),
+            }
         return {
-            "status": DIM4_STATUS_REVIEW,
-            "reason": "dim4 未能稳定判定该知识点内部 L1-L5 等级，当前题目转入人工复核。",
+            "status": DIM4_STATUS_APPLICABLE,
+            "reason": "dim4 未能稳定判定知识点内部等级，已按结构事实或保守 L1 自动纳入评分。",
             "warnings": list(dict.fromkeys(item for item in warnings if item)),
         }
 
@@ -414,13 +419,13 @@ def evaluate_dim4_applicability(
         if image_dependency == "required" and image_fallback:
             warnings.append("dim4 依赖图片，但当前已回退纯文本分析。")
         if block_completeness is not None and block_completeness < 0.65:
-            warnings.append("题块完整度不足，当前 dim4 结果需人工复核。")
+            warnings.append("题块完整度不足，dim4 自动评分结果需要谨慎解读。")
         if _has_ocr_damage_signals(parse_warnings):
-            warnings.append("dim4 题面存在 OCR 或题块质量问题，当前结果需人工复核。")
+            warnings.append("dim4 题面存在 OCR 或题块质量问题，自动评分结果需要谨慎解读。")
         if warnings:
             return {
-                "status": DIM4_STATUS_REVIEW,
-                "reason": "dim4 知识点内等级判定存在低置信或题块质量风险，当前题目转入人工复核。",
+                "status": DIM4_STATUS_APPLICABLE,
+                "reason": "dim4 已按当前知识点内部 L1-L5 判定自动纳入评分，风险信息仅作评分提示。",
                 "warnings": list(dict.fromkeys(item for item in warnings if item)),
             }
         return {
@@ -434,17 +439,17 @@ def evaluate_dim4_applicability(
         reference_warning = str(feature.get("warning") or "").strip()
         if not reference_warning and isinstance(calibration, dict):
             reference_warning = str(calibration.get("warning") or "").strip()
-        warnings.append(reference_warning or "相似高思参考题显示策略创新负担，需复核。")
+        warnings.append(reference_warning or "相似高思参考题显示策略创新负担，自动评分结果需要谨慎解读。")
         return {
-            "status": DIM4_STATUS_REVIEW,
-            "reason": "dim4 当前本地事实判为不适用，但相似高思参考题显示较高策略创新负担，当前题目转入人工复核。",
+            "status": DIM4_STATUS_APPLICABLE,
+            "reason": "dim4 当前本地事实不足但存在高思参考线索，已按自动保守规则纳入评分。",
             "warnings": list(dict.fromkeys(item for item in warnings if item)),
         }
 
     if not _feature_present(feature) and not _has_strategy_signal(raw_text):
         return {
-            "status": DIM4_STATUS_REVIEW,
-            "reason": "dim4 缺少稳定的知识点内 L1-L5 判级事实，当前题目转入人工复核。",
+            "status": DIM4_STATUS_NOT_APPLICABLE,
+            "reason": "dim4 缺少稳定的知识点内 L1-L5 判级事实，已自动未覆盖。",
             "warnings": ["dim4 未获得可稳定兜底判级的策略创新事实字段。"],
         }
 
@@ -468,16 +473,16 @@ def evaluate_dim4_applicability(
     if image_dependency == "required" and image_fallback:
         warnings.append("dim4 依赖图片，但当前已回退纯文本分析。")
     if block_completeness is not None and block_completeness < 0.65:
-        warnings.append("题块完整度不足，当前 dim4 结果需人工复核。")
+        warnings.append("题块完整度不足，dim4 自动评分结果需要谨慎解读。")
     if _has_ocr_damage_signals(parse_warnings):
-        warnings.append("dim4 题面存在 OCR 或题块质量问题，当前结果需人工复核。")
+        warnings.append("dim4 题面存在 OCR 或题块质量问题，自动评分结果需要谨慎解读。")
     if _has_internal_conflict(feature, raw_text):
-        warnings.append("dim4 策略角色与策略突破特征冲突，当前结果需人工复核。")
+        warnings.append("dim4 策略角色与策略突破特征冲突，自动评分结果需要谨慎解读。")
 
     if warnings:
         return {
-            "status": DIM4_STATUS_REVIEW,
-            "reason": "dim4 策略创新事实缺失、冲突或题块完整性不足，当前题目转入人工复核。",
+            "status": DIM4_STATUS_APPLICABLE,
+            "reason": "dim4 策略创新事实存在缺失、冲突或题块质量风险，已按自动保守 L1 规则纳入评分。",
             "warnings": list(dict.fromkeys(item for item in warnings if item)),
         }
 
@@ -496,7 +501,7 @@ def evaluate_dim4_applicability(
         }
 
     return {
-        "status": DIM4_STATUS_REVIEW,
-        "reason": "dim4 边界题尚未形成稳定自动判分依据，当前题目转入人工复核。",
+        "status": DIM4_STATUS_APPLICABLE,
+        "reason": "dim4 边界题缺少稳定自动判级依据，已按保守 L1 自动纳入评分。",
         "warnings": ["dim4 边界题缺少稳定自动判级依据。"],
     }

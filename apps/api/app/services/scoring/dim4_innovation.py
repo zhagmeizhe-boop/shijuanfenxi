@@ -110,15 +110,19 @@ class Dim4InnovationScorer(BaseDimensionScorer):
         )
 
     def _invalid_score(self, evidence: str) -> DimensionScore:
-        return DimensionScore(
-            dimension_code=self.DIMENSION_CODE,
-            score=0.0,
-            level=0,
-            level_label="N/A",
-            evidence=evidence,
-            applicable=False,
-            details={"status": "not_applicable", "dim4_level": "N/A"},
+        result = self._build_score(
+            "L1",
+            f"{evidence} 已按保守 L1 基础模板纳入实践创新评分。",
         )
+        result.details.update(
+            {
+                "fallback_used": True,
+                "fallback_reason": evidence,
+                "level_source": "conservative_fallback",
+                "topic_level": "L1",
+            }
+        )
+        return result
 
     def _calculate_score(self, features: Dict[str, Any]) -> DimensionScore:
         topic_level_code = normalize_dim4_level(features.get("topic_level"))

@@ -173,6 +173,8 @@ describe('DimensionScoreCards', () => {
         score_breakdown: {
           valid_score_question_count: 15,
           review_count: 1,
+          fallback_count: 1,
+          auto_ignored_count: 2,
           weighted_question_average: 8.2,
           raw_question_average: 8.0,
           level_counts: {
@@ -189,7 +191,9 @@ describe('DimensionScoreCards', () => {
     const evidence = screen.getByText(/共 15 道题纳入实践创新评分/);
     expect(evidence).toHaveTextContent('按高阶创新等级权重计算');
     expect(evidence).toHaveTextContent('权重得分 8.2 分');
-    expect(evidence).toHaveTextContent('人工复核 1 道未计入');
+    expect(evidence).not.toHaveTextContent('1 道按保守 L1 兜底');
+    expect(evidence).not.toHaveTextContent('2 道自动未覆盖');
+    expect(evidence).not.toHaveTextContent('人工复核 1 道未计入');
     expect(screen.queryByText(/L3 1 道/)).not.toBeInTheDocument();
     expect(screen.queryByText(/L4 13 道/)).not.toBeInTheDocument();
     expect(screen.queryByText(/L5 1 道/)).not.toBeInTheDocument();
@@ -204,14 +208,17 @@ describe('DimensionScoreCards', () => {
         score: 8.0,
         level: 4,
         level_label: '拔高',
-        evidence: '共 15 道题计入实践创新均分；L3 1 道、L4 13 道、L5 1 道；排除不适用题 4 道；人工复核 1 道未计入；题级均分 8.0 分，判定为 拔高。',
+        evidence: '共 15 道题计入实践创新均分；L3 1 道、L4 13 道、L5 1 道；排除不适用题 4 道；人工复核 1 道未计入；2 道自动未覆盖；1 道按保守 L1 兜底；题级均分 8.0 分，判定为 拔高。',
       },
     ];
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
     const evidence = screen.getByText(/共 15 道题计入实践创新均分/);
-    expect(evidence).toHaveTextContent('排除不适用题 4 道');
+    expect(evidence).not.toHaveTextContent('排除不适用题 4 道');
+    expect(evidence).not.toHaveTextContent('人工复核 1 道未计入');
+    expect(evidence).not.toHaveTextContent('2 道自动未覆盖');
+    expect(evidence).not.toHaveTextContent('1 道按保守 L1 兜底');
     expect(evidence).toHaveTextContent('题级均分 8.0 分');
     expect(screen.queryByText(/L3 1 道/)).not.toBeInTheDocument();
     expect(screen.queryByText(/L4 13 道/)).not.toBeInTheDocument();

@@ -1030,8 +1030,20 @@ class WorkbookReferenceStandard:
     ) -> List[str]:
         terms: List[str] = []
         values: List[object] = [question_summary]
-        for key in ("knowledge_tags", "core_knowledge_units", "supporting_knowledge_units", "method_tags"):
-            values.extend(feature.get(key, []) or [])
+        for key in (
+            "knowledge_tags",
+            "core_knowledge_units",
+            "supporting_knowledge_units",
+            "method_tags",
+            "canonical_knowledge_point",
+            "canonical_alias_hits",
+            "canonical_structure_hits",
+        ):
+            raw_value = feature.get(key, []) or []
+            if isinstance(raw_value, list):
+                values.extend(raw_value)
+            else:
+                values.append(raw_value)
         for key in ("core_knowledge_points", "core_methods"):
             values.extend(analysis_facts.get(key, []) or [])
         values.append(analysis_facts.get("core_task", ""))
@@ -2309,13 +2321,12 @@ class WorkbookReferenceStandard:
             if diagram_partial_match:
                 calibration["warning"] = self._merge_warning(
                     str(calibration.get("warning") or ""),
-                    "题目级高思参考含图形部分匹配，dim4 已按参考画像校准但需人工复核。",
+                    "题目级高思参考含图形部分匹配，dim4 自动评分结果需要谨慎解读。",
                 )
                 calibrated["warning"] = self._merge_warning(
                     str(calibrated.get("warning") or ""),
                     str(calibration["warning"]),
                 )
-                calibrated["need_manual_review"] = True
 
         calibrated["calibration"] = calibration
         return calibrated

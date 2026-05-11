@@ -44,7 +44,7 @@ interface SelectedUploadFile {
   previewUrl?: string;
 }
 
-interface PaperStatusPayload {
+export interface PaperStatusPayload {
   parse_status: 'pending' | 'parsing' | 'parse_success' | 'parse_failed';
   last_stage?: string | null;
   error_message?: string | null;
@@ -70,7 +70,7 @@ const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png']);
 
 const STAGE_MESSAGES: Record<string, string> = {
   upload_saved: '文件已上传，等待分析任务启动',
-  ocr_parse: '正在提取试卷信息中',
+  ocr_parse: 'LLM正在提取试卷题目，预计耗时1min',
   question_persist: '正在写入题目数据',
   llm_parse: '正在进行题目理解与六维分析',
   report_build: '正在生成报告',
@@ -103,17 +103,50 @@ function extractAxiosDetail(error: unknown): string | null {
   return null;
 }
 
-function getProcessingMessage(payload: PaperStatusPayload, attempt: number): string {
+const HIDDEN_PROGRESS_DETAIL_PATTERNS = [
+  /（[^）]*(?:失败|超时|异常|已继续|failed|timed out)[^）]*）/gi,
+  /\([^)]*(?:失败|超时|异常|已继续|failed|timed out)[^)]*\)/gi,
+];
+const HIDDEN_PROGRESS_TERM_PATTERN = /(?:失败|超时|异常|已继续|failed|timed out)/i;
+
+export function sanitizeProgressMessage(value?: string | null): string {
+  let normalized = String(value || '').trim();
+  if (!normalized) {
+    return '';
+  }
+
+  for (const pattern of HIDDEN_PROGRESS_DETAIL_PATTERNS) {
+    normalized = normalized.replace(pattern, '');
+  }
+
+  if (HIDDEN_PROGRESS_TERM_PATTERN.test(normalized)) {
+    return '';
+  }
+
+  return normalized.replace(/\s+/g, ' ').replace(/[，,；;：:、\s]+$/g, '').trim();
+}
+
+export function getProcessingMessage(payload: PaperStatusPayload, attempt: number): string {
   const dots = '.'.repeat((attempt % 3) + 1);
-  const llmTotal = payload.progress_total ?? 0;
-  const llmCurrent = payload.progress_current ?? 0;
+
+  if (payload.parse_status === 'pending' && payload.last_stage === 'queued') {
+    return `已进入分析队列，等待开始分析${dots}`;
+  }
+
+  if (payload.parse_status === 'pending' && payload.last_stage === 'queued_waiting_for_analysis_slot') {
+    return `前方已有试卷正在分析，当前正在排队${dots}`;
+  }
 
   if (payload.parse_status === 'pending') {
     return `分析任务已创建，等待 worker 接手${dots}`;
   }
 
-  if (payload.last_stage === 'llm_parse' && llmTotal > 0) {
-    return `已完成 ${Math.min(llmCurrent, llmTotal)}/${llmTotal} 道，正在并行分析剩余题目`;
+  if (payload.last_stage === 'llm_parse') {
+    return 'LLM正在分析题目，预计总共耗时3min';
+  }
+
+  if (payload.last_stage === 'ocr_parse') {
+    return STAGE_MESSAGES.ocr_parse;
   }
 
   if (payload.last_stage && STAGE_MESSAGES[payload.last_stage]) {
@@ -143,9 +176,29 @@ function getProcessingProgress(payload: PaperStatusPayload, attempt: number): nu
   return Math.min(12 + attempt * 1.5, 90);
 }
 
-function getProcessingDetail(payload: PaperStatusPayload): string | undefined {
-  void payload;
-  return undefined;
+export function getProcessingDetail(payload: PaperStatusPayload): string | undefined {
+  if (payload.last_stage !== 'llm_parse') {
+    return undefined;
+  }
+
+  const llmTotal = payload.progress_total ?? 0;
+  if (llmTotal <= 0) {
+    return undefined;
+  }
+
+  const completed = Math.min(Math.max(payload.progress_current ?? 0, 0), llmTotal);
+
+  if (completed === 0) {
+    return `已完成 0/${llmTotal} 道，题目正在并行分析`;
+  }
+
+  const sanitizedMessage = sanitizeProgressMessage(payload.progress_message);
+
+  if (sanitizedMessage) {
+    return `已完成 ${completed}/${llmTotal} 道，${sanitizedMessage}`;
+  }
+
+  return `已完成 ${completed}/${llmTotal} 道`;
 }
 
 function getFileExtension(file: File): string {

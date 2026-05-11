@@ -253,6 +253,32 @@ class ReportService:
                     except (TypeError, ValueError):
                         dim_confidences[dim_code] = 0.0
 
+            if dim_statuses.get("dim4") == "review":
+                dim_statuses["dim4"] = "not_applicable"
+                dim_reasons["dim4"] = (
+                    "dim4 历史记录缺少合法 L1-L5 题级分，已自动未覆盖。"
+                )
+            if dim_statuses.get("dim4") == "applicable":
+                try:
+                    dim4_score_value = float(dim_scores.get("dim4"))
+                except (TypeError, ValueError):
+                    dim4_score_value = 0.0
+                if dim4_score_value <= 0:
+                    dim_scores.pop("dim4", None)
+                    applicable_dims = [item for item in applicable_dims if item != "dim4"]
+                    dim_statuses["dim4"] = "not_applicable"
+                    dim_reasons["dim4"] = (
+                        "dim4 历史记录缺少合法 L1-L5 题级分，已自动未覆盖。"
+                    )
+            if "dim4" in dim_warnings:
+                dim_warnings["dim4"] = [
+                    warning
+                    for warning in dim_warnings["dim4"]
+                    if "人工复核" not in warning and "未计入" not in warning
+                ]
+                if not dim_warnings["dim4"]:
+                    dim_warnings.pop("dim4", None)
+
             question_scores.append(
                 QuestionDimensionScore(
                     question_id=qid,

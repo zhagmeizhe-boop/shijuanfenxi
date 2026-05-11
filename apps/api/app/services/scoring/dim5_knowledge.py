@@ -8,6 +8,12 @@ from typing import Any, Dict
 
 from app.services.scoring.base import BaseDimensionScorer, DimensionScore
 from app.services.scoring.banded_dimension import _normalize_band, score_banded_dimension
+from app.services.scoring.dim5_canonical import (
+    DIM5_LEVEL_LABELS,
+    DIM5_LEVEL_SCORES,
+    classify_dim5_knowledge_scope,
+    normalize_dim5_knowledge_level,
+)
 
 
 SCHOOL_LOW_BAND = "4年级及以前校内课本难度"
@@ -23,6 +29,7 @@ BAND_RANKS = {
     HIGH_GAOSI_OR_JUNIOR_BAND: 4,
     BEYOND_BAND: 5,
 }
+RANK_BANDS = {rank: band for band, rank in BAND_RANKS.items()}
 
 DIM5_BUCKET_LABELS = {
     "school": "校内教材",
@@ -31,6 +38,14 @@ DIM5_BUCKET_LABELS = {
     "junior_bridge": "初中前置",
     "beyond": "高思超越篇",
     "unknown": "未稳定归类",
+}
+
+DIM5_LEVEL_BUCKETS = {
+    "L1": "school",
+    "L2": "school",
+    "L3": "low_gaosi",
+    "L4": "high_gaosi",
+    "L5": "beyond",
 }
 
 _GAOSI_CHALLENGE_SECTION_VALUES = {"challenge", "超越篇"}
@@ -100,6 +115,21 @@ _DIRECT_SCHOOL_FORMULA_SIGNALS = (
     "百分数直接应用",
 )
 
+_CANONICAL_BOUNDARY_FAMILIES = {
+    "application_olympiad_model",
+    "geometry_olympiad_model",
+    "sequence_olympiad_model",
+    "operation_olympiad_model",
+    "calculation_olympiad_model",
+    "combinatorics_olympiad_model",
+    "game_olympiad_model",
+    "number_theory_olympiad_model",
+    "construction_olympiad_model",
+}
+
+_SUBLEVEL_RANKS = {"low": 1, "mid": 2, "high": 3}
+_RANK_TO_SUBLEVEL = {1: "low", 2: "mid", 3: "high"}
+
 
 class Dim5KnowledgeScorer(BaseDimensionScorer):
     """
@@ -154,6 +184,10 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
             cls._flatten_text(feature.get("knowledge_tags", [])),
             cls._flatten_text(feature.get("core_knowledge_units", [])),
             cls._flatten_text(feature.get("supporting_knowledge_units", [])),
+            feature.get("canonical_knowledge_point", ""),
+            feature.get("canonical_knowledge_family", ""),
+            cls._flatten_text(feature.get("canonical_alias_hits", [])),
+            cls._flatten_text(feature.get("canonical_structure_hits", [])),
             cls._flatten_text(feature.get("analysis_facts", {})),
         ]
         return " ".join(str(part or "") for part in text_parts)
@@ -171,6 +205,77 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
     def _has_direct_school_formula_signal(cls, feature: Dict[str, Any]) -> bool:
         combined = cls._combined_evidence_text(feature)
         return any(signal in combined for signal in _DIRECT_SCHOOL_FORMULA_SIGNALS)
+
+    @staticmethod
+    def _raise_sublevel_once(value: str) -> str:
+        rank = _SUBLEVEL_RANKS.get(str(value or "").strip().lower(), 0)
+        if rank <= 0:
+            return "mid"
+        return _RANK_TO_SUBLEVEL.get(min(rank + 1, 3), "high")
+
+    @classmethod
+    def _canonical_boundary_override(cls, features: Dict[str, Any]) -> Dict[str, Any]:
+        if cls._has_direct_school_formula_signal(features) or features.get("canonical_direct_formula_guard"):
+            return {}
+
+        canonical_point = str(features.get("canonical_knowledge_point") or "").strip()
+        canonical_family = str(features.get("canonical_knowledge_family") or "").strip()
+        if not canonical_point or canonical_family not in _CANONICAL_BOUNDARY_FAMILIES:
+            return {}
+
+        current_band = _normalize_band(features.get("band"))
+        current_rank = BAND_RANKS.get(current_band, 0)
+        if current_rank <= 0 or current_rank >= BAND_RANKS[BEYOND_BAND]:
+            return {}
+
+        confidence = float(features.get("canonical_match_confidence") or 0.0)
+        if confidence < 0.65:
+            return {}
+
+        source = str(features.get("canonical_match_source") or "").strip()
+        structure_supported = (
+            source == "topic_and_structure"
+            or bool(features.get("canonical_structure_hits"))
+            or features.get("competition_signal") in {"weak", "strong"}
+            or features.get("knowledge_integration") in {"same_family_combo", "cross_family_combo", "cross_domain_bridge"}
+            or features.get("novel_definition_dependency") in {"local", "strong"}
+        )
+        if not structure_supported:
+            return {}
+
+        current_sublevel = str(features.get("sublevel") or "").strip().lower()
+        target_band = current_band
+        target_sublevel = current_sublevel
+        if current_rank < BAND_RANKS[LOW_GAOSI_BAND]:
+            target_band = RANK_BANDS.get(current_rank + 1, current_band)
+            target_sublevel = "mid" if current_rank >= BAND_RANKS[SCHOOL_HIGH_BAND] else "high"
+        elif current_rank == BAND_RANKS[LOW_GAOSI_BAND]:
+            if current_sublevel in {"mid", "high"}:
+                target_band = HIGH_GAOSI_OR_JUNIOR_BAND
+                target_sublevel = "low"
+            else:
+                target_sublevel = "mid"
+        elif current_rank == BAND_RANKS[HIGH_GAOSI_OR_JUNIOR_BAND]:
+            target_sublevel = cls._raise_sublevel_once(current_sublevel)
+
+        if target_band == current_band and target_sublevel == current_sublevel:
+            return {}
+
+        return {
+            "band": target_band,
+            "sublevel": target_sublevel,
+            "band_source": "canonical_boundary_upshift",
+            "dim5_upshift_reason": (
+                f"标准知识点“{canonical_point}”命中奥数/高思专题边界，按相邻高档处理。"
+            ),
+            "canonical_boundary_upshift": {
+                "original_band": current_band,
+                "original_sublevel": current_sublevel,
+                "canonical_knowledge_point": canonical_point,
+                "canonical_knowledge_family": canonical_family,
+                "canonical_match_source": source,
+            },
+        }
 
     @classmethod
     def _knowledge_anchor_override(cls, features: Dict[str, Any]) -> Dict[str, Any]:
@@ -291,6 +396,12 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
     @classmethod
     def classify_source_bucket(cls, features: Dict[str, Any]) -> str:
         """Return the paper-composition bucket used by the dim5 paper-level scorer."""
+        knowledge_level = normalize_dim5_knowledge_level(features.get("knowledge_level"))
+        if knowledge_level:
+            if knowledge_level == "L4" and cls._has_any_signal(features, _JUNIOR_SIGNALS):
+                return "junior_bridge"
+            return DIM5_LEVEL_BUCKETS.get(knowledge_level, "unknown")
+
         band = _normalize_band(features.get("band"))
         gaosi_section_values = {
             str(features.get("gaosi_section_level") or "").strip(),
@@ -311,7 +422,121 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
             return "high_gaosi"
         return "unknown"
 
+    @classmethod
+    def _score_by_knowledge_level(cls, features: Dict[str, Any]) -> DimensionScore:
+        score_features = dict(features or {})
+        if not normalize_dim5_knowledge_level(score_features.get("knowledge_level")):
+            score_features.update(
+                classify_dim5_knowledge_scope(
+                    score_features,
+                    analysis_facts=score_features.get("analysis_facts", {})
+                    if isinstance(score_features.get("analysis_facts"), dict)
+                    else {},
+                )
+            )
+
+        knowledge_level = normalize_dim5_knowledge_level(score_features.get("knowledge_level"))
+        if not knowledge_level:
+            return DimensionScore(
+                dimension_code=cls.DIMENSION_CODE,
+                score=0.0,
+                level=0,
+                level_label="N/A",
+                evidence="题目缺少可读知识点，维度5需人工复核。",
+                applicable=False,
+                details={
+                    "level_source": "unreadable_or_empty",
+                    "dim5_excluded_reason": "missing_readable_knowledge_point",
+                },
+            )
+
+        question_score = DIM5_LEVEL_SCORES[knowledge_level]
+        level_rank = int(knowledge_level[1])
+        level_label = f"{knowledge_level} {DIM5_LEVEL_LABELS[knowledge_level]}"
+        domain = str(score_features.get("canonical_knowledge_domain") or "school_general").strip()
+        canonical_point = str(
+            score_features.get("canonical_knowledge_point")
+            or score_features.get("primary_knowledge_point")
+            or "校内一般知识"
+        ).strip()
+        level_evidence = str(score_features.get("level_evidence") or "").strip()
+        evidence_summary = str(score_features.get("evidence_summary") or "").strip()
+
+        details: Dict[str, Any] = {
+            "knowledge_level": knowledge_level,
+            "dim5_level": knowledge_level,
+            "canonical_knowledge_domain": domain,
+            "canonical_knowledge_point": canonical_point,
+            "level_source": str(score_features.get("level_source") or "canonical_rule").strip(),
+            "level_evidence": level_evidence,
+            "knowledge_source_bucket": cls.classify_source_bucket(score_features),
+            "knowledge_source_label": DIM5_BUCKET_LABELS.get(
+                cls.classify_source_bucket(score_features),
+                cls.classify_source_bucket(score_features),
+            ),
+            "evidence_summary": evidence_summary,
+        }
+        for key in (
+            "band",
+            "sublevel",
+            "band_source",
+            "dim5_retry_used",
+            "dim5_retry_confidence",
+            "dim5_retry_error",
+            "dim5_excluded_reason",
+            "gaosi_grade",
+            "gaosi_section_level",
+            "gaosi_section_label",
+            "gaosi_classification_source",
+            "primary_knowledge_point",
+            "knowledge_point_source",
+            "canonical_knowledge_family",
+            "canonical_match_source",
+            "canonical_match_confidence",
+            "canonical_alias_hits",
+            "canonical_structure_hits",
+            "canonical_direct_formula_guard",
+            "dim5_fallback_mode",
+            "dim5_upshift_reason",
+            "calibration",
+            "core_knowledge_units",
+            "knowledge_tags",
+            "supporting_knowledge_units",
+            "competition_signal",
+            "knowledge_integration",
+            "novel_definition_dependency",
+        ):
+            if score_features.get(key) not in ("", None, [], {}):
+                details[key] = score_features.get(key)
+
+        evidence_parts = [
+            f"本题归入 {knowledge_level}（{DIM5_LEVEL_LABELS[knowledge_level]}）",
+            f"标准知识点：{canonical_point}",
+            f"知识域：{domain}",
+        ]
+        if level_evidence:
+            evidence_parts.append(level_evidence)
+        elif evidence_summary:
+            evidence_parts.append(evidence_summary)
+        knowledge_tags = score_features.get("knowledge_tags")
+        if isinstance(knowledge_tags, list) and knowledge_tags:
+            evidence_parts.append(
+                "依据标签：" + "、".join(str(item).strip() for item in knowledge_tags[:6] if str(item).strip())
+            )
+
+        return DimensionScore(
+            dimension_code=cls.DIMENSION_CODE,
+            score=question_score,
+            level=level_rank,
+            level_label=level_label,
+            evidence="；".join(evidence_parts) + "。",
+            applicable=True,
+            details=details,
+        )
+
     def _calculate_score(self, features: Dict[str, Any]) -> DimensionScore:
+        return self._score_by_knowledge_level(features)
+
         score_features = dict(features)
         section_override = self._gaosi_section_override(score_features)
         if section_override:
@@ -339,6 +564,15 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
                 score_features["sublevel"] = knowledge_anchor_override["sublevel"]
                 score_features["band_source"] = knowledge_anchor_override["band_source"]
 
+        canonical_boundary_override = {}
+        if not section_override and not knowledge_anchor_override:
+            canonical_boundary_override = self._canonical_boundary_override(score_features)
+            if canonical_boundary_override:
+                score_features["band"] = canonical_boundary_override["band"]
+                score_features["sublevel"] = canonical_boundary_override["sublevel"]
+                score_features["band_source"] = canonical_boundary_override["band_source"]
+                score_features["dim5_upshift_reason"] = canonical_boundary_override["dim5_upshift_reason"]
+
         result = score_banded_dimension(
             self,
             score_features,
@@ -363,14 +597,31 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
             "gaosi_section_level",
             "gaosi_section_label",
             "gaosi_classification_source",
+            "primary_knowledge_point",
+            "knowledge_point_source",
+            "canonical_knowledge_point",
+            "canonical_knowledge_family",
+            "canonical_match_source",
+            "canonical_match_confidence",
+            "canonical_alias_hits",
+            "canonical_structure_hits",
+            "canonical_direct_formula_guard",
+            "dim5_fallback_mode",
+            "dim5_upshift_reason",
         ):
             if score_features.get(key) not in ("", None, [], {}):
                 result.details[key] = score_features.get(key)
+        if score_features.get("calibration") not in ("", None, [], {}):
+            result.details["calibration"] = score_features.get("calibration")
         if section_override:
             result.details["gaosi_section_override"] = section_override
         if knowledge_anchor_override:
             result.details["knowledge_anchor_override"] = knowledge_anchor_override[
                 "knowledge_anchor_override"
+            ]
+        if canonical_boundary_override:
+            result.details["canonical_boundary_upshift"] = canonical_boundary_override[
+                "canonical_boundary_upshift"
             ]
         calibration = score_features.get("calibration", {})
         if isinstance(calibration, dict) and calibration.get("question_level_match"):

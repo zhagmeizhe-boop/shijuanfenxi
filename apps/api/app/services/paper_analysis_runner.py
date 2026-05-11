@@ -807,7 +807,6 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                             dim_warnings[dim_code] = list(
                                 dict.fromkeys(str(item).strip() for item in dim4_status["warnings"] if str(item).strip())
                             )
-                            manual_review_needed = True
                         dimension_status_payload[dim_code] = {
                             "status": dim_status,
                             "reason": reason,
@@ -907,7 +906,8 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                     )
                     if warning_messages:
                         dim_warnings[dim_code] = warning_messages
-                        manual_review_needed = True
+                        if dim_code != "dim4":
+                            manual_review_needed = True
 
                     dim_reason = _build_dimension_reason(dim_code, dim_result, feature_dict, features) or reason
                     if not dim_result.applicable:

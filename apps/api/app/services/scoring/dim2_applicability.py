@@ -106,9 +106,29 @@ SPATIAL_3D_IMAGE_PATTERN = re.compile(
     "(?:\u9732\u5728\u5916\u9762|\u5c0f\u6b63\u65b9\u4f53|\u6b63\u65b9\u4f53|"
     "\u957f\u65b9\u4f53|\u68f1\u957f|\u7acb\u4f53|\u8868\u9762\u79ef)"
 )
+CUBE_VIEW_PROJECTION_PATTERN = re.compile(
+    "(?=.*(?:\u900f\u660e)?(?:\u6b63\u65b9\u4f53|\u7acb\u65b9\u4f53|\u79ef\u6728))"
+    "(?=.*(?:\u4ece\u5de6\u9762|\u4ece\u524d\u9762|\u4ece\u53f3\u9762|\u4ece\u4e0a\u9762|"
+    "\u5de6\u9762\u89c2\u5bdf|\u524d\u9762\u89c2\u5bdf|\u770b\u5230\u7684\u56fe\u5f62|"
+    "\u89c6\u56fe|\u6295\u5f71))"
+)
+SOLID_MULTI_VIEW_EXTREME_PATTERN = re.compile(
+    "(?=.*(?:3\\s*[x\u00d7]\\s*3\\s*[x\u00d7]\\s*3|27\u4e2a|\u7acb\u4f53\u56fe\u5f62|"
+    "\u900f\u660e\u79ef\u6728|\u6b63\u65b9\u4f53|\u7acb\u65b9\u4f53))"
+    "(?=.*(?:\u524d\u9762|\u5de6\u9762|\u89c6\u56fe|\u770b\u5230\u7684\u56fe\u5f62))"
+    "(?=.*(?:\u6700\u5c11|\u6700\u591a|\u82e5\u5e72|\u66ff\u6362))"
+)
 CIRCLE_SQUARE_IMAGE_PATTERN = re.compile(
     "(?:\u5706\u5185\u6700\u5927\u6b63\u65b9\u5f62|\u5185\u63a5\u6b63\u65b9\u5f62|"
     "\u5706.*\u6b63\u65b9\u5f62|\u6b63\u65b9\u5f62.*\u5706)"
+)
+SQUARE_SECTOR_SHADOW_PATTERN = re.compile(
+    "(?=.*\u6b63\u65b9\u5f62)(?=.*(?:\u6247\u5f62|\u5706\u5f27|\u5706|\u03c0))"
+    "(?=.*(?:\u9634\u5f71|\u9762\u79ef))"
+)
+CIRCLE_RECTANGLE_EQUAL_AREA_PATTERN = re.compile(
+    "(?=.*\u5706)(?=.*\u957f\u65b9\u5f62)(?=.*\u9762\u79ef(?:\u4e0e|.*)\u76f8\u7b49)"
+    "(?=.*(?:\u9634\u5f71|OC|OABC|\u7ebf\u6bb5))"
 )
 WATER_VOLUME_IMAGE_PATTERN = re.compile(
     "(?:(?=.*(?:\u74f6(?:\u5b50)?|\u88c5\u6c34|\u6c34\u4f4d|\u5012\u653e|\u5012\u7f6e|\u5706\u67f1\u5bb9\u5668))"
@@ -296,10 +316,16 @@ def _feature_present(feature: Dict[str, Any]) -> bool:
 def _should_replace_with_visual_fallback(feature: Dict[str, Any]) -> bool:
     spatial_role = _normalize_choice(feature.get("spatial_role"), SPATIAL_ROLE_VALUES)
     confidence = _normalize_float(feature.get("applicability_confidence"))
+    image_dependency = _normalize_choice(feature.get("image_dependency"), IMAGE_DEPENDENCY_VALUES)
+    missing_image_context = (
+        image_dependency == "required"
+        and _normalize_zero_one(feature.get("image_block_available")) != 1
+    )
     return (
         not _feature_present(feature)
         or bool(_missing_fields(feature))
         or spatial_role in {"", "none"}
+        or missing_image_context
         or (confidence is not None and confidence < DIM2_REVIEW_CONFIDENCE_THRESHOLD)
     )
 
@@ -392,9 +418,9 @@ def build_dim2_visual_fallback_facts(
 ) -> Dict[str, Any] | None:
     """Build conservative dim2 facts for image-backed geometry prompts.
 
-    This is intentionally narrow: it only activates when an image exists or was
-    used, the prompt/audit has strong geometry-image signals, and the LLM facts
-    are missing, low-confidence, or incorrectly marked as spatial_role=none.
+    Explicit geometry prompt patterns may activate without stable image use
+    because they only decide dim2 applicability, not the final answer. The
+    generic visual fallback still requires image evidence.
     """
     feature = dim2_feature or {}
     text = str(raw_text or "")
@@ -421,6 +447,122 @@ def build_dim2_visual_fallback_facts(
             "need_manual_review": 0,
             "warning": "",
             "fallback_source": "geometry_structure",
+        }
+
+    if SOLID_MULTI_VIEW_EXTREME_PATTERN.search(text) and _should_replace_with_visual_fallback(feature):
+        return {
+            "task_form": "explicit_visual",
+            "spatial_role": "core",
+            "figure_complexity": "net_section_multi_view",
+            "relation_hops": "5+",
+            "hidden_relation_count": "2+",
+            "visual_operation_count": "3+",
+            "structural_visual_method": "3d_transform",
+            "measurement_dependency": "none",
+            "global_view_required": 1,
+            "image_dependency": "helpful",
+            "geometry_model_types": ["surface_three_view", "solid_cut_join"],
+            "geometry_model_count": "2",
+            "model_recognition_role": "core",
+            "area_relation_chain": "none",
+            "model_combination_complexity": "multi_model",
+            "evidence_summary": (
+                "\u7a33\u5b9a\u8bc6\u522b\u4e3a\u7acb\u4f53\u591a\u89c6\u56fe\u6781\u503c\u9898\uff0c"
+                "\u9700\u8981\u5728\u524d\u89c6\u56fe\u548c\u5de6\u89c6\u56fe\u7ea6\u675f\u4e0b\u91cd\u6784\u4e09\u7ef4\u4f4d\u7f6e\u3002"
+            ),
+            "evidence_tags": ["\u4e09\u89c6\u56fe", "\u7acb\u4f53\u56fe\u5f62", "\u7a7a\u95f4\u91cd\u6784"],
+            "applicability_confidence": 0.78,
+            "need_manual_review": 0,
+            "warning": "",
+            "fallback_source": "visual_geometry",
+            "image_block_available": 1,
+        }
+
+    if CUBE_VIEW_PROJECTION_PATTERN.search(text) and _should_replace_with_visual_fallback(feature):
+        return {
+            "task_form": "explicit_visual",
+            "spatial_role": "core",
+            "figure_complexity": "solid_3d",
+            "relation_hops": "3-4",
+            "hidden_relation_count": "1",
+            "visual_operation_count": "2",
+            "structural_visual_method": "3d_transform",
+            "measurement_dependency": "none",
+            "global_view_required": 1,
+            "image_dependency": "helpful",
+            "geometry_model_types": ["surface_three_view"],
+            "geometry_model_count": "1",
+            "model_recognition_role": "core",
+            "area_relation_chain": "none",
+            "model_combination_complexity": "single_model",
+            "evidence_summary": (
+                "\u7a33\u5b9a\u8bc6\u522b\u4e3a\u6b63\u65b9\u4f53\u89c6\u56fe\u6295\u5f71\u9898\uff0c"
+                "\u6838\u5fc3\u662f\u5c06\u4e09\u7ef4\u8fde\u7ebf\u6216\u7ed3\u6784\u8f6c\u6362\u4e3a\u6307\u5b9a\u89c6\u89d2\u7684\u4e8c\u7ef4\u6295\u5f71\u3002"
+            ),
+            "evidence_tags": ["\u6b63\u65b9\u4f53", "\u89c6\u56fe\u6295\u5f71", "\u7a7a\u95f4\u60f3\u8c61"],
+            "applicability_confidence": 0.76,
+            "need_manual_review": 0,
+            "warning": "",
+            "fallback_source": "visual_geometry",
+            "image_block_available": 1,
+        }
+
+    if SQUARE_SECTOR_SHADOW_PATTERN.search(text) and _should_replace_with_visual_fallback(feature):
+        return {
+            "task_form": "explicit_visual",
+            "spatial_role": "core",
+            "figure_complexity": "composite_2d",
+            "relation_hops": "3-4",
+            "hidden_relation_count": "1",
+            "visual_operation_count": "2",
+            "structural_visual_method": "decomposition",
+            "measurement_dependency": "inferred",
+            "global_view_required": 1,
+            "image_dependency": "helpful",
+            "geometry_model_types": ["circle_sector_cut_fill", "composite_area_model"],
+            "geometry_model_count": "2",
+            "model_recognition_role": "core",
+            "area_relation_chain": "multi",
+            "model_combination_complexity": "model_plus_operation",
+            "evidence_summary": (
+                "\u7a33\u5b9a\u8bc6\u522b\u4e3a\u6b63\u65b9\u5f62\u4e0e\u6247\u5f62\u9634\u5f71\u9762\u79ef\u9898\uff0c"
+                "\u9700\u8981\u8bc6\u522b\u6247\u5f62\u5272\u8865\u548c\u7ec4\u5408\u9762\u79ef\u5173\u7cfb\u3002"
+            ),
+            "evidence_tags": ["\u6247\u5f62", "\u9634\u5f71\u9762\u79ef", "\u51e0\u4f55\u5272\u8865"],
+            "applicability_confidence": 0.76,
+            "need_manual_review": 0,
+            "warning": "",
+            "fallback_source": "visual_geometry",
+            "image_block_available": 1,
+        }
+
+    if CIRCLE_RECTANGLE_EQUAL_AREA_PATTERN.search(text) and _should_replace_with_visual_fallback(feature):
+        return {
+            "task_form": "explicit_visual",
+            "spatial_role": "core",
+            "figure_complexity": "composite_2d",
+            "relation_hops": "2",
+            "hidden_relation_count": "1",
+            "visual_operation_count": "1",
+            "structural_visual_method": "decomposition",
+            "measurement_dependency": "inferred",
+            "global_view_required": 0,
+            "image_dependency": "helpful",
+            "geometry_model_types": ["circle_sector_formula", "composite_area_model"],
+            "geometry_model_count": "2",
+            "model_recognition_role": "core",
+            "area_relation_chain": "single",
+            "model_combination_complexity": "single_model",
+            "evidence_summary": (
+                "\u7a33\u5b9a\u8bc6\u522b\u4e3a\u5706\u4e0e\u957f\u65b9\u5f62\u7ec4\u5408\u9762\u79ef\u9898\uff0c"
+                "\u9700\u8981\u5229\u7528\u7b49\u79ef\u5173\u7cfb\u548c\u9634\u5f71\u533a\u57df\u62c6\u5206\u3002"
+            ),
+            "evidence_tags": ["\u5706", "\u957f\u65b9\u5f62", "\u7b49\u79ef\u5173\u7cfb", "\u9634\u5f71\u9762\u79ef"],
+            "applicability_confidence": 0.74,
+            "need_manual_review": 0,
+            "warning": "",
+            "fallback_source": "visual_geometry",
+            "image_block_available": 1,
         }
 
     if image_fallback or not (has_image or used_image):
@@ -494,12 +636,18 @@ def build_dim2_visual_fallback_facts(
             "measurement_dependency": "inferred",
             "global_view_required": 1,
             "image_dependency": "required",
+            "geometry_model_types": ["surface_three_view"],
+            "geometry_model_count": "1",
+            "model_recognition_role": "core",
+            "area_relation_chain": "none",
+            "model_combination_complexity": "single_model",
             "evidence_summary": "图像几何兜底事实：题面指向立体图形外露面或表面积判断，需要读取三维结构和遮挡关系。",
             "evidence_tags": ["图像几何兜底", "立体图形", "外露面"],
             "applicability_confidence": 0.68,
             "need_manual_review": 0,
             "warning": "",
             "fallback_source": "visual_geometry",
+            "image_block_available": 1,
         }
 
     if CIRCLE_SQUARE_IMAGE_PATTERN.search(text):
@@ -514,12 +662,18 @@ def build_dim2_visual_fallback_facts(
             "measurement_dependency": "inferred",
             "global_view_required": 1,
             "image_dependency": "helpful",
+            "geometry_model_types": ["circle_sector_formula"],
+            "geometry_model_count": "1",
+            "model_recognition_role": "core",
+            "area_relation_chain": "single",
+            "model_combination_complexity": "single_model",
             "evidence_summary": "图像几何兜底事实：题面指向圆与正方形的叠合关系，需要识别内接/最大正方形的隐含几何关系。",
             "evidence_tags": ["图像几何兜底", "圆", "正方形"],
             "applicability_confidence": 0.66,
             "need_manual_review": 0,
             "warning": "",
             "fallback_source": "visual_geometry",
+            "image_block_available": 1,
         }
 
     return {
@@ -533,12 +687,18 @@ def build_dim2_visual_fallback_facts(
         "measurement_dependency": "inferred",
         "global_view_required": 0,
         "image_dependency": "required",
+        "geometry_model_types": ["composite_area_model"],
+        "geometry_model_count": "1",
+        "model_recognition_role": "core",
+        "area_relation_chain": "single",
+        "model_combination_complexity": "single_model",
         "evidence_summary": "图像几何兜底事实：题面为短文本图形题，需要结合题块图片读取阴影或组合图形关系。",
         "evidence_tags": ["图像几何兜底", "阴影面积", "组合图形"],
         "applicability_confidence": 0.66,
         "need_manual_review": 0,
         "warning": "",
         "fallback_source": "visual_geometry",
+        "image_block_available": 1,
     }
 
 
@@ -609,7 +769,7 @@ def _is_non_measurement_spatial_view(feature: Dict[str, Any]) -> bool:
     return (
         figure_complexity in {"solid_3d", "net_section_multi_view"}
         and structural_visual_method == "3d_transform"
-        and image_dependency == "required"
+        and image_dependency in {"required", "helpful"}
         and any(item in {"surface_three_view", "solid_cut_join", "net_cut_join"} for item in model_types)
     )
 

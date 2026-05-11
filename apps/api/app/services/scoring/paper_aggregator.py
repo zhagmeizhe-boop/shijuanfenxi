@@ -3,7 +3,7 @@ Paper-level aggregation helpers.
 
 Current rule:
 - each dimension score is the simple average of applicable question scores
-- dim4 uses a level-weighted average over every non-review question with a legal L1-L5 question score
+- dim4 uses a level-weighted average over automatically scored questions; invalid/missing scores are ignored without review
 - dim5 keeps paper-level knowledge-source composition as explanation, not as the scoring rule
 - counted_questions should surface representative, auditable examples
 """
@@ -105,6 +105,13 @@ class PaperAggregator:
         "junior_bridge": "初中前置",
         "beyond": "高思超越篇",
         "unknown": "未稳定归类",
+    }
+    DIM5_LEVEL_WEIGHTS = {
+        "L1": 1,
+        "L2": 1,
+        "L3": 2,
+        "L4": 4,
+        "L5": 6,
     }
 
     COUNTED_QUESTION_FULL_REASON_HIDDEN_MARKERS = ("依据标签：", "核心事实：", "依据来源：")
@@ -277,6 +284,38 @@ class PaperAggregator:
         return "beyond"
 
     @staticmethod
+    def _normalize_dim5_level(value: object) -> str:
+        text = str(value or "").strip().upper()
+        if text in {"L1", "L2", "L3", "L4", "L5"}:
+            return text
+        if text in {"1", "2", "3", "4", "5"}:
+            return f"L{text}"
+        match = re.search(r"\bL?([1-5])\b", text)
+        return f"L{match.group(1)}" if match else ""
+
+    @classmethod
+    def _dim5_level_for_question(cls, question: QuestionDimensionScore) -> str:
+        details = cls._dim5_details_for_question(question)
+        for key in ("knowledge_level", "dim5_level"):
+            level = cls._normalize_dim5_level(details.get(key))
+            if level:
+                return level
+
+        score = cls._valid_dim5_question_score(question)
+        if score is None:
+            reason = question.dim_reasons.get("dim5", "")
+            return cls._normalize_dim5_level(reason)
+        if score <= 2.5:
+            return "L1"
+        if score <= 4.5:
+            return "L2"
+        if score <= 6.5:
+            return "L3"
+        if score <= 8.5:
+            return "L4"
+        return "L5"
+
+    @staticmethod
     def _ratio(count: int, total: int) -> float:
         return count / total if total else 0.0
 
@@ -290,6 +329,42 @@ class PaperAggregator:
         if 0.0 < score <= 10.0:
             return score
         return None
+
+    @staticmethod
+    def _dim5_details_for_question(question: QuestionDimensionScore) -> Dict[str, object]:
+        details = question.dim_details.get("dim5", {}) if isinstance(question.dim_details, dict) else {}
+        return details if isinstance(details, dict) else {}
+
+    @classmethod
+    def _dim5_source_for_question(cls, question: QuestionDimensionScore) -> str:
+        details = cls._dim5_details_for_question(question)
+        if str(details.get("dim5_excluded_reason") or "").strip() == "retry_failed":
+            return "llm_dim5_retry_failed"
+        if (
+            details.get("dim5_retry_used") is True
+            and str(details.get("gaosi_classification_source") or "").strip() == "llm_retry"
+        ):
+            return "llm_dim5_retry"
+        source = str(details.get("band_source") or "").strip()
+        if source:
+            return source
+        source = str(details.get("gaosi_classification_source") or "").strip()
+        if source:
+            return source
+        return "model_only"
+
+    @classmethod
+    def _dim5_is_topic_structure_upshift(cls, question: QuestionDimensionScore) -> bool:
+        details = cls._dim5_details_for_question(question)
+        if str(details.get("band_source") or "").strip() == "topic_structure_match":
+            return True
+        calibration = details.get("calibration", {})
+        if not isinstance(calibration, dict):
+            return False
+        return (
+            str(calibration.get("match_scope") or "").strip() == "topic_structure"
+            and str(calibration.get("match_action") or "").strip() in {"raise_band", "confirm_model"}
+        )
 
     @staticmethod
     def _dim1_bucket_for_question(question: QuestionDimensionScore) -> str:
@@ -381,66 +456,68 @@ class PaperAggregator:
         return None
 
     @staticmethod
+    def _sanitize_dim4_warning(message: object) -> str:
+        text = str(message or "").strip()
+        if not text:
+            return ""
+        replacements = {
+            "当前题目转入人工复核": "已按自动规则纳入评分",
+            "转入人工复核": "按自动规则纳入评分",
+            "当前结果需人工复核": "自动评分结果需要谨慎解读",
+            "需人工复核": "需要谨慎解读",
+            "需要人工复核": "需要谨慎解读",
+            "人工复核": "自动评分提示",
+            "复核": "检查",
+        }
+        for source, target in replacements.items():
+            text = text.replace(source, target)
+        return text.replace("未计入均分", "已按保守规则计入")
+
+    @staticmethod
     def _average_dimension_score(questions: List[QuestionDimensionScore], dimension_code: str) -> float:
         if not questions:
             return 0.0
         return sum(question.dim_scores.get(dimension_code, 0.0) for question in questions) / len(questions)
 
     def _aggregate_dim4(self, question_scores: List[QuestionDimensionScore]) -> PaperDimensionSummary:
-        review_questions = [
-            question
-            for question in question_scores
-            if self._dimension_status(question, "dim4") == "review"
-        ]
-        not_applicable_questions = [
-            question
-            for question in question_scores
-            if self._dimension_status(question, "dim4") == "not_applicable"
-        ]
-
         level_counts = {f"L{index}": 0 for index in range(1, 6)}
         source_counts: Dict[str, int] = {}
-        unknown_level_count = 0
         scored_questions: List[QuestionDimensionScore] = []
-        unscored_question_count = 0
+        fallback_count = 0
+        raw_score_sum = 0.0
+        weighted_score_sum = 0.0
+        total_weight = 0.0
+        ignored_question_count = 0
+
         for question in question_scores:
-            if self._dimension_status(question, "dim4") == "review":
-                continue
             question_score = self._valid_dim4_question_score(question)
             level = self._dim4_level_for_question(question)
-            if question_score is None:
-                unscored_question_count += 1
-                continue
-            if level in level_counts:
-                level_counts[level] += 1
-                scored_questions.append(question)
-            else:
-                unknown_level_count += 1
-                unscored_question_count += 1
+            source = self._dim4_source_for_question(question) or "rule_score"
+            if question_score is None or level not in level_counts:
+                ignored_question_count += 1
                 continue
 
-            source = self._dim4_source_for_question(question) or "rule_score"
+            details = question.dim_details.get("dim4", {}) if isinstance(question.dim_details, dict) else {}
+            if (
+                source == "conservative_fallback"
+                or (isinstance(details, dict) and details.get("fallback_used") is True)
+            ):
+                fallback_count += 1
+
+            level_counts[level] += 1
             source_counts[source] = source_counts.get(source, 0) + 1
+            scored_questions.append(question)
+            raw_score_sum += question_score
+            weight = float(self.DIM4_LEVEL_WEIGHTS.get(level, 1))
+            weighted_score_sum += question_score * weight
+            total_weight += weight
 
         question_count = len(scored_questions)
-        review_question_count = len(review_questions)
-        not_applicable_count = len(not_applicable_questions)
-        l1_excluded_count = sum(1 for question in not_applicable_questions if self._dim4_is_l1_excluded(question))
-
         level_ratios = {
             level: round(self._ratio(count, question_count), 4)
             for level, count in level_counts.items()
         }
-        score_sum = sum(self._valid_dim4_question_score(question) or 0.0 for question in scored_questions)
-        raw_question_average = score_sum / question_count if question_count else 0.0
-        weighted_score_sum = 0.0
-        total_weight = 0.0
-        for question in scored_questions:
-            question_score = self._valid_dim4_question_score(question) or 0.0
-            level = self._dim4_level_for_question(question)
-            weight = float(self.DIM4_LEVEL_WEIGHTS.get(level, 0))
-            weighted_score_sum += question_score * weight
-            total_weight += weight
+        raw_question_average = raw_score_sum / question_count if question_count else 0.0
         weighted_question_average = weighted_score_sum / total_weight if total_weight else 0.0
         breakdown = {
             "level_counts": level_counts,
@@ -451,29 +528,19 @@ class PaperAggregator:
             "weighted_question_average": round(weighted_question_average, 4),
             "weighted_score_sum": round(weighted_score_sum, 4),
             "total_weight": round(total_weight, 4),
-            "not_applicable_count": not_applicable_count,
-            "review_count": review_question_count,
-            "l1_excluded_count": l1_excluded_count,
+            "not_applicable_count": 0,
+            "review_count": 0,
+            "l1_excluded_count": 0,
+            "fallback_count": fallback_count,
             "valid_score_question_count": question_count,
-            "unscored_question_count": unscored_question_count,
-            "unknown_level_count": unknown_level_count,
+            "unscored_question_count": ignored_question_count,
+            "unknown_level_count": ignored_question_count,
+            "auto_ignored_count": ignored_question_count,
             "high_level_question_count": level_counts["L4"] + level_counts["L5"],
-            "aggregation_rule": "所有可稳定判定 L1-L5 的题均纳入实践创新评分；卷级主分按高阶创新等级权重计算；复核或缺少合法题级分的题不按 0 分计入。",
+            "aggregation_rule": "能稳定自动判定 L1-L5 的题纳入实践创新评分；无法自动判定的题自动未覆盖；卷级主分按高阶创新等级权重计算。",
         }
 
         if question_count == 0:
-            not_covered_warnings: List[str] = []
-            evidence_parts = ["实践创新没有可纳入均分的合法 L1-L5 题级分"]
-            if review_question_count:
-                evidence_parts.append(f"人工复核 {review_question_count} 道未计入")
-                not_covered_warnings.append(
-                    f"实践创新有 {review_question_count} 道题转入人工复核，未计入均分。"
-                )
-            if unscored_question_count:
-                evidence_parts.append(f"缺少合法题级分 {unscored_question_count} 道未计入")
-                not_covered_warnings.append(
-                    f"实践创新有 {unscored_question_count} 道题缺少合法 L1-L5 题级分，未按 0 分计入。"
-                )
             return PaperDimensionSummary(
                 dimension_code="dim4",
                 dimension_name=self.DIMENSION_NAMES["dim4"],
@@ -483,10 +550,10 @@ class PaperAggregator:
                 total_question_score=0.0,
                 question_count=0,
                 sample_warning=False,
-                evidence="；".join(evidence_parts) + "，未计入综合分。",
-                warning_messages=not_covered_warnings,
+                evidence="实践创新暂无可评分题目，未计入综合分。",
+                warning_messages=[],
                 counted_questions=[],
-                review_question_count=review_question_count,
+                review_question_count=0,
                 score_status="not_covered",
                 score_breakdown=breakdown,
             )
@@ -498,11 +565,7 @@ class PaperAggregator:
 
         warning_messages: List[str] = []
         for question in scored_questions:
-            warning_messages.extend(question.dim_warnings.get("dim4", []))
-        if review_question_count:
-            warning_messages.append(f"实践创新有 {review_question_count} 道题转入人工复核，未计入均分。")
-        if unscored_question_count:
-            warning_messages.append(f"实践创新有 {unscored_question_count} 道题缺少合法 L1-L5 题级分，未按 0 分计入。")
+            warning_messages.extend(self._sanitize_dim4_warning(item) for item in question.dim_warnings.get("dim4", []))
         if sample_warning:
             warning_messages.append("该维度当前样本题量偏少，整卷结论稳定性有限。")
         deduped_warnings = list(
@@ -513,10 +576,6 @@ class PaperAggregator:
             f"共 {question_count} 道题纳入实践创新评分",
             "按高阶创新等级权重计算",
         ]
-        if unscored_question_count:
-            evidence_parts.append(f"缺少合法题级分 {unscored_question_count} 道未计入")
-        if review_question_count:
-            evidence_parts.append(f"人工复核 {review_question_count} 道未计入")
         evidence_parts.append(f"权重得分 {paper_score:.1f} 分，判定为 {level_label}")
         evidence = "；".join(evidence_parts) + "。"
 
@@ -532,7 +591,7 @@ class PaperAggregator:
             evidence=evidence,
             warning_messages=deduped_warnings,
             counted_questions=self._select_representative_questions(scored_questions, "dim4"),
-            review_question_count=review_question_count,
+            review_question_count=0,
             score_breakdown=breakdown,
         )
 
@@ -663,28 +722,105 @@ class PaperAggregator:
         ]
 
         bucket_counts = {bucket: 0 for bucket in self.DIM5_BUCKET_LABELS}
+        level_counts = {f"L{index}": 0 for index in range(1, 6)}
+        domain_counts: Dict[str, int] = {}
+        source_counts: Dict[str, int] = {}
         scored_questions: List[QuestionDimensionScore] = []
-        score_sum = 0.0
+        raw_score_sum = 0.0
+        weighted_score_sum = 0.0
+        total_weight = 0.0
         unscored_applicable_count = 0
-        unknown_scored_count = 0
-        unknown_unscored_count = 0
+        fallback_failed_count = sum(
+            1
+            for question in question_scores
+            if self._dim5_source_for_question(question) == "llm_dim5_retry_failed"
+        )
+        question_bank_count = 0
+        topic_structure_upshift_count = 0
+        llm_fallback_count = 0
         for question in applicable_questions:
             bucket = self._dim5_bucket_for_question(question)
             bucket = bucket if bucket in bucket_counts else "unknown"
             bucket_counts[bucket] += 1
             question_score = self._valid_dim5_question_score(question)
+            question_level = self._dim5_level_for_question(question)
             if question_score is None:
                 unscored_applicable_count += 1
-                if bucket == "unknown":
-                    unknown_unscored_count += 1
                 continue
+            if question_level not in level_counts:
+                unscored_applicable_count += 1
+                continue
+
+            source = self._dim5_source_for_question(question)
+            source_counts[source] = source_counts.get(source, 0) + 1
+            details = self._dim5_details_for_question(question)
+            domain = str(details.get("canonical_knowledge_domain") or "unknown").strip() or "unknown"
+            domain_counts[domain] = domain_counts.get(domain, 0) + 1
+            if source == "question_bank" or str(details.get("gaosi_classification_source") or "").strip() == "question_bank":
+                question_bank_count += 1
+            if source == "llm_dim5_retry":
+                llm_fallback_count += 1
+            if self._dim5_is_topic_structure_upshift(question):
+                topic_structure_upshift_count += 1
             scored_questions.append(question)
-            score_sum += question_score
-            if bucket == "unknown":
-                unknown_scored_count += 1
+            raw_score_sum += question_score
+            level_counts[question_level] += 1
+            weight = float(self.DIM5_LEVEL_WEIGHTS.get(question_level, 1))
+            weighted_score_sum += question_score * weight
+            total_weight += weight
 
         question_count = len(scored_questions)
         review_question_count = len(review_questions)
+        raw_question_average = raw_score_sum / question_count if question_count else 0.0
+        weighted_question_average = weighted_score_sum / total_weight if total_weight else 0.0
+        level_ratios = {
+            level: round(self._ratio(count, question_count), 4)
+            for level, count in level_counts.items()
+        }
+        bucket_ratio_denominator = len(applicable_questions)
+        bucket_ratios = {
+            bucket: round(self._ratio(count, bucket_ratio_denominator), 4)
+            for bucket, count in bucket_counts.items()
+        }
+        breakdown = {
+            "level_weights": dict(self.DIM5_LEVEL_WEIGHTS),
+            "level_counts": dict(level_counts),
+            "level_ratios": level_ratios,
+            "bucket_counts": dict(bucket_counts),
+            "bucket_ratios": bucket_ratios,
+            "bucket_ratio_denominator": bucket_ratio_denominator,
+            "domain_counts": dict(domain_counts),
+            "source_counts": dict(source_counts),
+            "question_bank_count": question_bank_count,
+            "topic_structure_upshift_count": topic_structure_upshift_count,
+            "llm_fallback_count": llm_fallback_count,
+            "fallback_failed_count": fallback_failed_count,
+            "beyond_question_count": level_counts["L5"],
+            "aggregation_rule": "知识范围等级加权均分",
+            "raw_question_average": round(raw_question_average, 4),
+            "weighted_question_average": round(weighted_question_average, 4),
+            "question_score_average": round(raw_question_average, 4),
+            "question_score_sum": round(raw_score_sum, 4),
+            "weighted_score_sum": round(weighted_score_sum, 4),
+            "total_weight": round(total_weight, 4),
+            "valid_score_question_count": question_count,
+            "unscored_applicable_count": unscored_applicable_count,
+            "unknown_scored_count": bucket_counts["unknown"]
+            - sum(
+                1
+                for question in applicable_questions
+                if self._dim5_bucket_for_question(question) == "unknown"
+                and self._valid_dim5_question_score(question) is None
+            ),
+            "unknown_unscored_count": sum(
+                1
+                for question in applicable_questions
+                if self._dim5_bucket_for_question(question) == "unknown"
+                and self._valid_dim5_question_score(question) is None
+            ),
+            "final_score": weighted_question_average,
+        }
+
         if question_count == 0:
             return PaperDimensionSummary(
                 dimension_code="dim5",
@@ -700,70 +836,21 @@ class PaperAggregator:
                 counted_questions=[],
                 review_question_count=review_question_count,
                 score_status="not_covered",
-                score_breakdown={
-                    "bucket_counts": dict(bucket_counts),
-                    "bucket_ratios": {},
-                    "bucket_ratio_denominator": len(applicable_questions),
-                    "valid_score_question_count": 0,
-                    "unscored_applicable_count": unscored_applicable_count,
-                    "unknown_scored_count": unknown_scored_count,
-                    "unknown_unscored_count": unknown_unscored_count,
-                    "aggregation_rule": "题级知识广度均分",
-                },
+                score_breakdown=breakdown,
             )
 
-        paper_score = score_sum / question_count
+        paper_score = weighted_question_average
         level, level_label = self._calculate_level(paper_score)
 
-        bucket_ratio_denominator = len(applicable_questions)
-        bucket_ratios = {
-            bucket: round(self._ratio(count, bucket_ratio_denominator), 4)
-            for bucket, count in bucket_counts.items()
-        }
-        breakdown = {
-            "bucket_counts": dict(bucket_counts),
-            "bucket_ratios": bucket_ratios,
-            "bucket_ratio_denominator": bucket_ratio_denominator,
-            "beyond_question_count": bucket_counts["beyond"],
-            "aggregation_rule": "题级知识广度均分",
-            "question_score_average": round(paper_score, 4),
-            "question_score_sum": round(score_sum, 4),
-            "valid_score_question_count": question_count,
-            "unscored_applicable_count": unscored_applicable_count,
-            "unknown_scored_count": unknown_scored_count,
-            "unknown_unscored_count": unknown_unscored_count,
-            "final_score": paper_score,
-        }
-
-        percentage_parts = [
-            f"{self.DIM5_BUCKET_LABELS[bucket]} {bucket_ratios[bucket]:.0%}"
-            for bucket in ("school", "low_gaosi", "high_gaosi", "junior_bridge", "beyond")
-        ]
         evidence = (
-            f"共 {question_count} 道纳入知识广度均分；"
-            f"题级平均分 {paper_score:.1f} 分，判定为{level_label}。"
-            f"超越篇命中 {bucket_counts['beyond']} 道；"
-            f"知识来源构成：{'，'.join(percentage_parts)}。"
+            f"共 {question_count} 道题纳入知识范围评分；"
+            f"按知识范围等级权重计算；"
+            f"权重得分 {paper_score:.1f} 分，判定为{level_label}。"
         )
 
         warning_messages: List[str] = []
-        if bucket_counts["unknown"]:
-            if unknown_scored_count and unknown_unscored_count:
-                warning_messages.append(
-                    f"有 {bucket_counts['unknown']} 道题知识来源未稳定归类；其中 "
-                    f"{unknown_scored_count} 道已按题级分计入均分，"
-                    f"{unknown_unscored_count} 道因缺少合法题级分未计入均分。"
-                )
-            elif unknown_scored_count:
-                warning_messages.append(
-                    f"有 {unknown_scored_count} 道题知识来源未稳定归类，但已按题级分计入知识广度均分。"
-                )
-            else:
-                warning_messages.append(
-                    f"有 {unknown_unscored_count} 道题知识来源未稳定归类，且缺少合法题级分，未计入知识广度均分。"
-                )
-        elif unscored_applicable_count:
-            warning_messages.append(f"有 {unscored_applicable_count} 道题缺少合法题级分，未计入知识广度均分。")
+        if unscored_applicable_count:
+            warning_messages.append(f"有 {unscored_applicable_count} 道题缺少合法题级分或知识范围等级，未计入知识范围评分。")
         for question in applicable_questions:
             warning_messages.extend(question.dim_warnings.get("dim5", []))
         deduped_warnings = list(
@@ -869,18 +956,17 @@ class PaperAggregator:
         confidence = question.dim_confidences.get(dimension_code, 0.0)
 
         if dimension_code == "dim5":
-            bucket_priority = {
-                "beyond": 0,
-                "junior_bridge": 1,
-                "high_gaosi": 2,
-                "low_gaosi": 3,
-                "school": 4,
-                "unknown": 5,
+            level_priority = {
+                "L5": 0,
+                "L4": 1,
+                "L3": 2,
+                "L2": 3,
+                "L1": 4,
             }
-            bucket = self._dim5_bucket_for_question(question)
+            knowledge_level = self._dim5_level_for_question(question)
             return (
+                level_priority.get(knowledge_level, 99),
                 -question.dim_scores.get(dimension_code, 0.0),
-                bucket_priority.get(bucket, 99),
                 -confidence,
                 -min(len(reason), 160),
                 len(warnings),

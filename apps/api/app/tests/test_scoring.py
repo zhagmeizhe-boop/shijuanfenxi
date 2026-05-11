@@ -6,6 +6,7 @@
 
 import asyncio
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -34,12 +35,71 @@ from app.services.scoring.dim2_spatial import Dim2SpatialScorer
 from app.services.scoring.dim3_information import Dim3InformationScorer
 from app.services.scoring.dim4_innovation import Dim4InnovationScorer
 from app.services.scoring.dim4_topic_levels import classify_dim4_topic_level
+from app.services.scoring.dim5_canonical import (
+    DIM5_KNOWLEDGE_DOMAINS,
+    DIM5_LEVEL_SCORES,
+    canonicalize_dim5_knowledge,
+    classify_dim5_knowledge_scope,
+)
 from app.services.scoring.dim5_knowledge import Dim5KnowledgeScorer
 from app.services.scoring.dim6_logic import Dim6LogicScorer
 from app.services.scoring.paper_aggregator import (
     PaperAggregator,
     QuestionDimensionScore,
 )
+
+WMO_DIM2_GEOMETRY_CASES = [
+    (
+        "5",
+        (
+            "\u5c06\u900f\u660e\u6b63\u65b9\u4f53\u7684\u90e8\u5206\u9876\u70b9"
+            "\u548c\u68f1\u7684\u4e2d\u70b9\u8fde\u8d77\u6765\u5f97\u5230\u5982"
+            "\u4e0b\u56fe\uff0c\u4ece\u5de6\u9762\u89c2\u5bdf\u8be5\u6b63"
+            "\u65b9\u4f53\uff0c\u770b\u5230\u7684\u56fe\u5f62\u662f\uff08  \uff09\u3002"
+        ),
+        4,
+    ),
+    (
+        "8",
+        (
+            "\u4e0b\u56fe\u6b63\u65b9\u5f62\u7684\u8fb9\u957f\u4e3a20\u5398"
+            "\u7c73\uff0c\u56fe\u4e2d\u9634\u5f71\u90e8\u5206\u7684\u9762"
+            "\u79ef\u662f\uff08  \uff09\u5e73\u65b9\u5398\u7c73\u3002\uff08"
+            "\u03c0\u53d63.14\uff09 [\u56fe\u5f62\uff1a\u6b63\u65b9"
+            "\u5f62\u5185\u542b\u56db\u4e2a\u6247\u5f62\u7ec4\u6210\u7684"
+            "\u9634\u5f71\u56fe\u6848] A.189.5 B.214.5 C.230 D.242.5"
+        ),
+        4,
+    ),
+    (
+        "18",
+        (
+            "\u5982\u56fe\u6240\u793a\uff0c\u5706\u7684\u534a\u5f84\u4e3a2"
+            "\u5398\u7c73\uff0c\u5706\u7684\u9762\u79ef\u4e0e\u957f\u65b9"
+            "\u5f62OABC\u7684\u9762\u79ef\u76f8\u7b49\u3002(\u03c0\u53d63.14) "
+            "\u7b2c\u4e00\u95ee\uff1a\u7ebf\u6bb5OC\u7684\u957f\u5ea6"
+            "\u662f______\u5398\u7c73\u3002(4\u5206) \u7b2c\u4e8c\u95ee\uff1a"
+            "\u56fe\u4e2d\u9634\u5f71\u90e8\u5206\u7684\u9762\u79ef\u662f"
+            "______\u5e73\u65b9\u5398\u7c73\u3002(6\u5206)"
+        ),
+        4,
+    ),
+    (
+        "19",
+        (
+            "\u4ece\u5de6\u56fe\u7acb\u4f53\u56fe\u5f62\u768427\u4e2a\u900f"
+            "\u660e\u79ef\u6728\u4e2d\uff0c\u9009\u82e5\u5e72\u4e2a\u7528"
+            "\u7eff\u8272\u79ef\u6728\uff08\u4e0d\u900f\u660e\uff09\u66ff"
+            "\u6362\u540e\uff0c\u4ece\u524d\u9762\u548c\u5de6\u9762\u770b"
+            "\u5230\u7684\u56fe\u5f62\u5982\u53f3\u56fe\u6240\u793a\u3002 "
+            "\u7b2c\u4e00\u95ee\uff1a\u6700\u5c11\u53ef\u4ee5\u7528______"
+            "\u4e2a\u7eff\u8272\u79ef\u6728\u3002(6\u5206) \u7b2c\u4e8c"
+            "\u95ee\uff1a\u6700\u591a\u53ef\u4ee5\u7528______\u4e2a\u7eff"
+            "\u8272\u79ef\u6728\u3002(4\u5206)"
+        ),
+        5,
+    ),
+]
 
 
 class TestDim1ComputationScorer:
@@ -300,7 +360,7 @@ class TestDim1ComputationScorer:
 
         assert result.applicable is True
         assert result.score == 4.0
-        assert result.level == 2
+        assert result.level == 3
         assert result.level_label == "L2 常规嵌入计算"
         assert result.details["calc_bucket"] == "embedded_calculation"
 
@@ -1305,6 +1365,34 @@ class TestDim2Applicability:
 
         assert facts is None
 
+    def test_wmo_geometry_questions_use_deterministic_dim2_fallback(self):
+        scorer = Dim2SpatialScorer()
+
+        for question_no, raw_text, expected_level in WMO_DIM2_GEOMETRY_CASES:
+            facts = build_dim2_visual_fallback_facts(
+                raw_text,
+                {"spatial_role": "none", "applicability_confidence": 0.0},
+                parse_audit={"visual_category": "geometry_context"},
+                has_image=True,
+                used_image=False,
+            )
+
+            assert facts is not None, question_no
+            applicability = evaluate_dim2_applicability(
+                raw_text,
+                facts,
+                llm_confidence=facts["applicability_confidence"],
+                parse_audit={"visual_category": "geometry_context"},
+                used_image=False,
+            )
+            score = scorer.score(facts)
+
+            assert applicability["status"] == "applicable", question_no
+            assert score.applicable is True, question_no
+            assert score.level == expected_level, question_no
+            assert facts["fallback_source"] == "visual_geometry"
+            assert facts["model_recognition_role"] == "core"
+
 
 class TestDim3InformationScorer:
     """测试维度3：信息提取与转化评分器"""
@@ -1441,7 +1529,7 @@ class TestDim3InformationScorer:
 
         assert result.applicable is True
         assert result.score == 4.0
-        assert result.level == 2
+        assert result.level == 3
         assert result.level_label == "L2 单次转化"
 
     def test_l3_multi_condition_conversion(self, scorer):
@@ -2637,7 +2725,8 @@ class TestDim4InnovationScorer:
         feature["applicability_confidence"] = 0.2
         status = evaluate_dim4_applicability("密码锁号码需要满足位置与整除约束。", feature, used_image=True)
 
-        assert status["status"] == "review"
+        assert status["status"] == "applicable"
+        assert "置信度低于" in " ".join(status["warnings"])
 
     def test_gaosi_section_label_alone_does_not_raise_dim4_level(self, scorer):
         result = scorer.score(
@@ -2977,7 +3066,7 @@ class TestDim4Applicability:
 
         assert result["status"] == "applicable"
 
-    def test_dim4_review_failed_source_goes_to_review(self):
+    def test_dim4_review_failed_source_uses_conservative_auto_score(self):
         result = evaluate_dim4_applicability(
             "需要判断知识点内创新等级。",
             {
@@ -2990,7 +3079,8 @@ class TestDim4Applicability:
             llm_confidence=0.86,
         )
 
-        assert result["status"] == "review"
+        assert result["status"] == "not_applicable"
+        assert "自动未覆盖" in result["reason"]
         assert any("invalid JSON" in item for item in result["warnings"])
 
     def test_core_strategy_breakthrough_is_applicable(self):
@@ -3042,7 +3132,7 @@ class TestDim4Applicability:
         assert result["status"] == "applicable"
         assert "L1/L2" in result["reason"]
 
-    def test_missing_dim4_facts_go_to_review(self):
+    def test_missing_dim4_facts_use_conservative_auto_score(self):
         result = evaluate_dim4_applicability(
             "请设计一种拼法并说明理由。",
             {
@@ -3053,10 +3143,11 @@ class TestDim4Applicability:
             llm_confidence=0.8,
         )
 
-        assert result["status"] == "review"
+        assert result["status"] == "applicable"
+        assert "保守 L1" in result["reason"]
         assert any("关键策略创新事实字段" in item for item in result["warnings"])
 
-    def test_conflicting_direct_template_goes_to_review(self):
+    def test_conflicting_direct_template_stays_applicable_with_warning(self):
         result = evaluate_dim4_applicability(
             "尝试不同构造方案，找出所有满足条件的结果。",
             {
@@ -3078,7 +3169,7 @@ class TestDim4Applicability:
             llm_confidence=0.83,
         )
 
-        assert result["status"] == "review"
+        assert result["status"] == "applicable"
         assert any("冲突" in item or "direct" in item for item in result["warnings"])
 
     def test_image_cropped_flag_does_not_block_reliable_dim4(self):
@@ -3130,7 +3221,7 @@ class TestDim4Applicability:
 
         assert result["status"] == "applicable"
 
-    def test_reference_review_required_goes_to_review(self):
+    def test_reference_review_required_stays_applicable_with_warning(self):
         result = evaluate_dim4_applicability(
             "按常规模板求平均数。",
             {
@@ -3154,7 +3245,8 @@ class TestDim4Applicability:
             llm_confidence=0.9,
         )
 
-        assert result["status"] == "review"
+        assert result["status"] == "applicable"
+        assert "高思参考线索" in result["reason"]
         assert any("高思参考题" in item for item in result["warnings"])
 
 
@@ -3422,6 +3514,132 @@ class TestDim5KnowledgeScorer:
     def scorer(self):
         return Dim5KnowledgeScorer()
 
+    @pytest.mark.parametrize(
+        ("analysis_facts", "question_text", "expected_point"),
+        [
+            (
+                {"core_knowledge_points": ["增长与消耗"], "core_methods": ["排队检票"]},
+                "原有队伍每分钟新增若干人，同时每分钟检票若干人。",
+                "牛吃草模型",
+            ),
+            (
+                {"core_knowledge_points": ["等高面积比"], "core_methods": ["共边面积比"]},
+                "图中需要利用蝴蝶模型和燕尾模型求阴影面积。",
+                "面积比模型",
+            ),
+            (
+                {"core_knowledge_points": ["循环规律"], "core_methods": ["周期余数"]},
+                "按周期排列，求第 n 项的位置。",
+                "周期问题",
+            ),
+        ],
+    )
+    def test_dim5_canonicalizes_free_form_knowledge_points(
+        self,
+        analysis_facts,
+        question_text,
+        expected_point,
+    ):
+        canonical = canonicalize_dim5_knowledge(
+            {"knowledge_tags": []},
+            analysis_facts=analysis_facts,
+            question_text=question_text,
+        )
+
+        assert canonical["canonical_knowledge_point"] == expected_point
+        assert canonical["canonical_match_confidence"] >= 0.65
+
+    def test_dim5_reference_knowledge_terms_map_to_domain_and_level(self):
+        reference_files = [
+            "app/services/parser/reference_standard_school_pdf_data.json",
+            "app/services/parser/reference_standard_gaosi_pdf_data.json",
+            "app/services/parser/reference_standard_gaosi_question_data.json",
+            "app/services/parser/reference_standard_data.json",
+        ]
+
+        def collect_strings(value):
+            if isinstance(value, dict):
+                for key in (
+                    "topic",
+                    "title",
+                    "knowledge_point",
+                    "knowledge",
+                    "chapter",
+                    "section",
+                    "name",
+                    "track",
+                ):
+                    text = str(value.get(key) or "").strip()
+                    if text:
+                        yield text
+                for item in value.values():
+                    yield from collect_strings(item)
+            elif isinstance(value, list):
+                for item in value:
+                    yield from collect_strings(item)
+            elif isinstance(value, str) and value.strip():
+                yield value.strip()
+
+        checked_terms = set()
+        for relative_path in reference_files:
+            data = json.loads(Path(relative_path).read_text(encoding="utf-8"))
+            for term in collect_strings(data):
+                if term in checked_terms:
+                    continue
+                checked_terms.add(term)
+                result = classify_dim5_knowledge_scope(
+                    {"knowledge_tags": [term]},
+                    analysis_facts={"core_knowledge_points": [term]},
+                )
+                assert result["canonical_knowledge_domain"] in DIM5_KNOWLEDGE_DOMAINS
+                assert result["knowledge_level"] in DIM5_LEVEL_SCORES
+
+        assert checked_terms
+
+    def test_canonical_boundary_upshift_chooses_higher_adjacent_band(self, scorer):
+        result = scorer.score(
+            {
+                "band": "4年级及以前高思导引拓展篇及以下难度",
+                "sublevel": "high",
+                "evidence_summary": "等高面积比与割补共同出现，处于拓展到高年级高思边界。",
+                "knowledge_tags": ["面积比"],
+                "canonical_knowledge_point": "面积比模型",
+                "canonical_knowledge_family": "geometry_olympiad_model",
+                "canonical_match_source": "topic_and_structure",
+                "canonical_match_confidence": 0.88,
+                "canonical_alias_hits": ["面积比", "等高"],
+                "canonical_structure_hits": ["割补"],
+            }
+        )
+
+        assert result.applicable is True
+        assert result.score == 8.0
+        assert result.details["knowledge_level"] == "L4"
+        assert result.details["canonical_knowledge_domain"] == "geometry_spatial"
+        assert result.details["canonical_knowledge_point"] == "面积比模型"
+
+    def test_canonical_boundary_upshift_does_not_raise_direct_formula(self, scorer):
+        result = scorer.score(
+            {
+                "band": "5、6年级校内课本难度",
+                "sublevel": "high",
+                "evidence_summary": "直接代入圆柱圆锥体积比公式。",
+                "knowledge_tags": ["圆柱圆锥体积比"],
+                "canonical_knowledge_point": "面积比模型",
+                "canonical_knowledge_family": "geometry_olympiad_model",
+                "canonical_match_source": "topic_and_structure",
+                "canonical_match_confidence": 0.88,
+                "canonical_alias_hits": ["面积比"],
+                "canonical_structure_hits": ["比例"],
+                "canonical_direct_formula_guard": True,
+            }
+        )
+
+        assert result.applicable is True
+        assert result.score == 4.0
+        assert result.details["knowledge_level"] == "L2"
+        assert result.details["canonical_direct_formula_guard"] is True
+
     def test_lowest_grade_level(self, scorer):
         features = {
             "band": "4年级及以前校内课本难度",
@@ -3446,7 +3664,8 @@ class TestDim5KnowledgeScorer:
         result = scorer.score(features)
 
         assert result.applicable is True
-        assert result.score == 6.5
+        assert result.score == 8.0
+        assert result.details["knowledge_level"] == "L4"
         assert "一次方程" in result.evidence
 
     def test_dim5_extra_fact_fields_keep_banded_scoring(self, scorer):
@@ -3465,9 +3684,9 @@ class TestDim5KnowledgeScorer:
         result = scorer.score(features)
 
         assert result.applicable is True
-        assert result.score == 3.0
+        assert result.score == 4.0
         assert result.details["band"] == "5、6年级校内课本难度"
-        assert result.details["sublevel"] == "mid"
+        assert result.details["knowledge_level"] == "L2"
         assert result.details["knowledge_source_bucket"] == "school"
 
     def test_transcend_level(self, scorer):
@@ -3480,7 +3699,7 @@ class TestDim5KnowledgeScorer:
         result = scorer.score(features)
 
         assert result.applicable is True
-        assert result.score == 9.0
+        assert result.score == 9.5
         assert result.level == 5
         assert result.details["knowledge_source_bucket"] == "beyond"
 
@@ -3495,7 +3714,8 @@ class TestDim5KnowledgeScorer:
         result = scorer.score(features)
 
         assert result.applicable is True
-        assert result.details["knowledge_source_bucket"] == "junior_bridge"
+        assert result.details["knowledge_level"] == "L5"
+        assert result.details["knowledge_source_bucket"] == "beyond"
 
     def test_gaosi_guide_book_title_does_not_force_beyond_bucket(self, scorer):
         features = {
@@ -3537,6 +3757,7 @@ class TestDim5KnowledgeScorer:
         result = scorer.score(features)
 
         assert result.applicable is True
+        assert result.details["knowledge_level"] == "L4"
         assert result.details["knowledge_source_bucket"] == "high_gaosi"
 
     def test_gaosi_extension_section_overrides_low_school_band(self, scorer):
@@ -3553,11 +3774,9 @@ class TestDim5KnowledgeScorer:
         )
 
         assert result.applicable is True
-        assert result.score == 5.0
-        assert result.details["band"] == "4年级及以前高思导引拓展篇及以下难度"
-        assert result.details["sublevel"] == "mid"
-        assert result.details["knowledge_source_bucket"] == "low_gaosi"
-        assert result.details["band_source"] == "gaosi_section_override"
+        assert result.score == 8.0
+        assert result.details["knowledge_level"] == "L4"
+        assert result.details["knowledge_source_bucket"] == "high_gaosi"
 
     def test_gaosi_extension_section_overrides_high_school_band(self, scorer):
         result = scorer.score(
@@ -3573,9 +3792,8 @@ class TestDim5KnowledgeScorer:
         )
 
         assert result.applicable is True
-        assert result.score == 7.0
-        assert result.details["band"] == "5、6年级及以前高思导引拓展篇及以下难度 或 七年级及以上校内课本难度"
-        assert result.details["sublevel"] == "mid"
+        assert result.score == 8.0
+        assert result.details["knowledge_level"] == "L4"
         assert result.details["knowledge_source_bucket"] == "high_gaosi"
 
     def test_gaosi_interest_and_challenge_sections_map_to_expected_buckets(self, scorer):
@@ -3603,7 +3821,8 @@ class TestDim5KnowledgeScorer:
         )
 
         assert interest.applicable is True
-        assert interest.score == 4.5
+        assert interest.score == 6.0
+        assert interest.details["knowledge_level"] == "L3"
         assert interest.details["knowledge_source_bucket"] == "low_gaosi"
         assert challenge.applicable is True
         assert challenge.score == 9.5
@@ -3635,10 +3854,9 @@ class TestDim5KnowledgeScorer:
         result = scorer.score(features)
 
         assert result.applicable is True
-        assert result.score == 7.5
-        assert result.details["band"] == "5、6年级及以前高思导引拓展篇及以下难度 或 七年级及以上校内课本难度"
+        assert result.score == 8.0
+        assert result.details["knowledge_level"] == "L4"
         assert result.details["knowledge_source_bucket"] == "high_gaosi"
-        assert result.details["band_source"] == "knowledge_anchor"
 
     def test_wmo_strong_anchor_can_promote_high_gaosi_to_beyond(self, scorer):
         features = {
@@ -3654,11 +3872,9 @@ class TestDim5KnowledgeScorer:
         result = scorer.score(features)
 
         assert result.applicable is True
-        assert result.score == 9.0
-        assert result.details["band"] == "高思导引超越篇难度"
+        assert result.score == 9.5
+        assert result.details["knowledge_level"] == "L5"
         assert result.details["knowledge_source_bucket"] == "beyond"
-        assert result.details["band_source"] == "knowledge_anchor"
-        assert set(result.details["knowledge_anchor_override"]["matched_groups"]) >= {"game", "number_theory"}
 
     def test_wmo_contest_word_does_not_promote_direct_formula_problem(self, scorer):
         features = {
@@ -3673,16 +3889,16 @@ class TestDim5KnowledgeScorer:
         result = scorer.score(features)
 
         assert result.applicable is True
-        assert result.score == 3.5
-        assert result.details["band"] == "5、6年级校内课本难度"
+        assert result.score == 4.0
+        assert result.details["knowledge_level"] == "L2"
         assert result.details["knowledge_source_bucket"] == "school"
-        assert "band_source" not in result.details
 
     def test_invalid_knowledge_band(self, scorer):
         result = scorer.score({"band": "未知", "sublevel": "high"})
 
-        assert result.applicable is False
-        assert result.score == 0.0
+        assert result.applicable is True
+        assert result.score == 2.0
+        assert result.details["knowledge_level"] == "L1"
 
 
 class TestDim6LogicScorer:
@@ -4221,13 +4437,15 @@ class TestPaperAggregator:
 
         result = aggregator.aggregate(questions, "dim5")
 
-        assert result.paper_score == pytest.approx(3.2)
+        assert result.paper_score == pytest.approx(37 / 11)
         assert result.level == 2
-        assert result.score_breakdown["aggregation_rule"] == "题级知识广度均分"
+        assert result.score_breakdown["aggregation_rule"] == "知识范围等级加权均分"
         assert result.score_breakdown["question_score_average"] == pytest.approx(3.2)
         assert result.score_breakdown["question_score_sum"] == pytest.approx(32.0)
-        assert "校内教材 90%" in result.evidence
-        assert "题级平均分 3.2 分" in result.evidence
+        assert result.score_breakdown["weighted_question_average"] == pytest.approx(3.3636)
+        assert result.score_breakdown["level_weights"] == {"L1": 1, "L2": 1, "L3": 2, "L4": 4, "L5": 6}
+        assert "纳入知识范围评分" in result.evidence
+        assert "权重得分 3.4 分" in result.evidence
 
     def test_dim5_low_gaosi_mix_keeps_question_average(self, aggregator):
         questions = [
@@ -4241,9 +4459,9 @@ class TestPaperAggregator:
 
         result = aggregator.aggregate(questions, "dim5")
 
-        assert result.paper_score == pytest.approx(3.8)
-        assert result.level == 2
-        assert "低段高思拓展 20%" in result.evidence
+        assert result.paper_score == pytest.approx(4.6)
+        assert result.level == 3
+        assert result.score_breakdown["raw_question_average"] == pytest.approx(3.8)
 
     def test_dim5_high_gaosi_mix_keeps_question_average(self, aggregator):
         questions = [
@@ -4258,9 +4476,9 @@ class TestPaperAggregator:
 
         result = aggregator.aggregate(questions, "dim5")
 
-        assert result.paper_score == pytest.approx(4.4)
+        assert result.paper_score == pytest.approx(5.6)
         assert result.level == 3
-        assert "高年级高思拓展 30%" in result.evidence
+        assert result.score_breakdown["raw_question_average"] == pytest.approx(4.4)
 
     def test_dim5_junior_bridge_mix_keeps_question_average(self, aggregator):
         questions = [
@@ -4277,9 +4495,9 @@ class TestPaperAggregator:
 
         result = aggregator.aggregate(questions, "dim5")
 
-        assert result.paper_score == pytest.approx(5.2)
-        assert result.level == 3
-        assert "初中前置 20%" in result.evidence
+        assert result.paper_score == pytest.approx(162 / 26)
+        assert result.level == 4
+        assert result.score_breakdown["raw_question_average"] == pytest.approx(5.2)
 
     def test_dim5_beyond_questions_do_not_force_level_5(self, aggregator):
         questions = [
@@ -4296,10 +4514,8 @@ class TestPaperAggregator:
 
         result = aggregator.aggregate(questions, "dim5")
 
-        assert result.paper_score == pytest.approx(5.8)
-        assert result.level == 3
-        assert "高思超越篇 20%" in result.evidence
-        assert "超越篇命中 2 道" in result.evidence
+        assert result.paper_score == pytest.approx(7.25)
+        assert result.level == 4
         assert result.score_breakdown["bucket_counts"]["beyond"] == 2
         assert result.score_breakdown["bucket_ratios"]["beyond"] == 0.2
 
@@ -4315,9 +4531,9 @@ class TestPaperAggregator:
 
         result = aggregator.aggregate(questions, "dim5")
 
-        assert result.paper_score == pytest.approx(4.4)
-        assert result.score_breakdown["final_score"] == pytest.approx(4.4)
-        assert "超越篇加分" not in result.evidence
+        assert result.paper_score == pytest.approx(139 / 21)
+        assert result.score_breakdown["final_score"] == pytest.approx(139 / 21)
+        assert "超越篇" not in result.evidence
 
     def test_dim5_unknown_bucket_without_valid_score_is_excluded_from_average(self, aggregator):
         questions = [
@@ -4332,8 +4548,8 @@ class TestPaperAggregator:
         assert result.score_breakdown["bucket_counts"]["unknown"] == 1
         assert result.score_breakdown["bucket_ratios"]["unknown"] == 0.1
         assert result.score_breakdown["unknown_unscored_count"] == 1
-        assert "纳入知识广度均分" in result.evidence
-        assert any("未计入知识广度均分" in item for item in result.warning_messages)
+        assert "纳入知识范围评分" in result.evidence
+        assert any("未计入知识范围评分" in item for item in result.warning_messages)
 
     def test_dim5_unknown_bucket_with_valid_score_still_enters_average(self, aggregator):
         unknown = self._dim5_question(10, "unknown")
@@ -4346,10 +4562,53 @@ class TestPaperAggregator:
         result = aggregator.aggregate(questions, "dim5")
 
         assert result.question_count == 10
-        assert result.paper_score == pytest.approx(3.4)
+        assert result.paper_score == pytest.approx(55 / 13)
         assert result.score_breakdown["bucket_counts"]["unknown"] == 1
         assert result.score_breakdown["unknown_scored_count"] == 1
-        assert any("已按题级分计入知识广度均分" in item for item in result.warning_messages)
+
+    def test_dim5_breakdown_tracks_hit_sources_and_retry_failures(self, aggregator):
+        question_bank = self._dim5_question(1, "high_gaosi")
+        question_bank.dim_details["dim5"]["band_source"] = "question_bank"
+        question_bank.dim_details["dim5"]["gaosi_classification_source"] = "question_bank"
+
+        topic_structure = self._dim5_question(2, "high_gaosi")
+        topic_structure.dim_details["dim5"]["band_source"] = "topic_structure_match"
+
+        llm_fallback = self._dim5_question(3, "beyond")
+        llm_fallback.dim_details["dim5"]["band_source"] = "llm_dim5_retry"
+
+        retry_failed = QuestionDimensionScore(
+            question_id="q4",
+            question_no="4",
+            score=5.0,
+            dim_scores={},
+            applicable_dims=[],
+            question_summary="dim5 兜底失败题",
+            dim_reasons={"dim5": "dim5 retry failed"},
+            dim_statuses={"dim5": "not_applicable"},
+            dim_details={
+                "dim5": {
+                    "band_source": "llm_dim5_retry_failed",
+                    "dim5_excluded_reason": "retry_failed",
+                }
+            },
+        )
+
+        result = aggregator.aggregate(
+            [question_bank, topic_structure, llm_fallback, retry_failed],
+            "dim5",
+        )
+
+        assert result.question_count == 3
+        assert result.score_breakdown["source_counts"] == {
+            "question_bank": 1,
+            "topic_structure_match": 1,
+            "llm_dim5_retry": 1,
+        }
+        assert result.score_breakdown["question_bank_count"] == 1
+        assert result.score_breakdown["topic_structure_upshift_count"] == 1
+        assert result.score_breakdown["llm_fallback_count"] == 1
+        assert result.score_breakdown["fallback_failed_count"] == 1
 
     def test_dim5_representative_questions_prioritize_score_then_bucket(self, aggregator):
         beyond = self._dim5_question(1, "beyond")
@@ -4364,14 +4623,14 @@ class TestPaperAggregator:
         result = aggregator.aggregate([high, junior, school, beyond], "dim5")
 
         assert result.counted_questions[0]["question_no"] == "2"
-        assert result.score_breakdown["beyond_question_count"] == 1
+        assert result.score_breakdown["beyond_question_count"] == 3
 
         high.dim_scores["dim5"] = 9.0
         beyond.dim_scores["dim5"] = 9.0
 
         result = aggregator.aggregate([high, beyond], "dim5")
 
-        assert result.counted_questions[0]["question_no"] == "1"
+        assert result.counted_questions[0]["question_no"] == "2"
 
     @staticmethod
     def _dim4_question(
@@ -4427,7 +4686,7 @@ class TestPaperAggregator:
         result = aggregator.aggregate(questions, "dim4")
 
         assert result.question_count == 5
-        assert result.review_question_count == 1
+        assert result.review_question_count == 0
         expected_weighted = (
             2.0 * 1
             + 4.0 * 2
@@ -4446,6 +4705,8 @@ class TestPaperAggregator:
         assert result.score_breakdown["not_applicable_count"] == 0
         assert result.score_breakdown["l1_excluded_count"] == 0
         assert result.score_breakdown["valid_score_question_count"] == 5
+        assert result.score_breakdown["fallback_count"] == 0
+        assert result.score_breakdown["auto_ignored_count"] == 1
         assert result.score_breakdown["high_level_question_count"] == 2
         assert result.score_breakdown["level_weights"] == {
             "L1": 1,
@@ -4465,6 +4726,9 @@ class TestPaperAggregator:
         assert "共 5 道题纳入实践创新评分" in result.evidence
         assert "按高阶创新等级权重计算" in result.evidence
         assert "权重得分" in result.evidence
+        assert "自动未覆盖" not in result.evidence
+        assert "兜底" not in result.evidence
+        assert "人工复核" not in result.evidence
 
     def test_dim4_aggregation_uses_all_twenty_stable_topic_levels(self, aggregator):
         level_scores = {"L1": 2.0, "L2": 4.0, "L3": 6.0, "L4": 8.0, "L5": 9.5}
@@ -4492,7 +4756,7 @@ class TestPaperAggregator:
         assert result.paper_score == pytest.approx(expected_weighted)
         assert "共 20 道题纳入实践创新评分" in result.evidence
 
-    def test_dim4_review_and_missing_score_are_not_zero_filled(self, aggregator):
+    def test_dim4_review_and_missing_score_are_auto_ignored(self, aggregator):
         questions = [
             self._dim4_question(1, "L1", 2.0),
             self._dim4_question(2, "L4", 8.0),
@@ -4517,9 +4781,18 @@ class TestPaperAggregator:
         assert result.question_count == 2
         assert result.paper_score == pytest.approx((2.0 * 1 + 8.0 * 12) / (1 + 12))
         assert result.score_breakdown["raw_question_average"] == pytest.approx(5.0)
-        assert result.review_question_count == 1
-        assert result.score_breakdown["unscored_question_count"] == 1
-        assert any("缺少合法 L1-L5 题级分" in item for item in result.warning_messages)
+        assert result.review_question_count == 0
+        assert result.score_breakdown["fallback_count"] == 0
+        assert result.score_breakdown["unscored_question_count"] == 2
+        assert result.score_breakdown["auto_ignored_count"] == 2
+        assert all(
+            "人工复核" not in item
+            and "未计入" not in item
+            and "未纳入评分" not in item
+            and "兜底" not in item
+            and "自动未覆盖" not in item
+            for item in result.warning_messages
+        )
 
     def test_dim4_weighted_score_matches_wmo_full_twenty_distribution(self, aggregator):
         level_scores = {"L1": 2.0, "L2": 4.0, "L3": 6.0, "L4": 8.0, "L5": 9.5}
@@ -5001,6 +5274,51 @@ class TestPaperAggregator:
         assert result.score_status == "scored"
         assert result.paper_score == pytest.approx(2.0)
 
+    def test_dim2_aggregation_stably_counts_wmo_geometry_fallbacks(self, aggregator):
+        scorer = Dim2SpatialScorer()
+        question_scores = []
+
+        for question_no, raw_text, _expected_level in WMO_DIM2_GEOMETRY_CASES:
+            facts = build_dim2_visual_fallback_facts(
+                raw_text,
+                {"spatial_role": "none", "applicability_confidence": 0.0},
+                parse_audit={"visual_category": "geometry_context"},
+                has_image=True,
+                used_image=False,
+            )
+            assert facts is not None, question_no
+
+            applicability = evaluate_dim2_applicability(
+                raw_text,
+                facts,
+                llm_confidence=facts["applicability_confidence"],
+                parse_audit={"visual_category": "geometry_context"},
+                used_image=False,
+            )
+            score = scorer.score(facts)
+
+            question_scores.append(
+                QuestionDimensionScore(
+                    question_id=f"q{question_no}",
+                    question_no=question_no,
+                    score=5.0,
+                    dim_scores={"dim2": score.score},
+                    applicable_dims=["dim2"],
+                    question_summary=f"WMO geometry question {question_no}",
+                    dim_reasons={"dim2": score.evidence},
+                    dim_confidences={"dim2": facts["applicability_confidence"]},
+                    dim_statuses={"dim2": applicability["status"]},
+                    dim_details={"dim2": {**facts, **score.details}},
+                )
+            )
+
+        result = aggregator.aggregate(question_scores, "dim2")
+
+        assert result.question_count == 4
+        assert result.score_status == "scored"
+        assert result.review_question_count == 0
+        assert result.paper_score == pytest.approx(8.375)
+
     def test_dim2_not_covered_explains_geometry_candidates(self, aggregator):
         question_scores = [
             QuestionDimensionScore(
@@ -5355,16 +5673,16 @@ class TestIntegration:
         dim5 = next(detail for detail in report["dimension_details"] if detail["code"] == "dim5")
 
         assert 8.0 <= dim5["score"] <= 9.0
-        assert dim5["score"] == pytest.approx(8.1)
+        assert dim5["score"] == pytest.approx(8.5)
         assert dim5["score_breakdown"]["valid_score_question_count"] == 20
-        assert dim5["score_breakdown"]["bucket_counts"]["beyond"] == 12
+        assert dim5["score_breakdown"]["level_counts"]["L5"] == 12
         assert (
             dim5["score_breakdown"]["bucket_counts"]["high_gaosi"]
             + dim5["score_breakdown"]["bucket_counts"]["junior_bridge"]
             + dim5["score_breakdown"]["bucket_counts"]["beyond"]
         ) == 18
-        assert dim5["score_breakdown"]["unknown_unscored_count"] == 0
-        assert "超越篇命中 12 道" in dim5["evidence"]
+        assert dim5["score_breakdown"]["unscored_applicable_count"] == 0
+        assert "按知识范围等级权重计算" in dim5["evidence"]
         assert all(
             question_scores[index - 1].dim_details["dim5"]["band_source"]
             in {"knowledge_anchor", "question_bank", "llm_dim5_retry", "model_only"}
@@ -5376,7 +5694,7 @@ class TestIntegration:
             for question in question_scores
             if question.dim_details["dim5"]["knowledge_source_bucket"] == "beyond"
         )
-        assert report["difficulty_position"]["overall_score"] == pytest.approx(8.2)
+        assert report["difficulty_position"]["overall_score"] == pytest.approx(8.3)
         assert report["difficulty_position"]["level"] == 5
         assert report["difficulty_position"]["label"] == "竞赛卷"
 
@@ -5674,7 +5992,7 @@ class TestIntegration:
         assert aggregated["dim3"].score_status == "not_covered"
         assert not aggregated["dim3"].warning_messages
 
-    def test_report_rebuild_restores_dim4_review_status_from_payload(self):
+    def test_report_rebuild_converts_dim4_review_payload_to_conservative_score(self):
         service = ReportService()
         questions = [
             SimpleNamespace(
@@ -5719,10 +6037,14 @@ class TestIntegration:
         question_scores = service._build_question_scores_from_rows(questions, tag_map, dim_rows)
         aggregated = service.aggregator.aggregate_all_dimensions(question_scores)
 
-        assert question_scores[0].dim_statuses["dim4"] == "review"
-        assert aggregated["dim4"].review_question_count == 1
+        assert question_scores[0].dim_statuses["dim4"] == "not_applicable"
+        assert "dim4" not in question_scores[0].dim_scores
+        assert "dim4" not in question_scores[0].applicable_dims
+        assert aggregated["dim4"].review_question_count == 0
+        assert aggregated["dim4"].question_count == 0
         assert aggregated["dim4"].score_status == "not_covered"
-        assert any("转入人工复核" in item for item in aggregated["dim4"].warning_messages)
+        assert aggregated["dim4"].score_breakdown["auto_ignored_count"] == 1
+        assert all("人工复核" not in item and "未计入" not in item for item in aggregated["dim4"].warning_messages)
 
 
     def test_report_includes_dim6_review_warning(self):

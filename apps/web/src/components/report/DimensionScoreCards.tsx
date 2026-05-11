@@ -52,7 +52,13 @@ function cleanDim4EvidenceText(text: string): string {
     .split(/[；;]/u)
     .map((segment) => segment.replace(/[。；;，,\s]+$/u, '').trim())
     .filter(Boolean)
-    .filter((segment) => !DIM4_LEVEL_COUNT_SEGMENT_PATTERN.test(segment));
+    .filter((segment) => !DIM4_LEVEL_COUNT_SEGMENT_PATTERN.test(segment))
+    .filter(
+      (segment) =>
+        !/人工复核|复核|未计入|排除不适用题|保守\s*L1\s*兜底|自动未覆盖|未纳入评分|缺少稳定自动判级依据/u.test(
+          segment,
+        ),
+    );
 
   if (segments.length === 0) {
     return text.replace(/\s+/g, ' ').trim();
@@ -61,6 +67,25 @@ function cleanDim4EvidenceText(text: string): string {
 }
 
 function formatDimensionEvidence(dim: DimensionScore): string {
+  if (dim.code === 'dim5') {
+    const breakdown = dim.score_breakdown;
+    const includedCount = getBreakdownNumber(breakdown, 'valid_score_question_count');
+    const weightedAverage =
+      getBreakdownNumber(breakdown, 'weighted_question_average') ??
+      getBreakdownNumber(breakdown, 'final_score');
+
+    if (includedCount !== null && weightedAverage !== null) {
+      const parts = [
+        `共 ${includedCount} 道题纳入知识范围评分`,
+        '按知识范围等级权重计算',
+      ];
+      if (dim.score_status !== 'not_covered' && dim.level > 0) {
+        parts.push(`权重得分 ${formatScore(weightedAverage)} 分`);
+      }
+      return `${parts.join('；')}。`;
+    }
+  }
+
   if (dim.code !== 'dim4') {
     return dim.evidence;
   }
@@ -80,18 +105,6 @@ function formatDimensionEvidence(dim: DimensionScore): string {
     if (dim.score_status !== 'not_covered' && dim.level > 0) {
       const displayScore = usesWeightedScore ? weightedAverage : dim.score;
       parts.push(`${usesWeightedScore ? '权重得分' : '题级均分'} ${formatScore(displayScore)} 分`);
-    }
-
-    const reviewCount =
-      getBreakdownNumber(breakdown, 'review_count') ??
-      getBreakdownNumber(breakdown, 'review_question_count');
-    const unscoredCount = getBreakdownNumber(breakdown, 'unscored_question_count');
-
-    if (reviewCount !== null && reviewCount > 0) {
-      parts.push(`人工复核 ${reviewCount} 道未计入`);
-    }
-    if (unscoredCount !== null && unscoredCount > 0) {
-      parts.push(`缺少合法题级分 ${unscoredCount} 道未计入`);
     }
 
     return `${parts.join('；')}。`;

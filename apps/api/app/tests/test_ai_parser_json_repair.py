@@ -47,6 +47,26 @@ class Dim5ReferenceFillStandard(StubReferenceStandard):
         return normalized
 
 
+class Dim5TopicStructureCandidateStandard(StubReferenceStandard):
+    def dim5_topic_structure_candidates(self, feature, **kwargs):
+        return [
+            {
+                "source": "gaosi_question_pdf",
+                "book_name": "竞赛数学导引 五年级",
+                "grade": "5",
+                "lecture_title": "牛吃草问题",
+                "section_level": "extension",
+                "section_label": "拓展篇",
+                "question_no": "4",
+                "topic_match_terms": ["牛吃草"],
+                "structure_match_terms": ["增长", "消耗"],
+                "dim5_topic_structure_band": list(BAND_SCORE_MAP.keys())[3],
+                "match_scope": "topic_structure",
+                "match_action": "raise_band",
+            }
+        ]
+
+
 class Dim4SkeletonCandidateStandard(StubReferenceStandard):
     def __init__(self):
         self.candidate_calls = 0
@@ -446,6 +466,93 @@ def test_parse_response_does_not_retry_when_dim5_band_is_valid():
     assert fake_llm.calls == []
 
 
+def test_parse_response_retries_valid_low_dim5_when_topic_structure_candidate_exists():
+    fake_llm = FakeLLM(
+        responses=[
+            json.dumps(
+                {
+                    "gaosi_grade": "5",
+                    "gaosi_section_level": "extension",
+                    "gaosi_section_label": "拓展篇",
+                    "band": list(BAND_SCORE_MAP.keys())[1],
+                    "sublevel": "mid",
+                    "evidence_summary": "牛吃草属于五年级高思导引拓展篇知识门槛。",
+                    "knowledge_tags": ["牛吃草问题"],
+                    "core_knowledge_units": ["牛吃草问题"],
+                    "primary_knowledge_point": "牛吃草问题",
+                    "confidence": 0.83,
+                },
+                ensure_ascii=False,
+            )
+        ]
+    )
+    parser = make_parser(fake_llm)
+    parser.reference_standard = Dim5TopicStructureCandidateStandard()
+    question = ParsedQuestion(
+        question_no="12c",
+        question_type=QuestionType.APPLICATION,
+        raw_text="草场每天都长草，若干头牛吃若干天，求原有草量。",
+        page_no=1,
+    )
+
+    features = asyncio.run(
+        parser._parse_response_with_repairs(
+            dim5_retry_test_payload(
+                {
+                    "band": list(BAND_SCORE_MAP.keys())[1],
+                    "sublevel": "low",
+                    "knowledge_tags": ["牛吃草问题"],
+                    "core_knowledge_units": ["牛吃草问题"],
+                    "competition_signal": "weak",
+                }
+            ),
+            question,
+        )
+    )
+
+    assert features.parse_failed is False
+    assert features.dim5_knowledge["band"] == list(BAND_SCORE_MAP.keys())[3]
+    assert features.dim5_knowledge["sublevel"] == "mid"
+    assert features.dim5_knowledge["band_source"] == "llm_dim5_retry"
+    assert features.dim5_knowledge["primary_knowledge_point"] == "牛吃草问题"
+    assert "dim5" in features.applicable_dimensions
+    assert len(fake_llm.calls) == 1
+    assert "topic_structure" in fake_llm.calls[0]["messages"][1]["content"]
+
+
+def test_parse_response_keeps_direct_formula_dim5_without_relaxed_retry():
+    valid_band = list(BAND_SCORE_MAP.keys())[1]
+    fake_llm = FakeLLM()
+    parser = make_parser(fake_llm)
+    question = ParsedQuestion(
+        question_no="12d",
+        question_type=QuestionType.APPLICATION,
+        raw_text="直接套用圆柱和圆锥体积公式求体积比。",
+        page_no=1,
+    )
+
+    features = asyncio.run(
+        parser._parse_response_with_repairs(
+            dim5_retry_test_payload(
+                {
+                    "band": valid_band,
+                    "sublevel": "low",
+                    "evidence_summary": "直接公式题。",
+                    "knowledge_tags": ["圆柱圆锥体积比"],
+                    "core_knowledge_units": ["圆柱圆锥体积比"],
+                    "competition_signal": "strong",
+                }
+            ),
+            question,
+        )
+    )
+
+    assert features.parse_failed is False
+    assert features.dim5_knowledge["band"] == valid_band
+    assert features.dim5_knowledge["sublevel"] == "low"
+    assert fake_llm.calls == []
+
+
 def test_parse_response_adds_dim4_l1_for_stable_known_topic_without_llm():
     fake_llm = FakeLLM()
     parser = make_parser(fake_llm)
@@ -620,7 +727,17 @@ def test_parse_response_marks_manual_review_for_dim3_warnings():
   },
   "applicable_dimensions": ["dim3", "dim5"],
   "features": {
-    "dim1_computation": {},
+    "dim1_computation": {
+      "task_form": "embedded",
+      "calc_role": "none",
+      "step_chain": "1",
+      "number_mix": "standard",
+      "routine_transform_count": "0",
+      "structural_method": "none",
+      "global_view_required": 0,
+      "error_pressure": "low",
+      "evidence_summary": "该题不以计算执行为核心。"
+    },
     "dim2_spatial": {},
     "dim3_information": {
       "information_role": "core",
@@ -652,7 +769,7 @@ def test_parse_response_marks_manual_review_for_dim3_warnings():
     assert any(item.startswith("dim3 ") for item in features.warnings)
 
 
-def test_parse_response_marks_manual_review_for_dim4_warnings():
+def test_parse_response_keeps_dim4_warnings_without_manual_review():
     parser = make_parser(FakeLLM())
     question = ParsedQuestion(
         question_no="10",
@@ -673,7 +790,17 @@ def test_parse_response_marks_manual_review_for_dim4_warnings():
   },
   "applicable_dimensions": ["dim4", "dim5"],
   "features": {
-    "dim1_computation": {},
+    "dim1_computation": {
+      "task_form": "embedded",
+      "calc_role": "none",
+      "step_chain": "1",
+      "number_mix": "standard",
+      "routine_transform_count": "0",
+      "structural_method": "none",
+      "global_view_required": 0,
+      "error_pressure": "low",
+      "evidence_summary": "该题不以计算执行为核心。"
+    },
     "dim2_spatial": {},
     "dim3_information": {},
     "dim4_innovation": {
@@ -695,15 +822,33 @@ def test_parse_response_marks_manual_review_for_dim4_warnings():
       "need_manual_review": 0,
       "warning": ""
     },
-    "dim5_knowledge": {
-      "band": "4年级及以前校内课本难度",
-      "sublevel": "low",
-      "evidence_summary": "核心知识门槛不高",
-      "knowledge_tags": ["构造"],
-      "applicability_confidence": 0.8,
-      "warning": ""
-    },
-    "dim6_logic": {}
+      "dim5_knowledge": {
+        "band": "4年级及以前校内课本难度",
+        "sublevel": "low",
+        "evidence_summary": "核心知识门槛不高",
+        "knowledge_tags": ["构造"],
+        "core_knowledge_units": ["构造"],
+        "supporting_knowledge_units": [],
+        "knowledge_family_count": "1",
+        "knowledge_integration": "single",
+        "novel_definition_dependency": "none",
+        "competition_signal": "none",
+        "applicability_confidence": 0.8,
+        "warning": ""
+      },
+    "dim6_logic": {
+      "reasoning_role": "none",
+      "chain_span": "1",
+      "hidden_dependency": "none",
+      "branch_control": "none",
+      "reversibility": "none",
+      "verification_requirement": "none",
+      "abstraction_bridge_count": "0",
+      "constraint_coupling": "none",
+      "global_consistency_required": 0,
+      "conclusion_stability": "direct",
+      "evidence_summary": "该题不以逻辑链推进为核心。"
+    }
   },
   "confidence": 0.78,
   "reasoning": "题面核心在策略尝试与构造。"
@@ -712,7 +857,7 @@ def test_parse_response_marks_manual_review_for_dim4_warnings():
     features = asyncio.run(parser._parse_response_with_repairs(payload, question))
 
     assert features.parse_failed is False
-    assert features.need_manual_review is True
+    assert features.need_manual_review is False
     assert any(item.startswith("dim4 ") for item in features.warnings)
 
 
@@ -838,7 +983,25 @@ def test_parse_response_uses_dim4_llm_fallback_for_uncovered_topic():
         "evidence_summary": "核心知识点为鸡兔同笼。",
         "knowledge_tags": ["鸡兔同笼"],
         "core_knowledge_units": ["鸡兔同笼"],
+        "supporting_knowledge_units": [],
+        "knowledge_family_count": "1",
+        "knowledge_integration": "single",
+        "novel_definition_dependency": "none",
+        "competition_signal": "none",
         "applicability_confidence": 0.8,
+    }
+    payload["features"]["dim6_logic"] = {
+        "reasoning_role": "core",
+        "chain_span": "3-4",
+        "hidden_dependency": "cross_condition",
+        "branch_control": "explicit_cases",
+        "reversibility": "backward",
+        "verification_requirement": "constraint_backcheck",
+        "abstraction_bridge_count": "1",
+        "constraint_coupling": "coupled",
+        "global_consistency_required": 1,
+        "conclusion_stability": "edge_sensitive",
+        "evidence_summary": "需要分类回查所有可能。",
     }
 
     features = asyncio.run(
@@ -909,7 +1072,7 @@ def test_parse_response_uses_gaosi_candidate_before_dim4_local_anchor():
     assert "dim4" in features.applicable_dimensions
 
 
-def test_parse_response_dim4_fallback_failure_marks_review_failed():
+def test_parse_response_dim4_fallback_failure_stays_applicable_with_conservative_score():
     fake_llm = FakeLLM(responses=["not json"])
     parser = make_parser(fake_llm)
     question = ParsedQuestion(
@@ -944,7 +1107,25 @@ def test_parse_response_dim4_fallback_failure_marks_review_failed():
         "evidence_summary": "核心知识点为鸡兔同笼。",
         "knowledge_tags": ["鸡兔同笼"],
         "core_knowledge_units": ["鸡兔同笼"],
+        "supporting_knowledge_units": [],
+        "knowledge_family_count": "1",
+        "knowledge_integration": "single",
+        "novel_definition_dependency": "none",
+        "competition_signal": "none",
         "applicability_confidence": 0.8,
+    }
+    payload["features"]["dim6_logic"] = {
+        "reasoning_role": "core",
+        "chain_span": "3-4",
+        "hidden_dependency": "cross_condition",
+        "branch_control": "explicit_cases",
+        "reversibility": "backward",
+        "verification_requirement": "constraint_backcheck",
+        "abstraction_bridge_count": "1",
+        "constraint_coupling": "coupled",
+        "global_consistency_required": 1,
+        "conclusion_stability": "edge_sensitive",
+        "evidence_summary": "需要分类回查所有可能。",
     }
 
     features = asyncio.run(
@@ -954,7 +1135,8 @@ def test_parse_response_dim4_fallback_failure_marks_review_failed():
     assert features.parse_failed is False
     assert features.dim4_innovation["level_source"] == "review_failed"
     assert features.dim4_innovation["fallback_used"] is True
-    assert "dim4" not in features.applicable_dimensions
+    assert "dim4" in features.applicable_dimensions
+    assert features.need_manual_review is False
     assert any(item.startswith("dim4 ") for item in features.warnings)
 
 
