@@ -78,6 +78,7 @@ MODEL_COMBINATION_COMPLEXITY_VALUES = {
     "nested_model",
 }
 GEOMETRY_VISUAL_CATEGORIES = {
+    "geometry",
     "geometry_visual",
     "geometry_context",
     "spatial_3d",
@@ -87,7 +88,36 @@ GEOMETRY_VISUAL_CATEGORIES = {
 }
 OCR_DAMAGE_MARKERS = ("OCR", "残缺", "缺损", "截断", "识别失败")
 GEOMETRY_NOUN_PATTERN = re.compile(
-    r"(三角形|长方形|正方形|平行四边形|梯形|圆|扇形|立方体|正方体|长方体|圆柱|圆锥|展开图|截面|视图|蝴蝶模型|燕尾模型|一半模型|鸟头|沙漏|割补|等高|共边|格点|三视图|水中浸物|长度计算|角度计算|图形变换)"
+    r"(三角形|四边形|多边形|长方形|正方形|平行四边形|梯形|圆|扇形|立方体|正方体|长方体|圆柱|圆锥|展开图|截面|视图|对角线|面积|表面积|体积|容积|蝴蝶模型|燕尾模型|一半模型|鸟头|沙漏|割补|等高|共边|格点|三视图|水中浸物|长度计算|角度计算|图形变换)"
+)
+FIGURE_REFERENCE_PATTERN = re.compile("(?:如图|下图|图中|图示|配图|右图|左图)")
+NON_GEOMETRY_DIAGRAM_PATTERN = re.compile(
+    "(?:结绳|打结|绳子|满五进一|进位制|位值|非十进制|多米诺|骨牌|阀门|水表)"
+)
+MEASUREMENT_NON_GEOMETRY_PATTERN = re.compile(
+    "(?:杆秤|杠杆|质量.{0,8}距离|距离.{0,8}质量|质量.{0,8}乘积|平衡原理)"
+)
+PATH_LOGIC_PATTERN = re.compile(
+    "(?:光线|平面镜|镜子|反射|射入|射出|烟囱|飞行方向|传播路径)"
+)
+ROTATION_SECTOR_SHADOW_PATTERN = re.compile(
+    "(?=.*(?:旋转|绕.{0,4}点))(?=.*(?:90°|90度|直角))(?=.*(?:阴影|面积|扇形|圆|π))"
+)
+QUADRILATERAL_AREA_RATIO_PATTERN = re.compile(
+    "(?=.*(?:四边形|三角形))(?=.*(?:对角线|相交于O|交于O))"
+    "(?=.*(?:面积|S))(?=.*(?:：|:|比|BE|EC|边BC))"
+)
+HOLLOW_CYLINDER_PATTERN = re.compile(
+    "(?=.*(?:圆柱|木桶|圆柱形))(?=.*(?:内直径|外直径|内高|外高|底面外直径|底面内直径))"
+    "(?=.*(?:装饰|表面积|体积|容积|酒水|高度|面积))"
+)
+SOLID_GEOMETRY_TEXT_PATTERN = re.compile(
+    "(?=.*(?:圆柱|圆锥|长方体|正方体|立方体|空心|木桶))"
+    "(?=.*(?:表面积|体积|容积|底面积|侧面积|高|直径|半径))"
+)
+GEOMETRY_AREA_TEXT_PATTERN = re.compile(
+    "(?=.*(?:三角形|四边形|长方形|正方形|圆|扇形|梯形|平行四边形|对角线|阴影))"
+    "(?=.*(?:面积|周长|比例|比|割补|旋转|等高|共边|π|厘米|平方米|平方厘米))"
 )
 LOW_BARRIER_GEOMETRY_MODEL_TYPES = {
     "basic_area_formula",
@@ -138,7 +168,7 @@ WATER_VOLUME_IMAGE_PATTERN = re.compile(
 MEASUREMENT_IMAGE_PATTERN = re.compile(
     "(?=.*(?:\u5982\u56fe|\u56fe\u4e2d|\u6807\u660e\u7684\u6570\u636e|\u56fe\u793a))"
     "(?=.*(?:\u5398\u7c73|\u5e73\u65b9\u5398\u7c73|\u5e73\u65b9\u7c73|\u5bb9\u79ef|"
-    "\u4f53\u79ef|\u5e95\u9762\u79ef|\u9762\u79ef|\u6c34))"
+    "\u4f53\u79ef|\u5e95\u9762\u79ef|\u9762\u79ef|\u6c34\u4f4d|\u88c5\u6c34))"
 )
 RECTANGLE_REVERSE_AREA_PATTERN = re.compile(
     "(?=.*\u957f\u65b9\u5f62)(?=.*\u957f(?:\u51cf\u5c11|\u7f29\u77ed))"
@@ -229,6 +259,61 @@ def _audit_attr(parse_audit: Any, name: str, default: Any = None) -> Any:
     return getattr(parse_audit, name, default)
 
 
+def classify_dim2_geometry_domain(
+    raw_text: str,
+    dim2_feature: Dict[str, Any] | None = None,
+    *,
+    parse_audit: Any = None,
+) -> tuple[str, str]:
+    """Classify whether a visual prompt is actually in dim2's geometry domain."""
+    text = str(raw_text or "")
+    feature = dim2_feature or {}
+    visual_category = str(_audit_attr(parse_audit, "visual_category", "") or "").strip()
+    model_types = _normalize_choice_list(feature.get("geometry_model_types"), GEOMETRY_MODEL_TYPE_VALUES)
+    figure_complexity = _normalize_choice(feature.get("figure_complexity"), FIGURE_COMPLEXITY_VALUES)
+
+    if PATH_LOGIC_PATTERN.search(text):
+        return "path_logic", "题目核心是路径或状态追踪，不是几何图形关系。"
+    if MEASUREMENT_NON_GEOMETRY_PATTERN.search(text):
+        return "measurement_non_geometry", "题目核心是物理量或数量关系平衡，不是几何测量。"
+    if NON_GEOMETRY_DIAGRAM_PATTERN.search(text):
+        return "non_geometry_diagram", "题目只是借助示意图读取规则或数量，不属于几何空间域。"
+
+    if HOLLOW_CYLINDER_PATTERN.search(text) or SOLID_GEOMETRY_TEXT_PATTERN.search(text):
+        return "solid_geometry", "题面稳定指向立体图形、表面积、体积或容积关系。"
+    if (
+        ROTATION_SECTOR_SHADOW_PATTERN.search(text)
+        or QUADRILATERAL_AREA_RATIO_PATTERN.search(text)
+        or SQUARE_SECTOR_SHADOW_PATTERN.search(text)
+        or CIRCLE_SQUARE_IMAGE_PATTERN.search(text)
+        or CIRCLE_RECTANGLE_EQUAL_AREA_PATTERN.search(text)
+        or GEOMETRY_AREA_TEXT_PATTERN.search(text)
+    ):
+        return "geometry_area_relation", "题面稳定指向几何面积、图形变换或面积比例关系。"
+    if (
+        WATER_VOLUME_IMAGE_PATTERN.search(text)
+        or SPATIAL_3D_IMAGE_PATTERN.search(text)
+        or CUBE_VIEW_PROJECTION_PATTERN.search(text)
+        or SOLID_MULTI_VIEW_EXTREME_PATTERN.search(text)
+    ):
+        return "solid_geometry", "题面稳定指向立体空间结构或水位体积关系。"
+    if model_types or figure_complexity in {"basic_2d", "composite_2d", "solid_3d", "net_section_multi_view"}:
+        return "geometry_core", "已有 dim2 结构化事实指向几何或空间关系。"
+    if visual_category in GEOMETRY_VISUAL_CATEGORIES and GEOMETRY_NOUN_PATTERN.search(text):
+        return "geometry_core", "视觉类别和题面几何词共同指向几何空间域。"
+    return "unknown", "题面没有稳定几何空间域信号。"
+
+
+def _geometry_domain_allows_dim2(domain: str) -> bool:
+    return domain in {"geometry_core", "geometry_area_relation", "solid_geometry"}
+
+
+def _has_stable_text_geometry_scope(raw_text: str, feature: Dict[str, Any], parse_audit: Any) -> bool:
+    domain, _ = classify_dim2_geometry_domain(raw_text, feature, parse_audit=parse_audit)
+    image_dependency = _normalize_choice(feature.get("image_dependency"), IMAGE_DEPENDENCY_VALUES)
+    return _geometry_domain_allows_dim2(domain) and image_dependency in {"", "none", "helpful"}
+
+
 def _missing_fields(feature: Dict[str, Any]) -> List[str]:
     checks = {
         "task_form": _normalize_choice(feature.get("task_form"), TASK_FORM_VALUES),
@@ -261,7 +346,12 @@ def _missing_fields(feature: Dict[str, Any]) -> List[str]:
 def _has_geometry_signal(raw_text: str, parse_audit: Any) -> bool:
     visual_category = str(_audit_attr(parse_audit, "visual_category", "") or "").strip()
     text = str(raw_text or "")
-    if visual_category in GEOMETRY_VISUAL_CATEGORIES:
+    domain, _ = classify_dim2_geometry_domain(text, parse_audit=parse_audit)
+    if _geometry_domain_allows_dim2(domain):
+        return True
+    if domain in {"non_geometry_diagram", "path_logic", "measurement_non_geometry"}:
+        return False
+    if visual_category in GEOMETRY_VISUAL_CATEGORIES and GEOMETRY_NOUN_PATTERN.search(text):
         return True
     if SHORT_GEOMETRY_IMAGE_PATTERN.search(text):
         return True
@@ -282,9 +372,11 @@ def has_dim2_short_geometry_signal(raw_text: str) -> bool:
 def _has_visual_fallback_signal(raw_text: str, parse_audit: Any) -> bool:
     visual_category = str(_audit_attr(parse_audit, "visual_category", "") or "").strip()
     text = str(raw_text or "")
+    domain, _ = classify_dim2_geometry_domain(text, parse_audit=parse_audit)
+    if not _geometry_domain_allows_dim2(domain):
+        return False
     return (
-        visual_category in {"geometry_visual", "spatial_3d"}
-        or bool(_audit_attr(parse_audit, "image_required_hint", False))
+        (visual_category in GEOMETRY_VISUAL_CATEGORIES and bool(FIGURE_REFERENCE_PATTERN.search(text)))
         or has_dim2_short_geometry_signal(text)
         or bool(WATER_VOLUME_IMAGE_PATTERN.search(text))
         or bool(MEASUREMENT_IMAGE_PATTERN.search(text))
@@ -373,6 +465,32 @@ def build_dim2_text_geometry_fallback_facts(
 ) -> Dict[str, Any] | None:
     """Build conservative L1 dim2 facts for text-only direct formula geometry."""
     feature = dim2_feature or {}
+    if HOLLOW_CYLINDER_PATTERN.search(str(raw_text or "")) and _should_replace_with_text_geometry_fallback(feature):
+        return {
+            "task_form": "text_only_geometry",
+            "spatial_role": "core",
+            "figure_complexity": "solid_3d",
+            "relation_hops": "2",
+            "hidden_relation_count": "1",
+            "visual_operation_count": "2",
+            "structural_visual_method": "decomposition",
+            "measurement_dependency": "direct",
+            "global_view_required": 1,
+            "image_dependency": "none",
+            "geometry_model_types": ["solid_formula"],
+            "geometry_model_count": "1",
+            "model_recognition_role": "core",
+            "area_relation_chain": "none",
+            "model_combination_complexity": "single_model",
+            "evidence_summary": "稳定识别为空心圆柱表面积/体积题，需要分清内外直径、内外高度，并把盖面圆环、侧面展开和酒水高度分别对应到公式关系。",
+            "evidence_tags": ["空心圆柱", "圆柱表面积", "圆柱体积", "侧面展开"],
+            "applicability_confidence": 0.82,
+            "need_manual_review": 0,
+            "warning": "",
+            "fallback_source": "text_hollow_cylinder_geometry",
+            "geometry_domain_gate": "solid_geometry",
+            "domain_gate_reason": "题面稳定指向圆柱木桶的表面积、体积和空间结构关系。",
+        }
     if not _has_direct_formula_geometry_signal(raw_text):
         return None
     if not _should_replace_with_text_geometry_fallback(feature):
@@ -404,6 +522,8 @@ def build_dim2_text_geometry_fallback_facts(
         "need_manual_review": 0,
         "warning": "",
         "fallback_source": "text_geometry_formula",
+        "geometry_domain_gate": "solid_geometry" if figure_complexity == "solid_3d" else "geometry_core",
+        "domain_gate_reason": "题面稳定指向直接公式几何关系。",
     }
 
 
@@ -424,6 +544,70 @@ def build_dim2_visual_fallback_facts(
     """
     feature = dim2_feature or {}
     text = str(raw_text or "")
+    geometry_domain, domain_reason = classify_dim2_geometry_domain(
+        text,
+        feature,
+        parse_audit=parse_audit,
+    )
+    if not _geometry_domain_allows_dim2(geometry_domain):
+        return None
+
+    if ROTATION_SECTOR_SHADOW_PATTERN.search(text) and _should_replace_with_visual_fallback(feature):
+        return {
+            "task_form": "explicit_visual",
+            "spatial_role": "core",
+            "figure_complexity": "composite_2d",
+            "relation_hops": "3-4",
+            "hidden_relation_count": "1",
+            "visual_operation_count": "2",
+            "structural_visual_method": "decomposition",
+            "measurement_dependency": "inferred",
+            "global_view_required": 0,
+            "image_dependency": "helpful",
+            "geometry_model_types": ["circle_sector_cut_fill", "figure_transformation"],
+            "geometry_model_count": "2",
+            "model_recognition_role": "core",
+            "area_relation_chain": "single",
+            "model_combination_complexity": "model_plus_operation",
+            "evidence_summary": "稳定识别为旋转图形与阴影面积题，需要对应旋转前后的边长关系，并把扇形、三角形和阴影区域拆分后计算。",
+            "evidence_tags": ["图形旋转", "阴影面积", "圆与扇形", "面积割补"],
+            "applicability_confidence": 0.76,
+            "need_manual_review": 0,
+            "warning": "",
+            "fallback_source": "visual_geometry_rotation_shadow",
+            "image_block_available": 1,
+            "geometry_domain_gate": geometry_domain,
+            "domain_gate_reason": domain_reason,
+        }
+
+    if QUADRILATERAL_AREA_RATIO_PATTERN.search(text) and _should_replace_with_visual_fallback(feature):
+        return {
+            "task_form": "explicit_visual",
+            "spatial_role": "core",
+            "figure_complexity": "composite_2d",
+            "relation_hops": "3-4",
+            "hidden_relation_count": "1",
+            "visual_operation_count": "2",
+            "structural_visual_method": "decomposition",
+            "measurement_dependency": "inferred",
+            "global_view_required": 0,
+            "image_dependency": "helpful",
+            "geometry_model_types": ["area_ratio_chain", "composite_area_model"],
+            "geometry_model_count": "2",
+            "model_recognition_role": "core",
+            "area_relation_chain": "multi",
+            "model_combination_complexity": "model_plus_operation",
+            "evidence_summary": "稳定识别为四边形对角线与三角形面积关系题，需要把已知面积和边上比例转化为多段面积比例关系。",
+            "evidence_tags": ["四边形面积关系", "对角线", "面积比例", "组合图形"],
+            "applicability_confidence": 0.74,
+            "need_manual_review": 0,
+            "warning": "",
+            "fallback_source": "visual_geometry_area_ratio",
+            "image_block_available": 1,
+            "geometry_domain_gate": geometry_domain,
+            "domain_gate_reason": domain_reason,
+        }
+
     if RECTANGLE_REVERSE_AREA_PATTERN.search(text) and _should_replace_with_visual_fallback(feature):
         return {
             "task_form": "geometry_embedded",
@@ -447,6 +631,8 @@ def build_dim2_visual_fallback_facts(
             "need_manual_review": 0,
             "warning": "",
             "fallback_source": "geometry_structure",
+            "geometry_domain_gate": geometry_domain,
+            "domain_gate_reason": domain_reason,
         }
 
     if SOLID_MULTI_VIEW_EXTREME_PATTERN.search(text) and _should_replace_with_visual_fallback(feature):
@@ -476,6 +662,8 @@ def build_dim2_visual_fallback_facts(
             "warning": "",
             "fallback_source": "visual_geometry",
             "image_block_available": 1,
+            "geometry_domain_gate": geometry_domain,
+            "domain_gate_reason": domain_reason,
         }
 
     if CUBE_VIEW_PROJECTION_PATTERN.search(text) and _should_replace_with_visual_fallback(feature):
@@ -505,6 +693,8 @@ def build_dim2_visual_fallback_facts(
             "warning": "",
             "fallback_source": "visual_geometry",
             "image_block_available": 1,
+            "geometry_domain_gate": geometry_domain,
+            "domain_gate_reason": domain_reason,
         }
 
     if SQUARE_SECTOR_SHADOW_PATTERN.search(text) and _should_replace_with_visual_fallback(feature):
@@ -534,6 +724,8 @@ def build_dim2_visual_fallback_facts(
             "warning": "",
             "fallback_source": "visual_geometry",
             "image_block_available": 1,
+            "geometry_domain_gate": geometry_domain,
+            "domain_gate_reason": domain_reason,
         }
 
     if CIRCLE_RECTANGLE_EQUAL_AREA_PATTERN.search(text) and _should_replace_with_visual_fallback(feature):
@@ -563,6 +755,8 @@ def build_dim2_visual_fallback_facts(
             "warning": "",
             "fallback_source": "visual_geometry",
             "image_block_available": 1,
+            "geometry_domain_gate": geometry_domain,
+            "domain_gate_reason": domain_reason,
         }
 
     if image_fallback or not (has_image or used_image):
@@ -596,6 +790,8 @@ def build_dim2_visual_fallback_facts(
             "warning": "",
             "fallback_source": "visual_geometry",
             "image_block_available": 1,
+            "geometry_domain_gate": geometry_domain,
+            "domain_gate_reason": domain_reason,
         }
 
     if MEASUREMENT_IMAGE_PATTERN.search(text):
@@ -622,6 +818,8 @@ def build_dim2_visual_fallback_facts(
             "warning": "",
             "fallback_source": "visual_geometry",
             "image_block_available": 1,
+            "geometry_domain_gate": geometry_domain,
+            "domain_gate_reason": domain_reason,
         }
 
     if SPATIAL_3D_IMAGE_PATTERN.search(text):
@@ -648,6 +846,8 @@ def build_dim2_visual_fallback_facts(
             "warning": "",
             "fallback_source": "visual_geometry",
             "image_block_available": 1,
+            "geometry_domain_gate": geometry_domain,
+            "domain_gate_reason": domain_reason,
         }
 
     if CIRCLE_SQUARE_IMAGE_PATTERN.search(text):
@@ -674,6 +874,8 @@ def build_dim2_visual_fallback_facts(
             "warning": "",
             "fallback_source": "visual_geometry",
             "image_block_available": 1,
+            "geometry_domain_gate": geometry_domain,
+            "domain_gate_reason": domain_reason,
         }
 
     return {
@@ -699,6 +901,8 @@ def build_dim2_visual_fallback_facts(
         "warning": "",
         "fallback_source": "visual_geometry",
         "image_block_available": 1,
+        "geometry_domain_gate": geometry_domain,
+        "domain_gate_reason": domain_reason,
     }
 
 
@@ -884,6 +1088,18 @@ def evaluate_dim2_applicability(
     visual_category = str(_audit_attr(parse_audit, "visual_category", "") or "").strip()
     block_completeness = _normalize_float(_audit_attr(parse_audit, "block_completeness"))
     warnings: List[str] = []
+    geometry_domain, domain_reason = classify_dim2_geometry_domain(
+        raw_text,
+        feature,
+        parse_audit=parse_audit,
+    )
+
+    if geometry_domain in {"non_geometry_diagram", "path_logic", "measurement_non_geometry"}:
+        return {
+            "status": DIM2_STATUS_NOT_APPLICABLE,
+            "reason": f"{domain_reason}，dim2 不适用。",
+            "warnings": [],
+        }
 
     has_geometry_signal = _has_geometry_signal(raw_text, parse_audit)
     feature_present = any(
@@ -923,7 +1139,20 @@ def evaluate_dim2_applicability(
         warnings.append("dim2 依赖图片，但当前未稳定使用题块图片。")
     if image_dependency == "required" and image_fallback:
         warnings.append("dim2 依赖图片，但当前已退回纯文本分析。")
-    if _audit_attr(parse_audit, "image_required_hint", False) and not used_image:
+    stable_geometry_from_text_or_block = _has_stable_text_geometry_scope(
+        raw_text,
+        feature,
+        parse_audit,
+    ) or (
+        _geometry_domain_allows_dim2(geometry_domain)
+        and image_block_available
+        and str(feature.get("fallback_source") or "").startswith("visual_geometry")
+    )
+    if (
+        _audit_attr(parse_audit, "image_required_hint", False)
+        and not used_image
+        and not stable_geometry_from_text_or_block
+    ):
         warnings.append("OCR 审计提示该题需要图片，但当前未稳定使用图片。")
     if block_completeness is not None and block_completeness < 0.65 and image_dependency == "required":
         warnings.append("题块完整度不足，当前 dim2 结果需人工复核。")
@@ -935,7 +1164,11 @@ def evaluate_dim2_applicability(
         warnings.append("OCR 视觉类别提示几何/空间题，但 dim2 标记为 none。")
     if parse_audit is not None and _audit_attr(parse_audit, "image_required_hint", False) and image_fallback:
         warnings.append("题目被 OCR 判定为依赖图片，但多模态调用未稳定成功。")
-    if _has_ocr_damage_signals(parse_warnings) and (spatial_role == "core" or image_dependency == "required"):
+    if (
+        _has_ocr_damage_signals(parse_warnings)
+        and (spatial_role == "core" or image_dependency == "required")
+        and not stable_geometry_from_text_or_block
+    ):
         warnings.append("dim2 题面存在 OCR 或图片质量问题，当前结果需人工复核。")
     if _has_internal_conflict(feature, parse_audit):
         warnings.append("dim2 空间角色与空间负担特征冲突，当前结果需人工复核。")

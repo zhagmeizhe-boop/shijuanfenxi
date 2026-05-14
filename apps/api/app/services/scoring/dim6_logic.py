@@ -209,6 +209,16 @@ class Dim6LogicScorer(BaseDimensionScorer):
         phase_rank = _band_rank(phase_count_band, {"1": 1, "2": 2, "3-4": 3, "5+": 5})
         structures = set(logic_structure_types)
         normalized_details = {
+            "reasoning_role": reasoning_role,
+            "chain_span": chain_span,
+            "hidden_dependency": hidden_dependency,
+            "branch_control": branch_control,
+            "reversibility": reversibility,
+            "verification_requirement": verification_requirement,
+            "abstraction_bridge_count": abstraction_bridge_count,
+            "constraint_coupling": constraint_coupling,
+            "global_consistency_required": global_consistency_required,
+            "conclusion_stability": conclusion_stability,
             "logic_structure_types": logic_structure_types,
             "state_transition_count": state_transition_count or "0",
             "case_count_band": case_count_band or "none",
@@ -219,6 +229,7 @@ class Dim6LogicScorer(BaseDimensionScorer):
             if periodic_cycle_dependency is None
             else periodic_cycle_dependency,
             "optimization_requirement": optimization_requirement or "none",
+            "evidence_summary": evidence_summary,
         }
 
         if (

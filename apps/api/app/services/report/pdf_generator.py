@@ -63,16 +63,11 @@ DIM_META = [
     {
         "code": "dim6",
         "field": "innovation",
-        "name": "逻辑链条长度",
-        "chart_name": "逻辑链条\n长度",
+        "name": "逻辑链条",
+        "chart_name": "逻辑链条",
         "color": "#5f567c",
     },
 ]
-
-for _meta in DIM_META:
-    if _meta.get("code") == "dim6":
-        _meta["name"] = "逻辑链条"
-        _meta["chart_name"] = "逻辑链条"
 
 DIFFICULTY_META = {
     1: {
@@ -245,6 +240,209 @@ class PDFExportService:
             numeric = 0.0
         return f"{numeric:.{digits}f}"
 
+    @classmethod
+    def _build_dim1_score_overview(cls, score: object) -> str:
+        try:
+            score_value = float(score or 0.0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+
+        if score_value >= 9:
+            explanation = "说明本卷计算要求很高，包含较强的多步、结构化或拓展计算，对综合计算能力要求突出。"
+        elif score_value >= 8:
+            explanation = "说明本卷计算难度较高，计算题和应用题中的核心计算都会拉开学生差距。"
+        elif score_value >= 6:
+            explanation = "说明本卷有一定计算难度，除准确率外，也考查多步运算和常见转化。"
+        elif score_value >= 4:
+            explanation = "说明本卷计算难度整体偏常规，重点考查校内计算的熟练度和稳定性。"
+        else:
+            explanation = "说明本卷计算要求以基础运算为主，主要看基本规则掌握和计算准确率。"
+        return f"计算维度，综合得分 {score_value:.1f} 分，{explanation}"
+
+    @classmethod
+    def _build_dim2_score_overview(cls, score: object) -> str:
+        try:
+            score_value = float(score or 0.0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+
+        if score_value >= 9:
+            explanation = "说明本卷几何与空间要求很高，包含高强度空间重构、多视图或高阶几何模型。"
+        elif score_value >= 8:
+            explanation = "说明本卷几何难度较高，复合图形、隐含关系或空间转换会明显拉开差距。"
+        elif score_value >= 6:
+            explanation = "说明本卷有一定几何与空间难度，除基本公式外，也考查图形关系整理和模型识别。"
+        elif score_value >= 4:
+            explanation = "说明本卷以常规图形关系为主，重点考查读图准确性和单步空间转化。"
+        else:
+            explanation = "说明本卷主要覆盖基础识图和直接几何公式，重点看图形概念和基本关系是否掌握。"
+        return f"几何直观与空间想象维度，综合得分 {score_value:.1f} 分，{explanation}"
+
+    @classmethod
+    def _build_dim3_score_overview(cls, score: object) -> str:
+        try:
+            score_value = float(score or 0.0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+
+        if score_value >= 9:
+            explanation = "说明本卷读题场景理解与信息重构要求很高，包含复杂规则、多源材料、嵌套关系或自建表示。"
+        elif score_value >= 8:
+            explanation = "说明本卷读题与信息组织难度较高，分散条件、规则理解、隐含关系或表示转化会拉开差距。"
+        elif score_value >= 6:
+            explanation = "说明本卷有一定场景理解和信息整理难度，需要读懂题意规则、筛选多条条件并建立数量关系。"
+        elif score_value >= 4:
+            explanation = "说明本卷以常规场景理解和信息转化为主，重点看能否把题意条件对应到算式或关系。"
+        else:
+            explanation = "说明本卷信息处理要求较基础，主要是直接读懂题干并定位有效条件。"
+        return f"信息提取与转化维度，综合得分 {score_value:.1f} 分，{explanation}"
+
+    @classmethod
+    def _build_dim4_score_overview(cls, score: object) -> str:
+        try:
+            score_value = float(score or 0.0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+
+        if score_value >= 9:
+            explanation = "说明本卷题目创新要求很高，核心题多需要开放探索、全局构造或最优/唯一性证明。"
+        elif score_value >= 8:
+            explanation = "说明本卷实践创新要求较高，较多题不能直接套模板，需要构造中间量、分类回查或重组关系。"
+        elif score_value >= 6:
+            explanation = "说明本卷有一定变式要求，部分题需要一次策略转换、模型迁移或关系重排。"
+        elif score_value >= 4:
+            explanation = "说明本卷主要是轻度变式，通常在常规模板上作少量调整即可推进。"
+        else:
+            explanation = "说明本卷以基础模板题为主，主要考查直接套用和常规迁移。"
+        return f"实践创新综合得分 {score_value:.1f} 分，{explanation}"
+
+    @classmethod
+    def _build_dim5_score_overview(cls, score: object) -> str:
+        try:
+            score_value = float(score or 0.0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+
+        if score_value >= 9:
+            explanation = "说明本卷知识跨度很高，核心题多进入高思导引超越篇或跨专题竞赛层级，对竞赛型知识储备要求很强。"
+        elif score_value >= 8:
+            explanation = "说明本卷知识广度较高，较多题目需要高思导引专题或跨专题知识，适合区分高水平学生。"
+        elif score_value >= 6:
+            explanation = "说明本卷有一定知识拓展，除校内核心知识外，还覆盖入门专题或部分高思导引知识。"
+        elif score_value >= 4:
+            explanation = "说明本卷主要落在小学高年级校内核心知识，少量题目涉及校内延伸。"
+        else:
+            explanation = "说明本卷以基础校内知识为主，主要考查基本概念和直接应用。"
+        return f"知识广度综合得分 {score_value:.1f} 分，{explanation}"
+
+    @classmethod
+    def _build_dim6_score_overview(cls, score: object) -> str:
+        try:
+            score_value = float(score or 0.0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+
+        if score_value >= 9:
+            explanation = "说明本卷逻辑链条很长，题目往往需要多次推出中间结论，并让多个条件同时对上。"
+        elif score_value >= 8:
+            explanation = "说明本卷逻辑链条较长，较多题需要处理多轮变化、倒推或多种情况。"
+        elif score_value >= 6:
+            explanation = "说明本卷有一定逻辑推进要求，部分题需要连续推出多个中间结论。"
+        elif score_value >= 4:
+            explanation = "说明本卷逻辑链条整体偏常规，少量题需要把前一步结果接到下一步条件中。"
+        else:
+            explanation = "说明本卷多数题的推理链较短，通常一步或直接条件判断即可完成。"
+
+        return f"综合得分 {score_value:.1f} 分，{explanation}"
+
+    DIM1_DIFFICULTY_LABELS = {
+        "L1": "简单（2.0）",
+        "L2": "较易（4.0）",
+        "L3": "中等（6.0）",
+        "L4": "较难（8.0）",
+        "L5": "困难（9.5）",
+    }
+
+    @classmethod
+    def _level_code_from_score(cls, score: object) -> str:
+        try:
+            score_value = float(score or 0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+        if score_value >= 9:
+            return "L5"
+        if score_value >= 8:
+            return "L4"
+        if score_value >= 6:
+            return "L3"
+        if score_value >= 4:
+            return "L2"
+        return "L1"
+
+    @classmethod
+    def _counted_question_difficulty_label(
+        cls,
+        entry: dict | None = None,
+        score: object = None,
+        level_code: str = "",
+    ) -> str:
+        entry = entry or {}
+        explicit = str(entry.get("difficulty_label") or "").strip()
+        if explicit:
+            return explicit
+        normalized_level = str(entry.get("level_code") or level_code or "").strip().upper()
+        if normalized_level in cls.DIM1_DIFFICULTY_LABELS:
+            return cls.DIM1_DIFFICULTY_LABELS[normalized_level]
+        inferred_level = cls._level_code_from_score(score if score is not None else entry.get("score"))
+        return cls.DIM1_DIFFICULTY_LABELS[inferred_level]
+
+    @classmethod
+    def _breakdown_number(cls, breakdown: object, key: str) -> float | None:
+        if not isinstance(breakdown, dict):
+            return None
+        value = breakdown.get(key)
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            return None
+        return numeric
+
+    @classmethod
+    def _nested_breakdown_number(cls, breakdown: object, group_key: str, value_key: str) -> float | None:
+        if not isinstance(breakdown, dict):
+            return None
+        group = breakdown.get(group_key)
+        return cls._breakdown_number(group, value_key)
+
+    @classmethod
+    def _format_dimension_evidence(cls, detail: dict) -> str:
+        if detail.get("code") == "dim1":
+            if detail.get("score_status") == "not_covered" or int(detail.get("level") or 0) <= 0:
+                return str(detail.get("evidence") or "")
+            return cls._build_dim1_score_overview(detail.get("score"))
+        if detail.get("code") == "dim2":
+            if detail.get("score_status") == "not_covered" or int(detail.get("level") or 0) <= 0:
+                return str(detail.get("evidence") or "")
+            return cls._build_dim2_score_overview(detail.get("score"))
+        if detail.get("code") == "dim3":
+            if detail.get("score_status") == "not_covered" or int(detail.get("level") or 0) <= 0:
+                return str(detail.get("evidence") or "")
+            return cls._build_dim3_score_overview(detail.get("score"))
+        if detail.get("code") == "dim4":
+            if detail.get("score_status") == "not_covered" or int(detail.get("level") or 0) <= 0:
+                return str(detail.get("evidence") or "")
+            return cls._build_dim4_score_overview(detail.get("score"))
+        if detail.get("code") == "dim5":
+            if detail.get("score_status") == "not_covered" or int(detail.get("level") or 0) <= 0:
+                return str(detail.get("evidence") or "")
+            return cls._build_dim5_score_overview(detail.get("score"))
+        if detail.get("code") == "dim6":
+            if detail.get("score_status") == "not_covered" or int(detail.get("level") or 0) <= 0:
+                return str(detail.get("evidence") or "")
+            return cls._build_dim6_score_overview(detail.get("score"))
+
+        return str(detail.get("evidence") or "")
+
     @staticmethod
     def _safe_float(value: object, fallback: float = 0.0) -> float:
         try:
@@ -361,17 +559,83 @@ class PDFExportService:
             return normalized
         return f"{normalized[:max_length].rstrip()}…"
 
-    @staticmethod
-    def _format_counted_question_analysis(text: object) -> str:
+    @classmethod
+    def _format_counted_question_analysis(
+        cls,
+        text: object,
+        entry: dict | None = None,
+    ) -> str:
         normalized = " ".join(str(text or "").split()).strip()
         for marker in ("依据标签：", "核心事实：", "依据来源："):
             normalized = normalized.split(marker, 1)[0].strip()
         normalized = normalized.rstrip(" 。；;，,")
 
-        match = re.match(r"^(L[1-5])\s+[^：:]{1,40}[：:]\s*(.+)$", normalized)
+        match = re.match(r"^(L[1-5])(?:\s+[^：:]{1,40})?[：:]\s*(.+)$", normalized)
         if match:
-            normalized = f"{match.group(1)}：{match.group(2).strip()}"
+            normalized = (
+                f"{cls._counted_question_difficulty_label(entry, level_code=match.group(1))}："
+                f"{match.group(2).strip()}"
+            )
+
+        score_match = re.match(r"^(\d+(?:\.\d+)?)分[：:]\s*(.+)$", normalized)
+        if score_match:
+            normalized = (
+                f"{cls._counted_question_difficulty_label(entry, score_match.group(1))}："
+                f"{score_match.group(2).strip()}"
+            )
         return normalized.rstrip(" 。；;，,")
+
+    @staticmethod
+    def _clean_dim4_display_text(value: object) -> str:
+        return " ".join(str(value or "").split()).strip(" 。；;，,")
+
+    @classmethod
+    def _format_dim4_counted_question_analysis(cls, entry: dict, fallback_text: object) -> str:
+        difficulty = cls._counted_question_difficulty_label(entry)
+        point = cls._clean_dim4_display_text(entry.get("knowledge_point_text"))
+        practice_level = cls._clean_dim4_display_text(entry.get("practice_level_text"))
+        reason = cls._clean_dim4_display_text(entry.get("score_reason"))
+
+        if difficulty and reason and (point or practice_level):
+            if point and practice_level:
+                target = f"本题是{point}中的{practice_level}"
+            elif point:
+                target = f"本题是{point}的实践创新题"
+            else:
+                target = f"本题属于{practice_level}题"
+            return f"{difficulty}：{target}；{reason}。"
+
+        return cls._format_counted_question_analysis(fallback_text, entry)
+
+    @staticmethod
+    def _clean_dim5_display_text(value: object) -> str:
+        text = " ".join(str(value or "").split()).strip()
+        if not text:
+            return ""
+        return (
+            text.replace("竞赛数学导引", "高思导引")
+            .replace("奥数", "高思导引")
+            .strip(" 。；;，,")
+        )
+
+    @classmethod
+    def _format_dim5_counted_question_analysis(cls, entry: dict, fallback_text: object) -> str:
+        difficulty = cls._counted_question_difficulty_label(entry)
+        source = cls._clean_dim5_display_text(entry.get("knowledge_source_text"))
+        point = cls._clean_dim5_display_text(entry.get("knowledge_point_text"))
+        reason = cls._clean_dim5_display_text(entry.get("score_reason"))
+
+        if difficulty and reason and (source or point):
+            if source and point:
+                target = f"本题属于{source}的{point}"
+            elif source:
+                target = f"本题属于{source}知识范围"
+            else:
+                target = f"本题主要考查{point}"
+            return f"{difficulty}：{target}；{reason}。"
+
+        fallback = cls._format_counted_question_analysis(fallback_text, entry)
+        return cls._clean_dim5_display_text(fallback)
 
     def _build_report_warning_html(self, warnings: list[object]) -> str:
         del warnings
@@ -392,12 +656,13 @@ class PDFExportService:
                     or ""
                 )
             )
-            reason_text = self._format_counted_question_analysis(
-                entry.get("full_reason")
-                or entry.get("reason")
-                or entry.get("summary")
-                or ""
-            )
+            raw_reason = entry.get("full_reason") or entry.get("reason") or entry.get("summary") or ""
+            if detail.get("code") == "dim4":
+                reason_text = self._format_dim4_counted_question_analysis(entry, raw_reason)
+            elif detail.get("code") == "dim5":
+                reason_text = self._format_dim5_counted_question_analysis(entry, raw_reason)
+            else:
+                reason_text = self._format_counted_question_analysis(raw_reason, entry)
             reason = escape(reason_text)
             rendered_items.append(
                 f"""
@@ -458,9 +723,9 @@ class PDFExportService:
                 f'<strong style="color:{dim_meta["color"]}">{self._format_score(score)}</strong><span>/ 10</span>'
             )
             meter_width = 0 if is_not_covered else max(0, min(score * 10, 100))
-            evidence_label = "覆盖状态" if is_not_covered else "评分依据摘要"
+            evidence_label = "覆盖状态" if is_not_covered else "得分概览"
             level_label = escape(str(detail.get("level_label") or "未评级"))
-            evidence = escape(self._truncate_text(detail.get("evidence")))
+            evidence = escape(self._truncate_text(self._format_dimension_evidence(detail)))
             warning_html = (
                 '<span class="report-inline-tag report-status-tag">评分提示</span>'
                 if detail.get("warning")
@@ -490,7 +755,7 @@ class PDFExportService:
                     <div style="width:{meter_width:.0f}%;background:{dim_meta['color']}"></div>
                   </div>
                   <div class="report-dimension-card__evidence">
-                    <span class="report-dimension-card__label">评分依据摘要</span>
+                    <span class="report-dimension-card__label">{evidence_label}</span>
                     <p>{evidence}</p>
                   </div>
                   {counted_questions_html}
@@ -520,6 +785,139 @@ class PDFExportService:
                 """
             )
         return "".join(blocks)
+
+    def _build_parent_summary_html(
+        self,
+        position: dict,
+        difficulty_label: str,
+        difficulty_description: str,
+        target_students: str,
+    ) -> str:
+        raw_summary = position.get("parent_summary") if isinstance(position, dict) else None
+        if isinstance(raw_summary, list):
+            summary_items = [str(item).strip() for item in raw_summary if str(item).strip()][:2]
+        else:
+            summary_items = []
+
+        if len(summary_items) < 2:
+            summary_items = [
+                f"这张试卷整体定位为{difficulty_label}，{target_students}",
+                difficulty_description or "具体难点可以结合六维评价明细和题目难度结构继续查看。",
+            ]
+
+        paragraphs = "".join(
+            f"<p>{escape(item)}</p>"
+            for item in summary_items[:2]
+        )
+        return (
+            '<span class="report-card-note">家长速读</span>'
+            f'<div class="report-parent-summary">{paragraphs}</div>'
+        )
+
+    @staticmethod
+    def _normalize_question_short_label(value: object) -> str:
+        text = str(value or "").strip()
+        if not text:
+            return ""
+
+        text = text.replace("（", "(").replace("）", ")").strip()
+        section_match = re.match(r"^[第\s]*[一二三四五六七八九十百千万零〇]+[部分卷题组]*[-－—]\s*(.+)$", text)
+        if section_match:
+            text = section_match.group(1).strip()
+
+        bracket_match = re.match(r"^[\(（\[\【]\s*(.+?)\s*[\)）\]\】]$", text)
+        if bracket_match:
+            text = bracket_match.group(1).strip()
+
+        question_match = re.match(r"^第\s*(.+?)\s*题$", text)
+        if question_match:
+            text = question_match.group(1).strip()
+
+        return re.sub(r"[\s\.．、，,。:：]+$", "", text).strip()
+
+    @classmethod
+    def _question_distribution_label(cls, item: dict) -> str:
+        return (
+            str(item.get("question_short_label") or "").strip()
+            or cls._normalize_question_short_label(item.get("question_display_label"))
+            or cls._normalize_question_short_label(item.get("question_label_raw"))
+            or cls._normalize_question_short_label(item.get("question_no"))
+            or str(
+                item.get("question_display_label")
+                or item.get("question_label_raw")
+                or item.get("question_no")
+                or ""
+            ).strip()
+        )
+
+    def _build_question_distribution_html(self, distribution: object) -> str:
+        if not isinstance(distribution, dict):
+            return """
+            <div class="report-question-distribution">
+              <div class="report-question-distribution__header">
+                <div>
+                  <span class="report-card-note">题目难度结构</span>
+                  <h4>基础题 / 中等题 / 较难题</h4>
+                </div>
+              </div>
+              <div class="report-question-distribution__empty">暂无题目难度结构数据。</div>
+            </div>
+            """
+
+        raw_buckets = distribution.get("buckets", [])
+        buckets = raw_buckets if isinstance(raw_buckets, list) else []
+        order = {"basic": 0, "medium": 1, "hard": 2}
+
+        bucket_html: list[str] = []
+        for bucket in sorted(
+            [item for item in buckets if isinstance(item, dict)],
+            key=lambda item: order.get(str(item.get("key") or ""), 99),
+        ):
+            raw_questions = bucket.get("questions", [])
+            questions = raw_questions if isinstance(raw_questions, list) else []
+            question_labels = [
+                self._question_distribution_label(item)
+                for item in questions
+                if isinstance(item, dict) and self._question_distribution_label(item)
+            ]
+            question_text = "、".join(question_labels) if question_labels else "暂无题目"
+            percentage = self._safe_float(bucket.get("percentage"))
+            count = int(self._safe_float(bucket.get("count"), 0))
+            bucket_html.append(
+                f"""
+                <div class="report-question-bucket">
+                  <div class="report-question-bucket__summary">
+                    <span>{escape(str(bucket.get("label") or ""))}</span>
+                    <strong>{percentage:.1f}%</strong>
+                    <small>{count} 道</small>
+                  </div>
+                  <p>{escape(str(bucket.get("description") or "暂无说明。"))}</p>
+                  <div class="report-question-bucket__questions">{escape(question_text)}</div>
+                </div>
+                """
+            )
+
+        unclassified_count = int(self._safe_float(distribution.get("unclassified_count"), 0))
+        note_html = (
+            f'<p class="report-question-distribution__note">另有 {unclassified_count} 道题缺少可用于分桶的维度分，未强行归类。</p>'
+            if unclassified_count > 0
+            else ""
+        )
+        classified_count = int(self._safe_float(distribution.get("classified_count"), 0))
+
+        return f"""
+        <div class="report-question-distribution">
+          <div class="report-question-distribution__header">
+            <div>
+              <span class="report-card-note">题目难度结构</span>
+              <h4>基础题 / 中等题 / 较难题</h4>
+            </div>
+            <span class="report-question-distribution__total">共 {classified_count} 道已归类题</span>
+          </div>
+          <div class="report-question-distribution__grid">{"".join(bucket_html)}</div>
+          {note_html}
+        </div>
+        """
 
     def _generate_html(self, report_data: dict) -> str:
         dimensions = report_data.get("dimensions", {})
@@ -553,6 +951,15 @@ class PDFExportService:
         )
         target_students = escape(str(target_students_value))
         overall_score = self._format_score(position.get("overall_score"))
+        parent_summary_html = self._build_parent_summary_html(
+            position,
+            str(difficulty_label_value),
+            str(difficulty_description_value),
+            str(target_students_value),
+        )
+        question_distribution_html = self._build_question_distribution_html(
+            position.get("question_distribution") if isinstance(position, dict) else None
+        )
 
         paper_title = escape(str(report_data.get("paper_title") or "未提供"))
 
@@ -726,6 +1133,8 @@ class PDFExportService:
     .report-inline-tag {{ color: #6d7277; background: #f3f4f5; border-color: #d8dde2; }}
     .report-target-block {{ margin-top: 10px; padding: 12px 14px; break-inside: avoid; page-break-inside: avoid; }}
     .report-target-block p {{ margin-top: 8px; color: #1f2933; font-size: 12px; line-height: 1.65; }}
+    .report-parent-summary {{ display: grid; gap: 7px; margin-top: 8px; }}
+    .report-parent-summary p {{ color: #5d6a72; font-size: 12px; line-height: 1.72; }}
     .report-difficulty-scale {{
       display: flex;
       gap: 8px;
@@ -742,6 +1151,57 @@ class PDFExportService:
     .report-difficulty-scale__item strong {{ display: block; color: #5d6a72; font-size: 11px; font-weight: 600; }}
     .report-difficulty-scale__item span, .report-radar-metric span {{ color: #8a9399; font-size: 10px; }}
     .report-difficulty-scale__item.is-active strong {{ color: #1f2933; }}
+    .report-question-distribution {{ padding-top: 2px; break-inside: avoid; page-break-inside: avoid; }}
+    .report-question-distribution__header {{
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 10px;
+      margin-bottom: 10px;
+    }}
+    .report-question-distribution__header h4 {{ margin-top: 0; color: #1f2933; font-size: 13px; line-height: 1.4; font-weight: 600; }}
+    .report-question-distribution__total {{ color: #8a9399; font-size: 10px; white-space: nowrap; }}
+    .report-question-distribution__grid {{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }}
+    .report-question-bucket {{
+      padding: 10px 10px 11px;
+      background: #ffffff;
+      border: 1px solid #d7dde2;
+      border-radius: 10px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }}
+    .report-question-bucket__summary {{
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 4px 8px;
+      align-items: baseline;
+    }}
+    .report-question-bucket__summary span {{ color: #1f2933; font-size: 11px; font-weight: 600; line-height: 1.35; }}
+    .report-question-bucket__summary strong {{ color: #294766; font-size: 18px; line-height: 1; font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif; }}
+    .report-question-bucket__summary small {{ grid-column: 1 / -1; color: #8a9399; font-size: 10px; }}
+    .report-question-bucket p {{ margin-top: 7px; color: #5d6a72; font-size: 10px; line-height: 1.55; }}
+    .report-question-bucket__questions {{
+      margin-top: 7px;
+      padding-top: 7px;
+      color: #1f2933;
+      font-size: 10px;
+      line-height: 1.55;
+      border-top: 1px dashed #d7dde2;
+      overflow-wrap: anywhere;
+    }}
+    .report-question-distribution__empty {{
+      padding: 10px 12px;
+      color: #8a9399;
+      font-size: 11px;
+      background: #ffffff;
+      border: 1px dashed #d7dde2;
+      border-radius: 10px;
+    }}
+    .report-question-distribution__note {{ margin-top: 8px; color: #8a9399; font-size: 10px; line-height: 1.55; }}
     .report-dimension-card__meter {{
       overflow: hidden;
       background: #dde3e7;
@@ -922,16 +1382,12 @@ class PDFExportService:
             </div>
 
             <div>
-              <span class="report-card-note">结论摘要</span>
-              <p style="margin-top:10px;color:#5d6a72;font-size:13px;line-height:1.8">{difficulty_description}</p>
-              <div class="report-target-block">
-                <span>目标学生</span>
-                <p>{target_students}</p>
-              </div>
+              {parent_summary_html}
             </div>
           </div>
 
           <div class="report-difficulty-scale">{self._build_scale_html(difficulty_level)}</div>
+          {question_distribution_html}
         </article>
 
         <article class="report-radar-card">
@@ -954,14 +1410,14 @@ class PDFExportService:
             <span class="report-section__eyebrow">六维评分</span>
             <h2>六维评价明细</h2>
           </div>
-          <p>统一呈现维度名称、得分、等级与评分依据摘要，减少冗余噪音，突出可读性。</p>
+          <p>统一呈现维度名称、得分、等级与得分概览，减少冗余噪音，突出可读性。</p>
         </div>
         <div class="report-dimension-list">{self._build_dimension_cards_html(details_by_code)}</div>
       </section>
 
     </main>
 
-    <footer class="report-footer">本报告仅调整呈现方式，不涉及六维算法口径与后端接口变更。</footer>
+    <footer class="report-footer">本报告按六维评价结果生成，题目难度结构基于每题实际适用维度的平均分统计。</footer>
   </div>
 
 </body>

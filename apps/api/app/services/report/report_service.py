@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -25,6 +26,65 @@ from app.services.scoring.paper_aggregator import PaperAggregator, QuestionDimen
 
 class ReportService:
     """报告服务"""
+
+    QUESTION_DIFFICULTY_BUCKETS = [
+        {
+            "key": "basic",
+            "label": "基础题",
+            "min": None,
+            "max": 4.0,
+            "description": "主要检查基本概念、直接计算和常规方法。",
+        },
+        {
+            "key": "medium",
+            "label": "中等题",
+            "min": 4.0,
+            "max": 6.0,
+            "description": "需要一定转化、综合运用或稳定的解题步骤。",
+        },
+        {
+            "key": "hard",
+            "label": "较难题",
+            "min": 6.0,
+            "max": None,
+            "description": "更容易拉开差距，通常涉及复杂条件、方法迁移或多步推理。",
+        },
+    ]
+
+    PARENT_DIFFICULTY_OPENERS = {
+        1: "这张试卷整体难度较低，属于基础巩固型试卷，适合用来检查孩子的基本概念和常规方法是否掌握。",
+        2: "这张试卷整体难度适中，属于稳步提升型试卷，适合基础一般、需要从课内掌握走向稳定提升的孩子。",
+        3: "这张试卷整体有一定挑战，属于拔高训练型试卷，适合基础较好、需要强化综合运用能力的孩子。",
+        4: "这张试卷整体难度偏高，属于选拔区分型试卷，适合基础扎实、希望检验综合解题稳定性的孩子。",
+        5: "这张试卷整体难度很高，属于竞赛挑战型试卷，适合能力突出的孩子检验高强度综合解题水平。",
+    }
+
+    PARENT_DIMENSION_DIFFICULTY_NOTES = {
+        "dim1": {
+            "short": "复杂计算",
+            "detail": "连续化简、分步计算和计算准确率",
+        },
+        "dim2": {
+            "short": "图形关系识别",
+            "detail": "图形关系识别、空间想象和辅助关系整理",
+        },
+        "dim3": {
+            "short": "信息提取与数量关系建模",
+            "detail": "从题干中筛选条件、整理数量关系并转成可求解的表示",
+        },
+        "dim4": {
+            "short": "非常规思路与方法迁移",
+            "detail": "跳出直接模板、选择策略并迁移方法",
+        },
+        "dim5": {
+            "short": "跨知识点综合",
+            "detail": "调动多个知识点并处理拓展知识的综合应用",
+        },
+        "dim6": {
+            "short": "多步推理",
+            "detail": "连续推进解题步骤、分步判断并回查条件",
+        },
+    }
 
     def __init__(self):
         self.aggregator = PaperAggregator()
@@ -441,12 +501,312 @@ class ReportService:
             for dim_code, summary in aggregated.items()
         ]
 
+    @staticmethod
+    def _safe_float_value(value: Any) -> Optional[float]:
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError):
+            return None
+        return parsed
+
+    @staticmethod
+    def _get_question_field(question_score: Any, field_name: str, default: Any = None) -> Any:
+        if isinstance(question_score, dict):
+            return question_score.get(field_name, default)
+        return getattr(question_score, field_name, default)
+
+    @staticmethod
+    def _normalize_question_short_label(value: Any) -> str:
+        text = str(value or "").strip()
+        if not text:
+            return ""
+
+        text = text.replace("（", "(").replace("）", ")").strip()
+        section_match = re.match(r"^[第\s]*[一二三四五六七八九十百千万零〇]+[部分卷题组]*[-－—]\s*(.+)$", text)
+        if section_match:
+            text = section_match.group(1).strip()
+
+        bracket_match = re.match(r"^[\(（\[\【]\s*(.+?)\s*[\)）\]\】]$", text)
+        if bracket_match:
+            text = bracket_match.group(1).strip()
+
+        question_match = re.match(r"^第\s*(.+?)\s*题$", text)
+        if question_match:
+            text = question_match.group(1).strip()
+
+        text = re.sub(r"[\s\.．、，,。:：]+$", "", text).strip()
+        return text
+
+    @classmethod
+    def _question_distribution_item(cls, question_score: Any, average_score: float) -> Dict[str, Any]:
+        question_no = str(cls._get_question_field(question_score, "question_no", "") or "").strip()
+        question_label_raw = str(
+            cls._get_question_field(question_score, "question_label_raw", "") or ""
+        ).strip()
+        section_index_raw = str(
+            cls._get_question_field(question_score, "section_index_raw", "") or ""
+        ).strip()
+        explicit_display_label = str(
+            cls._get_question_field(question_score, "question_display_label", "") or ""
+        ).strip()
+        question_display_label = (
+            explicit_display_label
+            or ReportService._build_question_display_label(
+                question_no,
+                question_label_raw or None,
+                section_index_raw or None,
+            )
+        )
+        question_short_label = (
+            cls._normalize_question_short_label(question_display_label)
+            or cls._normalize_question_short_label(question_label_raw)
+            or cls._normalize_question_short_label(question_no)
+            or question_display_label
+        )
+
+        return {
+            "page_no": cls._get_question_field(question_score, "page_no"),
+            "question_no": question_no,
+            "question_label_raw": question_label_raw,
+            "section_index_raw": section_index_raw,
+            "question_display_label": question_display_label,
+            "question_short_label": question_short_label,
+            "average_score": round(average_score, 1),
+        }
+
+    @classmethod
+    def _question_distribution_sort_key(cls, item: Dict[str, Any]) -> tuple:
+        page_no = item.get("page_no")
+        try:
+            normalized_page_no = int(page_no)
+        except (TypeError, ValueError):
+            normalized_page_no = 10**9
+        label = str(item.get("question_display_label") or item.get("question_no") or "")
+        return (normalized_page_no, PaperAggregator._question_no_sort_key(label), label)
+
+    @classmethod
+    def _bucket_for_question_average(cls, average_score: float) -> Optional[str]:
+        for bucket in cls.QUESTION_DIFFICULTY_BUCKETS:
+            min_score = bucket["min"]
+            max_score = bucket["max"]
+            if min_score is not None and average_score <= float(min_score):
+                continue
+            if max_score is not None and average_score > float(max_score):
+                continue
+            return str(bucket["key"])
+        return None
+
+    @classmethod
+    def _build_question_distribution(
+        cls,
+        question_scores: Optional[List[Any]],
+    ) -> Dict[str, Any]:
+        buckets = [
+            {
+                "key": bucket["key"],
+                "label": bucket["label"],
+                "description": bucket["description"],
+                "count": 0,
+                "percentage": 0.0,
+                "questions": [],
+            }
+            for bucket in cls.QUESTION_DIFFICULTY_BUCKETS
+        ]
+        bucket_by_key = {str(bucket["key"]): bucket for bucket in buckets}
+
+        unclassified_count = 0
+        total_count = 0
+        for question_score in question_scores or []:
+            total_count += 1
+            raw_dim_scores = cls._get_question_field(question_score, "dim_scores", {}) or {}
+            dim_scores = raw_dim_scores if isinstance(raw_dim_scores, dict) else {}
+            raw_applicable_dims = cls._get_question_field(question_score, "applicable_dims", []) or []
+            applicable_dims = [
+                str(dim_code)
+                for dim_code in raw_applicable_dims
+                if str(dim_code).strip()
+            ]
+            if not applicable_dims:
+                applicable_dims = [str(dim_code) for dim_code in dim_scores.keys()]
+
+            score_values: List[float] = []
+            for dim_code in applicable_dims:
+                if dim_code not in dim_scores:
+                    continue
+                score_value = cls._safe_float_value(dim_scores.get(dim_code))
+                if score_value is None:
+                    continue
+                score_values.append(score_value)
+
+            if not score_values:
+                unclassified_count += 1
+                continue
+
+            average_score = sum(score_values) / len(score_values)
+            bucket_key = cls._bucket_for_question_average(average_score)
+            if not bucket_key or bucket_key not in bucket_by_key:
+                unclassified_count += 1
+                continue
+
+            bucket = bucket_by_key[bucket_key]
+            bucket["questions"].append(cls._question_distribution_item(question_score, average_score))
+
+        classified_count = 0
+        for bucket in buckets:
+            bucket["questions"] = sorted(bucket["questions"], key=cls._question_distribution_sort_key)
+            bucket["count"] = len(bucket["questions"])
+            classified_count += bucket["count"]
+
+        for bucket in buckets:
+            bucket["percentage"] = (
+                round(bucket["count"] / classified_count * 100, 1)
+                if classified_count
+                else 0.0
+            )
+
+        return {
+            "basis": "question_count",
+            "classification": "average_applicable_dimension_score",
+            "total_count": total_count,
+            "classified_count": classified_count,
+            "unclassified_count": unclassified_count,
+            "buckets": buckets,
+        }
+
+    @staticmethod
+    def _join_chinese_phrases(items: List[str]) -> str:
+        normalized = [str(item).strip() for item in items if str(item).strip()]
+        if not normalized:
+            return ""
+        if len(normalized) == 1:
+            return normalized[0]
+        return "、".join(normalized)
+
+    @classmethod
+    def _build_parent_summary(
+        cls,
+        difficulty_level: int,
+        dimension_details: List[Dict[str, Any]],
+    ) -> List[str]:
+        opening = cls.PARENT_DIFFICULTY_OPENERS.get(
+            difficulty_level,
+            "这张试卷整体有一定挑战，适合用来观察孩子的基础掌握、综合运用和解题稳定性。",
+        )
+
+        scored_dimensions = []
+        for detail in dimension_details:
+            if detail.get("score_status", "scored") != "scored" or int(detail.get("level") or 0) <= 0:
+                continue
+            score = cls._safe_float_value(detail.get("score"))
+            if score is None:
+                continue
+            code = str(detail.get("code") or "")
+            if code not in cls.PARENT_DIMENSION_DIFFICULTY_NOTES:
+                continue
+            scored_dimensions.append((score, code))
+
+        dimension_order = {
+            code: index
+            for index, code in enumerate(PaperAggregator.DIMENSION_NAMES.keys())
+        }
+        scored_dimensions.sort(
+            key=lambda item: (-item[0], dimension_order.get(item[1], 999))
+        )
+        top_dimensions = [code for score, code in scored_dimensions if score >= 6.0][:3]
+        if not top_dimensions:
+            top_dimensions = [code for _, code in scored_dimensions[:2]]
+
+        if not top_dimensions:
+            return [
+                opening,
+                "难点需要结合具体题目再看：家长可以重点观察孩子是否能稳定读懂题意、列出关系并完成计算。",
+            ]
+
+        short_topics = cls._join_chinese_phrases(
+            [cls.PARENT_DIMENSION_DIFFICULTY_NOTES[code]["short"] for code in top_dimensions]
+        )
+        detail_topics = cls._join_chinese_phrases(
+            [cls.PARENT_DIMENSION_DIFFICULTY_NOTES[code]["detail"] for code in top_dimensions[:2]]
+        )
+        second_sentence = f"难点主要集中在{short_topics}上：孩子需要{detail_topics}。"
+        return [opening, second_sentence]
+
+    @classmethod
+    def _ensure_difficulty_position_extensions(
+        cls,
+        report_json: Dict[str, Any],
+        question_scores: Optional[List[Any]] = None,
+    ) -> None:
+        position = report_json.setdefault("difficulty_position", {})
+        if not isinstance(position, dict):
+            position = {}
+            report_json["difficulty_position"] = position
+
+        try:
+            difficulty_level = int(position.get("level") or 0)
+        except (TypeError, ValueError):
+            difficulty_level = 0
+        dimension_details = report_json.get("dimension_details", [])
+        if not isinstance(dimension_details, list):
+            dimension_details = []
+
+        parent_summary = position.get("parent_summary")
+        if not (
+            isinstance(parent_summary, list)
+            and len([item for item in parent_summary if str(item).strip()]) >= 2
+        ):
+            position["parent_summary"] = cls._build_parent_summary(
+                difficulty_level,
+                dimension_details,
+            )
+
+        if not isinstance(position.get("question_distribution"), dict):
+            position["question_distribution"] = cls._build_question_distribution(question_scores)
+
+    async def _load_question_scores_from_db(
+        self,
+        db,
+        paper_id: str,
+        Question,
+        QuestionTag,
+        QuestionDimScore,
+    ) -> List[QuestionDimensionScore]:
+        question_result = await db.execute(
+            select(Question)
+            .where(Question.paper_id == paper_id)
+            .order_by(Question.page_no.asc(), Question.question_no.asc())
+        )
+        questions = question_result.scalars().all()
+
+        tag_result = await db.execute(
+            select(QuestionTag)
+            .join(Question, Question.question_id == QuestionTag.question_id)
+            .where(Question.paper_id == paper_id)
+        )
+        tag_map = {row.question_id: row for row in tag_result.scalars().all()}
+
+        dim_row_result = await db.execute(
+            select(QuestionDimScore)
+            .join(Question, Question.question_id == QuestionDimScore.question_id)
+            .where(Question.paper_id == paper_id)
+        )
+        dim_score_rows = dim_row_result.scalars().all()
+
+        if not questions or not dim_score_rows:
+            return []
+        return self._build_question_scores_from_rows(
+            questions,
+            tag_map,
+            dim_score_rows,
+        )
+
     def _build_report_payload(
         self,
         *,
         paper_id: str,
         paper_title: str,
         dimension_details: List[Dict[str, Any]],
+        question_scores: Optional[List[Any]] = None,
         generated_at: Optional[str] = None,
         report_warnings: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
@@ -462,6 +822,8 @@ class ReportService:
         )
         difficulty_level = self._calculate_difficulty_level(overall_score)
         detail_by_code = {detail["code"]: detail for detail in dimension_details}
+        parent_summary = self._build_parent_summary(difficulty_level, dimension_details)
+        question_distribution = self._build_question_distribution(question_scores)
 
         return {
             "report_id": paper_id,
@@ -484,6 +846,8 @@ class ReportService:
                 "overall_score": round(overall_score, 1),
                 "target_students": self._get_target_students(difficulty_level),
                 "description": self._get_difficulty_description(difficulty_level),
+                "parent_summary": parent_summary,
+                "question_distribution": question_distribution,
                 "dimension_distribution": [
                     {"code": "dim1", "name": "数学运算", "percentage": 17, "color": "#3B82F6"},
                     {"code": "dim2", "name": "几何直观", "percentage": 16, "color": "#8B5CF6"},
@@ -569,6 +933,27 @@ class ReportService:
                     if detail.get("score_status") == "not_covered":
                         detail["warning"] = False
                     detail["warning"] = bool(detail.get("warning"))
+                rebuilt_question_scores = []
+                snapshot_position = report_json.get("difficulty_position", {})
+                if not isinstance(snapshot_position, dict) or not isinstance(
+                    snapshot_position.get("question_distribution"),
+                    dict,
+                ):
+                    try:
+                        rebuilt_question_scores = await self._load_question_scores_from_db(
+                            db,
+                            paper_id,
+                            Question,
+                            QuestionTag,
+                            QuestionDimScore,
+                        )
+                    except Exception as exc:
+                        logger.warning(
+                            "补齐报告快照题目难度分布失败 paper=%s: %s",
+                            paper_id,
+                            exc,
+                            exc_info=True,
+                        )
                 await self._enrich_snapshot_counted_question_full_reasons(
                     db,
                     paper_id,
@@ -577,45 +962,29 @@ class ReportService:
                     QuestionTag,
                     QuestionDimScore,
                 )
+                self._ensure_difficulty_position_extensions(report_json, rebuilt_question_scores)
                 return report_json
 
             dim_scores = await db.get(PaperDimScore, paper_id)
             if not dim_scores:
                 # 试卷存在但评分尚未完成
                 return None
-            question_result = await db.execute(
-                select(Question)
-                .where(Question.paper_id == paper_id)
-                .order_by(Question.page_no.asc(), Question.question_no.asc())
+            rebuilt_question_scores = await self._load_question_scores_from_db(
+                db,
+                paper_id,
+                Question,
+                QuestionTag,
+                QuestionDimScore,
             )
-            questions = question_result.scalars().all()
 
-            tag_result = await db.execute(
-                select(QuestionTag)
-                .join(Question, Question.question_id == QuestionTag.question_id)
-                .where(Question.paper_id == paper_id)
-            )
-            tag_map = {row.question_id: row for row in tag_result.scalars().all()}
-
-            dim_row_result = await db.execute(
-                select(QuestionDimScore)
-                .join(Question, Question.question_id == QuestionDimScore.question_id)
-                .where(Question.paper_id == paper_id)
-            )
-            dim_score_rows = dim_row_result.scalars().all()
-
-        if questions and dim_score_rows:
-            rebuilt_question_scores = self._build_question_scores_from_rows(
-                questions,
-                tag_map,
-                dim_score_rows,
-            )
+        if rebuilt_question_scores:
             aggregated = self.aggregator.aggregate_all_dimensions(rebuilt_question_scores)
             dimension_details = self._build_dimension_details_from_aggregated(aggregated)
             return self._build_report_payload(
                 paper_id=paper_id,
                 paper_title=paper.paper_name,
                 dimension_details=dimension_details,
+                question_scores=rebuilt_question_scores,
                 report_warnings=self._merge_dimension_report_warnings(aggregated, []),
             )
 
@@ -640,6 +1009,7 @@ class ReportService:
             paper_id=paper_id,
             paper_title=paper.paper_name,
             dimension_details=dimension_details,
+            question_scores=[],
             report_warnings=[],
         )
 
@@ -718,6 +1088,56 @@ class ReportService:
                 "overall_score": 7.1,
                 "target_students": "适合基础扎实、需要面向选拔场景提升综合稳定性的学生。",
                 "description": "面向选拔区分阶段，突出多步推进、策略迁移与复杂问题收束。",
+                "parent_summary": [
+                    "这张试卷整体难度偏高，属于选拔区分型试卷，适合基础扎实、希望检验综合解题稳定性的孩子。",
+                    "难点主要集中在信息提取与数量关系建模、多步推理上：孩子需要从题干中筛选条件、整理数量关系并转成可求解的表示、连续推进解题步骤、分步判断并回查条件。",
+                ],
+                "question_distribution": {
+                    "basis": "question_count",
+                    "classification": "average_applicable_dimension_score",
+                    "total_count": 10,
+                    "classified_count": 10,
+                    "unclassified_count": 0,
+                    "buckets": [
+                        {
+                            "key": "basic",
+                            "label": "基础题",
+                            "description": "主要检查基本概念、直接计算和常规方法。",
+                            "count": 2,
+                            "percentage": 20.0,
+                            "questions": [
+                                {"question_no": "1", "question_display_label": "1", "average_score": 3.5},
+                                {"question_no": "2", "question_display_label": "2", "average_score": 4.0},
+                            ],
+                        },
+                        {
+                            "key": "medium",
+                            "label": "中等题",
+                            "description": "需要一定转化、综合运用或稳定的解题步骤。",
+                            "count": 3,
+                            "percentage": 30.0,
+                            "questions": [
+                                {"question_no": "3", "question_display_label": "3", "average_score": 5.0},
+                                {"question_no": "4", "question_display_label": "4", "average_score": 5.5},
+                                {"question_no": "5", "question_display_label": "5", "average_score": 6.0},
+                            ],
+                        },
+                        {
+                            "key": "hard",
+                            "label": "较难题",
+                            "description": "更容易拉开差距，通常涉及复杂条件、方法迁移或多步推理。",
+                            "count": 5,
+                            "percentage": 50.0,
+                            "questions": [
+                                {"question_no": "6", "question_display_label": "6", "average_score": 6.5},
+                                {"question_no": "7", "question_display_label": "7", "average_score": 7.0},
+                                {"question_no": "8", "question_display_label": "8", "average_score": 7.5},
+                                {"question_no": "9", "question_display_label": "9", "average_score": 8.0},
+                                {"question_no": "10", "question_display_label": "10", "average_score": 8.5},
+                            ],
+                        },
+                    ],
+                },
                 "dimension_distribution": [
                     {"code": "dim1", "name": "计算", "percentage": 18, "color": "#3B82F6"},
                     {"code": "dim2", "name": "概念", "percentage": 16, "color": "#8B5CF6"},
@@ -820,6 +1240,7 @@ class ReportService:
             paper_id=paper_id,
             paper_title=paper_title or f"试卷 {paper_id}",
             dimension_details=dimension_details,
+            question_scores=question_scores,
             generated_at=datetime.now().isoformat(),
             report_warnings=self._merge_dimension_report_warnings(aggregated, report_warnings or []),
         )

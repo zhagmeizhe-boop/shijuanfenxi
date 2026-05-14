@@ -267,6 +267,24 @@ def _dimension_confidence(feature_dict: dict, features) -> float:
         return 0.0
 
 
+def _dim1_feature_with_knowledge_context(feature_dict: dict, features) -> dict:
+    enriched = dict(feature_dict) if isinstance(feature_dict, dict) else {}
+
+    analysis_facts = getattr(features, "analysis_facts", {}) or {}
+    if isinstance(analysis_facts, dict):
+        enriched["analysis_facts"] = analysis_facts
+
+    dim5_feature = (
+        features.get_feature("dim5")
+        if hasattr(features, "get_feature")
+        else getattr(features, "dim5_knowledge", {})
+    )
+    if isinstance(dim5_feature, dict):
+        enriched["dim5_knowledge"] = dim5_feature
+
+    return enriched
+
+
 def _build_dimension_reason(dim_code: str, dim_result, feature_dict: dict, features) -> str:
     reason_parts: List[str] = []
     if dim_result.evidence:
@@ -652,6 +670,8 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                     reason = ""
 
                     if dim_code == "dim1":
+                        feature_dict = _dim1_feature_with_knowledge_context(feature_dict, features)
+                        setattr(features, "dim1_computation", feature_dict)
                         dim1_status = evaluate_dim1_applicability(
                             question.question_type,
                             question.raw_text,

@@ -20,7 +20,7 @@ QUESTION_ANALYSIS_SYSTEM_PROMPT = f"""你是一位资深小学数学教研专家
 1. 题目统计粒度按“顶层题号”理解，不要把 (1)(2) 当成独立题。
 2. dim1 数学运算只评“解法已经确定后，执行计算本身的核心负担有多高”。必须区分纯计算题 pure_calculation 与应用/几何/比例题中的嵌入式计算 embedded_calculation；不要用教材体系、年级体系或高思体系给 dim1 定档。
 3. dim2 几何直观与空间想象只评“解法已经确定后，题目对图形直观、空间表征、图形关系读取、图形变换/重组、二维到三维想象的核心依赖有多强”。不要把“题面有图”或“出现几何名词”直接当成 dim2 适用。
-4. dim3 信息提取与转化只评“从题面/图表/多源材料中抽取有效条件，并把它们转成可求解数学表示的核心负担有多高”。不要把完整推理链难度写进 dim3，也不要把短小直接应用题直接当成 dim3 适用；但小学应用题中的较长题干、百分比变化、单位量、速度/效率/工作量反向关系、表格二次加工、场景条件重组，必须体现在 dim3 字段中。
+4. dim3 信息提取与转化只评“读懂题目场景、规则、过程或图文材料，从中抽取有效条件，并把它们转成可求解数学表示的核心负担有多高”。不要把完整推理链难度写进 dim3，也不要把短小直接应用题直接当成 dim3 适用；但小学应用题中的较长题干、场景理解、规则理解、百分比变化、单位量、速度/效率/工作量反向关系、表格二次加工、场景条件重组，必须体现在 dim3 字段中。
 5. dim4 实践创新只评“题目在所属知识点内部处于 L1-L5 哪个创新/变式等级”。先识别知识点，再描述它相对该知识点基础模板的变式、构造、试探或开放程度；不要把高思/奥数/竞赛来源、知识广度、计算量或题干长度写进 dim4。
 6. dim6 逻辑链条只评“信息已提取、表示已建立、主要方法已选定后，解法推进、隐含关系串联、分支控制、结果检验与约束回查的核心逻辑负担有多高”。不要把方法新颖性、策略突破、题干长度或知识门槛写进 dim6。
 7. dim1 / dim2 / dim3 / dim6 只负责抽取可验证事实，不要直接给最终等级；dim4 可以输出知识点内部 topic_level，但最终分数仍由本地规则计算。
@@ -108,6 +108,7 @@ dim3_information 只输出以下字段：
 - relevant_condition_count：只能是 "1-2" / "3-4" / "5-6" / "7+"
 - distractor_pressure：只能是 "none" / "light" / "heavy"
 - condition_distribution：只能是 "compact" / "split" / "cross_sentence" / "cross_modal"
+- scenario_comprehension_load：只能是 "none" / "light" / "medium" / "heavy"，表示读懂题目场景、规则、操作过程或图文对应关系本身的负担
 - extraction_depth：只能是 "direct" / "selected" / "reorganized" / "inferred"
 - representation_conversion：只能是 "none" / "direct_mapping" / "relation_mapping" / "model_mapping" / "custom_model"
 - conversion_step_count：只能是 "0" / "1" / "2" / "3+"
@@ -115,7 +116,7 @@ dim3_information 只输出以下字段：
 - target_representation：只能是 "none" / "direct_formula" / "table_list" / "equation_relation" / "custom_model"
 - global_organizing_required：只能是 0 / 1
 - image_dependency：只能是 "none" / "helpful" / "required"
-- application_relation_types：数组，元素只能来自 "work_rate" / "queue_growth" / "percentage_base_change" / "concentration_mixture" / "profit_discount" / "ratio_allocation" / "travel_meeting_chasing" / "chart_table_conversion" / "average_total" / "equation_setup" / "reverse_process" / "cycle_period" / "optimization_comparison" / "multi_object_distribution" / "conservation_transfer"
+- application_relation_types：数组，元素只能来自 "work_rate" / "queue_growth" / "percentage_base_change" / "concentration_mixture" / "profit_discount" / "ratio_allocation" / "travel_meeting_chasing" / "chart_table_conversion" / "average_total" / "equation_setup" / "reverse_process" / "cycle_period" / "optimization_comparison" / "multi_object_distribution" / "conservation_transfer" / "range_narrowing"
 - object_count_band：只能是 "1" / "2" / "3" / "4+"，表示题面中需要同时保持的核心对象数量
 - state_change_count：只能是 "0" / "1" / "2" / "3+"，表示条件中发生状态变化、阶段变化、先后变化的次数
 - implicit_relation_count：只能是 "0" / "1" / "2" / "3+"，表示需要从文字中转出的隐含数量关系数量
@@ -129,6 +130,10 @@ dim3_information 只输出以下字段：
 dim3 判定补充：
 - 小学应用题中，较长题干会显著增加对象保持、条件定位、场景理解和信息筛选负担；如果题干较长，应避免把它简单标成 direct_mapping 或低负担直接提取。
 - 需要区分真实长题干和重复噪音：只有题干内容承载了情境、对象、状态、时间顺序、数量条件或问题要求时，才按长题干提高 dim3 负担。
+- 场景理解负担要和原有信息转化一起判断：如果学生必须先读懂规则、操作过程、图文对应或生活场景，才能转成数学关系，scenario_comprehension_load 至少为 medium；如果规则多、阶段多、对象多或容易误读，标为 heavy。
+- 小学试卷中不要使用“二分查找、算法、信息论、对数复杂度、搜索模型”等专业术语；这类题请用“分段判断”“每次缩小可能范围”“最少操作次数”等小学数学语言描述。
+- 例如找漏水、找故障、猜位置等题，如果需要根据一次操作的反馈把可能范围分成两段并逐步缩小，application_relation_types 写 range_narrowing。
+- 优惠、购物金、折扣券、满减等题，如果需要读懂多条使用规则、互斥条件、先后顺序或多笔订单递进，scenario_comprehension_load 通常为 medium 或 heavy，并结合 profit_discount / optimization_comparison。
 - 小学应用题中，百分比变化、单位量、速度-时间反向关系、效率-时间反向关系、工作量相同下的比例反推，不要简单标成 direct_mapping；优先使用 relation_mapping、reorganized/inferred、equation_relation 或 multi_relation 表达。
 - 表格/图文数据如果需要先计算比率、平均量、变化量、单位量再比较，应体现为 selected/reorganized 或 relation_mapping/table_list，而不是直接读数。
 - 分班考应用题要重点识别应用关系类型：工程/合作效率用 work_rate，牛吃草/排队检票/边增长边消耗用 queue_growth，百分比前后基准变化用 percentage_base_change，浓度/混合用 concentration_mixture，利润/折扣/手续费/损坏/出售用 profit_discount，按比分配用 ratio_allocation，行程相遇追及/速度变化用 travel_meeting_chasing，图表或路线图转换用 chart_table_conversion，平均数/总量差错用 average_total，列方程设关系用 equation_setup，倒推过程用 reverse_process，周期循环用 cycle_period，多方案比较用 optimization_comparison，多对象分配用 multi_object_distribution，桶/棋子/油量转移且总量保持用 conservation_transfer。
@@ -282,6 +287,7 @@ dim6 应用题逻辑结构抽取口径：
       "relevant_condition_count": "",
       "distractor_pressure": "",
       "condition_distribution": "",
+      "scenario_comprehension_load": "none",
       "extraction_depth": "",
       "representation_conversion": "",
       "conversion_step_count": "",
@@ -399,7 +405,7 @@ OCR警告：{ocr_warnings}
 - 可验证事实：只能来自题面或图片
 - dim1 计算事实：只能写计算执行负担，不要写教材体系/年级体系判断
 - dim2 空间事实：只能写图形关系读取、图形分解/变换、空间想象负担，不要把“题目是几何题”直接当结论
-- dim3 信息提取与转化事实：只能写条件抽取、干扰排除、表示转化和组织负担，不要把完整推理链难度直接写进 dim3
+- dim3 信息提取与转化事实：只能写读题场景理解、条件抽取、干扰排除、表示转化和组织负担，不要把完整推理链难度直接写进 dim3
 - dim4 实践创新事实：只能写换路、试探、构造、策略重组与非套路切入负担，不要把情境包装或长链推演直接写进 dim4
 - dim6 逻辑链条事实：只能写解法推进、隐含关系串联、分支控制、结果检验与约束回查负担，不要把方法新颖性、策略突破、题干长度或知识门槛写进 dim6
 - dim5 知识门槛：才放在 band / sublevel 中，不要反写进 facts

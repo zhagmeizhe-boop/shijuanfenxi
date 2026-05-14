@@ -10,6 +10,10 @@ from __future__ import annotations
 from typing import Any, Dict, Iterable, List
 
 from app.services.scoring.base import BaseDimensionScorer, DimensionScore
+from app.services.scoring.dim2_knowledge_range import (
+    match_dim2_display_knowledge,
+    match_dim2_knowledge_range,
+)
 
 TASK_FORM_VALUES = {"nonvisual", "explicit_visual", "geometry_embedded", "text_only_geometry"}
 SPATIAL_ROLE_VALUES = {"none", "supporting", "core"}
@@ -122,6 +126,13 @@ DIM2_LEVELS = {
     "L4": {"score": 8.0, "level": 4, "label": "L4 结构变换想象"},
     "L5": {"score": 9.5, "level": 5, "label": "L5 高阶空间重构"},
 }
+KNOWLEDGE_SPATIAL_LEVEL_MATRIX = {
+    "K1": {"S1": "L1", "S2": "L1", "S3": "L2", "S4": "L2", "S5": "L3"},
+    "K2": {"S1": "L2", "S2": "L2", "S3": "L3", "S4": "L3", "S5": "L4"},
+    "K3": {"S1": "L2", "S2": "L3", "S3": "L3", "S4": "L4", "S5": "L4"},
+    "K4": {"S1": "L3", "S2": "L3", "S3": "L4", "S4": "L4", "S5": "L5"},
+    "K5": {"S1": "L4", "S2": "L4", "S3": "L5", "S4": "L5", "S5": "L5"},
+}
 
 
 def _normalize_choice(value: Any, allowed: set[str]) -> str:
@@ -173,6 +184,35 @@ def _model_count_rank(value: str, model_types: List[str]) -> int:
     return min(len(model_types), 3)
 
 
+def _level_rank(level_code: str) -> int:
+    return {"L1": 1, "L2": 2, "L3": 3, "L4": 4, "L5": 5}.get(level_code, 0)
+
+
+def _is_standard_rotation_sector_shadow_case(features: Dict[str, Any]) -> bool:
+    model_types = set(_normalize_choice_list(features.get("geometry_model_types"), GEOMETRY_MODEL_TYPE_VALUES))
+    return (
+        str(features.get("fallback_source") or "").strip() == "visual_geometry_rotation_shadow"
+        and {"circle_sector_cut_fill", "figure_transformation"}.issubset(model_types)
+    )
+
+
+def _has_high_order_rotation_shadow_signal(features: Dict[str, Any]) -> bool:
+    model_types = _normalize_choice_list(features.get("geometry_model_types"), GEOMETRY_MODEL_TYPE_VALUES)
+    model_count = _model_count_rank(
+        _normalize_choice(features.get("geometry_model_count"), GEOMETRY_MODEL_COUNT_VALUES),
+        model_types,
+    )
+    return (
+        _normalize_choice(features.get("model_combination_complexity"), MODEL_COMBINATION_COMPLEXITY_VALUES)
+        in {"multi_model", "nested_model"}
+        or _normalize_choice(features.get("area_relation_chain"), AREA_RELATION_CHAIN_VALUES) in {"multi", "nested"}
+        or _normalize_zero_one(features.get("global_view_required")) == 1
+        or _normalize_choice(features.get("relation_hops"), RELATION_HOPS_VALUES) == "5+"
+        or _normalize_choice(features.get("hidden_relation_count"), HIDDEN_RELATION_COUNT_VALUES) == "2+"
+        or model_count >= 3
+    )
+
+
 class Dim2SpatialScorer(BaseDimensionScorer):
     DIMENSION_CODE = "dim2"
     DIMENSION_NAME = "几何直观与空间想象"
@@ -209,6 +249,96 @@ class Dim2SpatialScorer(BaseDimensionScorer):
             evidence=evidence,
             applicable=False,
             details={"status": "not_applicable", "dim2_level": "N/A"},
+        )
+
+    def _finalize_score(
+        self,
+        burden_result: DimensionScore,
+        features: Dict[str, Any],
+    ) -> DimensionScore:
+        if not burden_result.applicable:
+            return burden_result
+
+        burden_dim2_level = str(burden_result.details.get("dim2_level") or f"L{burden_result.level}")
+        spatial_burden_level = (
+            f"S{burden_dim2_level[1:]}"
+            if burden_dim2_level.startswith("L")
+            else f"S{burden_result.level}"
+        )
+        details = dict(burden_result.details)
+        details.update(
+            {
+                "spatial_burden_level": spatial_burden_level,
+                "spatial_burden_dim2_level": burden_dim2_level,
+                "spatial_burden_score": burden_result.score,
+                "spatial_burden_level_label": burden_result.level_label,
+            }
+        )
+
+        match_features = {**features, **details}
+        knowledge_match = match_dim2_knowledge_range(match_features)
+        details.update(knowledge_match.to_details())
+        display_knowledge_match = match_dim2_display_knowledge(match_features, knowledge_match)
+        details.update(display_knowledge_match.to_details())
+
+        if not knowledge_match.knowledge_range_level:
+            details.update(
+                {
+                    "dim2_level": burden_dim2_level,
+                    "rule_family": "spatial_burden_only",
+                    "combined_rule": "spatial_burden_only_knowledge_range_unmatched",
+                }
+            )
+            evidence = (
+                f"{burden_result.level_label}：知识范围未稳定识别；"
+                f"主要依据图形关系数量、隐藏关系和空间操作要求，综合判为{burden_dim2_level}。"
+            )
+            return DimensionScore(
+                dimension_code=self.DIMENSION_CODE,
+                score=burden_result.score,
+                level=burden_result.level,
+                level_label=burden_result.level_label,
+                evidence=evidence,
+                applicable=True,
+                details=details,
+            )
+
+        final_level = KNOWLEDGE_SPATIAL_LEVEL_MATRIX.get(
+            knowledge_match.knowledge_range_level,
+            {},
+        ).get(spatial_burden_level, burden_dim2_level)
+        if (
+            _is_standard_rotation_sector_shadow_case(match_features)
+            and not _has_high_order_rotation_shadow_signal(match_features)
+            and _level_rank(final_level) < _level_rank("L3")
+        ):
+            details["pre_adjustment_dim2_level"] = final_level
+            details["final_level_adjustment_reason"] = "standard_rotation_sector_shadow_area"
+            final_level = "L3"
+        level = DIM2_LEVELS[final_level]
+        matched_points = "、".join(knowledge_match.matched_knowledge_points[:3]) or "核心几何知识点"
+        details.update(
+            {
+                "dim2_level": final_level,
+                "rule_family": "knowledge_range_spatial_matrix",
+                "combined_rule": "knowledge_range_spatial_burden_matrix",
+                "knowledge_spatial_matrix_cell": (
+                    f"{knowledge_match.knowledge_range_level}+{spatial_burden_level}"
+                ),
+            }
+        )
+        evidence = (
+            f"{level['label']}：主要考查{knowledge_match.knowledge_range_label}的{matched_points}；"
+            f"结合知识范围和空间表征负担，综合判为{final_level}。"
+        )
+        return DimensionScore(
+            dimension_code=self.DIMENSION_CODE,
+            score=level["score"],
+            level=level["level"],
+            level_label=level["label"],
+            evidence=evidence,
+            applicable=True,
+            details=details,
         )
 
     def _calculate_score(self, features: Dict[str, Any]) -> DimensionScore:
@@ -300,11 +430,22 @@ class Dim2SpatialScorer(BaseDimensionScorer):
             or (structural_visual_method in {"decomposition", "auxiliary_line"} and has_stable_area_model)
         )
         details = {
+            "task_form": task_form,
+            "spatial_role": spatial_role,
+            "figure_complexity": figure_complexity,
+            "relation_hops": relation_hops,
+            "hidden_relation_count": hidden_relation_count,
+            "visual_operation_count": visual_operation_count,
+            "structural_visual_method": structural_visual_method,
+            "measurement_dependency": measurement_dependency,
+            "global_view_required": global_view_required,
+            "image_dependency": image_dependency,
             "geometry_model_types": geometry_model_types,
             "geometry_model_count": geometry_model_count or ("3+" if model_count_rank >= 3 else str(model_count_rank)),
             "model_recognition_role": model_recognition_role,
             "area_relation_chain": area_relation_chain,
             "model_combination_complexity": model_combination_complexity,
+            "evidence_summary": evidence_summary,
         }
 
         if (
@@ -327,7 +468,7 @@ class Dim2SpatialScorer(BaseDimensionScorer):
                 or (model_count_rank >= 3 and hidden_relation_count == "2+" and global_view_required == 1)
             )
         ):
-            return self._build_score("L5", evidence_summary, details)
+            return self._finalize_score(self._build_score("L5", evidence_summary, details), features)
 
         if (
             structural_visual_method in {"auxiliary_line", "3d_transform"}
@@ -351,7 +492,7 @@ class Dim2SpatialScorer(BaseDimensionScorer):
                 or high_burden_model_count > 0
             )
         ):
-            return self._build_score("L4", evidence_summary, details)
+            return self._finalize_score(self._build_score("L4", evidence_summary, details), features)
 
         if (
             structural_visual_method in {"decomposition", "auxiliary_line"}
@@ -370,7 +511,7 @@ class Dim2SpatialScorer(BaseDimensionScorer):
                 or ("area_ratio_chain" in geometry_model_types and not has_only_low_barrier_model)
             )
         ):
-            return self._build_score("L3", evidence_summary, details)
+            return self._finalize_score(self._build_score("L3", evidence_summary, details), features)
 
         if (
             relation_hops == "2"
@@ -381,9 +522,9 @@ class Dim2SpatialScorer(BaseDimensionScorer):
         ) or (
             image_dependency == "required" and measurement_dependency == "direct"
         ):
-            return self._build_score("L2", evidence_summary, details)
+            return self._finalize_score(self._build_score("L2", evidence_summary, details), features)
 
         if relation_rank < 0 or hidden_relation_rank < 0 or visual_operation_rank < 0:
             return self._invalid_score("dim2 空间事实取值非法，无法自动判级。")
 
-        return self._build_score("L1", evidence_summary, details)
+        return self._finalize_score(self._build_score("L1", evidence_summary, details), features)

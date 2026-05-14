@@ -57,7 +57,7 @@ WMO_DIM2_GEOMETRY_CASES = [
             "\u4e0b\u56fe\uff0c\u4ece\u5de6\u9762\u89c2\u5bdf\u8be5\u6b63"
             "\u65b9\u4f53\uff0c\u770b\u5230\u7684\u56fe\u5f62\u662f\uff08  \uff09\u3002"
         ),
-        4,
+        5,
     ),
     (
         "8",
@@ -100,6 +100,35 @@ WMO_DIM2_GEOMETRY_CASES = [
         5,
     ),
 ]
+
+WMO31_DIM2_REGRESSION_TEXTS = {
+    "5": (
+        "远古时期，人们通过在绳子上打结来记录数量，即“结绳计数”。如图所示，"
+        "一个村庄的捕猎人在从右到左依次排列的绳子上打结，满五进一，用来记录捕获的野兔数量。"
+    ),
+    "6": (
+        "如果杆秤中心点离两侧物体的质量与它们到中心点的距离的乘积相同，杆秤就可以是一条水平直线。"
+        "下图中每根杆秤都是一条水平直线，那么“？”处的质量是（ ）。"
+    ),
+    "12": (
+        "如图，将三角形 ABD 绕 B 点顺时针旋转 90°，得到三角形 CBE。"
+        "已知 AB=10 厘米，BE=4 厘米，则图中阴影部分的面积是（ ）平方厘米。（π 取 3.14）"
+    ),
+    "14": (
+        "如图，四边形ABCD的对角线AC与BD相交于O，边BC上有一点E，BE：EC=7：5。"
+        "三角形ABO的面积为36，三角形ADO的面积为18，三角形CDO的面积为24。则三角形AED的面积是（ ）。"
+    ),
+    "17": (
+        "思思采摘了一些葡萄，放入一个圆柱形木桶里酿葡萄酒。桶的底面外直径是48cm，内直径是40cm，"
+        "外高是50cm，内高是40cm。（π取3）(1)思思准备给木桶的盖子和侧面进行装饰，"
+        "装饰部分的面积是多少平方厘米？（5分）(2)放到一定的时候，发酵出了一款好喝的葡萄酒，酒水的高度"
+    ),
+    "20": (
+        "光线总是沿着直线方向前进，而当光线遇到平面镜就会以90度反射，改变前进方向。"
+        "如图1所示，双面镜子按45°放置，红线表示光线沿箭头方向射入时，光线的传播路径。"
+        "图3是一个长260米，宽150米的幽灵之家，幽灵从烟囱A进入，从哪一个烟囱飞出幽灵之家？"
+    ),
+}
 
 
 class TestDim1ComputationScorer:
@@ -268,6 +297,172 @@ class TestDim1ComputationScorer:
         assert result.score == 9.5
         assert result.level_label == "L5 高阶结构巧算"
 
+    @pytest.mark.parametrize(
+        ("knowledge_point", "burden_overrides", "expected_k", "expected_b", "expected_l"),
+        [
+            ("三位数乘两位数", {}, "K1", "B1", "L1"),
+            ("三位数乘两位数", {"step_chain": "2", "number_mix": "standard"}, "K1", "B2", "L1"),
+            (
+                "三位数乘两位数",
+                {
+                    "step_chain": "5+",
+                    "number_mix": "symbolic",
+                    "routine_transform_count": "3+",
+                    "structural_method": "olympiad",
+                    "global_view_required": 1,
+                    "calc_subtype": "sequence_series",
+                    "structure_patterns": ["telescoping"],
+                    "term_count_band": "11+",
+                },
+                "K1",
+                "B5",
+                "L3",
+            ),
+            (
+                "小数乘法计算",
+                {
+                    "step_chain": "3-4",
+                    "number_mix": "mixed",
+                    "routine_transform_count": "2",
+                    "structural_method": "shortcut",
+                    "structure_patterns": ["common_factor", "decimal_scaling"],
+                },
+                "K2",
+                "B4",
+                "L3",
+            ),
+            (
+                "小数乘法计算",
+                {
+                    "step_chain": "5+",
+                    "number_mix": "symbolic",
+                    "routine_transform_count": "3+",
+                    "structural_method": "olympiad",
+                    "global_view_required": 1,
+                    "calc_subtype": "sequence_series",
+                    "structure_patterns": ["telescoping"],
+                    "term_count_band": "11+",
+                },
+                "K2",
+                "B5",
+                "L4",
+            ),
+            ("解比例", {}, "K3", "B1", "L2"),
+            (
+                "解比例",
+                {
+                    "step_chain": "3-4",
+                    "number_mix": "mixed",
+                    "routine_transform_count": "2",
+                    "structural_method": "shortcut",
+                    "structure_patterns": ["common_factor", "decimal_scaling"],
+                },
+                "K3",
+                "B4",
+                "L4",
+            ),
+            (
+                "解比例",
+                {
+                    "step_chain": "5+",
+                    "number_mix": "symbolic",
+                    "routine_transform_count": "3+",
+                    "structural_method": "olympiad",
+                    "global_view_required": 1,
+                    "calc_subtype": "sequence_series",
+                    "structure_patterns": ["telescoping"],
+                    "term_count_band": "11+",
+                },
+                "K3",
+                "B5",
+                "L4",
+            ),
+            ("四则运算一", {}, "K4", "B1", "L3"),
+            (
+                "四则运算一",
+                {
+                    "step_chain": "5+",
+                    "number_mix": "symbolic",
+                    "routine_transform_count": "3+",
+                    "structural_method": "olympiad",
+                    "global_view_required": 1,
+                    "calc_subtype": "sequence_series",
+                    "structure_patterns": ["telescoping"],
+                    "term_count_band": "11+",
+                },
+                "K4",
+                "B5",
+                "L5",
+            ),
+            ("分数与循环小数", {}, "K5", "B1", "L4"),
+            (
+                "分数与循环小数",
+                {
+                    "step_chain": "3-4",
+                    "number_mix": "standard",
+                    "routine_transform_count": "1",
+                    "structural_method": "shortcut",
+                    "structure_patterns": ["grouping"],
+                    "term_count_band": "3-5",
+                },
+                "K5",
+                "B3",
+                "L5",
+            ),
+        ],
+    )
+    def test_knowledge_range_and_burden_matrix(
+        self,
+        scorer,
+        knowledge_point,
+        burden_overrides,
+        expected_k,
+        expected_b,
+        expected_l,
+    ):
+        features = self._pure_features(
+            evidence_summary="用于校验知识范围与计算负担矩阵。",
+            evidence_tags=["计算"],
+            analysis_facts={"core_knowledge_points": [knowledge_point]},
+            **burden_overrides,
+        )
+
+        result = scorer.score(features)
+
+        assert result.applicable is True
+        assert result.details["knowledge_range_level"] == expected_k
+        assert result.details["burden_level"] == expected_b
+        assert result.details["dim1_level"] == expected_l
+        assert result.details["combined_rule"] == "knowledge_range_burden_matrix"
+        assert result.details["knowledge_burden_matrix_cell"] == f"{expected_k}+{expected_b}"
+        assert result.details["matched_knowledge_points"]
+        assert f"综合判为{expected_l}" in result.evidence
+
+    def test_knowledge_range_unmatched_falls_back_to_burden_level(self, scorer):
+        result = scorer.score(
+            self._pure_features(
+                step_chain="5+",
+                number_mix="symbolic",
+                routine_transform_count="3+",
+                structural_method="olympiad",
+                global_view_required=1,
+                calc_subtype="sequence_series",
+                structure_patterns=["telescoping"],
+                term_count_band="11+",
+                evidence_summary="无法稳定识别计算知识范围，但计算负担很高。",
+                evidence_tags=["不存在的知识点"],
+            )
+        )
+
+        assert result.applicable is True
+        assert result.details["knowledge_range_status"] == "unmatched"
+        assert result.details["burden_level"] == "B5"
+        assert result.details["dim1_level"] == "L5"
+        assert result.details["display_knowledge_points"] == ["数列计算"]
+        assert result.details["display_knowledge_status"] == "fallback"
+        assert result.details["combined_rule"] == "burden_only_knowledge_range_unmatched"
+        assert "知识范围未稳定识别" in result.evidence
+
     def test_l3_structural_shortcut(self, scorer):
         features = {
             "task_form": "explicit",
@@ -360,7 +555,7 @@ class TestDim1ComputationScorer:
 
         assert result.applicable is True
         assert result.score == 4.0
-        assert result.level == 3
+        assert result.level == 2
         assert result.level_label == "L2 常规嵌入计算"
         assert result.details["calc_bucket"] == "embedded_calculation"
 
@@ -700,7 +895,7 @@ class TestDim2SpatialScorer:
             "pyramid_sandglass",
         ],
     )
-    def test_single_olympiad_area_model_scores_l4(self, scorer, model_type):
+    def test_single_olympiad_area_model_uses_knowledge_range_matrix(self, scorer, model_type):
         result = scorer.score(
             self._dim2_features(
                 geometry_model_types=[model_type],
@@ -713,8 +908,17 @@ class TestDim2SpatialScorer:
         )
 
         assert result.applicable is True
-        assert result.score == 8.0
-        assert result.level == 4
+        expected_level = 4 if model_type == "shared_base_area" else 5
+        expected_score = 8.0 if expected_level == 4 else 9.5
+        assert result.score == expected_score
+        assert result.level == expected_level
+        assert result.details["spatial_burden_level"] == "S4"
+        if model_type == "shared_base_area":
+            assert result.details["knowledge_range_status"] == "unmatched"
+            assert result.details["combined_rule"] == "spatial_burden_only_knowledge_range_unmatched"
+        else:
+            assert result.details["knowledge_range_level"] == "K5"
+            assert result.details["combined_rule"] == "knowledge_range_spatial_burden_matrix"
         assert result.details["geometry_model_types"] == [model_type]
 
     def test_area_model_plus_cut_and_fill_scores_l4(self, scorer):
@@ -735,8 +939,11 @@ class TestDim2SpatialScorer:
         )
 
         assert result.applicable is True
-        assert result.score == 8.0
-        assert result.level == 4
+        assert result.score == 9.5
+        assert result.level == 5
+        assert result.details["knowledge_range_level"] == "K5"
+        assert result.details["spatial_burden_level"] == "S4"
+        assert result.details["knowledge_spatial_matrix_cell"] == "K5+S4"
 
     def test_nested_area_ratio_model_scores_l5(self, scorer):
         result = scorer.score(
@@ -828,6 +1035,139 @@ class TestDim2SpatialScorer:
         assert result.level == 1
 
     @pytest.mark.parametrize(
+        "knowledge_point,expected_k,burden_overrides,expected_spatial_burden,expected_level",
+        [
+            ("观察物体（一）", "K1", {}, "S2", 1),
+            (
+                "观察物体（一）",
+                "K1",
+                {"relation_hops": "5+", "hidden_relation_count": "2+"},
+                "S5",
+                3,
+            ),
+            (
+                "平行四边形的面积计算公式",
+                "K2",
+                {
+                    "relation_hops": "3-4",
+                    "hidden_relation_count": "1",
+                    "visual_operation_count": "2",
+                    "structural_visual_method": "auxiliary_line",
+                    "measurement_dependency": "inferred",
+                },
+                "S4",
+                3,
+            ),
+            (
+                "圆的认识",
+                "K3",
+                {
+                    "relation_hops": "1",
+                    "visual_operation_count": "0",
+                    "image_dependency": "helpful",
+                },
+                "S1",
+                2,
+            ),
+            (
+                "圆的认识",
+                "K3",
+                {
+                    "relation_hops": "3-4",
+                    "hidden_relation_count": "1",
+                    "visual_operation_count": "2",
+                    "structural_visual_method": "auxiliary_line",
+                    "measurement_dependency": "inferred",
+                },
+                "S4",
+                4,
+            ),
+            (
+                "格点与割补",
+                "K4",
+                {
+                    "relation_hops": "1",
+                    "visual_operation_count": "0",
+                    "image_dependency": "helpful",
+                },
+                "S1",
+                3,
+            ),
+            (
+                "格点与割补",
+                "K4",
+                {"relation_hops": "5+", "hidden_relation_count": "2+"},
+                "S5",
+                5,
+            ),
+            (
+                "立体几何",
+                "K5",
+                {
+                    "relation_hops": "1",
+                    "visual_operation_count": "0",
+                    "image_dependency": "helpful",
+                },
+                "S1",
+                4,
+            ),
+            (
+                "立体几何",
+                "K5",
+                {
+                    "figure_complexity": "composite_2d",
+                    "relation_hops": "3-4",
+                    "hidden_relation_count": "1",
+                    "structural_visual_method": "decomposition",
+                    "measurement_dependency": "inferred",
+                },
+                "S3",
+                5,
+            ),
+        ],
+    )
+    def test_knowledge_range_and_spatial_burden_matrix(
+        self,
+        scorer,
+        knowledge_point,
+        expected_k,
+        burden_overrides,
+        expected_spatial_burden,
+        expected_level,
+    ):
+        result = scorer.score(
+            self._dim2_features(
+                analysis_facts={"core_knowledge_points": [knowledge_point]},
+                evidence_tags=[],
+                **burden_overrides,
+            )
+        )
+
+        assert result.applicable is True
+        assert result.level == expected_level
+        assert result.details["knowledge_range_level"] == expected_k
+        assert result.details["spatial_burden_level"] == expected_spatial_burden
+        assert result.details["combined_rule"] == "knowledge_range_spatial_burden_matrix"
+
+    def test_knowledge_range_unmatched_falls_back_to_spatial_burden(self, scorer):
+        result = scorer.score(
+            self._dim2_features(
+                relation_hops="3-4",
+                hidden_relation_count="1",
+                structural_visual_method="decomposition",
+                measurement_dependency="inferred",
+                evidence_summary="需要拆分图形关系。",
+                evidence_tags=[],
+            )
+        )
+
+        assert result.applicable is True
+        assert result.level == 3
+        assert result.details["spatial_burden_level"] == "S3"
+        assert result.details["knowledge_range_status"] == "unmatched"
+        assert result.details["combined_rule"] == "spatial_burden_only_knowledge_range_unmatched"
+
+    @pytest.mark.parametrize(
         "model_type",
         [
             "grid_cut_fill",
@@ -837,7 +1177,7 @@ class TestDim2SpatialScorer:
             "geometric_counting",
         ],
     )
-    def test_knowledge_tree_mid_geometry_patterns_score_l3(self, scorer, model_type):
+    def test_knowledge_tree_mid_geometry_patterns_use_k4_matrix(self, scorer, model_type):
         result = scorer.score(
             self._dim2_features(
                 geometry_model_types=[model_type],
@@ -850,7 +1190,10 @@ class TestDim2SpatialScorer:
         )
 
         assert result.applicable is True
-        assert result.level == 3
+        assert result.level == 4
+        assert result.score == 8.0
+        assert result.details["knowledge_range_level"] == "K4"
+        assert result.details["spatial_burden_level"] == "S3"
 
     @pytest.mark.parametrize(
         "model_type",
@@ -863,7 +1206,7 @@ class TestDim2SpatialScorer:
             "angle_chasing_polygon",
         ],
     )
-    def test_knowledge_tree_high_geometry_patterns_score_l4(self, scorer, model_type):
+    def test_knowledge_tree_high_geometry_patterns_use_matrix(self, scorer, model_type):
         result = scorer.score(
             self._dim2_features(
                 figure_complexity="composite_2d",
@@ -880,9 +1223,15 @@ class TestDim2SpatialScorer:
         )
 
         assert result.applicable is True
-        assert result.level == 4
+        expected_level = 4 if model_type == "angle_chasing_polygon" else 5
+        assert result.level == expected_level
+        assert result.score == (8.0 if expected_level == 4 else 9.5)
+        assert result.details["knowledge_range_level"] == (
+            "K4" if model_type == "angle_chasing_polygon" else "K5"
+        )
+        assert result.details["spatial_burden_level"] == "S4"
 
-    def test_wmo_like_basic_three_view_projection_scores_l4(self, scorer):
+    def test_wmo_like_basic_three_view_projection_scores_l5_after_knowledge_range(self, scorer):
         result = scorer.score(
             self._dim2_features(
                 task_form="explicit_visual",
@@ -904,8 +1253,10 @@ class TestDim2SpatialScorer:
         )
 
         assert result.applicable is True
-        assert result.score == 8.0
-        assert result.level == 4
+        assert result.score == 9.5
+        assert result.level == 5
+        assert result.details["knowledge_range_level"] == "K5"
+        assert result.details["spatial_burden_level"] == "S4"
 
     def test_wmo_like_three_view_extreme_construction_scores_l5(self, scorer):
         result = scorer.score(
@@ -1246,7 +1597,7 @@ class TestDim2Applicability:
 
         assert parser._should_attach_image(question) is True
 
-    def test_solid_geometry_fallback_scores_l4(self):
+    def test_solid_geometry_fallback_scores_l5_after_knowledge_range(self):
         facts = build_dim2_visual_fallback_facts(
             "每个小正方体的棱长为2，求露在外面的面积。",
             {},
@@ -1259,7 +1610,9 @@ class TestDim2Applicability:
         assert facts["figure_complexity"] == "solid_3d"
         score = Dim2SpatialScorer().score(facts)
         assert score.applicable is True
-        assert score.level == 4
+        assert score.level == 5
+        assert score.details["knowledge_range_level"] == "K5"
+        assert score.details["spatial_burden_level"] == "S4"
 
     def test_circle_square_fallback_scores_l3(self):
         facts = build_dim2_visual_fallback_facts(
@@ -1303,7 +1656,7 @@ class TestDim2Applicability:
         assert score.applicable is True
         assert score.level == 1
 
-    def test_water_volume_fallback_scores_l4_without_stable_image_use(self):
+    def test_water_volume_fallback_scores_l5_without_stable_image_use(self):
         facts = build_dim2_visual_fallback_facts(
             "如图，一个瓶子中装有水，底面积10平方厘米，正放水高6厘米，倒放后空余部分高4厘米，求瓶子的容积。",
             {"spatial_role": "none", "applicability_confidence": 0.0},
@@ -1316,7 +1669,9 @@ class TestDim2Applicability:
         assert "water_displacement" in facts["geometry_model_types"]
         score = Dim2SpatialScorer().score(facts)
         assert score.applicable is True
-        assert score.level == 4
+        assert score.level == 5
+        assert score.details["knowledge_range_level"] == "K5"
+        assert score.details["spatial_burden_level"] == "S4"
 
         applicability = evaluate_dim2_applicability(
             "如图，一个瓶子中装有水，底面积10平方厘米，正放水高6厘米，倒放后空余部分高4厘米，求瓶子的容积。",
@@ -1328,7 +1683,7 @@ class TestDim2Applicability:
 
         assert applicability["status"] == "applicable"
 
-    def test_rectangle_reverse_area_fallback_scores_l3(self):
+    def test_rectangle_reverse_area_fallback_uses_k1_s3_matrix(self):
         facts = build_dim2_visual_fallback_facts(
             "一个长方形，长减少4米，宽减少2米，面积减少44平方米，剩下部分正好是一个正方形，求原来长方形的面积。",
             {"spatial_role": "none", "applicability_confidence": 0.0},
@@ -1342,7 +1697,9 @@ class TestDim2Applicability:
         assert facts["geometry_model_types"] == ["reverse_area_edge"]
         score = Dim2SpatialScorer().score(facts)
         assert score.applicable is True
-        assert score.level == 3
+        assert score.level == 2
+        assert score.details["knowledge_range_level"] == "K1"
+        assert score.details["spatial_burden_level"] == "S3"
 
         applicability = evaluate_dim2_applicability(
             "一个长方形，长减少4米，宽减少2米，面积减少44平方米，剩下部分正好是一个正方形，求原来长方形的面积。",
@@ -1364,6 +1721,136 @@ class TestDim2Applicability:
         )
 
         assert facts is None
+
+    @pytest.mark.parametrize(
+        ("question_no", "parse_audit"),
+        [
+            ("5", {"visual_category": "diagram", "image_required_hint": True}),
+            ("6", {"visual_category": "diagram", "image_required_hint": True}),
+            ("20", {"visual_category": "diagram", "image_required_hint": True}),
+        ],
+    )
+    def test_wmo31_non_geometry_diagrams_do_not_enter_dim2(self, question_no, parse_audit):
+        raw_text = WMO31_DIM2_REGRESSION_TEXTS[question_no]
+        facts = build_dim2_visual_fallback_facts(
+            raw_text,
+            {"spatial_role": "none", "applicability_confidence": 0.0},
+            parse_audit=parse_audit,
+            has_image=True,
+            used_image=True,
+        )
+
+        assert facts is None
+        applicability = evaluate_dim2_applicability(
+            raw_text,
+            {},
+            llm_confidence=0.9,
+            parse_audit=parse_audit,
+            used_image=True,
+        )
+
+        assert applicability["status"] == "not_applicable"
+
+    def test_wmo31_rotation_shadow_uses_specific_dim2_fallback(self):
+        raw_text = WMO31_DIM2_REGRESSION_TEXTS["12"]
+        facts = build_dim2_visual_fallback_facts(
+            raw_text,
+            {"spatial_role": "none", "applicability_confidence": 0.0},
+            parse_audit={"visual_category": "geometry", "image_required_hint": True},
+            has_image=True,
+            used_image=True,
+        )
+
+        assert facts is not None
+        assert facts["fallback_source"] == "visual_geometry_rotation_shadow"
+        assert facts["geometry_domain_gate"] == "geometry_area_relation"
+        assert "circle_sector_cut_fill" in facts["geometry_model_types"]
+        applicability = evaluate_dim2_applicability(
+            raw_text,
+            facts,
+            llm_confidence=facts["applicability_confidence"],
+            parse_audit={"visual_category": "geometry", "image_required_hint": True},
+            used_image=True,
+        )
+
+        assert applicability["status"] == "applicable"
+        score = Dim2SpatialScorer().score(facts)
+        assert score.applicable is True
+        assert score.score == pytest.approx(6.0)
+        assert score.details["dim2_level"] == "L3"
+        assert score.details["final_level_adjustment_reason"] == "standard_rotation_sector_shadow_area"
+
+    def test_simple_rotation_recognition_is_not_promoted_to_l3(self):
+        score = Dim2SpatialScorer().score(
+            {
+                "task_form": "explicit_visual",
+                "spatial_role": "core",
+                "figure_complexity": "basic_2d",
+                "relation_hops": "1",
+                "hidden_relation_count": "0",
+                "visual_operation_count": "1",
+                "structural_visual_method": "none",
+                "measurement_dependency": "direct",
+                "global_view_required": 0,
+                "image_dependency": "helpful",
+                "geometry_model_types": ["figure_transformation"],
+                "geometry_model_count": "1",
+                "model_recognition_role": "supporting",
+                "area_relation_chain": "none",
+                "model_combination_complexity": "single_model",
+                "evidence_summary": "直接识别旋转后的对应位置。",
+            }
+        )
+
+        assert score.applicable is True
+        assert score.score < 6.0
+        assert "final_level_adjustment_reason" not in score.details
+
+    def test_wmo31_quadrilateral_area_ratio_counts_even_when_llm_image_use_failed(self):
+        raw_text = WMO31_DIM2_REGRESSION_TEXTS["14"]
+        facts = build_dim2_visual_fallback_facts(
+            raw_text,
+            {"spatial_role": "none", "applicability_confidence": 0.0},
+            parse_audit={"visual_category": "geometry", "image_required_hint": True},
+            has_image=True,
+            used_image=False,
+        )
+
+        assert facts is not None
+        assert facts["fallback_source"] == "visual_geometry_area_ratio"
+        assert facts["image_block_available"] == 1
+        assert "area_ratio_chain" in facts["geometry_model_types"]
+        applicability = evaluate_dim2_applicability(
+            raw_text,
+            facts,
+            llm_confidence=facts["applicability_confidence"],
+            parse_audit={"visual_category": "geometry", "image_required_hint": True},
+            used_image=False,
+            parse_warnings=["LLM 超时/异常，已继续处理其他题目。"],
+        )
+
+        assert applicability["status"] == "applicable"
+
+    def test_wmo31_hollow_cylinder_counts_despite_truncated_second_part(self):
+        raw_text = WMO31_DIM2_REGRESSION_TEXTS["17"]
+        facts = build_dim2_text_geometry_fallback_facts(
+            raw_text,
+            {"spatial_role": "none", "applicability_confidence": 0.0},
+        )
+
+        assert facts is not None
+        assert facts["fallback_source"] == "text_hollow_cylinder_geometry"
+        assert facts["geometry_domain_gate"] == "solid_geometry"
+        applicability = evaluate_dim2_applicability(
+            raw_text,
+            facts,
+            llm_confidence=facts["applicability_confidence"],
+            parse_audit={"visual_category": "none", "image_required_hint": False},
+            used_image=False,
+            parse_warnings=["题目(2)小问文字被截断，raw_text不完整"],
+        )
+
+        assert applicability["status"] == "applicable"
 
     def test_wmo_geometry_questions_use_deterministic_dim2_fallback(self):
         scorer = Dim2SpatialScorer()
@@ -1509,6 +1996,60 @@ class TestDim3InformationScorer:
         assert result.level == 3
         assert result.level_label == "L3 多条件转化"
 
+    def test_medium_scenario_range_narrowing_scores_l3(self, scorer):
+        result = scorer.score(
+            self._dim3_features(
+                relevant_condition_count="1-2",
+                distractor_pressure="none",
+                condition_distribution="compact",
+                scenario_comprehension_load="medium",
+                extraction_depth="direct",
+                representation_conversion="direct_mapping",
+                conversion_step_count="1",
+                quantity_relation_structure="single_relation",
+                target_representation="table_list",
+                application_relation_types=["range_narrowing"],
+                object_count_band="1",
+                state_change_count="1",
+                implicit_relation_count="1",
+                evidence_summary="需要先读懂关阀门后的水表反应对应哪一段漏水范围，再转成分段判断和逐步缩小范围。",
+            )
+        )
+
+        assert result.applicable is True
+        assert result.score == 6.0
+        assert result.level == 3
+        assert result.details["scenario_comprehension_load"] == "medium"
+        assert result.details["application_relation_types"] == ["range_narrowing"]
+
+    def test_heavy_discount_scene_scores_l4(self, scorer):
+        result = scorer.score(
+            self._dim3_features(
+                relevant_condition_count="5-6",
+                distractor_pressure="light",
+                condition_distribution="cross_sentence",
+                scenario_comprehension_load="heavy",
+                extraction_depth="reorganized",
+                representation_conversion="relation_mapping",
+                conversion_step_count="2",
+                quantity_relation_structure="multi_relation",
+                target_representation="table_list",
+                global_organizing_required=1,
+                application_relation_types=["profit_discount", "optimization_comparison"],
+                object_count_band="2",
+                state_change_count="2",
+                implicit_relation_count="2",
+                base_quantity_shift="multiple",
+                comparison_candidate_count="3+",
+                evidence_summary="需要读懂购物金、折扣券、满减、互斥使用和两笔订单递进，再整理成多方案比较。",
+            )
+        )
+
+        assert result.applicable is True
+        assert result.score == 8.0
+        assert result.level == 4
+        assert result.details["scenario_comprehension_load"] == "heavy"
+
     def test_l2_single_conversion(self, scorer):
         features = {
             "information_role": "core",
@@ -1529,7 +2070,7 @@ class TestDim3InformationScorer:
 
         assert result.applicable is True
         assert result.score == 4.0
-        assert result.level == 3
+        assert result.level == 2
         assert result.level_label == "L2 单次转化"
 
     def test_l3_multi_condition_conversion(self, scorer):
@@ -1845,6 +2386,47 @@ class TestDim3Applicability:
         )
 
         assert result["status"] == "applicable"
+
+    def test_scenario_range_narrowing_prevents_low_barrier_exclusion(self):
+        result = evaluate_dim3_applicability(
+            "16户人家中有一户管道漏水，关闭某处阀门后根据水表是否显示用水判断漏水在哪一段，至少关闭几次才能确定位置？",
+            {
+                "information_role": "core",
+                "source_form": "text_only",
+                "relevant_condition_count": "1-2",
+                "distractor_pressure": "none",
+                "condition_distribution": "compact",
+                "scenario_comprehension_load": "medium",
+                "extraction_depth": "direct",
+                "representation_conversion": "direct_mapping",
+                "conversion_step_count": "1",
+                "quantity_relation_structure": "single_relation",
+                "target_representation": "table_list",
+                "global_organizing_required": 0,
+                "image_dependency": "none",
+                "application_relation_types": ["range_narrowing"],
+                "object_count_band": "1",
+                "state_change_count": "1",
+                "implicit_relation_count": "1",
+                "base_quantity_shift": "none",
+                "comparison_candidate_count": "0",
+                "evidence_summary": "需要读懂关阀门后的水表反馈如何对应漏水范围，并转成分段判断与范围缩小。",
+                "applicability_confidence": 0.9,
+            },
+            llm_confidence=0.9,
+        )
+
+        assert result["status"] == "applicable"
+
+    def test_default_none_scenario_does_not_make_empty_feature_present(self):
+        result = evaluate_dim3_applicability(
+            "1 + 1 = ?",
+            {"scenario_comprehension_load": "none"},
+            llm_confidence=0.9,
+        )
+
+        assert result["status"] == "not_applicable"
+        assert result["warnings"] == []
 
     def test_text_length_enrichment_uses_local_raw_text(self):
         raw_text = "甲" * 120
@@ -4331,17 +4913,27 @@ class TestPaperAggregator:
         assert result.total_question_score == 8.0
         expected_score = (6.0 + 8.0) / 2
         assert abs(result.paper_score - expected_score) < 0.1
-        assert "加权维度分" in result.evidence
+        assert result.evidence == (
+            "计算维度，综合得分 7.0 分，"
+            "说明本卷有一定计算难度，除准确率外，也考查多步运算和常见转化。"
+        )
         assert result.score_breakdown["pure_calculation"]["question_count"] == 2
         assert result.score_breakdown["pure_calculation"]["weight"] == 1.0
         assert "总分值" not in result.evidence
         assert "复核提示" not in result.evidence
+        assert "计入数学运算评分" not in result.evidence
+        assert "纯计算题" not in result.evidence
+        assert "权重" not in result.evidence
         assert len(result.counted_questions) == 2
         assert result.counted_questions[0]["question_no"] == "2"
         assert result.counted_questions[0]["question_label_raw"] == "（2）"
         assert result.counted_questions[0]["question_display_label"] == "（2）"
         assert result.counted_questions[0]["page_no"] == 2
-        assert result.counted_questions[0]["full_reason"] == "需要跨单位比例换算"
+        assert result.counted_questions[0]["score"] == 8.0
+        assert result.counted_questions[0]["level_code"] == "L4"
+        assert result.counted_questions[0]["difficulty_label"] == "较难（8.0）"
+        assert result.counted_questions[0]["full_reason"].startswith("较难（8.0）：主要考查比例与单位换算")
+        assert "核心计算能力" not in result.counted_questions[0]["full_reason"]
 
     def test_representative_questions_keep_full_reason(self, aggregator):
         full_reason = (
@@ -4366,10 +4958,89 @@ class TestPaperAggregator:
         result = aggregator.aggregate(question_scores, "dim1")
         counted_question = result.counted_questions[0]
 
-        assert counted_question["reason"] == "L4：需要整体观察后化简。 依据：文本"
-        assert counted_question["full_reason"] == "L4：需要整体观察后化简"
+        assert counted_question["reason"].startswith("较难（8.0）：主要考查结构计算题")
+        assert counted_question["full_reason"].startswith("较难（8.0）：主要考查结构计算题")
+        assert counted_question["difficulty_label"] == "较难（8.0）"
+        assert "核心计算能力" not in counted_question["reason"]
+        assert "高阶结构巧算" not in counted_question["reason"]
+        assert "依据：文本" not in counted_question["reason"]
 
-    def test_representative_questions_strip_level_descriptor_only_at_start(self, aggregator):
+    def test_dim1_counted_question_level_notes_are_teacher_readable(self, aggregator):
+        cases = [
+            ("L1", 2.0, "简单（2.0）", "属于基础计算要求，主要看基本运算是否准确。"),
+            ("L2", 4.0, "较易（4.0）", "属于常规校内计算，主要区分熟练度和准确率。"),
+            ("L3", 6.0, "中等（6.0）", "有一定转换或多步计算要求，常见失分点是算式落地和运算顺序。"),
+            ("L4", 8.0, "较难（8.0）", "学习范围或计算量偏高，常见失分点是连续化简和计算准确率。"),
+            ("L5", 9.5, "困难（9.5）", "属于高强度或拓展计算，容易拉开学生在综合计算上的差距。"),
+        ]
+        forbidden_terms = ["方法选择", "步骤组织", "计算稳定性", "适合观察", "核心计算能力"]
+
+        for level_code, score, difficulty_label, expected_note in cases:
+            question = QuestionDimensionScore(
+                question_id=f"q-{level_code}",
+                question_no=level_code,
+                score=score,
+                dim_scores={"dim1": score},
+                applicable_dims=["dim1"],
+                question_summary="核心计算能力",
+                dim_reasons={"dim1": "旧版分析不应直接展示。"},
+                dim_confidences={"dim1": 0.9},
+                dim_details={
+                    "dim1": {
+                        "dim1_level": level_code,
+                        "display_knowledge_range_label": "校内五年级",
+                        "display_knowledge_points": ["小数四则混合运算"],
+                    }
+                },
+            )
+
+            reason = aggregator._build_dim1_counted_question_reason(question)
+
+            assert (
+                reason
+                == f"{difficulty_label}：主要考查校内五年级的小数四则混合运算；{expected_note}"
+            )
+            for term in forbidden_terms:
+                assert term not in reason
+
+    def test_dim1_score_overview_explains_score_bands(self, aggregator):
+        cases = [
+            (
+                2.0,
+                "计算维度，综合得分 2.0 分，"
+                "说明本卷计算要求以基础运算为主，主要看基本规则掌握和计算准确率。",
+            ),
+            (
+                4.0,
+                "计算维度，综合得分 4.0 分，"
+                "说明本卷计算难度整体偏常规，重点考查校内计算的熟练度和稳定性。",
+            ),
+            (
+                6.0,
+                "计算维度，综合得分 6.0 分，"
+                "说明本卷有一定计算难度，除准确率外，也考查多步运算和常见转化。",
+            ),
+            (
+                8.6,
+                "计算维度，综合得分 8.6 分，"
+                "说明本卷计算难度较高，计算题和应用题中的核心计算都会拉开学生差距。",
+            ),
+            (
+                9.5,
+                "计算维度，综合得分 9.5 分，"
+                "说明本卷计算要求很高，包含较强的多步、结构化或拓展计算，对综合计算能力要求突出。",
+            ),
+        ]
+
+        for score, expected in cases:
+            overview = aggregator._build_dim1_score_overview(score)
+
+            assert overview == expected
+            assert "计入数学运算评分" not in overview
+            assert "纯计算题" not in overview
+            assert "权重" not in overview
+
+    def test_dim2_representative_questions_use_specific_counted_wording(self, aggregator):
         question_scores = [
             QuestionDimensionScore(
                 question_id="q1",
@@ -4379,9 +5050,18 @@ class TestPaperAggregator:
                 applicable_dims=["dim2"],
                 question_summary="图形重组",
                 dim_reasons={
-                    "dim2": "L4 结构变换想象：需要图形重组，正文中仍可说明这是结构变换想象。"
+                    "dim2": "L4 结构变换想象：需要把格点图形拆补成基本图形，再利用面积关系计算。"
                 },
                 dim_confidences={"dim2": 0.9},
+                dim_details={
+                    "dim2": {
+                        "dim2_level": "L4",
+                        "display_geometry_knowledge_range_label": "高思导引四年级",
+                        "display_geometry_knowledge_points": ["格点与割补"],
+                        "geometry_model_types": ["grid_cut_fill"],
+                        "evidence_summary": "需要把格点图形拆补成基本图形，再利用面积关系计算。",
+                    }
+                },
             ),
             QuestionDimensionScore(
                 question_id="q2",
@@ -4392,13 +5072,272 @@ class TestPaperAggregator:
                 question_summary="图形关系",
                 dim_reasons={"dim2": "L3：需要识别两条图形关系。"},
                 dim_confidences={"dim2": 0.8},
+                dim_details={
+                    "dim2": {
+                        "dim2_level": "L3",
+                        "display_geometry_knowledge_range_label": "校内六年级",
+                        "display_geometry_knowledge_points": ["辅助线与面积关系"],
+                    }
+                },
             ),
         ]
 
         result = aggregator.aggregate(question_scores, "dim2")
 
-        assert result.counted_questions[0]["full_reason"] == "L4：需要图形重组，正文中仍可说明这是结构变换想象"
-        assert result.counted_questions[1]["full_reason"] == "L3：需要识别两条图形关系"
+        assert result.counted_questions[0]["full_reason"] == (
+            "较难（8.0）：主要考查高思导引四年级的格点与割补；"
+            "本题难点在于要把格点图形拆补成基本图形，再利用面积关系计算。"
+        )
+        assert result.counted_questions[1]["full_reason"] == (
+            "中等（6.0）：主要考查校内六年级的辅助线与面积关系；"
+            "本题难点在于要识别两条图形关系。"
+        )
+        forbidden_terms = [
+            "空间想象要求较高",
+            "图形结构偏复杂",
+            "适合观察几何能力",
+            "常见失分点是读图",
+            "空间负担为",
+            "knowledge_range_level",
+            "dim2_level",
+        ]
+        for counted_question in result.counted_questions:
+            for term in forbidden_terms:
+                assert term not in counted_question["full_reason"]
+
+    def test_dim3_score_overview_explains_information_processing_bands(self, aggregator):
+        cases = [
+            (
+                2.0,
+                "信息提取与转化维度，综合得分 2.0 分，"
+                "说明本卷信息处理要求较基础，主要是直接读懂题干并定位有效条件。",
+            ),
+            (
+                4.0,
+                "信息提取与转化维度，综合得分 4.0 分，"
+                "说明本卷以常规场景理解和信息转化为主，重点看能否把题意条件对应到算式或关系。",
+            ),
+            (
+                6.0,
+                "信息提取与转化维度，综合得分 6.0 分，"
+                "说明本卷有一定场景理解和信息整理难度，需要读懂题意规则、筛选多条条件并建立数量关系。",
+            ),
+            (
+                8.6,
+                "信息提取与转化维度，综合得分 8.6 分，"
+                "说明本卷读题与信息组织难度较高，分散条件、规则理解、隐含关系或表示转化会拉开差距。",
+            ),
+            (
+                9.5,
+                "信息提取与转化维度，综合得分 9.5 分，"
+                "说明本卷读题场景理解与信息重构要求很高，包含复杂规则、多源材料、嵌套关系或自建表示。",
+            ),
+        ]
+
+        for score, expected in cases:
+            overview = aggregator._build_dim3_score_overview(score)
+
+            assert overview == expected
+            assert "共 " not in overview
+            assert "题级平均" not in overview
+
+    def test_dim3_representative_questions_use_information_processing_wording(self, aggregator):
+        question_scores = [
+            QuestionDimensionScore(
+                question_id="q1",
+                question_no="1",
+                score=8.0,
+                dim_scores={"dim3": 8.0},
+                applicable_dims=["dim3"],
+                question_summary="百分数变化应用",
+                dim_reasons={"dim3": "旧版分析不应直接展示。"},
+                dim_confidences={"dim3": 0.9},
+                dim_details={
+                    "dim3": {
+                        "dim3_level": "L4",
+                        "application_relation_types": ["percentage_base_change"],
+                        "base_quantity_shift": "multiple",
+                        "evidence_summary": "需要分清变化前后的基准量，避免把不同阶段的百分数直接合并。",
+                    }
+                },
+            ),
+            QuestionDimensionScore(
+                question_id="q2",
+                question_no="2",
+                score=6.0,
+                dim_scores={"dim3": 6.0},
+                applicable_dims=["dim3"],
+                question_summary="表格信息比较",
+                dim_reasons={"dim3": "L3 多条件转化：需要先从表格筛选数据，再计算单位量后比较。"},
+                dim_confidences={"dim3": 0.8},
+                dim_details={
+                    "dim3": {
+                        "dim3_level": "L3",
+                        "source_form": "table_chart",
+                        "application_relation_types": ["chart_table_conversion"],
+                        "evidence_summary": "需要先从表格筛选数据，再计算单位量后比较。",
+                    }
+                },
+            ),
+        ]
+
+        result = aggregator.aggregate(question_scores, "dim3")
+
+        assert result.evidence == (
+            "信息提取与转化维度，综合得分 7.0 分，"
+            "说明本卷有一定场景理解和信息整理难度，需要读懂题意规则、筛选多条条件并建立数量关系。"
+        )
+        assert result.counted_questions[0]["difficulty_label"] == "较难（8.0）"
+        assert result.counted_questions[0]["full_reason"] == (
+            "较难（8.0）：主要考查百分数基准量变化；"
+            "本题难点在于要分清变化前后的基准量，避免把不同阶段的百分数直接合并。"
+        )
+        assert result.counted_questions[1]["full_reason"] == (
+            "中等（6.0）：主要考查图表数据转化；"
+            "本题难点在于要先从表格筛选数据，再计算单位量后比较。"
+        )
+        forbidden_terms = [
+            "信息提取与转化负担较高",
+            "信息处理能力要求较高",
+            "题干较长",
+            "信息量较大",
+            "适合观察信息提取能力",
+            "需要较强的信息整合能力",
+            "dim3_level",
+            "information_role",
+            "representation_conversion",
+            "quantity_relation_structure",
+            "evidence_summary",
+        ]
+        for counted_question in result.counted_questions:
+            for term in forbidden_terms:
+                assert term not in counted_question["full_reason"]
+
+    def test_dim6_score_overview_explains_logic_chain_evaluation_point(self, aggregator):
+        cases = [
+            (
+                2.0,
+                "综合得分 2.0 分，说明本卷多数题的推理链较短，通常一步或直接条件判断即可完成。",
+            ),
+            (
+                4.0,
+                "综合得分 4.0 分，说明本卷逻辑链条整体偏常规，少量题需要把前一步结果接到下一步条件中。",
+            ),
+            (
+                6.0,
+                "综合得分 6.0 分，说明本卷有一定逻辑推进要求，部分题需要连续推出多个中间结论。",
+            ),
+            (
+                8.6,
+                "综合得分 8.6 分，说明本卷逻辑链条较长，较多题需要处理多轮变化、倒推或多种情况。",
+            ),
+            (
+                9.5,
+                "综合得分 9.5 分，说明本卷逻辑链条很长，题目往往需要多次推出中间结论，并让多个条件同时对上。",
+            ),
+        ]
+
+        for score, expected in cases:
+            overview = aggregator._build_dim6_score_overview(score)
+
+            assert overview == expected
+            assert "共 " not in overview
+            assert "题级平均" not in overview
+
+    def test_dim6_representative_questions_explain_teacher_readable_logic_task(self, aggregator):
+        question_scores = [
+            QuestionDimensionScore(
+                question_id="q0",
+                question_no="0",
+                score=9.5,
+                dim_scores={"dim6": 9.5},
+                applicable_dims=["dim6"],
+                question_summary="多对象分配倒推题",
+                dim_reasons={"dim6": "旧版分析不应直接展示。"},
+                dim_confidences={"dim6": 0.95},
+                dim_details={
+                    "dim6": {
+                        "dim6_level": "L5",
+                        "logic_structure_types": ["global_constraint_system", "reverse_process_chain"],
+                        "backtrack_depth": "3+",
+                        "consistency_constraint_count": "4+",
+                        "phase_count_band": "5+",
+                        "evidence_summary": "多对象分配题需要嵌套约束、三层以上倒推和全局一致性收束。",
+                    }
+                },
+            ),
+            QuestionDimensionScore(
+                question_id="q1",
+                question_no="1",
+                score=8.0,
+                dim_scores={"dim6": 8.0},
+                applicable_dims=["dim6"],
+                question_summary="分类判断题",
+                dim_reasons={"dim6": "旧版分析不应直接展示。"},
+                dim_confidences={"dim6": 0.9},
+                dim_details={
+                    "dim6": {
+                        "dim6_level": "L4",
+                        "logic_structure_types": ["bounded_case_enumeration"],
+                        "case_count_band": "3-5",
+                        "evidence_summary": "需要分类、回查并维持全局一致。",
+                    }
+                },
+            ),
+            QuestionDimensionScore(
+                question_id="q2",
+                question_no="2",
+                score=6.0,
+                dim_scores={"dim6": 6.0},
+                applicable_dims=["dim6"],
+                question_summary="连续条件题",
+                dim_reasons={"dim6": "旧版分析不应直接展示。"},
+                dim_confidences={"dim6": 0.8},
+                dim_details={
+                    "dim6": {
+                        "dim6_level": "L3",
+                        "chain_span": "3-4",
+                        "logic_structure_types": ["work_rate_chain"],
+                        "evidence_summary": "需要把前一步结果接到下一步条件中。",
+                    }
+                },
+            ),
+        ]
+
+        result = aggregator.aggregate(question_scores, "dim6")
+
+        assert result.evidence == (
+            "综合得分 7.8 分，说明本卷有一定逻辑推进要求，部分题需要连续推出多个中间结论。"
+        )
+        assert result.counted_questions[0]["difficulty_label"] == "困难（9.5）"
+        assert result.counted_questions[0]["full_reason"] == (
+            "困难（9.5）：本题逻辑链条难在从结果倒推回原条件；"
+            "依据是多对象分配题需要嵌套条件、三层以上倒推和多个条件同时对上确定结果。"
+        )
+        assert result.counted_questions[1]["full_reason"] == (
+            "较难（8.0）：本题逻辑链条难在多种情况逐一判断；"
+            "依据是题面存在有限候选情况，需要判断 3-5 种可能情况。"
+        )
+        assert result.counted_questions[2]["full_reason"] == (
+            "中等（6.0）：本题逻辑链条难在连续推出中间结论；"
+            "依据是题目需要把前一步结果接到下一步条件中。"
+        )
+        forbidden_terms = [
+            "逻辑负担",
+            "约束一致",
+            "高阶收束",
+            "dim6_level",
+            "reasoning_role",
+            "chain_span",
+        ]
+        for counted_question in result.counted_questions:
+            assert "本题逻辑链条难在" in counted_question["full_reason"]
+            assert "依据是" in counted_question["full_reason"]
+            for term in forbidden_terms:
+                assert term not in counted_question["full_reason"]
+            assert "依据是本题逻辑链条较长" not in counted_question["full_reason"]
+            assert "依据是该题难度较高" not in counted_question["full_reason"]
+            assert "依据是综合判为困难" not in counted_question["full_reason"]
 
     @staticmethod
     def _dim5_question(index: int, bucket: str, *, competition_signal: str = "") -> QuestionDimensionScore:
@@ -4631,6 +5570,116 @@ class TestPaperAggregator:
         result = aggregator.aggregate([high, beyond], "dim5")
 
         assert result.counted_questions[0]["question_no"] == "2"
+
+    def test_dim5_counted_questions_expose_structured_display_fields(self, aggregator):
+        question = self._dim5_question(1, "high_gaosi")
+        question.dim_scores["dim5"] = 8.0
+        question.dim_details["dim5"].update(
+            {
+                "knowledge_level": "L4",
+                "canonical_knowledge_point": "面积比模型",
+                "gaosi_grade": "6",
+                "level_evidence": "需要识别等高、共边或割补关系，并把图形面积关系转化为比例关系",
+            }
+        )
+
+        result = aggregator.aggregate([question], "dim5")
+        counted_question = result.counted_questions[0]
+
+        assert counted_question["difficulty_label"] == "较难（8.0）"
+        assert counted_question["knowledge_source_text"] == "六年级高思导引"
+        assert counted_question["knowledge_point_text"] == "面积比模型"
+        assert counted_question["score_reason"] == (
+            "难点在于要识别等高、共边或割补关系，并把图形面积关系转化为比例关系。"
+        )
+        assert counted_question["reason"] == (
+            "较难（8.0）：本题属于六年级高思导引的面积比模型；"
+            "难点在于要识别等高、共边或割补关系，并把图形面积关系转化为比例关系。"
+        )
+        assert "因此计为" not in counted_question["score_reason"]
+        assert "奥数" not in counted_question["reason"]
+
+    def test_dim5_counted_question_source_does_not_infer_missing_grade(self, aggregator):
+        question = self._dim5_question(1, "high_gaosi")
+        question.dim_scores["dim5"] = 8.0
+        question.dim_details["dim5"].update(
+            {
+                "knowledge_level": "L4",
+                "canonical_knowledge_point": "面积比模型",
+                "band": "五六年级高思导引拓展篇",
+                "canonical_alias_hits": ["面积比", "割补"],
+            }
+        )
+
+        result = aggregator.aggregate([question], "dim5")
+        counted_question = result.counted_questions[0]
+
+        assert counted_question["knowledge_source_text"] == "高思导引"
+        assert "年级" not in counted_question["knowledge_source_text"]
+        assert "高思导引" in counted_question["reason"]
+        assert "奥数" not in counted_question["reason"]
+
+    def test_dim5_counted_question_replaces_audit_evidence_with_counting_difficulty(self, aggregator):
+        question = self._dim5_question(1, "high_gaosi")
+        question.dim_scores["dim5"] = 8.0
+        question.dim_details["dim5"].update(
+            {
+                "knowledge_level": "L4",
+                "canonical_knowledge_point": "组合计数",
+                "canonical_knowledge_domain": "counting_combinatorics",
+                "evidence_summary": "命中高思导引计数或容斥入门专题",
+            }
+        )
+
+        result = aggregator.aggregate([question], "dim5")
+        score_reason = result.counted_questions[0]["score_reason"]
+
+        assert "分类计数" in score_reason
+        assert "重复或遗漏" in score_reason
+        assert "容斥" in score_reason
+        for forbidden in ("命中", "高思导引", "专题", "因此计为", "计为"):
+            assert forbidden not in score_reason
+
+    def test_dim5_counted_question_uses_number_theory_difficulty_template(self, aggregator):
+        question = self._dim5_question(1, "beyond")
+        question.dim_scores["dim5"] = 9.5
+        question.dim_details["dim5"].update(
+            {
+                "knowledge_level": "L5",
+                "canonical_knowledge_point": "高阶数论综合",
+                "canonical_knowledge_domain": "number_theory",
+            }
+        )
+
+        result = aggregator.aggregate([question], "dim5")
+        score_reason = result.counted_questions[0]["score_reason"]
+
+        assert "整除" in score_reason
+        assert "余数" in score_reason
+        assert "质因数" in score_reason
+        assert "直接代公式" in score_reason
+        assert "综合运用" not in score_reason
+        assert "高阶知识" not in score_reason
+
+    def test_dim5_counted_question_uses_school_formula_difficulty_template(self, aggregator):
+        question = self._dim5_question(1, "school")
+        question.dim_scores["dim5"] = 4.0
+        question.dim_details["dim5"].update(
+            {
+                "knowledge_level": "L2",
+                "canonical_knowledge_point": "高年级校内图形公式",
+                "canonical_knowledge_domain": "geometry_spatial",
+                "canonical_direct_formula_guard": True,
+            }
+        )
+
+        result = aggregator.aggregate([question], "dim5")
+        score_reason = result.counted_questions[0]["score_reason"]
+
+        assert "半径" in score_reason
+        assert "高" in score_reason
+        assert "图形公式" in score_reason
+        assert score_reason.startswith("难点在于")
 
     @staticmethod
     def _dim4_question(
@@ -4940,6 +5989,68 @@ class TestPaperAggregator:
 
         assert [item["question_no"] for item in result.counted_questions] == ["3", "2", "1"]
 
+    def test_dim4_counted_questions_expose_structured_display_fields(self, aggregator):
+        question = self._dim4_question(1, "L5", 9.5)
+        question.dim_details["dim4"].update(
+            {
+                "knowledge_point": "数论约束",
+                "topic_level": "L5",
+                "evidence_summary": "需要把整除、余数和范围条件一起回查，逐步排除不满足条件的数。",
+            }
+        )
+
+        result = aggregator.aggregate([question], "dim4")
+        counted_question = result.counted_questions[0]
+
+        assert counted_question["difficulty_label"] == "困难（9.5）"
+        assert counted_question["knowledge_point_text"] == "数论约束"
+        assert counted_question["practice_level_text"] == "压轴创新"
+        assert counted_question["score_reason"] == (
+            "难点在于要把整除、余数和范围条件一起回查，逐步排除不满足条件的数。"
+        )
+        assert counted_question["reason"] == (
+            "困难（9.5）：本题是数论约束中的压轴创新；"
+            "难点在于要把整除、余数和范围条件一起回查，逐步排除不满足条件的数。"
+        )
+
+    def test_dim4_counted_question_filters_audit_evidence_and_uses_template(self, aggregator):
+        question = self._dim4_question(1, "L5", 9.5)
+        question.dim_details["dim4"].update(
+            {
+                "knowledge_point": "数论约束",
+                "topic_level": "L5",
+                "evidence_summary": "高思题目级参考画像已校准到 L5。",
+            }
+        )
+
+        result = aggregator.aggregate([question], "dim4")
+        score_reason = result.counted_questions[0]["score_reason"]
+
+        assert "整除" in score_reason
+        assert "余数" in score_reason
+        assert "逐步排除" in score_reason
+        for forbidden in ("校准", "参考画像", "判为", "计为", "人工复核"):
+            assert forbidden not in score_reason
+
+    def test_dim4_counted_question_uses_geometry_variant_template(self, aggregator):
+        question = self._dim4_question(1, "L4", 8.0)
+        question.dim_details["dim4"].update(
+            {
+                "knowledge_point": "图形割补",
+                "topic_level": "L4",
+                "evidence_summary": "综合判为 L4 高阶变式。",
+            }
+        )
+
+        result = aggregator.aggregate([question], "dim4")
+        counted_question = result.counted_questions[0]
+
+        assert counted_question["difficulty_label"] == "较难（8.0）"
+        assert counted_question["practice_level_text"] == "高阶变式"
+        assert "辅助关系" in counted_question["score_reason"]
+        assert "面积关系" in counted_question["score_reason"]
+        assert "判为" not in counted_question["score_reason"]
+
     def test_review_questions_are_excluded_from_average_but_keep_warning(self, aggregator):
         question_scores = [
             QuestionDimensionScore(
@@ -5034,8 +6145,10 @@ class TestPaperAggregator:
         assert abs(result.paper_score - expected_score) < 0.01
         assert result.score_breakdown["pure_calculation"]["weight"] == 0.7
         assert result.score_breakdown["embedded_calculation"]["weight"] == 0.3
-        assert "纯计算 2 道" in result.evidence
-        assert "嵌入式计算 2 道" in result.evidence
+        assert result.evidence.startswith("计算维度，综合得分 6.2 分")
+        assert "有一定计算难度" in result.evidence
+        assert "纯计算题" not in result.evidence
+        assert "应用题中的核心计算" not in result.evidence
 
     def test_dim1_weighted_aggregation_uses_50_50_when_only_one_pure_question(self, aggregator):
         question_scores = [
@@ -5060,7 +6173,9 @@ class TestPaperAggregator:
         assert result.paper_score == 5.0
         assert result.score_breakdown["pure_calculation"]["weight"] == 0.0
         assert result.score_breakdown["embedded_calculation"]["weight"] == 1.0
-        assert "本卷无纯计算专项题" in result.evidence
+        assert result.evidence.startswith("计算维度，综合得分 5.0 分")
+        assert "计算难度整体偏常规" in result.evidence
+        assert "应用题中的核心计算" not in result.evidence
 
     def test_representative_questions_prefer_high_confidence_examples(self, aggregator):
         question_scores = [
@@ -5317,7 +6432,88 @@ class TestPaperAggregator:
         assert result.question_count == 4
         assert result.score_status == "scored"
         assert result.review_question_count == 0
-        assert result.paper_score == pytest.approx(8.375)
+        assert result.paper_score == pytest.approx(8.75)
+
+    def test_dim2_wmo31_regression_counts_geometry_and_excludes_non_geometry_diagrams(self, aggregator):
+        scorer = Dim2SpatialScorer()
+        question_scores = []
+        audits = {
+            "5": {"visual_category": "diagram", "image_required_hint": True},
+            "6": {"visual_category": "diagram", "image_required_hint": True},
+            "12": {"visual_category": "geometry", "image_required_hint": True},
+            "14": {"visual_category": "geometry", "image_required_hint": True},
+            "17": {"visual_category": "none", "image_required_hint": False},
+            "20": {"visual_category": "diagram", "image_required_hint": True},
+        }
+
+        for question_no, raw_text in WMO31_DIM2_REGRESSION_TEXTS.items():
+            feature_seed = {"spatial_role": "none", "applicability_confidence": 0.0}
+            facts = build_dim2_text_geometry_fallback_facts(raw_text, feature_seed)
+            if not facts:
+                facts = build_dim2_visual_fallback_facts(
+                    raw_text,
+                    feature_seed,
+                    parse_audit=audits[question_no],
+                    has_image=True,
+                    used_image=question_no == "12",
+                )
+            applicability = evaluate_dim2_applicability(
+                raw_text,
+                facts or {},
+                llm_confidence=(facts or {}).get("applicability_confidence", 0.9),
+                parse_audit=audits[question_no],
+                used_image=question_no == "12",
+                parse_warnings=(
+                    ["题目(2)小问文字被截断，raw_text不完整"]
+                    if question_no == "17"
+                    else ["LLM 超时/异常，已继续处理其他题目。"] if question_no == "14" else []
+                ),
+            )
+            if applicability["status"] != "applicable":
+                continue
+
+            score = scorer.score(facts or {})
+            assert score.applicable is True, question_no
+            question_scores.append(
+                QuestionDimensionScore(
+                    question_id=f"wmo31-q{question_no}",
+                    question_no=question_no,
+                    score=5.0,
+                    dim_scores={"dim2": score.score},
+                    applicable_dims=["dim2"],
+                    page_no=1 if int(question_no) <= 12 else 2,
+                    question_label_raw=f"{question_no}.",
+                    question_summary=raw_text,
+                    dim_reasons={"dim2": score.evidence},
+                    dim_warnings=(
+                        {"dim2": ["多模态分析失败，当前题目按纯文本回退判断。"]}
+                        if question_no == "17"
+                        else {}
+                    ),
+                    dim_confidences={"dim2": (facts or {}).get("applicability_confidence", 0.9)},
+                    dim_statuses={"dim2": applicability["status"]},
+                    dim_details={"dim2": {**(facts or {}), **score.details}},
+                )
+            )
+
+        result = aggregator.aggregate(question_scores, "dim2")
+
+        assert {item.question_no for item in question_scores} == {"12", "14", "17"}
+        assert result.question_count == 3
+        assert {item["question_no"] for item in result.counted_questions} == {"12", "14", "17"}
+        assert {"5", "6", "20"}.isdisjoint(
+            {item["question_no"] for item in result.counted_questions}
+        )
+        counted_by_no = {str(item["question_no"]): item for item in result.counted_questions}
+        assert counted_by_no["12"]["score"] == pytest.approx(6.0)
+        assert counted_by_no["12"]["difficulty_label"] == "中等（6.0）"
+        assert "旋转图形" in counted_by_no["12"]["full_reason"]
+        assert "阴影面积" in counted_by_no["12"]["full_reason"]
+        assert "平移和旋转" not in counted_by_no["12"]["full_reason"]
+        assert "四年级及以前" not in counted_by_no["12"]["full_reason"]
+        assert "圆柱" in counted_by_no["17"]["full_reason"]
+        assert "长方体和正方体" not in counted_by_no["17"]["full_reason"]
+        assert "校内六年级" in counted_by_no["17"]["full_reason"]
 
     def test_dim2_not_covered_explains_geometry_candidates(self, aggregator):
         question_scores = [

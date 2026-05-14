@@ -95,7 +95,7 @@ export function ReportLayout({ reportData, exportId, onBack }: ReportLayoutProps
                 <span className="report-section__eyebrow">六维评分</span>
                 <h2>六维评价明细</h2>
               </div>
-              <p>统一呈现维度名称、得分、等级与评分依据摘要，减少冗余噪音，突出可读性。</p>
+              <p>统一呈现维度名称、得分、等级与得分概览，减少冗余噪音，突出可读性。</p>
             </div>
             <DimensionScoreCards dimensions={reportData.dimension_details} />
           </section>
@@ -103,7 +103,7 @@ export function ReportLayout({ reportData, exportId, onBack }: ReportLayoutProps
         </main>
 
         <footer className="report-footer">
-          本报告仅调整呈现方式，不涉及六维算法口径与后端接口变更。
+          本报告按六维评价结果生成，题目难度结构基于每题实际适用维度的平均分统计。
         </footer>
       </div>
     </div>

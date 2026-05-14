@@ -16,6 +16,7 @@ SOURCE_FORM_VALUES = {"text_only", "table_chart", "image_text", "multi_source"}
 RELEVANT_CONDITION_COUNT_VALUES = {"1-2", "3-4", "5-6", "7+"}
 DISTRACTOR_PRESSURE_VALUES = {"none", "light", "heavy"}
 CONDITION_DISTRIBUTION_VALUES = {"compact", "split", "cross_sentence", "cross_modal"}
+SCENARIO_COMPREHENSION_LOAD_VALUES = {"none", "light", "medium", "heavy"}
 EXTRACTION_DEPTH_VALUES = {"direct", "selected", "reorganized", "inferred"}
 REPRESENTATION_CONVERSION_VALUES = {
     "none",
@@ -51,6 +52,7 @@ APPLICATION_RELATION_TYPE_VALUES = {
     "optimization_comparison",
     "multi_object_distribution",
     "conservation_transfer",
+    "range_narrowing",
 }
 OBJECT_COUNT_BAND_VALUES = {"1", "2", "3", "4+"}
 APPLICATION_COUNT_VALUES = {"0", "1", "2", "3+"}
@@ -115,6 +117,10 @@ def _comparison_candidate_rank(value: str) -> int:
     return {"0": 0, "2": 2, "3+": 3}.get(value, 0)
 
 
+def _scenario_load_rank(value: str) -> int:
+    return {"none": 0, "light": 1, "medium": 2, "heavy": 3}.get(value, 0)
+
+
 class Dim3InformationScorer(BaseDimensionScorer):
     DIMENSION_CODE = "dim3"
     DIMENSION_NAME = "信息提取与转化"
@@ -169,6 +175,10 @@ class Dim3InformationScorer(BaseDimensionScorer):
             features.get("condition_distribution"),
             CONDITION_DISTRIBUTION_VALUES,
         )
+        scenario_comprehension_load = _normalize_choice(
+            features.get("scenario_comprehension_load"),
+            SCENARIO_COMPREHENSION_LOAD_VALUES,
+        ) or "none"
         extraction_depth = _normalize_choice(features.get("extraction_depth"), EXTRACTION_DEPTH_VALUES)
         representation_conversion = _normalize_choice(
             features.get("representation_conversion"),
@@ -203,7 +213,25 @@ class Dim3InformationScorer(BaseDimensionScorer):
             COMPARISON_CANDIDATE_COUNT_VALUES,
         )
         evidence_summary = str(features.get("evidence_summary", "")).strip()
+        normalized_fact_details = {
+            "information_role": information_role,
+            "source_form": source_form,
+            "relevant_condition_count": relevant_condition_count,
+            "distractor_pressure": distractor_pressure,
+            "condition_distribution": condition_distribution,
+            "scenario_comprehension_load": scenario_comprehension_load,
+            "extraction_depth": extraction_depth,
+            "representation_conversion": representation_conversion,
+            "conversion_step_count": conversion_step_count,
+            "quantity_relation_structure": quantity_relation_structure,
+            "target_representation": target_representation,
+            "global_organizing_required": global_organizing_required,
+            "image_dependency": image_dependency,
+            "text_length_band": text_length_band,
+            "evidence_summary": evidence_summary,
+        }
         application_details = {
+            **normalized_fact_details,
             "application_relation_types": application_relation_types,
             "object_count_band": object_count_band,
             "state_change_count": state_change_count,
@@ -215,6 +243,7 @@ class Dim3InformationScorer(BaseDimensionScorer):
         state_rank = _application_count_rank(state_change_count)
         implicit_rank = _application_count_rank(implicit_relation_count)
         comparison_rank = _comparison_candidate_rank(comparison_candidate_count)
+        scenario_rank = _scenario_load_rank(scenario_comprehension_load)
 
         required_values = [
             information_role,
@@ -251,6 +280,11 @@ class Dim3InformationScorer(BaseDimensionScorer):
             and quantity_relation_structure == "nested_relation"
             and global_organizing_required == 1
             and state_rank >= 3
+        ) or (
+            scenario_comprehension_load == "heavy"
+            and quantity_relation_structure == "nested_relation"
+            and global_organizing_required == 1
+            and _conversion_rank(conversion_step_count) >= 2
         ):
             return self._build_score("L5", evidence_summary, extra_details=application_details)
 
@@ -304,6 +338,18 @@ class Dim3InformationScorer(BaseDimensionScorer):
                 or implicit_rank >= 2
                 or object_rank >= 3
                 or comparison_rank >= 3
+            )
+        ) or (
+            scenario_comprehension_load == "heavy"
+            and (
+                relevant_condition_count in {"5-6", "7+"}
+                or condition_distribution in {"split", "cross_sentence", "cross_modal"}
+                or source_form in {"image_text", "multi_source"}
+                or state_rank >= 2
+                or implicit_rank >= 2
+                or object_rank >= 3
+                or comparison_rank >= 3
+                or global_organizing_required == 1
             )
         ):
             return self._build_score("L4", evidence_summary, extra_details=application_details)
@@ -362,6 +408,10 @@ class Dim3InformationScorer(BaseDimensionScorer):
             base_quantity_shift in {"single", "multiple"}
         ) or (
             comparison_rank >= 2
+        ) or (
+            scenario_rank >= 2
+        ) or (
+            "range_narrowing" in application_relation_set
         ):
             return self._build_score("L3", evidence_summary, extra_details=application_details)
 
@@ -374,6 +424,8 @@ class Dim3InformationScorer(BaseDimensionScorer):
         ) or (
             source_form in {"table_chart", "image_text"}
             and target_representation in {"direct_formula", "table_list"}
+        ) or (
+            scenario_comprehension_load == "light"
         ) or (
             quantity_relation_structure == "single_relation"
         ):

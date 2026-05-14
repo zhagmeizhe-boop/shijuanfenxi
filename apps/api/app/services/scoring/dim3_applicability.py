@@ -22,6 +22,7 @@ SOURCE_FORM_VALUES = {"text_only", "table_chart", "image_text", "multi_source"}
 RELEVANT_CONDITION_COUNT_VALUES = {"1-2", "3-4", "5-6", "7+"}
 DISTRACTOR_PRESSURE_VALUES = {"none", "light", "heavy"}
 CONDITION_DISTRIBUTION_VALUES = {"compact", "split", "cross_sentence", "cross_modal"}
+SCENARIO_COMPREHENSION_LOAD_VALUES = {"none", "light", "medium", "heavy"}
 EXTRACTION_DEPTH_VALUES = {"direct", "selected", "reorganized", "inferred"}
 REPRESENTATION_CONVERSION_VALUES = {
     "none",
@@ -57,6 +58,7 @@ APPLICATION_RELATION_TYPE_VALUES = {
     "optimization_comparison",
     "multi_object_distribution",
     "conservation_transfer",
+    "range_narrowing",
 }
 OBJECT_COUNT_BAND_VALUES = {"1", "2", "3", "4+"}
 APPLICATION_COUNT_VALUES = {"0", "1", "2", "3+"}
@@ -198,6 +200,10 @@ def _comparison_candidate_rank(value: str) -> int:
     return {"0": 0, "2": 2, "3+": 3}.get(str(value or "").strip(), 0)
 
 
+def _scenario_load_rank(value: str) -> int:
+    return {"none": 0, "light": 1, "medium": 2, "heavy": 3}.get(str(value or "").strip(), 0)
+
+
 def _has_ocr_damage_signals(parse_warnings: Iterable[str] | None) -> bool:
     for item in parse_warnings or []:
         text = str(item or "").strip()
@@ -207,6 +213,13 @@ def _has_ocr_damage_signals(parse_warnings: Iterable[str] | None) -> bool:
 
 
 def _feature_present(feature: Dict[str, Any]) -> bool:
+    scenario_comprehension_load = _normalize_choice(
+        feature.get("scenario_comprehension_load"),
+        SCENARIO_COMPREHENSION_LOAD_VALUES,
+    )
+    if _scenario_load_rank(scenario_comprehension_load) >= 1:
+        return True
+
     return any(
         str(feature.get(key, "")).strip()
         for key in (
@@ -289,6 +302,13 @@ def _has_high_burden_signal(feature: Dict[str, Any]) -> bool:
             in {"table_list", "equation_relation", "custom_model"},
             _normalize_zero_one(feature.get("global_organizing_required")) == 1,
             _normalize_choice(feature.get("image_dependency"), IMAGE_DEPENDENCY_VALUES) == "required",
+            _scenario_load_rank(
+                _normalize_choice(
+                    feature.get("scenario_comprehension_load"),
+                    SCENARIO_COMPREHENSION_LOAD_VALUES,
+                )
+            )
+            >= 3,
             bool(
                 relation_types
                 & {
@@ -300,6 +320,7 @@ def _has_high_burden_signal(feature: Dict[str, Any]) -> bool:
                     "reverse_process",
                     "conservation_transfer",
                     "multi_object_distribution",
+                    "range_narrowing",
                 }
             ),
             _object_count_rank(_normalize_choice(feature.get("object_count_band"), OBJECT_COUNT_BAND_VALUES)) >= 3,
@@ -324,6 +345,12 @@ def _has_high_burden_signal(feature: Dict[str, Any]) -> bool:
 def _is_low_barrier_direct_extraction(feature: Dict[str, Any]) -> bool:
     text_length_band = _normalize_choice(feature.get("text_length_band"), TEXT_LENGTH_BAND_VALUES)
     if text_length_band in {"long", "very_long"}:
+        return False
+    scenario_comprehension_load = _normalize_choice(
+        feature.get("scenario_comprehension_load"),
+        SCENARIO_COMPREHENSION_LOAD_VALUES,
+    )
+    if _scenario_load_rank(scenario_comprehension_load) >= 2:
         return False
 
     relation_types = set(

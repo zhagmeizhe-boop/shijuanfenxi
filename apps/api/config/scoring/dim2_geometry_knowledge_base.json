@@ -1,0 +1,7687 @@
+[
+  {
+    "source_label": "校内",
+    "grade": "一年级",
+    "semester": "上册",
+    "knowledge_point": "位置",
+    "display_name": "校内——一年级——位置知识点",
+    "category": "position_direction",
+    "aliases": [
+      "上、下、前、后",
+      "左右",
+      "方位"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版一年级数学上册电子课本.pdf",
+        "source_type": "pdf_ocr",
+        "raw_text": "OCR/教材目录核验：第二单元 位置"
+      }
+    ],
+    "confidence": "medium"
+  },
+  {
+    "source_label": "校内",
+    "grade": "一年级",
+    "semester": "上册",
+    "knowledge_point": "认识立体图形",
+    "display_name": "校内——一年级——认识立体图形知识点",
+    "category": "shape_recognition",
+    "aliases": [
+      "长方体",
+      "正方体",
+      "圆柱",
+      "球"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版一年级数学上册电子课本.pdf",
+        "source_type": "pdf_ocr",
+        "raw_text": "OCR/教材目录核验：第四单元 认识图形（一）"
+      }
+    ],
+    "confidence": "medium"
+  },
+  {
+    "source_label": "校内",
+    "grade": "一年级",
+    "semester": "上册",
+    "knowledge_point": "长方体、正方体、圆柱和球的认识",
+    "display_name": "校内——一年级——长方体、正方体、圆柱和球的认识知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "认识图形（一）",
+      "立体图形",
+      "物体形状"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版一年级数学上册电子课本.pdf",
+        "source_type": "pdf_ocr",
+        "raw_text": "OCR/教材目录核验：第四单元 认识图形（一）"
+      }
+    ],
+    "confidence": "medium"
+  },
+  {
+    "source_label": "校内",
+    "grade": "一年级",
+    "semester": "下册",
+    "knowledge_point": "认识平面图形",
+    "display_name": "校内——一年级——认识平面图形知识点",
+    "category": "shape_recognition",
+    "aliases": [
+      "长方形",
+      "正方形",
+      "平行四边形",
+      "三角形",
+      "圆"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版一年级数学下册电子课本.pdf",
+        "source_type": "pdf_ocr",
+        "raw_text": "教材目录核验：第一单元 认识图形（二）"
+      }
+    ],
+    "confidence": "medium"
+  },
+  {
+    "source_label": "校内",
+    "grade": "一年级",
+    "semester": "下册",
+    "knowledge_point": "平面图形的拼组",
+    "display_name": "校内——一年级——平面图形的拼组知识点",
+    "category": "transformation",
+    "aliases": [
+      "图形拼组",
+      "图形剪拼",
+      "平面图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版一年级数学下册电子课本.pdf",
+        "source_type": "pdf_ocr",
+        "raw_text": "教材目录核验：第一单元 认识图形（二）"
+      }
+    ],
+    "confidence": "medium"
+  },
+  {
+    "source_label": "校内",
+    "grade": "一年级",
+    "semester": "下册",
+    "knowledge_point": "用七巧板拼指定图形",
+    "display_name": "校内——一年级——用七巧板拼指定图形知识点",
+    "category": "transformation",
+    "aliases": [
+      "七巧板",
+      "图形拼摆",
+      "图形构成"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版一年级数学下册电子课本.pdf",
+        "source_type": "pdf_ocr",
+        "raw_text": "教材目录核验：第一单元 认识图形（二）"
+      }
+    ],
+    "confidence": "medium"
+  },
+  {
+    "source_label": "校内",
+    "grade": "二年级",
+    "semester": "上册",
+    "knowledge_point": "线段的认识与测量",
+    "display_name": "校内——二年级——线段的认识与测量知识点",
+    "category": "length_angle",
+    "aliases": [
+      "认识线段",
+      "画线段",
+      "量线段"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版二年级数学上册电子课本.pdf",
+        "source_type": "pdf_ocr",
+        "raw_text": "教材目录核验：第一单元 长度单位"
+      }
+    ],
+    "confidence": "medium"
+  },
+  {
+    "source_label": "校内",
+    "grade": "二年级",
+    "semester": "上册",
+    "knowledge_point": "角的初步认识",
+    "display_name": "校内——二年级——角的初步认识知识点",
+    "category": "length_angle",
+    "aliases": [
+      "认识角",
+      "直角",
+      "锐角",
+      "钝角"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版二年级数学上册电子课本.pdf",
+        "source_type": "pdf_ocr",
+        "raw_text": "教材目录核验：第三单元 角的初步认识"
+      }
+    ],
+    "confidence": "medium"
+  },
+  {
+    "source_label": "校内",
+    "grade": "二年级",
+    "semester": "上册",
+    "knowledge_point": "厘米和米的认识",
+    "display_name": "校内——二年级——厘米和米的认识知识点",
+    "category": "measurement",
+    "aliases": [
+      "长度单位",
+      "厘米",
+      "米",
+      "测量长度"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版二年级数学上册电子课本.pdf",
+        "source_type": "pdf_ocr",
+        "raw_text": "教材目录核验：第一单元 长度单位"
+      }
+    ],
+    "confidence": "medium"
+  },
+  {
+    "source_label": "校内",
+    "grade": "二年级",
+    "semester": "上册",
+    "knowledge_point": "观察物体（一）",
+    "display_name": "校内——二年级——观察物体（一）知识点",
+    "category": "shape_recognition",
+    "aliases": [
+      "从不同位置观察",
+      "正面",
+      "侧面",
+      "上面"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版二年级数学上册电子课本.pdf",
+        "source_type": "pdf_ocr",
+        "raw_text": "教材目录核验：第五单元 观察物体（一）"
+      }
+    ],
+    "confidence": "medium"
+  },
+  {
+    "source_label": "校内",
+    "grade": "二年级",
+    "semester": "下册",
+    "knowledge_point": "剪一剪中的图形运动",
+    "display_name": "校内——二年级——剪一剪中的图形运动知识点",
+    "category": "transformation",
+    "aliases": [
+      "剪纸",
+      "轴对称",
+      "图形变换"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版二年级数学下册电子课本.pdf",
+        "source_type": "pdf_ocr",
+        "raw_text": "教材目录核验：第三单元 图形的运动（一）"
+      }
+    ],
+    "confidence": "medium"
+  },
+  {
+    "source_label": "校内",
+    "grade": "二年级",
+    "semester": "下册",
+    "knowledge_point": "平移和旋转",
+    "display_name": "校内——二年级——平移和旋转知识点",
+    "category": "transformation",
+    "aliases": [
+      "图形的运动（一）",
+      "平移",
+      "旋转"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版二年级数学下册电子课本.pdf",
+        "source_type": "pdf_ocr",
+        "raw_text": "教材目录核验：第三单元 图形的运动（一）"
+      }
+    ],
+    "confidence": "medium"
+  },
+  {
+    "source_label": "校内",
+    "grade": "二年级",
+    "semester": "下册",
+    "knowledge_point": "轴对称图形",
+    "display_name": "校内——二年级——轴对称图形知识点",
+    "category": "transformation",
+    "aliases": [
+      "图形的运动（一）",
+      "对称",
+      "剪一剪"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版二年级数学下册电子课本.pdf",
+        "source_type": "pdf_ocr",
+        "raw_text": "教材目录核验：第三单元 图形的运动（一）"
+      }
+    ],
+    "confidence": "medium"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "平移法求不规则图形周长",
+    "display_name": "校内——三年级——平移法求不规则图形周长知识点",
+    "category": "area_model",
+    "aliases": [
+      "周长计算",
+      "平移变换",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 70,
+        "raw_text": "三年级上册 | 平移法求不规则图形周长"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "利用周长公式解决问题",
+    "display_name": "校内——三年级——利用周长公式解决问题知识点",
+    "category": "length_angle",
+    "aliases": [
+      "周长计算",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 72,
+        "raw_text": "三年级上册 | 利用周长公式解决问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "周长的认识",
+    "display_name": "校内——三年级——周长的认识知识点",
+    "category": "length_angle",
+    "aliases": [
+      "周长计算",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 68,
+        "raw_text": "三年级上册 | 周长 | 周长的认识"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "拆分图形求周长",
+    "display_name": "校内——三年级——拆分图形求周长知识点",
+    "category": "length_angle",
+    "aliases": [
+      "周长计算",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 75,
+        "raw_text": "三年级上册 | 拆分图形求周长"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "拼图形求周长",
+    "display_name": "校内——三年级——拼图形求周长知识点",
+    "category": "length_angle",
+    "aliases": [
+      "周长计算",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 76,
+        "raw_text": "三年级上册 | 拼图形求周长"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "有靠墙情况的周长计算",
+    "display_name": "校内——三年级——有靠墙情况的周长计算知识点",
+    "category": "length_angle",
+    "aliases": [
+      "周长计算",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 74,
+        "raw_text": "三年级上册 | 有靠墙情况的周长计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "长方形和正方形周长公式的逆用",
+    "display_name": "校内——三年级——长方形和正方形周长公式的逆用知识点",
+    "category": "length_angle",
+    "aliases": [
+      "周长计算",
+      "方形",
+      "矩形",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 73,
+        "raw_text": "三年级上册 | 长方形和正方形周长公式的逆用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "长方形和正方形周长的转化",
+    "display_name": "校内——三年级——长方形和正方形周长的转化知识点",
+    "category": "length_angle",
+    "aliases": [
+      "周长计算",
+      "方形",
+      "矩形",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 71,
+        "raw_text": "三年级上册 | 长方形和正方形周长的转化"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "长方形和正方形的周长",
+    "display_name": "校内——三年级——长方形和正方形的周长知识点",
+    "category": "length_angle",
+    "aliases": [
+      "周长计算",
+      "方形",
+      "矩形",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 69,
+        "raw_text": "三年级上册 | 长方形和正方形的周长"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "千米的认识",
+    "display_name": "校内——三年级——千米的认识知识点",
+    "category": "measurement",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 19,
+        "raw_text": "三年级上册 | 千米的认识"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "认识分米",
+    "display_name": "校内——三年级——认识分米知识点",
+    "category": "measurement",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 17,
+        "raw_text": "三年级上册 | 认识分米"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "认识毫米",
+    "display_name": "校内——三年级——认识毫米知识点",
+    "category": "measurement",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 16,
+        "raw_text": "三年级上册 | 第三章 测量 | 毫米、分米、千米的认识 | 认识毫米"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "四边形",
+    "display_name": "校内——三年级——四边形知识点",
+    "category": "shape_recognition",
+    "aliases": [
+      "方形",
+      "矩形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 67,
+        "raw_text": "三年级上册 | 第七章 长方形和正方形 | 四边形 | 四边形"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "上册",
+    "knowledge_point": "画辅助线解决图形平均分问题",
+    "display_name": "校内——三年级——画辅助线解决图形平均分问题知识点",
+    "category": "shape_recognition",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 79,
+        "raw_text": "三年级上册 | 画辅助线解决图形平均分问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "不规则图形的面积",
+    "display_name": "校内——三年级——不规则图形的面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 158,
+        "raw_text": "三年级下册 | 不规则图形的面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "先平移，再计算面积",
+    "display_name": "校内——三年级——先平移，再计算面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "先平移",
+      "再计算面积",
+      "平移变换",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 169,
+        "raw_text": "三年级下册 | 先平移，再计算面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "已知周长，求面积",
+    "display_name": "校内——三年级——已知周长，求面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "周长计算",
+      "已知周长",
+      "求面积",
+      "长度计算",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 155,
+        "raw_text": "三年级下册 | 已知周长，求面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "已知面积，求周长",
+    "display_name": "校内——三年级——已知面积，求周长知识点",
+    "category": "area_model",
+    "aliases": [
+      "周长计算",
+      "已知面积",
+      "求周长",
+      "长度计算",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 156,
+        "raw_text": "三年级下册 | 已知面积，求周长"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "拼图有重叠部分，求面积",
+    "display_name": "校内——三年级——拼图有重叠部分，求面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "拼图有重叠部分",
+      "求面积",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 163,
+        "raw_text": "三年级下册 | 拼图有重叠部分，求面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "整体-部分求面积",
+    "display_name": "校内——三年级——整体-部分求面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 159,
+        "raw_text": "三年级下册 | 整体-部分求面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "方格图中的面积",
+    "display_name": "校内——三年级——方格图中的面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 151,
+        "raw_text": "三年级下册 | 方格图中的面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "有中点相关的面积问题",
+    "display_name": "校内——三年级——有中点相关的面积问题知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 164,
+        "raw_text": "三年级下册 | 有中点相关的面积问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "求剪拼后图形面积",
+    "display_name": "校内——三年级——求剪拼后图形面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 157,
+        "raw_text": "三年级下册 | 求剪拼后图形面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "边有倍数变化对面积的影响",
+    "display_name": "校内——三年级——边有倍数变化对面积的影响知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 160,
+        "raw_text": "三年级下册 | 边有倍数变化对面积的影响"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "边有增减对面积的影响",
+    "display_name": "校内——三年级——边有增减对面积的影响知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 162,
+        "raw_text": "三年级下册 | 边有增减对面积的影响"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "长和宽有倍数关系，求面积",
+    "display_name": "校内——三年级——长和宽有倍数关系，求面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "求面积",
+      "长和宽有倍数关系",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 161,
+        "raw_text": "三年级下册 | 长和宽有倍数关系，求面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "长方形、正方形的面积计算",
+    "display_name": "校内——三年级——长方形、正方形的面积计算知识点",
+    "category": "area_model",
+    "aliases": [
+      "方形",
+      "正方形的面积计算",
+      "矩形",
+      "长方形",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 152,
+        "raw_text": "三年级下册 | 长方形、正方形的面积计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "长方形面积的复杂应用",
+    "display_name": "校内——三年级——长方形面积的复杂应用知识点",
+    "category": "area_model",
+    "aliases": [
+      "方形",
+      "矩形",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 153,
+        "raw_text": "三年级下册 | 长方形面积的复杂应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "面积单位之间的进率",
+    "display_name": "校内——三年级——面积单位之间的进率知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 154,
+        "raw_text": "三年级下册 | 面积单位之间的进率"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "面积在生活中的应用（洒水车的问题）",
+    "display_name": "校内——三年级——面积在生活中的应用（洒水车的问题）知识点",
+    "category": "area_model",
+    "aliases": [
+      "洒水车的问题",
+      "面积关系",
+      "面积在生活中的应用",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 166,
+        "raw_text": "三年级下册 | 面积在生活中的应用（洒水车的问题）"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "面积在生活中的应用（种植问题）",
+    "display_name": "校内——三年级——面积在生活中的应用（种植问题）知识点",
+    "category": "area_model",
+    "aliases": [
+      "种植问题",
+      "面积关系",
+      "面积在生活中的应用",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 165,
+        "raw_text": "三年级下册 | 面积在生活中的应用（种植问题）"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "面积在生活中的应用（铺地砖比价格）",
+    "display_name": "校内——三年级——面积在生活中的应用（铺地砖比价格）知识点",
+    "category": "area_model",
+    "aliases": [
+      "铺地砖比价格",
+      "面积关系",
+      "面积在生活中的应用",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 168,
+        "raw_text": "三年级下册 | 面积在生活中的应用（铺地砖比价格）"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "面积在生活中的应用（铺地砖求块数）",
+    "display_name": "校内——三年级——面积在生活中的应用（铺地砖求块数）知识点",
+    "category": "area_model",
+    "aliases": [
+      "铺地砖求块数",
+      "面积关系",
+      "面积在生活中的应用",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 167,
+        "raw_text": "三年级下册 | 面积在生活中的应用（铺地砖求块数）"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "面积的含义及单位",
+    "display_name": "校内——三年级——面积的含义及单位知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 150,
+        "raw_text": "三年级下册 | 第五章 面积 | 面积计算 | 面积的含义及单位"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "推理解决多个物体位置问题",
+    "display_name": "校内——三年级——推理解决多个物体位置问题知识点",
+    "category": "position_direction",
+    "aliases": [
+      "方位",
+      "确定位置",
+      "路线图"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 95,
+        "raw_text": "三年级下册 | 推理解决多个物体位置问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "三年级",
+    "semester": "下册",
+    "knowledge_point": "认识东、南、西、北",
+    "display_name": "校内——三年级——认识东、南、西、北知识点",
+    "category": "position_direction",
+    "aliases": [
+      "方位",
+      "确定位置",
+      "认识东",
+      "路线图"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 92,
+        "raw_text": "三年级下册 | 第一章 位置与方向（一） | 认识东、南、西、北 | 认识东、南、西、北"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "不规则图形的面积",
+    "display_name": "校内——四年级——不规则图形的面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 221,
+        "raw_text": "四年级上册 | 不规则图形的面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "认识公顷",
+    "display_name": "校内——四年级——认识公顷知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 218,
+        "raw_text": "四年级上册 | 第二章 公顷和平方千米 | 第一节 土地面积的常用单位 | 认识公顷"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "利用角的相等关系进行角度计算",
+    "display_name": "校内——四年级——利用角的相等关系进行角度计算知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 232,
+        "raw_text": "四年级上册 | 利用角的相等关系进行角度计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "基础角度计算",
+    "display_name": "校内——四年级——基础角度计算知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 229,
+        "raw_text": "四年级上册 | 基础角度计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "度量大于平角的角度",
+    "display_name": "校内——四年级——度量大于平角的角度知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 226,
+        "raw_text": "四年级上册 | 度量大于平角的角度"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "折纸中的角度计算",
+    "display_name": "校内——四年级——折纸中的角度计算知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 231,
+        "raw_text": "四年级上册 | 折纸中的角度计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "数射线、线段",
+    "display_name": "校内——四年级——数射线、线段知识点",
+    "category": "length_angle",
+    "aliases": [
+      "数射线",
+      "线段"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 223,
+        "raw_text": "四年级上册 | 数射线、线段"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "点到直线的距离",
+    "display_name": "校内——四年级——点到直线的距离知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 253,
+        "raw_text": "四年级上册 | 点到直线的距离"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "用量角器量度数",
+    "display_name": "校内——四年级——用量角器量度数知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 225,
+        "raw_text": "四年级上册 | 用量角器量度数"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "画角",
+    "display_name": "校内——四年级——画角知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 228,
+        "raw_text": "四年级上册 | 画角"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "角的分类",
+    "display_name": "校内——四年级——角的分类知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 227,
+        "raw_text": "四年级上册 | 角的分类"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "认识线段、直线、射线",
+    "display_name": "校内——四年级——认识线段、直线、射线知识点",
+    "category": "length_angle",
+    "aliases": [
+      "射线",
+      "直线",
+      "认识线段"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 222,
+        "raw_text": "四年级上册 | 第三章 角的度量 | 第一节 线段、直线、射线的认识 | 认识线段、直线、射线"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "认识角",
+    "display_name": "校内——四年级——认识角知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 224,
+        "raw_text": "四年级上册 | 第二节 角的认识 | 认识角"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "钟表上的角度计算",
+    "display_name": "校内——四年级——钟表上的角度计算知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 230,
+        "raw_text": "四年级上册 | 钟表上的角度计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "公顷和平方千米的应用",
+    "display_name": "校内——四年级——公顷和平方千米的应用知识点",
+    "category": "measurement",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 220,
+        "raw_text": "四年级上册 | 公顷和平方千米的应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "认识平方千米",
+    "display_name": "校内——四年级——认识平方千米知识点",
+    "category": "measurement",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 219,
+        "raw_text": "四年级上册 | 认识平方千米"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "四边形之间的关系",
+    "display_name": "校内——四年级——四边形之间的关系知识点",
+    "category": "shape_recognition",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 259,
+        "raw_text": "四年级上册 | 四边形之间的关系"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "数图形中的平行线或垂线",
+    "display_name": "校内——四年级——数图形中的平行线或垂线知识点",
+    "category": "shape_recognition",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 255,
+        "raw_text": "四年级上册 | 数图形中的平行线或垂线"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "数平行四边形和梯形的个数",
+    "display_name": "校内——四年级——数平行四边形和梯形的个数知识点",
+    "category": "shape_recognition",
+    "aliases": [
+      "平四",
+      "平行四边形模型",
+      "梯形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 261,
+        "raw_text": "四年级上册 | 数平行四边形和梯形的个数"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "相交、平行与垂直",
+    "display_name": "校内——四年级——相交、平行与垂直知识点",
+    "category": "shape_recognition",
+    "aliases": [
+      "平四",
+      "平行与垂直",
+      "平行四边形模型",
+      "梯形模型",
+      "相交"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 250,
+        "raw_text": "四年级上册 | 第五章 平行四边形和梯形 | 第一节 平行与垂直 | 相交、平行与垂直"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "认识平行四边形",
+    "display_name": "校内——四年级——认识平行四边形知识点",
+    "category": "shape_recognition",
+    "aliases": [
+      "平四",
+      "平行四边形模型",
+      "梯形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 257,
+        "raw_text": "四年级上册 | 第二节 平行四边形和梯形 | 认识平行四边形"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "认识梯形",
+    "display_name": "校内——四年级——认识梯形知识点",
+    "category": "shape_recognition",
+    "aliases": [
+      "梯形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 258,
+        "raw_text": "四年级上册 | 认识梯形"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "长方形、正方形的画法",
+    "display_name": "校内——四年级——长方形、正方形的画法知识点",
+    "category": "shape_recognition",
+    "aliases": [
+      "方形",
+      "正方形的画法",
+      "矩形",
+      "长方形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 254,
+        "raw_text": "四年级上册 | 长方形、正方形的画法"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "上册",
+    "knowledge_point": "图形的分割与拼合",
+    "display_name": "校内——四年级——图形的分割与拼合知识点",
+    "category": "solid_geometry",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 260,
+        "raw_text": "四年级上册 | 图形的分割与拼合"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "运用平移知识解决面积问题",
+    "display_name": "校内——四年级——运用平移知识解决面积问题知识点",
+    "category": "area_model",
+    "aliases": [
+      "平移变换",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 431,
+        "raw_text": "四年级下册 | 运用平移知识解决面积问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "三角形内角和大小",
+    "display_name": "校内——四年级——三角形内角和大小知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 392,
+        "raw_text": "四年级下册 | 3 三角形的内角和 | 三角形内角和大小"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "三角形内角和应用",
+    "display_name": "校内——四年级——三角形内角和应用知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 393,
+        "raw_text": "四年级下册 | 三角形内角和应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "三角形按角分类",
+    "display_name": "校内——四年级——三角形按角分类知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 381,
+        "raw_text": "四年级下册 | 2 三角形的分类 | 三角形按角分类"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "三角形按边分类",
+    "display_name": "校内——四年级——三角形按边分类知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 382,
+        "raw_text": "四年级下册 | 三角形按边分类"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "三角形画法",
+    "display_name": "校内——四年级——三角形画法知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 383,
+        "raw_text": "四年级下册 | 三角形画法"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "三角形的三边的关系",
+    "display_name": "校内——四年级——三角形的三边的关系知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 385,
+        "raw_text": "四年级下册 | 三角形的三边的关系"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "三角形的内角和",
+    "display_name": "校内——四年级——三角形的内角和知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 394,
+        "raw_text": "四年级下册 | 三角形的内角和"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "三角形高的画法",
+    "display_name": "校内——四年级——三角形高的画法知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 384,
+        "raw_text": "四年级下册 | 三角形高的画法"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "两点之间线段最短",
+    "display_name": "校内——四年级——两点之间线段最短知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 378,
+        "raw_text": "四年级下册 | 两点之间线段最短"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "利用三角形内角和计算",
+    "display_name": "校内——四年级——利用三角形内角和计算知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 398,
+        "raw_text": "四年级下册 | 利用三角形内角和计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "剪掉一个角，求某些角的度数",
+    "display_name": "校内——四年级——剪掉一个角，求某些角的度数知识点",
+    "category": "length_angle",
+    "aliases": [
+      "剪掉一个角",
+      "求某些角的度数"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 404,
+        "raw_text": "四年级下册 | 剪掉一个角，求某些角的度数"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "四边形内角和",
+    "display_name": "校内——四年级——四边形内角和知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 399,
+        "raw_text": "四年级下册 | 四边形内角和"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "四边形内角和的应用",
+    "display_name": "校内——四年级——四边形内角和的应用知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 400,
+        "raw_text": "四年级下册 | 四边形内角和的应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "多边形内角和计算",
+    "display_name": "校内——四年级——多边形内角和计算知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 401,
+        "raw_text": "四年级下册 | 多边形内角和计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "数三角形的个数",
+    "display_name": "校内——四年级——数三角形的个数知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 391,
+        "raw_text": "四年级下册 | 数三角形的个数"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "有倍数关系的角度计算",
+    "display_name": "校内——四年级——有倍数关系的角度计算知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 402,
+        "raw_text": "四年级下册 | 有倍数关系的角度计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "有角平分线的情况，利用三角形内角和计算三角形角度",
+    "display_name": "校内——四年级——有角平分线的情况，利用三角形内角和计算三角形角度知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型",
+      "利用三角形内角和计算三角形角度",
+      "有角平分线的情况"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 403,
+        "raw_text": "四年级下册 | 有角平分线的情况，利用三角形内角和计算三角形角度"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "构造三角形的边长",
+    "display_name": "校内——四年级——构造三角形的边长知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 390,
+        "raw_text": "四年级下册 | 构造三角形的边长"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "直角三角形内角和",
+    "display_name": "校内——四年级——直角三角形内角和知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 396,
+        "raw_text": "四年级下册 | 直角三角形内角和"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "等腰三角形内角和",
+    "display_name": "校内——四年级——等腰三角形内角和知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 397,
+        "raw_text": "四年级下册 | 等腰三角形内角和"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "等腰三角形求周长或边长",
+    "display_name": "校内——四年级——等腰三角形求周长或边长知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型",
+      "周长计算",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 388,
+        "raw_text": "四年级下册 | 等腰三角形求周长或边长"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "等腰三角形需要分类讨论求边长",
+    "display_name": "校内——四年级——等腰三角形需要分类讨论求边长知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 389,
+        "raw_text": "四年级下册 | 等腰三角形需要分类讨论求边长"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "等边三角形内角和",
+    "display_name": "校内——四年级——等边三角形内角和知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 395,
+        "raw_text": "四年级下册 | 等边三角形内角和"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "等边三角形求周长或边长",
+    "display_name": "校内——四年级——等边三角形求周长或边长知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型",
+      "周长计算",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 387,
+        "raw_text": "四年级下册 | 等边三角形求周长或边长"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "组合法围三角形问题",
+    "display_name": "校内——四年级——组合法围三角形问题知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 380,
+        "raw_text": "四年级下册 | 组合法围三角形问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "认识三角形各部分及特点",
+    "display_name": "校内——四年级——认识三角形各部分及特点知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 377,
+        "raw_text": "四年级下册 | 第五章 三角形 | 1 三角形的特性 | 认识三角形各部分及特点"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "还原几何体",
+    "display_name": "校内——四年级——还原几何体知识点",
+    "category": "plane_geometry",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 313,
+        "raw_text": "四年级下册 | 还原几何体"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "从不同的位置观察同一几何体",
+    "display_name": "校内——四年级——从不同的位置观察同一几何体知识点",
+    "category": "position_direction",
+    "aliases": [
+      "方位",
+      "确定位置",
+      "路线图"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 311,
+        "raw_text": "四年级下册 | 第二章 观察物体（二） | 1 观察几何组合体 | 从不同的位置观察同一几何体"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "从同一方向观察不同的几何体",
+    "display_name": "校内——四年级——从同一方向观察不同的几何体知识点",
+    "category": "position_direction",
+    "aliases": [
+      "方位",
+      "确定位置",
+      "路线图"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 312,
+        "raw_text": "四年级下册 | 从同一方向观察不同的几何体"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "用小棒摆图形",
+    "display_name": "校内——四年级——用小棒摆图形知识点",
+    "category": "shape_recognition",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 379,
+        "raw_text": "四年级下册 | 用小棒摆图形"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "数拼成几何体的小正方体数量",
+    "display_name": "校内——四年级——数拼成几何体的小正方体数量知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 314,
+        "raw_text": "四年级下册 | 数拼成几何体的小正方体数量"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "根据平移后的图形还原平移过程",
+    "display_name": "校内——四年级——根据平移后的图形还原平移过程知识点",
+    "category": "transformation",
+    "aliases": [
+      "平移变换"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 430,
+        "raw_text": "四年级下册 | 根据平移后的图形还原平移过程"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "画出平移后的图形",
+    "display_name": "校内——四年级——画出平移后的图形知识点",
+    "category": "transformation",
+    "aliases": [
+      "平移变换"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 429,
+        "raw_text": "四年级下册 | 2 平移 | 画出平移后的图形"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "补全轴对称图形",
+    "display_name": "校内——四年级——补全轴对称图形知识点",
+    "category": "transformation",
+    "aliases": [
+      "对称图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 428,
+        "raw_text": "四年级下册 | 补全轴对称图形"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "四年级",
+    "semester": "下册",
+    "knowledge_point": "轴对称图形的再认识",
+    "display_name": "校内——四年级——轴对称图形的再认识知识点",
+    "category": "transformation",
+    "aliases": [
+      "对称图形",
+      "补全轴对称图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 427,
+        "raw_text": "四年级下册 | 第七章 图形的运动（二） | 1 轴对称 | 轴对称图形的再认识"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "一般的组合图形面积计算",
+    "display_name": "校内——五年级——一般的组合图形面积计算知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 542,
+        "raw_text": "五年级上册 | 4 组合图形的面积 | 一般的组合图形面积计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "三角形的面积计算公式",
+    "display_name": "校内——五年级——三角形的面积计算公式知识点",
+    "category": "area_model",
+    "aliases": [
+      "三角形关系",
+      "三角形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 531,
+        "raw_text": "五年级上册 | 三角形的面积计算公式"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "三角形面积计算公式的逆用",
+    "display_name": "校内——五年级——三角形面积计算公式的逆用知识点",
+    "category": "area_model",
+    "aliases": [
+      "三角形关系",
+      "三角形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 532,
+        "raw_text": "五年级上册 | 三角形面积计算公式的逆用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "同（等）底等高在三角形中的复杂应用",
+    "display_name": "校内——五年级——同（等）底等高在三角形中的复杂应用知识点",
+    "category": "area_model",
+    "aliases": [
+      "三角形关系",
+      "三角形模型",
+      "底等高在三角形中的复杂应用"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 534,
+        "raw_text": "五年级上册 | 同（等）底等高在三角形中的复杂应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "同（等）底等高在三角形中的应用",
+    "display_name": "校内——五年级——同（等）底等高在三角形中的应用知识点",
+    "category": "area_model",
+    "aliases": [
+      "三角形关系",
+      "三角形模型",
+      "底等高在三角形中的应用"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 533,
+        "raw_text": "五年级上册 | 同（等）底等高在三角形中的应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "同（等）底等高在平行四边形中的应用",
+    "display_name": "校内——五年级——同（等）底等高在平行四边形中的应用知识点",
+    "category": "area_model",
+    "aliases": [
+      "平四",
+      "平行四边形模型",
+      "底等高在平行四边形中的应用"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 528,
+        "raw_text": "五年级上册 | 同（等）底等高在平行四边形中的应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "平行四边形中的一半模型",
+    "display_name": "校内——五年级——平行四边形中的一半模型知识点",
+    "category": "area_model",
+    "aliases": [
+      "平四",
+      "平行四边形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 549,
+        "raw_text": "五年级上册 | 平行四边形中的一半模型"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "平行四边形的周长、面积相关问题",
+    "display_name": "校内——五年级——平行四边形的周长、面积相关问题知识点",
+    "category": "area_model",
+    "aliases": [
+      "周长计算",
+      "平四",
+      "平行四边形模型",
+      "平行四边形的周长",
+      "长度计算",
+      "面积关系",
+      "面积相关问题",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 527,
+        "raw_text": "五年级上册 | 平行四边形的周长、面积相关问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "平行四边形的面积计算公式",
+    "display_name": "校内——五年级——平行四边形的面积计算公式知识点",
+    "category": "area_model",
+    "aliases": [
+      "平四",
+      "平行四边形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 526,
+        "raw_text": "五年级上册 | 第六章 多边形的面积 | 1 平行四边形面积 | 平行四边形的面积计算公式"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "整体减空白求不规则图形面积",
+    "display_name": "校内——五年级——整体减空白求不规则图形面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 546,
+        "raw_text": "五年级上册 | 整体减空白求不规则图形面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "整体法求梯形面积",
+    "display_name": "校内——五年级——整体法求梯形面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "梯形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 540,
+        "raw_text": "五年级上册 | 整体法求梯形面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "方格纸估计不规则图形面积",
+    "display_name": "校内——五年级——方格纸估计不规则图形面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 543,
+        "raw_text": "五年级上册 | 5 不规则图形的面积 | 方格纸估计不规则图形面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "根据平行四边形和三角形面积关系解决问题",
+    "display_name": "校内——五年级——根据平行四边形和三角形面积关系解决问题知识点",
+    "category": "area_model",
+    "aliases": [
+      "三角形关系",
+      "三角形模型",
+      "平四",
+      "平行四边形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 530,
+        "raw_text": "五年级上册 | 2 三角形的面积 | 根据平行四边形和三角形面积关系解决问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "格点图形面积公式",
+    "display_name": "校内——五年级——格点图形面积公式知识点",
+    "category": "area_model",
+    "aliases": [
+      "格点图形",
+      "格点面积",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 545,
+        "raw_text": "五年级上册 | 格点图形面积公式"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "梯形的变化对面积的影响",
+    "display_name": "校内——五年级——梯形的变化对面积的影响知识点",
+    "category": "area_model",
+    "aliases": [
+      "梯形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 541,
+        "raw_text": "五年级上册 | 梯形的变化对面积的影响"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "梯形的面积计算公式",
+    "display_name": "校内——五年级——梯形的面积计算公式知识点",
+    "category": "area_model",
+    "aliases": [
+      "梯形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 537,
+        "raw_text": "五年级上册 | 梯形的面积计算公式"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "梯形面积公式推导",
+    "display_name": "校内——五年级——梯形面积公式推导知识点",
+    "category": "area_model",
+    "aliases": [
+      "梯形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 536,
+        "raw_text": "五年级上册 | 3 梯形的面积 | 梯形面积公式推导"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "梯形面积计算公式的应用",
+    "display_name": "校内——五年级——梯形面积计算公式的应用知识点",
+    "category": "area_model",
+    "aliases": [
+      "梯形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 538,
+        "raw_text": "五年级上册 | 梯形面积计算公式的应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "梯形面积计算公式的逆用",
+    "display_name": "校内——五年级——梯形面积计算公式的逆用知识点",
+    "category": "area_model",
+    "aliases": [
+      "梯形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 539,
+        "raw_text": "五年级上册 | 梯形面积计算公式的逆用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "求正方形格点图形面积",
+    "display_name": "校内——五年级——求正方形格点图形面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "方形",
+      "格点图形",
+      "格点面积",
+      "矩形",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 544,
+        "raw_text": "五年级上册 | 求正方形格点图形面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "等腰直角三角形面积的特殊求法",
+    "display_name": "校内——五年级——等腰直角三角形面积的特殊求法知识点",
+    "category": "area_model",
+    "aliases": [
+      "三角形关系",
+      "三角形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 535,
+        "raw_text": "五年级上册 | 等腰直角三角形面积的特殊求法"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "网格线法求不规则图形面积",
+    "display_name": "校内——五年级——网格线法求不规则图形面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 548,
+        "raw_text": "五年级上册 | 网格线法求不规则图形面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "运用整体思想求平行四边形面积",
+    "display_name": "校内——五年级——运用整体思想求平行四边形面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "平四",
+      "平行四边形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 529,
+        "raw_text": "五年级上册 | 运用整体思想求平行四边形面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "运用替换法求不规则图形面积",
+    "display_name": "校内——五年级——运用替换法求不规则图形面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 547,
+        "raw_text": "五年级上册 | 运用替换法求不规则图形面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "在具体情境中用数对表示位置",
+    "display_name": "校内——五年级——在具体情境中用数对表示位置知识点",
+    "category": "position_direction",
+    "aliases": [
+      "方位",
+      "确定位置",
+      "路线图"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 473,
+        "raw_text": "五年级上册 | 第二章 位置 | 1 用数对表示具体情境中物体的位置 | 在具体情境中用数对表示位置"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "上册",
+    "knowledge_point": "方格纸上用数对确定位置",
+    "display_name": "校内——五年级——方格纸上用数对确定位置知识点",
+    "category": "position_direction",
+    "aliases": [
+      "方位",
+      "确定位置",
+      "路线图"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 474,
+        "raw_text": "五年级上册 | 2 在方格纸上用数对确定物体的位置 | 方格纸上用数对确定位置"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "结合实际，先确定计算哪几个面的总面积再计算",
+    "display_name": "校内——五年级——结合实际，先确定计算哪几个面的总面积再计算知识点",
+    "category": "area_model",
+    "aliases": [
+      "先确定计算哪几个面的总面积再计算",
+      "结合实际",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 612,
+        "raw_text": "五年级下册 | 结合实际，先确定计算哪几个面的总面积再计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "运用旋转知识解决图形面积",
+    "display_name": "校内——五年级——运用旋转知识解决图形面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "图形旋转",
+      "旋转变换",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 702,
+        "raw_text": "五年级下册 | 运用旋转知识解决图形面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "图形旋转角度和对应线段的关系",
+    "display_name": "校内——五年级——图形旋转角度和对应线段的关系知识点",
+    "category": "length_angle",
+    "aliases": [
+      "图形旋转",
+      "旋转变换"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 701,
+        "raw_text": "五年级下册 | 图形旋转角度和对应线段的关系"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "由两个方向的形状图，有限定条件的还原几何体",
+    "display_name": "校内——五年级——由两个方向的形状图，有限定条件的还原几何体知识点",
+    "category": "position_direction",
+    "aliases": [
+      "方位",
+      "有限定条件的还原几何体",
+      "由两个方向的形状图",
+      "确定位置",
+      "路线图"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 568,
+        "raw_text": "五年级下册 | 由两个方向的形状图，有限定条件的还原几何体"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "三视图法计算组合图形的面积",
+    "display_name": "校内——五年级——三视图法计算组合图形的面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "多视图",
+      "视图还原",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 614,
+        "raw_text": "五年级下册 | 三视图法计算组合图形的面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "体积单位换算的实际应用",
+    "display_name": "校内——五年级——体积单位换算的实际应用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 631,
+        "raw_text": "五年级下册 | 体积单位换算的实际应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "体积单位间的换算",
+    "display_name": "校内——五年级——体积单位间的换算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 630,
+        "raw_text": "五年级下册 | 体积单位间的换算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "体积单位间的进率",
+    "display_name": "校内——五年级——体积单位间的进率知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 629,
+        "raw_text": "五年级下册 | 体积单位间的进率"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "体积和不变，高度相同的变换问题",
+    "display_name": "校内——五年级——体积和不变，高度相同的变换问题知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积和不变",
+      "体积计算",
+      "容积",
+      "高度相同的变换问题"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 638,
+        "raw_text": "五年级下册 | 体积和不变，高度相同的变换问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "体积和体积单位",
+    "display_name": "校内——五年级——体积和体积单位知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积",
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 623,
+        "raw_text": "五年级下册 | 3 长方体和正方体的体积 | 体积和体积单位"
+      },
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 624,
+        "raw_text": "五年级下册 | 体积和体积单位"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "切掉部分，根据表面积实际变化求体积",
+    "display_name": "校内——五年级——切掉部分，根据表面积实际变化求体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "切掉部分",
+      "容积",
+      "根据表面积实际变化求体积",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 637,
+        "raw_text": "五年级下册 | 切掉部分，根据表面积实际变化求体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "利用推理比较，求物体体积",
+    "display_name": "校内——五年级——利用推理比较，求物体体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "利用推理比较",
+      "容积",
+      "求物体体积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 652,
+        "raw_text": "五年级下册 | 利用推理比较，求物体体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "利用整体减部分求体积",
+    "display_name": "校内——五年级——利用整体减部分求体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 647,
+        "raw_text": "五年级下册 | 利用整体减部分求体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "复杂几何体的表面积计算",
+    "display_name": "校内——五年级——复杂几何体的表面积计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 615,
+        "raw_text": "五年级下册 | 复杂几何体的表面积计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "已知容积，逆用体积公式",
+    "display_name": "校内——五年级——已知容积，逆用体积公式知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积",
+      "已知容积",
+      "逆用体积公式"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 644,
+        "raw_text": "五年级下册 | 已知容积，逆用体积公式"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "根据三视图，确定正方体数量",
+    "display_name": "校内——五年级——根据三视图，确定正方体数量知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "多视图",
+      "根据三视图",
+      "确定正方体数量",
+      "立方体",
+      "视图还原",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 570,
+        "raw_text": "五年级下册 | 根据三视图，确定正方体数量"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "根据三视图，还原几何体",
+    "display_name": "校内——五年级——根据三视图，还原几何体知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "多视图",
+      "根据三视图",
+      "视图还原",
+      "还原几何体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 569,
+        "raw_text": "五年级下册 | 2 根据三视图还原立体图形 | 根据三视图，还原几何体"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "根据切分和拼合表面积增减，求体积",
+    "display_name": "校内——五年级——根据切分和拼合表面积增减，求体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积",
+      "根据切分和拼合表面积增减",
+      "求体积",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 636,
+        "raw_text": "五年级下册 | 根据切分和拼合表面积增减，求体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "根据底面积、高和体积关系，解决问题",
+    "display_name": "校内——五年级——根据底面积、高和体积关系，解决问题知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积",
+      "根据底面积",
+      "解决问题",
+      "面积关系",
+      "面积计算",
+      "高和体积关系"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 632,
+        "raw_text": "五年级下册 | 根据底面积、高和体积关系，解决问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "棱长变化对于表面积的影响",
+    "display_name": "校内——五年级——棱长变化对于表面积的影响知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 616,
+        "raw_text": "五年级下册 | 棱长变化对于表面积的影响"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "棱长变化对长、正方体体积的影响",
+    "display_name": "校内——五年级——棱长变化对长、正方体体积的影响知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积",
+      "棱长变化对长",
+      "正方体体积的影响",
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 633,
+        "raw_text": "五年级下册 | 棱长变化对长、正方体体积的影响"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "正方体切分或拼合后，求原表面积",
+    "display_name": "校内——五年级——正方体切分或拼合后，求原表面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "正方体切分或拼合后",
+      "求原表面积",
+      "立方体",
+      "长正方体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 619,
+        "raw_text": "五年级下册 | 正方体切分或拼合后，求原表面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "正方体切分或拼合对于表面积的影响",
+    "display_name": "校内——五年级——正方体切分或拼合对于表面积的影响知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 617,
+        "raw_text": "五年级下册 | 正方体切分或拼合对于表面积的影响"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "正方体展开图",
+    "display_name": "校内——五年级——正方体展开图知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 605,
+        "raw_text": "五年级下册 | 2 长方体和正方体的表面积 | 正方体展开图"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "正方体染色，根据棱长求涂色方块数",
+    "display_name": "校内——五年级——正方体染色，根据棱长求涂色方块数知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "根据棱长求涂色方块数",
+      "正方体染色",
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 655,
+        "raw_text": "五年级下册 | 正方体染色，根据棱长求涂色方块数"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "正方体棱长和公式的逆用",
+    "display_name": "校内——五年级——正方体棱长和公式的逆用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 599,
+        "raw_text": "五年级下册 | 正方体棱长和公式的逆用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "正方体的拼摆",
+    "display_name": "校内——五年级——正方体的拼摆知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 604,
+        "raw_text": "五年级下册 | 正方体的拼摆"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "正方体的棱长和",
+    "display_name": "校内——五年级——正方体的棱长和知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 598,
+        "raw_text": "五年级下册 | 正方体的棱长和"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "正方体的表面积计算",
+    "display_name": "校内——五年级——正方体的表面积计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 609,
+        "raw_text": "五年级下册 | 正方体的表面积计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "正方体的认识",
+    "display_name": "校内——五年级——正方体的认识知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 595,
+        "raw_text": "五年级下册 | 正方体的认识"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "由每个位置正方体数，还原几何体",
+    "display_name": "校内——五年级——由每个位置正方体数，还原几何体知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "方位",
+      "由每个位置正方体数",
+      "确定位置",
+      "立方体",
+      "路线图",
+      "还原几何体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 567,
+        "raw_text": "五年级下册 | 由每个位置正方体数，还原几何体"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "直接应用长、正方体体积计算公式解决实际问题",
+    "display_name": "校内——五年级——直接应用长、正方体体积计算公式解决实际问题知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积",
+      "正方体体积计算公式解决实际问题",
+      "直接应用长",
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 627,
+        "raw_text": "五年级下册 | 直接应用长、正方体体积计算公式解决实际问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "组合体的体积",
+    "display_name": "校内——五年级——组合体的体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 635,
+        "raw_text": "五年级下册 | 组合体的体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "给定正方体数量，由一个方向形状图，还原几何体",
+    "display_name": "校内——五年级——给定正方体数量，由一个方向形状图，还原几何体知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "方位",
+      "由一个方向形状图",
+      "确定位置",
+      "立方体",
+      "给定正方体数量",
+      "路线图",
+      "还原几何体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 566,
+        "raw_text": "五年级下册 | 第一章 观察物体（三） | 1 根据一个方向的形状图还原立体图形 | 给定正方体数量，由一个方向形状图，还原几何体"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "表面积、体积与棱长和的综合应用",
+    "display_name": "校内——五年级——表面积、体积与棱长和的综合应用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积与棱长和的综合应用",
+      "体积计算",
+      "容积",
+      "表面积",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 634,
+        "raw_text": "五年级下册 | 表面积、体积与棱长和的综合应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "逆用体积公式，求长、宽、高",
+    "display_name": "校内——五年级——逆用体积公式，求长、宽、高知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积",
+      "求长",
+      "逆用体积公式"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 626,
+        "raw_text": "五年级下册 | 逆用体积公式，求长、宽、高"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "长方体侧面积的计算",
+    "display_name": "校内——五年级——长方体侧面积的计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 611,
+        "raw_text": "五年级下册 | 长方体侧面积的计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "长方体切分或拼合后，求原表面积",
+    "display_name": "校内——五年级——长方体切分或拼合后，求原表面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "求原表面积",
+      "立方体",
+      "长方体切分或拼合后",
+      "长正方体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 620,
+        "raw_text": "五年级下册 | 长方体切分或拼合后，求原表面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "长方体切分或拼合对于表面积的影响",
+    "display_name": "校内——五年级——长方体切分或拼合对于表面积的影响知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 618,
+        "raw_text": "五年级下册 | 长方体切分或拼合对于表面积的影响"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "长方体和正方体体积综合应用",
+    "display_name": "校内——五年级——长方体和正方体体积综合应用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积",
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 628,
+        "raw_text": "五年级下册 | 长方体和正方体体积综合应用"
+      },
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 639,
+        "raw_text": "五年级下册 | 长方体和正方体体积综合应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "长方体和正方体的体积公式",
+    "display_name": "校内——五年级——长方体和正方体的体积公式知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积",
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 625,
+        "raw_text": "五年级下册 | 长方体和正方体的体积公式"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "长方体染色，根据长宽高求涂色方块数",
+    "display_name": "校内——五年级——长方体染色，根据长宽高求涂色方块数知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "根据长宽高求涂色方块数",
+      "立方体",
+      "长方体染色",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 656,
+        "raw_text": "五年级下册 | 长方体染色，根据长宽高求涂色方块数"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "长方体棱长和公式的逆用",
+    "display_name": "校内——五年级——长方体棱长和公式的逆用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 597,
+        "raw_text": "五年级下册 | 长方体棱长和公式的逆用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "长方体的展开图",
+    "display_name": "校内——五年级——长方体的展开图知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 606,
+        "raw_text": "五年级下册 | 长方体的展开图"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "长方体的棱长和",
+    "display_name": "校内——五年级——长方体的棱长和知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 596,
+        "raw_text": "五年级下册 | 长方体的棱长和"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "长方体的表面积计算",
+    "display_name": "校内——五年级——长方体的表面积计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 608,
+        "raw_text": "五年级下册 | 长方体的表面积计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "长方体的认识",
+    "display_name": "校内——五年级——长方体的认识知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 594,
+        "raw_text": "五年级下册 | 第三章 长方体和正方体 | 1 长方体和正方体的认识 | 长方体的认识"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "长正方体表面积公式直接应用",
+    "display_name": "校内——五年级——长正方体表面积公式直接应用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 610,
+        "raw_text": "五年级下册 | 长正方体表面积公式直接应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "图形旋转的特征",
+    "display_name": "校内——五年级——图形旋转的特征知识点",
+    "category": "transformation",
+    "aliases": [
+      "图形旋转",
+      "旋转变换"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 699,
+        "raw_text": "五年级下册 | 图形旋转的特征"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "平移和旋转的应用",
+    "display_name": "校内——五年级——平移和旋转的应用知识点",
+    "category": "transformation",
+    "aliases": [
+      "图形旋转",
+      "平移变换",
+      "旋转变换"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 700,
+        "raw_text": "五年级下册 | 2 平移和旋转在拼图中的应用 | 平移和旋转的应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "五年级",
+    "semester": "下册",
+    "knowledge_point": "旋转的含义及三要素",
+    "display_name": "校内——五年级——旋转的含义及三要素知识点",
+    "category": "transformation",
+    "aliases": [
+      "图形旋转",
+      "旋转变换"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 698,
+        "raw_text": "五年级下册 | 第五章 图形的运动（三） | 1 旋转 | 旋转的含义及三要素"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "利用差不变原理求不规则曲线图形的面积",
+    "display_name": "校内——六年级——利用差不变原理求不规则曲线图形的面积知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 798,
+        "raw_text": "六年级上册 | 利用差不变原理求不规则曲线图形的面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "利用圆的周长求不规则图形的周长",
+    "display_name": "校内——六年级——利用圆的周长求不规则图形的周长知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "周长计算",
+      "圆与扇形",
+      "曲线型图形",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 787,
+        "raw_text": "六年级上册 | 利用圆的周长求不规则图形的周长"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "利用圆的对称性解决相关问题",
+    "display_name": "校内——六年级——利用圆的对称性解决相关问题知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "曲线型图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 781,
+        "raw_text": "六年级上册 | 利用圆的对称性解决相关问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "利用圆的面积求不规则图形的面积",
+    "display_name": "校内——六年级——利用圆的面积求不规则图形的面积知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "曲线型图形",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 796,
+        "raw_text": "六年级上册 | 利用圆的面积求不规则图形的面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "利用整体法计算圆（环）形面积",
+    "display_name": "校内——六年级——利用整体法计算圆（环）形面积知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "利用整体法计算圆",
+      "圆与扇形",
+      "形面积",
+      "曲线型图形",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 792,
+        "raw_text": "六年级上册 | 利用整体法计算圆（环）形面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "半圆的周长",
+    "display_name": "校内——六年级——半圆的周长知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "周长计算",
+      "圆与扇形",
+      "曲线型图形",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 785,
+        "raw_text": "六年级上册 | 半圆的周长"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "圆周长公式的变式应用",
+    "display_name": "校内——六年级——圆周长公式的变式应用知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "周长计算",
+      "圆与扇形",
+      "曲线型图形",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 784,
+        "raw_text": "六年级上册 | 圆周长公式的变式应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "圆的周长",
+    "display_name": "校内——六年级——圆的周长知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "周长计算",
+      "圆与扇形",
+      "曲线型图形",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 783,
+        "raw_text": "六年级上册 | 圆的周长 | 圆的周长"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "圆的周长公式的转化应用",
+    "display_name": "校内——六年级——圆的周长公式的转化应用知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "周长计算",
+      "圆与扇形",
+      "曲线型图形",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 786,
+        "raw_text": "六年级上册 | 圆的周长公式的转化应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "圆的认识",
+    "display_name": "校内——六年级——圆的认识知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "曲线型图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 780,
+        "raw_text": "六年级上册 | 第五章 圆 | 圆的认识 | 圆的认识"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "圆的面积",
+    "display_name": "校内——六年级——圆的面积知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "曲线型图形",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 788,
+        "raw_text": "六年级上册 | 圆的面积 | 圆的面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "圆面积公式的变式应用",
+    "display_name": "校内——六年级——圆面积公式的变式应用知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "曲线型图形",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 789,
+        "raw_text": "六年级上册 | 圆面积公式的变式应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "圆面积公式的实际应用",
+    "display_name": "校内——六年级——圆面积公式的实际应用知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "曲线型图形",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 790,
+        "raw_text": "六年级上册 | 圆面积公式的实际应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "扇形与圆的关系",
+    "display_name": "校内——六年级——扇形与圆的关系知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "曲线型图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 800,
+        "raw_text": "六年级上册 | 扇形与圆的关系"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "扇形的认识",
+    "display_name": "校内——六年级——扇形的认识知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "曲线型图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 799,
+        "raw_text": "六年级上册 | 扇形 | 扇形的认识"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "扇形（环）的计算",
+    "display_name": "校内——六年级——扇形（环）的计算知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "扇形",
+      "曲线型图形",
+      "的计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 801,
+        "raw_text": "六年级上册 | 扇形（环）的计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "方中圆与圆中方",
+    "display_name": "校内——六年级——方中圆与圆中方知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "曲线型图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 793,
+        "raw_text": "六年级上册 | 方中圆与圆中方"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "方圆套中套",
+    "display_name": "校内——六年级——方圆套中套知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "曲线型图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 795,
+        "raw_text": "六年级上册 | 方圆套中套"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "方圆模型的复杂应用",
+    "display_name": "校内——六年级——方圆模型的复杂应用知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "曲线型图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 794,
+        "raw_text": "六年级上册 | 方圆模型的复杂应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "环形面积",
+    "display_name": "校内——六年级——环形面积知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 791,
+        "raw_text": "六年级上册 | 环形面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "相切时，根据长方形与圆的关系解题",
+    "display_name": "校内——六年级——相切时，根据长方形与圆的关系解题知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "方形",
+      "曲线型图形",
+      "根据长方形与圆的关系解题",
+      "相切时",
+      "矩形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 782,
+        "raw_text": "六年级上册 | 相切时，根据长方形与圆的关系解题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "转化成和圆相关的图形求不规则图形面积",
+    "display_name": "校内——六年级——转化成和圆相关的图形求不规则图形面积知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "曲线型图形",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 797,
+        "raw_text": "六年级上册 | 转化成和圆相关的图形求不规则图形面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "根据方向和距离确定某点位置",
+    "display_name": "校内——六年级——根据方向和距离确定某点位置知识点",
+    "category": "position_direction",
+    "aliases": [
+      "方位",
+      "确定位置",
+      "路线图"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 741,
+        "raw_text": "六年级上册 | 根据方向和距离确定某点位置"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "用方向和距离描述某个点位置",
+    "display_name": "校内——六年级——用方向和距离描述某个点位置知识点",
+    "category": "position_direction",
+    "aliases": [
+      "方位",
+      "确定位置",
+      "路线图"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 740,
+        "raw_text": "六年级上册 | 第二章 位置与方向（二） | 确定物体位置 | 用方向和距离描述某个点位置"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "上册",
+    "knowledge_point": "用方向和距离描述简单的路线图",
+    "display_name": "校内——六年级——用方向和距离描述简单的路线图知识点",
+    "category": "position_direction",
+    "aliases": [
+      "方位",
+      "确定位置",
+      "路线图"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 742,
+        "raw_text": "六年级上册 | 描述简单路线图 | 用方向和距离描述简单的路线图"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "与车轮周长相关的齿轮问题",
+    "display_name": "校内——六年级——与车轮周长相关的齿轮问题知识点",
+    "category": "length_angle",
+    "aliases": [
+      "周长计算",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 935,
+        "raw_text": "六年级下册 | 与车轮周长相关的齿轮问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "以三角形的边为轴旋转",
+    "display_name": "校内——六年级——以三角形的边为轴旋转知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型",
+      "图形旋转",
+      "旋转变换"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 899,
+        "raw_text": "六年级下册 | 以三角形的边为轴旋转"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "不规则立体图形的体积计算",
+    "display_name": "校内——六年级——不规则立体图形的体积计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 878,
+        "raw_text": "六年级下册 | 不规则立体图形的体积计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "与半圆柱形相关的面积计算",
+    "display_name": "校内——六年级——与半圆柱形相关的面积计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 861,
+        "raw_text": "六年级下册 | 与半圆柱形相关的面积计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "与圆柱相关的等体积变化",
+    "display_name": "校内——六年级——与圆柱相关的等体积变化知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "容积",
+      "曲线型图形",
+      "柱体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 883,
+        "raw_text": "六年级下册 | 与圆柱相关的等体积变化"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "利用圆柱、圆锥体积之差（或和），求圆柱、圆锥的体积",
+    "display_name": "校内——六年级——利用圆柱、圆锥体积之差（或和），求圆柱、圆锥的体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "利用圆柱",
+      "圆与扇形",
+      "圆柱体",
+      "圆锥体",
+      "圆锥体积之差",
+      "圆锥的体积",
+      "容积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 891,
+        "raw_text": "六年级下册 | 利用圆柱、圆锥体积之差（或和），求圆柱、圆锥的体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "利用圆柱与圆锥关系进行计算",
+    "display_name": "校内——六年级——利用圆柱与圆锥关系进行计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "圆锥体",
+      "曲线型图形",
+      "柱体",
+      "锥体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 890,
+        "raw_text": "六年级下册 | 利用圆柱与圆锥关系进行计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "利用圆柱体积公式，求旋转体体积",
+    "display_name": "校内——六年级——利用圆柱体积公式，求旋转体体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "利用圆柱体积公式",
+      "图形旋转",
+      "圆与扇形",
+      "圆柱体",
+      "容积",
+      "旋转变换",
+      "曲线型图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 880,
+        "raw_text": "六年级下册 | 利用圆柱体积公式，求旋转体体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "利用等体积变化，反求圆锥的底面积或高",
+    "display_name": "校内——六年级——利用等体积变化，反求圆锥的底面积或高知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "利用等体积变化",
+      "反求圆锥的底面积或高",
+      "圆与扇形",
+      "圆锥体",
+      "容积",
+      "曲线型图形",
+      "锥体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 901,
+        "raw_text": "六年级下册 | 利用等体积变化，反求圆锥的底面积或高"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "利用长方形旋转得到圆柱求表面积",
+    "display_name": "校内——六年级——利用长方形旋转得到圆柱求表面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "图形旋转",
+      "圆与扇形",
+      "圆柱体",
+      "方形",
+      "旋转变换",
+      "曲线型图形",
+      "柱体",
+      "矩形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 858,
+        "raw_text": "六年级下册 | 利用长方形旋转得到圆柱求表面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱与圆锥体积公式综合应用",
+    "display_name": "校内——六年级——圆柱与圆锥体积公式综合应用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "圆锥体",
+      "容积",
+      "曲线型图形",
+      "柱体",
+      "锥体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 894,
+        "raw_text": "六年级下册 | 圆柱与圆锥体积公式综合应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱与圆锥的体积比问题",
+    "display_name": "校内——六年级——圆柱与圆锥的体积比问题知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "圆锥体",
+      "容积",
+      "曲线型图形",
+      "柱体",
+      "锥体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 903,
+        "raw_text": "六年级下册 | 圆柱与圆锥的体积比问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱体积实际应用",
+    "display_name": "校内——六年级——圆柱体积实际应用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "容积",
+      "曲线型图形",
+      "柱体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 871,
+        "raw_text": "六年级下册 | 圆柱体积实际应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱体积计算公式的应用",
+    "display_name": "校内——六年级——圆柱体积计算公式的应用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "容积",
+      "曲线型图形",
+      "柱体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 876,
+        "raw_text": "六年级下册 | 圆柱体积计算公式的应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱体积计算公式的推导",
+    "display_name": "校内——六年级——圆柱体积计算公式的推导知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "容积",
+      "曲线型图形",
+      "柱体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 875,
+        "raw_text": "六年级下册 | 圆柱体积计算公式的推导"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱体积计算公式的逆用",
+    "display_name": "校内——六年级——圆柱体积计算公式的逆用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "容积",
+      "曲线型图形",
+      "柱体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 877,
+        "raw_text": "六年级下册 | 圆柱体积计算公式的逆用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱切分后，根据表面积变化求原表面积",
+    "display_name": "校内——六年级——圆柱切分后，根据表面积变化求原表面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "圆柱切分后",
+      "曲线型图形",
+      "柱体",
+      "根据表面积变化求原表面积",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 867,
+        "raw_text": "六年级下册 | 圆柱切分后，根据表面积变化求原表面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱切分后，求表面积",
+    "display_name": "校内——六年级——圆柱切分后，求表面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "圆柱切分后",
+      "曲线型图形",
+      "柱体",
+      "求表面积",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 865,
+        "raw_text": "六年级下册 | 圆柱切分后，求表面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱切分（拼合）后，根据表面积变化求原体积",
+    "display_name": "校内——六年级——圆柱切分（拼合）后，根据表面积变化求原体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "圆柱切分",
+      "容积",
+      "拼合",
+      "曲线型图形",
+      "柱体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 885,
+        "raw_text": "六年级下册 | 圆柱切分（拼合）后，根据表面积变化求原体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱形容器容积的计算",
+    "display_name": "校内——六年级——圆柱形容器容积的计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 873,
+        "raw_text": "六年级下册 | 圆柱形容器容积的计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱拼合后，根据表面积变化求原表面积",
+    "display_name": "校内——六年级——圆柱拼合后，根据表面积变化求原表面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "圆柱拼合后",
+      "曲线型图形",
+      "柱体",
+      "根据表面积变化求原表面积",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 868,
+        "raw_text": "六年级下册 | 圆柱拼合后，根据表面积变化求原表面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱拼合后，求表面积",
+    "display_name": "校内——六年级——圆柱拼合后，求表面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "圆柱拼合后",
+      "曲线型图形",
+      "柱体",
+      "求表面积",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 866,
+        "raw_text": "六年级下册 | 圆柱拼合后，求表面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱的体积",
+    "display_name": "校内——六年级——圆柱的体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "容积",
+      "曲线型图形",
+      "柱体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 869,
+        "raw_text": "六年级下册 | 圆柱的体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱的侧面积计算",
+    "display_name": "校内——六年级——圆柱的侧面积计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 851,
+        "raw_text": "六年级下册 | 圆柱的侧面积计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱的切割面",
+    "display_name": "校内——六年级——圆柱的切割面知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 845,
+        "raw_text": "六年级下册 | 圆柱的切割面"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱的展开图",
+    "display_name": "校内——六年级——圆柱的展开图知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 847,
+        "raw_text": "六年级下册 | 圆柱的展开图"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱的表面积",
+    "display_name": "校内——六年级——圆柱的表面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 855,
+        "raw_text": "六年级下册 | 圆柱的表面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱的表面积计算公式的实际应用",
+    "display_name": "校内——六年级——圆柱的表面积计算公式的实际应用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 856,
+        "raw_text": "六年级下册 | 圆柱的表面积计算公式的实际应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱的认识",
+    "display_name": "校内——六年级——圆柱的认识知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "圆锥体",
+      "曲线型图形",
+      "柱体",
+      "锥体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 843,
+        "raw_text": "六年级下册 | 第三章 圆柱与圆锥 | 圆柱 | 圆柱的认识"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱表面积的意义",
+    "display_name": "校内——六年级——圆柱表面积的意义知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 854,
+        "raw_text": "六年级下册 | 圆柱表面积的意义"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆柱表面积计算公式的复杂应用",
+    "display_name": "校内——六年级——圆柱表面积计算公式的复杂应用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 857,
+        "raw_text": "六年级下册 | 圆柱表面积计算公式的复杂应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆锥体积的计算",
+    "display_name": "校内——六年级——圆锥体积的计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆锥体",
+      "容积",
+      "曲线型图形",
+      "锥体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 892,
+        "raw_text": "六年级下册 | 圆锥体积的计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆锥体积计算公式的应用",
+    "display_name": "校内——六年级——圆锥体积计算公式的应用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆锥体",
+      "容积",
+      "曲线型图形",
+      "锥体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 893,
+        "raw_text": "六年级下册 | 圆锥体积计算公式的应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆锥切分后，根据表面积变化，求圆锥体积",
+    "display_name": "校内——六年级——圆锥切分后，根据表面积变化，求圆锥体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆锥体",
+      "圆锥切分后",
+      "容积",
+      "曲线型图形",
+      "根据表面积变化",
+      "求圆锥体积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 902,
+        "raw_text": "六年级下册 | 圆锥切分后，根据表面积变化，求圆锥体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆锥的体积计算公式的逆用",
+    "display_name": "校内——六年级——圆锥的体积计算公式的逆用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆锥体",
+      "容积",
+      "曲线型图形",
+      "锥体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 895,
+        "raw_text": "六年级下册 | 圆锥的体积计算公式的逆用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆锥的切割面",
+    "display_name": "校内——六年级——圆锥的切割面知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆锥体",
+      "曲线型图形",
+      "锥体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 889,
+        "raw_text": "六年级下册 | 圆锥的切割面"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "圆锥的认识",
+    "display_name": "校内——六年级——圆锥的认识知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆锥体",
+      "曲线型图形",
+      "锥体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 887,
+        "raw_text": "六年级下册 | 圆锥 | 圆锥的认识"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "容器颠倒，圆柱和圆锥体积转换",
+    "display_name": "校内——六年级——容器颠倒，圆柱和圆锥体积转换知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "圆柱和圆锥体积转换",
+      "圆锥体",
+      "容器颠倒",
+      "容积",
+      "曲线型图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 905,
+        "raw_text": "六年级下册 | 容器颠倒，圆柱和圆锥体积转换"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "已知侧面积和高，求圆柱的体积",
+    "display_name": "校内——六年级——已知侧面积和高，求圆柱的体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "容积",
+      "已知侧面积和高",
+      "曲线型图形",
+      "柱体",
+      "求圆柱的体积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 870,
+        "raw_text": "六年级下册 | 已知侧面积和高，求圆柱的体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "已知圆柱侧面积，反求其余部分",
+    "display_name": "校内——六年级——已知圆柱侧面积，反求其余部分知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "反求其余部分",
+      "圆与扇形",
+      "圆柱体",
+      "已知圆柱侧面积",
+      "曲线型图形",
+      "柱体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 853,
+        "raw_text": "六年级下册 | 已知圆柱侧面积，反求其余部分"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "根据体积相等，综合运用底面积和高的关系求解问题",
+    "display_name": "校内——六年级——根据体积相等，综合运用底面积和高的关系求解问题知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积",
+      "根据体积相等",
+      "综合运用底面积和高的关系求解问题",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 897,
+        "raw_text": "六年级下册 | 根据体积相等，综合运用底面积和高的关系求解问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "根据侧面展开图求圆柱表面积",
+    "display_name": "校内——六年级——根据侧面展开图求圆柱表面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 859,
+        "raw_text": "六年级下册 | 根据侧面展开图求圆柱表面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "根据圆柱圆锥体积相等，求底面积或高",
+    "display_name": "校内——六年级——根据圆柱圆锥体积相等，求底面积或高知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "圆锥体",
+      "容积",
+      "曲线型图形",
+      "柱体",
+      "根据圆柱圆锥体积相等"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 896,
+        "raw_text": "六年级下册 | 根据圆柱圆锥体积相等，求底面积或高"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "根据展开图计算圆柱底面积",
+    "display_name": "校内——六年级——根据展开图计算圆柱底面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 849,
+        "raw_text": "六年级下册 | 根据展开图计算圆柱底面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "根据展开图，计算圆柱体积",
+    "display_name": "校内——六年级——根据展开图，计算圆柱体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "容积",
+      "曲线型图形",
+      "柱体",
+      "根据展开图",
+      "计算圆柱体积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 882,
+        "raw_text": "六年级下册 | 根据展开图，计算圆柱体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "根据长方形与圆柱关系求表面积",
+    "display_name": "校内——六年级——根据长方形与圆柱关系求表面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "方形",
+      "曲线型图形",
+      "柱体",
+      "矩形",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 860,
+        "raw_text": "六年级下册 | 根据长方形与圆柱关系求表面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "正、逆用圆柱体积公式解决瓶子问题",
+    "display_name": "校内——六年级——正、逆用圆柱体积公式解决瓶子问题知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "容积",
+      "曲线型图形",
+      "柱体",
+      "逆用圆柱体积公式解决瓶子问题"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 879,
+        "raw_text": "六年级下册 | 正、逆用圆柱体积公式解决瓶子问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "正方体中削出最大圆柱",
+    "display_name": "校内——六年级——正方体中削出最大圆柱知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体",
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 881,
+        "raw_text": "六年级下册 | 正方体中削出最大圆柱"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "求圆柱侧面积的实际应用",
+    "display_name": "校内——六年级——求圆柱侧面积的实际应用知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 852,
+        "raw_text": "六年级下册 | 求圆柱侧面积的实际应用"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "由圆柱高的变化，求增加（减少）表面积",
+    "display_name": "校内——六年级——由圆柱高的变化，求增加（减少）表面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "减少",
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体",
+      "求增加",
+      "由圆柱高的变化",
+      "表面积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 863,
+        "raw_text": "六年级下册 | 由圆柱高的变化，求增加（减少）表面积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "空心圆柱的体积计算",
+    "display_name": "校内——六年级——空心圆柱的体积计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "容积",
+      "曲线型图形",
+      "柱体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 874,
+        "raw_text": "六年级下册 | 空心圆柱的体积计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "等体积变化解决圆锥相关问题",
+    "display_name": "校内——六年级——等体积变化解决圆锥相关问题知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆锥体",
+      "容积",
+      "曲线型图形",
+      "锥体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 900,
+        "raw_text": "六年级下册 | 等体积变化解决圆锥相关问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "组合图形的体积计算",
+    "display_name": "校内——六年级——组合图形的体积计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "容积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 898,
+        "raw_text": "六年级下册 | 组合图形的体积计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "组合图形的表面积计算",
+    "display_name": "校内——六年级——组合图形的表面积计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 862,
+        "raw_text": "六年级下册 | 组合图形的表面积计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "结合圆柱高和表面积的变化计算体积",
+    "display_name": "校内——六年级——结合圆柱高和表面积的变化计算体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "容积",
+      "曲线型图形",
+      "柱体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 884,
+        "raw_text": "六年级下册 | 结合圆柱高和表面积的变化计算体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "结合圆柱高和表面积的变化进行计算",
+    "display_name": "校内——六年级——结合圆柱高和表面积的变化进行计算知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 864,
+        "raw_text": "六年级下册 | 结合圆柱高和表面积的变化进行计算"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "结合流速求解圆柱体积",
+    "display_name": "校内——六年级——结合流速求解圆柱体积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "容积",
+      "曲线型图形",
+      "柱体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 872,
+        "raw_text": "六年级下册 | 结合流速求解圆柱体积"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "认识圆柱的展开图",
+    "display_name": "校内——六年级——认识圆柱的展开图知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "曲线型图形",
+      "柱体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 846,
+        "raw_text": "六年级下册 | 认识圆柱的展开图"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "逆用体积公式解决圆柱与圆锥的体积比问题",
+    "display_name": "校内——六年级——逆用体积公式解决圆柱与圆锥的体积比问题知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "体积计算",
+      "圆与扇形",
+      "圆柱体",
+      "圆锥体",
+      "容积",
+      "曲线型图形",
+      "柱体",
+      "锥体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 904,
+        "raw_text": "六年级下册 | 逆用体积公式解决圆柱与圆锥的体积比问题"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "长方形与圆柱的转换",
+    "display_name": "校内——六年级——长方形与圆柱的转换知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "圆与扇形",
+      "圆柱体",
+      "方形",
+      "曲线型图形",
+      "柱体",
+      "矩形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 844,
+        "raw_text": "六年级下册 | 长方形与圆柱的转换"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "图形的放大和缩小",
+    "display_name": "校内——六年级——图形的放大和缩小知识点",
+    "category": "transformation",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 928,
+        "raw_text": "六年级下册 | 图形的放大和缩小"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "校内",
+    "grade": "六年级",
+    "semester": "下册",
+    "knowledge_point": "面的旋转",
+    "display_name": "校内——六年级——面的旋转知识点",
+    "category": "transformation",
+    "aliases": [
+      "图形旋转",
+      "旋转变换"
+    ],
+    "source_refs": [
+      {
+        "source_file": "人教版教材知识点.xlsx",
+        "source_type": "excel",
+        "sheet": "校内（人教）-旧",
+        "row": 888,
+        "raw_text": "六年级下册 | 面的旋转"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "拼剪不规则图形",
+    "display_name": "高思导引——三年级——拼剪不规则图形知识点",
+    "category": "area_model",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第4讲-03",
+        "lecture_title": "几何图形剪拼",
+        "raw_text": "第4讲-03 几何图形剪拼：构造图形、简单分割、拼剪正方形、拼剪不规则图形。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "三角形的三边关系",
+    "display_name": "高思导引——三年级——三角形的三边关系知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第10讲-01",
+        "lecture_title": "几何图形认识",
+        "raw_text": "第10讲-01 几何图形认识：几何图形计数、三角形的三边关系、几何图形的认知、多边形内角和公式、几何图形的剪拼、正方体相对面问题、染色问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "多边形内角和公式",
+    "display_name": "高思导引——三年级——多边形内角和公式知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第10讲-01",
+        "lecture_title": "几何图形认识",
+        "raw_text": "第10讲-01 几何图形认识：几何图形计数、三角形的三边关系、几何图形的认知、多边形内角和公式、几何图形的剪拼、正方体相对面问题、染色问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "角度计算之三角形相关",
+    "display_name": "高思导引——三年级——角度计算之三角形相关知识点",
+    "category": "length_angle",
+    "aliases": [
+      "三角形关系",
+      "三角形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第22讲-02",
+        "lecture_title": "长度与角度的计算",
+        "raw_text": "第22讲-02 长度与角度的计算：长度计算之平移法、长度计算之标向法、长度计算之公式法、角度计算之三角形相关、角度计算之多边形相关。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "角度计算之多边形相关",
+    "display_name": "高思导引——三年级——角度计算之多边形相关知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第22讲-02",
+        "lecture_title": "长度与角度的计算",
+        "raw_text": "第22讲-02 长度与角度的计算：长度计算之平移法、长度计算之标向法、长度计算之公式法、角度计算之三角形相关、角度计算之多边形相关。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "长度与角度的计算",
+    "display_name": "高思导引——三年级——长度与角度的计算知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第22讲-02",
+        "lecture_title": "长度与角度的计算",
+        "raw_text": "第22讲-02 长度与角度的计算：长度计算之平移法、长度计算之标向法、长度计算之公式法、角度计算之三角形相关、角度计算之多边形相关。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "长度计算之公式法",
+    "display_name": "高思导引——三年级——长度计算之公式法知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第22讲-02",
+        "lecture_title": "长度与角度的计算",
+        "raw_text": "第22讲-02 长度与角度的计算：长度计算之平移法、长度计算之标向法、长度计算之公式法、角度计算之三角形相关、角度计算之多边形相关。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "长度计算之平移法",
+    "display_name": "高思导引——三年级——长度计算之平移法知识点",
+    "category": "length_angle",
+    "aliases": [
+      "平移变换"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第22讲-02",
+        "lecture_title": "长度与角度的计算",
+        "raw_text": "第22讲-02 长度与角度的计算：长度计算之平移法、长度计算之标向法、长度计算之公式法、角度计算之三角形相关、角度计算之多边形相关。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "长度计算之标向法",
+    "display_name": "高思导引——三年级——长度计算之标向法知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第22讲-02",
+        "lecture_title": "长度与角度的计算",
+        "raw_text": "第22讲-02 长度与角度的计算：长度计算之平移法、长度计算之标向法、长度计算之公式法、角度计算之三角形相关、角度计算之多边形相关。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "几何图形剪拼",
+    "display_name": "高思导引——三年级——几何图形剪拼知识点",
+    "category": "shape_recognition",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第4讲-03",
+        "lecture_title": "几何图形剪拼",
+        "raw_text": "第4讲-03 几何图形剪拼：构造图形、简单分割、拼剪正方形、拼剪不规则图形。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "几何图形的剪拼",
+    "display_name": "高思导引——三年级——几何图形的剪拼知识点",
+    "category": "shape_recognition",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第10讲-01",
+        "lecture_title": "几何图形认识",
+        "raw_text": "第10讲-01 几何图形认识：几何图形计数、三角形的三边关系、几何图形的认知、多边形内角和公式、几何图形的剪拼、正方体相对面问题、染色问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "几何图形的认知",
+    "display_name": "高思导引——三年级——几何图形的认知知识点",
+    "category": "shape_recognition",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第10讲-01",
+        "lecture_title": "几何图形认识",
+        "raw_text": "第10讲-01 几何图形认识：几何图形计数、三角形的三边关系、几何图形的认知、多边形内角和公式、几何图形的剪拼、正方体相对面问题、染色问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "几何图形计数",
+    "display_name": "高思导引——三年级——几何图形计数知识点",
+    "category": "shape_recognition",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第10讲-01",
+        "lecture_title": "几何图形认识",
+        "raw_text": "第10讲-01 几何图形认识：几何图形计数、三角形的三边关系、几何图形的认知、多边形内角和公式、几何图形的剪拼、正方体相对面问题、染色问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "几何图形认识",
+    "display_name": "高思导引——三年级——几何图形认识知识点",
+    "category": "shape_recognition",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第10讲-01",
+        "lecture_title": "几何图形认识",
+        "raw_text": "第10讲-01 几何图形认识：几何图形计数、三角形的三边关系、几何图形的认知、多边形内角和公式、几何图形的剪拼、正方体相对面问题、染色问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "拼剪正方形",
+    "display_name": "高思导引——三年级——拼剪正方形知识点",
+    "category": "shape_recognition",
+    "aliases": [
+      "方形",
+      "矩形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第4讲-03",
+        "lecture_title": "几何图形剪拼",
+        "raw_text": "第4讲-03 几何图形剪拼：构造图形、简单分割、拼剪正方形、拼剪不规则图形。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "构造图形",
+    "display_name": "高思导引——三年级——构造图形知识点",
+    "category": "shape_recognition",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第4讲-03",
+        "lecture_title": "几何图形剪拼",
+        "raw_text": "第4讲-03 几何图形剪拼：构造图形、简单分割、拼剪正方形、拼剪不规则图形。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "染色问题",
+    "display_name": "高思导引——三年级——染色问题知识点",
+    "category": "shape_recognition",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第10讲-01",
+        "lecture_title": "几何图形认识",
+        "raw_text": "第10讲-01 几何图形认识：几何图形计数、三角形的三边关系、几何图形的认知、多边形内角和公式、几何图形的剪拼、正方体相对面问题、染色问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "简单分割",
+    "display_name": "高思导引——三年级——简单分割知识点",
+    "category": "shape_recognition",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第4讲-03",
+        "lecture_title": "几何图形剪拼",
+        "raw_text": "第4讲-03 几何图形剪拼：构造图形、简单分割、拼剪正方形、拼剪不规则图形。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "三年级",
+    "semester": "",
+    "knowledge_point": "正方体相对面问题",
+    "display_name": "高思导引——三年级——正方体相对面问题知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第10讲-01",
+        "lecture_title": "几何图形认识",
+        "raw_text": "第10讲-01 几何图形认识：几何图形计数、三角形的三边关系、几何图形的认知、多边形内角和公式、几何图形的剪拼、正方体相对面问题、染色问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "四年级",
+    "semester": "",
+    "knowledge_point": "三角形面积公式",
+    "display_name": "高思导引——四年级——三角形面积公式知识点",
+    "category": "area_model",
+    "aliases": [
+      "三角形关系",
+      "三角形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第7讲-04",
+        "lecture_title": "直线形计算一",
+        "raw_text": "第7讲-04 直线形计算一：平行四边形公式、三角形面积公式、长方形和正方形公式、梯形面积公式、已知面积反求边、综合问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "四年级",
+    "semester": "",
+    "knowledge_point": "已知面积反求边",
+    "display_name": "高思导引——四年级——已知面积反求边知识点",
+    "category": "area_model",
+    "aliases": [
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第7讲-04",
+        "lecture_title": "直线形计算一",
+        "raw_text": "第7讲-04 直线形计算一：平行四边形公式、三角形面积公式、长方形和正方形公式、梯形面积公式、已知面积反求边、综合问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "四年级",
+    "semester": "",
+    "knowledge_point": "无格点",
+    "display_name": "高思导引——四年级——无格点知识点",
+    "category": "area_model",
+    "aliases": [
+      "分割添补",
+      "割补法",
+      "格点图形",
+      "格点面积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第17讲-05",
+        "lecture_title": "格点与割补",
+        "raw_text": "第17讲-05 格点与割补：无格点、有格点、格点与割补综合题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "四年级",
+    "semester": "",
+    "knowledge_point": "有格点",
+    "display_name": "高思导引——四年级——有格点知识点",
+    "category": "area_model",
+    "aliases": [
+      "分割添补",
+      "割补法",
+      "格点图形",
+      "格点面积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第17讲-05",
+        "lecture_title": "格点与割补",
+        "raw_text": "第17讲-05 格点与割补：无格点、有格点、格点与割补综合题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "四年级",
+    "semester": "",
+    "knowledge_point": "格点与割补",
+    "display_name": "高思导引——四年级——格点与割补知识点",
+    "category": "area_model",
+    "aliases": [
+      "分割添补",
+      "割补法",
+      "格点图形",
+      "格点面积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第17讲-05",
+        "lecture_title": "格点与割补",
+        "raw_text": "第17讲-05 格点与割补：无格点、有格点、格点与割补综合题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "四年级",
+    "semester": "",
+    "knowledge_point": "格点与割补综合题",
+    "display_name": "高思导引——四年级——格点与割补综合题知识点",
+    "category": "area_model",
+    "aliases": [
+      "分割添补",
+      "割补法",
+      "格点图形",
+      "格点面积"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第17讲-05",
+        "lecture_title": "格点与割补",
+        "raw_text": "第17讲-05 格点与割补：无格点、有格点、格点与割补综合题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "四年级",
+    "semester": "",
+    "knowledge_point": "梯形面积公式",
+    "display_name": "高思导引——四年级——梯形面积公式知识点",
+    "category": "area_model",
+    "aliases": [
+      "梯形模型",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第7讲-04",
+        "lecture_title": "直线形计算一",
+        "raw_text": "第7讲-04 直线形计算一：平行四边形公式、三角形面积公式、长方形和正方形公式、梯形面积公式、已知面积反求边、综合问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "四年级",
+    "semester": "",
+    "knowledge_point": "平行四边形公式",
+    "display_name": "高思导引——四年级——平行四边形公式知识点",
+    "category": "length_angle",
+    "aliases": [
+      "平四",
+      "平行四边形模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第7讲-04",
+        "lecture_title": "直线形计算一",
+        "raw_text": "第7讲-04 直线形计算一：平行四边形公式、三角形面积公式、长方形和正方形公式、梯形面积公式、已知面积反求边、综合问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "四年级",
+    "semester": "",
+    "knowledge_point": "直线形计算一",
+    "display_name": "高思导引——四年级——直线形计算一知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第7讲-04",
+        "lecture_title": "直线形计算一",
+        "raw_text": "第7讲-04 直线形计算一：平行四边形公式、三角形面积公式、长方形和正方形公式、梯形面积公式、已知面积反求边、综合问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "四年级",
+    "semester": "",
+    "knowledge_point": "长方形和正方形公式",
+    "display_name": "高思导引——四年级——长方形和正方形公式知识点",
+    "category": "length_angle",
+    "aliases": [
+      "方形",
+      "矩形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第7讲-04",
+        "lecture_title": "直线形计算一",
+        "raw_text": "第7讲-04 直线形计算一：平行四边形公式、三角形面积公式、长方形和正方形公式、梯形面积公式、已知面积反求边、综合问题。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "一半模型",
+    "display_name": "高思导引——五年级——一半模型知识点",
+    "category": "area_model",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第14讲-06",
+        "lecture_title": "直线形计算二",
+        "raw_text": "第14讲-06 直线形计算二：割补法、等高模型、等积变形、一半模型、基本公式。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "割补法",
+    "display_name": "高思导引——五年级——割补法知识点",
+    "category": "area_model",
+    "aliases": [
+      "分割添补"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第14讲-06",
+        "lecture_title": "直线形计算二",
+        "raw_text": "第14讲-06 直线形计算二：割补法、等高模型、等积变形、一半模型、基本公式。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "等高模型、等积变形",
+    "display_name": "高思导引——五年级——等高模型、等积变形知识点",
+    "category": "area_model",
+    "aliases": [
+      "等积变形",
+      "等高模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第14讲-06",
+        "lecture_title": "直线形计算二",
+        "raw_text": "第14讲-06 直线形计算二：割补法、等高模型、等积变形、一半模型、基本公式。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "等高模型进阶",
+    "display_name": "高思导引——五年级——等高模型进阶知识点",
+    "category": "area_model",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第19讲-08",
+        "lecture_title": "直线形计算三",
+        "raw_text": "第19讲-08 直线形计算三：风筝模型、勾股定理、差不变、直线形计算综合题、鸟头模型、蝴蝶模型与沙漏模型、等高模型进阶。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "蝴蝶模型与沙漏模型",
+    "display_name": "高思导引——五年级——蝴蝶模型与沙漏模型知识点",
+    "category": "area_model",
+    "aliases": [
+      "沙漏模型",
+      "蝴蝶模型",
+      "金字塔与沙漏"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第19讲-08",
+        "lecture_title": "直线形计算三",
+        "raw_text": "第19讲-08 直线形计算三：风筝模型、勾股定理、差不变、直线形计算综合题、鸟头模型、蝴蝶模型与沙漏模型、等高模型进阶。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "风筝模型、勾股定理",
+    "display_name": "高思导引——五年级——风筝模型、勾股定理知识点",
+    "category": "area_model",
+    "aliases": [
+      "勾股定理",
+      "风筝模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第19讲-08",
+        "lecture_title": "直线形计算三",
+        "raw_text": "第19讲-08 直线形计算三：风筝模型、勾股定理、差不变、直线形计算综合题、鸟头模型、蝴蝶模型与沙漏模型、等高模型进阶。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "鸟头模型",
+    "display_name": "高思导引——五年级——鸟头模型知识点",
+    "category": "area_model",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第19讲-08",
+        "lecture_title": "直线形计算三",
+        "raw_text": "第19讲-08 直线形计算三：风筝模型、勾股定理、差不变、直线形计算综合题、鸟头模型、蝴蝶模型与沙漏模型、等高模型进阶。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "割补法、比例法",
+    "display_name": "高思导引——五年级——割补法、比例法知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "分割添补",
+      "割补法",
+      "圆与扇形",
+      "曲线型图形",
+      "比例法"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第15讲-07",
+        "lecture_title": "圆与扇形",
+        "raw_text": "第15讲-07 圆与扇形：滚动与旋转、圆与扇形基本公式、割补法、比例法、差不变。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "圆与扇形",
+    "display_name": "高思导引——五年级——圆与扇形知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "曲线型图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第15讲-07",
+        "lecture_title": "圆与扇形",
+        "raw_text": "第15讲-07 圆与扇形：滚动与旋转、圆与扇形基本公式、割补法、比例法、差不变。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "圆与扇形基本公式",
+    "display_name": "高思导引——五年级——圆与扇形基本公式知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "圆与扇形",
+      "曲线型图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第15讲-07",
+        "lecture_title": "圆与扇形",
+        "raw_text": "第15讲-07 圆与扇形：滚动与旋转、圆与扇形基本公式、割补法、比例法、差不变。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "滚动与旋转",
+    "display_name": "高思导引——五年级——滚动与旋转知识点",
+    "category": "circle_sector",
+    "aliases": [
+      "图形旋转",
+      "圆与扇形",
+      "旋转变换",
+      "曲线型图形"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第15讲-07",
+        "lecture_title": "圆与扇形",
+        "raw_text": "第15讲-07 圆与扇形：滚动与旋转、圆与扇形基本公式、割补法、比例法、差不变。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "直线形计算三",
+    "display_name": "高思导引——五年级——直线形计算三知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第19讲-08",
+        "lecture_title": "直线形计算三",
+        "raw_text": "第19讲-08 直线形计算三：风筝模型、勾股定理、差不变、直线形计算综合题、鸟头模型、蝴蝶模型与沙漏模型、等高模型进阶。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "直线形计算二",
+    "display_name": "高思导引——五年级——直线形计算二知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第14讲-06",
+        "lecture_title": "直线形计算二",
+        "raw_text": "第14讲-06 直线形计算二：割补法、等高模型、等积变形、一半模型、基本公式。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "五年级",
+    "semester": "",
+    "knowledge_point": "直线形计算综合题",
+    "display_name": "高思导引——五年级——直线形计算综合题知识点",
+    "category": "length_angle",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第19讲-08",
+        "lecture_title": "直线形计算三",
+        "raw_text": "第19讲-08 直线形计算三：风筝模型、勾股定理、差不变、直线形计算综合题、鸟头模型、蝴蝶模型与沙漏模型、等高模型进阶。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "割补法、等高",
+    "display_name": "高思导引——六年级——割补法、等高知识点",
+    "category": "area_model",
+    "aliases": [
+      "分割添补",
+      "割补法",
+      "等高"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第10讲-10",
+        "lecture_title": "几何综合一",
+        "raw_text": "第10讲-10 几何综合一：燕尾模型、综合问题、角度计算、长度计算、割补法、等高、金字塔与沙漏。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "燕尾模型、综合问题",
+    "display_name": "高思导引——六年级——燕尾模型、综合问题知识点",
+    "category": "area_model",
+    "aliases": [
+      "燕尾模型",
+      "综合问题"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第10讲-10",
+        "lecture_title": "几何综合一",
+        "raw_text": "第10讲-10 几何综合一：燕尾模型、综合问题、角度计算、长度计算、割补法、等高、金字塔与沙漏。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "金字塔与沙漏",
+    "display_name": "高思导引——六年级——金字塔与沙漏知识点",
+    "category": "area_model",
+    "aliases": [
+      "沙漏模型"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第10讲-10",
+        "lecture_title": "几何综合一",
+        "raw_text": "第10讲-10 几何综合一：燕尾模型、综合问题、角度计算、长度计算、割补法、等高、金字塔与沙漏。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "角度计算、长度计算",
+    "display_name": "高思导引——六年级——角度计算、长度计算知识点",
+    "category": "length_angle",
+    "aliases": [
+      "角度计算",
+      "长度计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第10讲-10",
+        "lecture_title": "几何综合一",
+        "raw_text": "第10讲-10 几何综合一：燕尾模型、综合问题、角度计算、长度计算、割补法、等高、金字塔与沙漏。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "几何模型",
+    "display_name": "高思导引——六年级——几何模型知识点",
+    "category": "plane_geometry",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第11讲-11",
+        "lecture_title": "几何综合二",
+        "raw_text": "第11讲-11 几何综合二：长方体与正方体、设而不求、勾股定理、几何模型、图形变换。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "几何综合一",
+    "display_name": "高思导引——六年级——几何综合一知识点",
+    "category": "plane_geometry",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第10讲-10",
+        "lecture_title": "几何综合一",
+        "raw_text": "第10讲-10 几何综合一：燕尾模型、综合问题、角度计算、长度计算、割补法、等高、金字塔与沙漏。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "几何综合二",
+    "display_name": "高思导引——六年级——几何综合二知识点",
+    "category": "plane_geometry",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第11讲-11",
+        "lecture_title": "几何综合二",
+        "raw_text": "第11讲-11 几何综合二：长方体与正方体、设而不求、勾股定理、几何模型、图形变换。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "设而不求、勾股定理",
+    "display_name": "高思导引——六年级——设而不求、勾股定理知识点",
+    "category": "plane_geometry",
+    "aliases": [
+      "勾股定理",
+      "设而不求"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第11讲-11",
+        "lecture_title": "几何综合二",
+        "raw_text": "第11讲-11 几何综合二：长方体与正方体、设而不求、勾股定理、几何模型、图形变换。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "三视图法求表面积",
+    "display_name": "高思导引——六年级——三视图法求表面积知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "多视图",
+      "视图还原",
+      "面积关系",
+      "面积计算"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第9讲-09",
+        "lecture_title": "立体几何",
+        "raw_text": "第9讲-09 立体几何：水中浸物、立体几何综合题、基本公式应用、三视图法求表面积、切拼问题、展开图。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "切拼问题、展开图",
+    "display_name": "高思导引——六年级——切拼问题、展开图知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "切拼问题",
+      "展开图"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第9讲-09",
+        "lecture_title": "立体几何",
+        "raw_text": "第9讲-09 立体几何：水中浸物、立体几何综合题、基本公式应用、三视图法求表面积、切拼问题、展开图。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "基本公式应用",
+    "display_name": "高思导引——六年级——基本公式应用知识点",
+    "category": "solid_geometry",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第9讲-09",
+        "lecture_title": "立体几何",
+        "raw_text": "第9讲-09 立体几何：水中浸物、立体几何综合题、基本公式应用、三视图法求表面积、切拼问题、展开图。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "水中浸物",
+    "display_name": "高思导引——六年级——水中浸物知识点",
+    "category": "solid_geometry",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第9讲-09",
+        "lecture_title": "立体几何",
+        "raw_text": "第9讲-09 立体几何：水中浸物、立体几何综合题、基本公式应用、三视图法求表面积、切拼问题、展开图。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "立体几何",
+    "display_name": "高思导引——六年级——立体几何知识点",
+    "category": "solid_geometry",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第9讲-09",
+        "lecture_title": "立体几何",
+        "raw_text": "第9讲-09 立体几何：水中浸物、立体几何综合题、基本公式应用、三视图法求表面积、切拼问题、展开图。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "立体几何综合题",
+    "display_name": "高思导引——六年级——立体几何综合题知识点",
+    "category": "solid_geometry",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第9讲-09",
+        "lecture_title": "立体几何",
+        "raw_text": "第9讲-09 立体几何：水中浸物、立体几何综合题、基本公式应用、三视图法求表面积、切拼问题、展开图。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "长方体与正方体",
+    "display_name": "高思导引——六年级——长方体与正方体知识点",
+    "category": "solid_geometry",
+    "aliases": [
+      "立方体",
+      "长正方体"
+    ],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第11讲-11",
+        "lecture_title": "几何综合二",
+        "raw_text": "第11讲-11 几何综合二：长方体与正方体、设而不求、勾股定理、几何模型、图形变换。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  },
+  {
+    "source_label": "高思导引",
+    "grade": "六年级",
+    "semester": "",
+    "knowledge_point": "图形变换",
+    "display_name": "高思导引——六年级——图形变换知识点",
+    "category": "transformation",
+    "aliases": [],
+    "source_refs": [
+      {
+        "source_file": "2024知识树.pdf",
+        "source_type": "pdf_text",
+        "branch": "几何",
+        "lecture_no": "第11讲-11",
+        "lecture_title": "几何综合二",
+        "raw_text": "第11讲-11 几何综合二：长方体与正方体、设而不求、勾股定理、几何模型、图形变换。2024知识树.pdf 几何分支：几何图形剪拼、直线形计算、圆与扇形、立体几何、几何综合、格点与割补、长度与角度的计算、几何图形认识。"
+      }
+    ],
+    "confidence": "high"
+  }
+]

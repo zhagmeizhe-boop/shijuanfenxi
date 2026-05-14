@@ -62,9 +62,9 @@ export const REPORT_DIMENSIONS: ReportDimensionMeta[] = [
   {
     code: 'dim6',
     field: 'innovation',
-    name: '逻辑链条长度',
+    name: '逻辑链条',
     shortName: '逻辑链条',
-    chartName: '逻辑链条\n长度',
+    chartName: '逻辑链条',
     color: '#5f567c',
   },
 ];

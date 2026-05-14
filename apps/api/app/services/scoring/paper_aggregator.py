@@ -14,6 +14,12 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
+from app.services.scoring.dim2_applicability import classify_dim2_geometry_domain
+from app.services.scoring.dim2_knowledge_range import (
+    geometry_model_difficulty_hint,
+    geometry_model_display_points,
+)
+
 
 @dataclass
 class QuestionDimensionScore:
@@ -79,6 +85,65 @@ class PaperAggregator:
         "L4": 12,
         "L5": 15,
     }
+    DIM4_PRACTICE_LEVEL_LABELS = {
+        "L1": "基础模板",
+        "L2": "轻度变式",
+        "L3": "中度变式",
+        "L4": "高阶变式",
+        "L5": "压轴创新",
+    }
+    DIM4_GENERIC_KNOWLEDGE_POINTS = {
+        "知识点",
+        "实践创新",
+        "创新题",
+        "变式题",
+        "综合题",
+        "应用题",
+        "题目",
+        "dim4",
+    }
+    DIM4_SCORE_REASON_FORBIDDEN_FRAGMENTS = (
+        "判为",
+        "计为",
+        "校准",
+        "参考画像",
+        "题目级参考",
+        "level_source",
+        "fallback",
+        "人工复核",
+        "缺失",
+        "未计入",
+        "未纳入",
+        "review",
+        "LLM",
+        "保守",
+        "兜底",
+    )
+    DIM4_KNOWLEDGE_DIFFICULTY_REASONS = {
+        "牛吃草": "难点在于要把原有量、增长量和消耗量分开看，再用中间量串起多个时间段。",
+        "工程问题": "难点在于要先重组效率和剩余工作量，再回查不同阶段是否对同一个总量成立。",
+        "行程相遇追及": "难点在于要把相遇、追及或速度变化后的状态重新接起来，不能只套单段行程公式。",
+        "比例百分数应用": "难点在于要分清新旧基准量，把多阶段变化放到同一个关系里回查。",
+        "分数裂项/结构计算": "难点在于要先看出裂项、抵消或整体变形结构，再把长式子压缩成可计算关系。",
+        "周期问题": "难点在于要找准周期起点和余数位置，遇到状态变化时还要重新校准循环节。",
+        "图形割补": "难点在于要先补出辅助关系或重新拆分图形，再把隐藏的面积关系组织起来。",
+        "抽屉/分类计数": "难点在于要先设好分类或候选范围，再逐类回查，避免重复和遗漏。",
+        "方案比较": "难点在于要先列出可行方案，再用同一个标准比较，并回查限制条件是否都满足。",
+        "逆推还原": "难点在于要倒着重排步骤，把每一步得到的状态接回前一个条件。",
+        "博弈策略": "难点在于要倒推必胜或必败状态，并构造对手无法避开的应对策略。",
+        "数论约束": "难点在于要把整除、余数和范围条件一起回查，逐步排除不满足条件的数。",
+        "构造论证": "难点在于要同时满足多个限制条件，构造后还要检查是否每一步都符合题意。",
+    }
+    DIM4_STRATEGY_DIFFICULTY_REASONS = {
+        "exploratory_search": "难点在于没有现成路径，需要先探索可行方向，再用条件把结果收束住。",
+        "constructive": "难点在于要主动构造对象或方案，并逐步检查它是否满足所有限制。",
+        "strategy_shift": "难点在于中途要换一种看法或解法，把原条件重新组织后再推进。",
+        "local_trick": "难点在于要看出局部突破口，用一个关键中间量或特殊关系打开题目。",
+        "custom_construction": "难点在于要自己搭出中间结构，不能直接沿常规模板推进。",
+        "case_construction": "难点在于要分情况构造并回查，每一类都不能漏掉。",
+        "branched": "难点在于可能路径不止一条，需要筛掉不符合条件的分支。",
+        "open": "难点在于探索空间比较开放，需要先缩小范围再证明选择可行。",
+    }
     IMAGE_FALLBACK_HINTS = ("纯文本回退", "多模态分析失败")
     DIM2_GEOMETRY_HINTS = (
         "几何",
@@ -113,10 +178,165 @@ class PaperAggregator:
         "L4": 4,
         "L5": 6,
     }
+    DIM1_LEVEL_DIFFICULTY_LABELS = {
+        "L1": "简单（2.0）",
+        "L2": "较易（4.0）",
+        "L3": "中等（6.0）",
+        "L4": "较难（8.0）",
+        "L5": "困难（9.5）",
+    }
+    DIM1_COUNTED_QUESTION_LEVEL_NOTES = {
+        "L1": "属于基础计算要求，主要看基本运算是否准确。",
+        "L2": "属于常规校内计算，主要区分熟练度和准确率。",
+        "L3": "有一定转换或多步计算要求，常见失分点是算式落地和运算顺序。",
+        "L4": "学习范围或计算量偏高，常见失分点是连续化简和计算准确率。",
+        "L5": "属于高强度或拓展计算，容易拉开学生在综合计算上的差距。",
+    }
+    DIM5_GENERIC_KNOWLEDGE_POINTS = {
+        "知识点",
+        "数学知识",
+        "校内一般知识",
+        "综合题",
+        "综合问题",
+        "高思导引",
+        "高思",
+        "专题",
+        "应用题",
+        "计算",
+    }
+    DIM5_GRADE_LABELS = {
+        "1": "一年级",
+        "2": "二年级",
+        "3": "三年级",
+        "4": "四年级",
+        "5": "五年级",
+        "6": "六年级",
+        "一": "一年级",
+        "二": "二年级",
+        "三": "三年级",
+        "四": "四年级",
+        "五": "五年级",
+        "六": "六年级",
+    }
+    DIM5_SCORE_REASON_FORBIDDEN_FRAGMENTS = (
+        "命中",
+        "参考库",
+        "目录",
+        "题目级",
+        "判为",
+        "计为",
+        "纠偏",
+        "候选",
+        "LLM",
+        "证据不足",
+        "本题归入",
+        "知识来源",
+        "归类",
+        "标准知识点",
+        "知识域",
+        "综合判为",
+        "高思导引",
+        "专题",
+        "知识组织",
+        "要求较高",
+    )
+    DIM5_POINT_DIFFICULTY_REASONS = {
+        "组合计数": "难点在于要先按对象或步骤分类计数，再检查是否重复或遗漏；涉及容斥时，还要把重叠部分单独扣回。",
+        "复杂组合计数": "难点在于计数路径不止一层，需要保证分类不重不漏，并处理容斥或多层选择之间的相互影响。",
+        "数论约束": "难点在于要用整除、余数、奇偶或倍数关系缩小范围，再逐步筛掉不满足条件的数。",
+        "高阶数论综合": "难点在于要把整除、余数、质因数或范围条件放在一起约束可能的数，通常不能直接代公式求出。",
+        "面积比模型": "难点在于要先看出等高、共边、割补或辅助线关系，再把面积关系转成比例关系。",
+        "高阶几何综合": "难点在于图形关系往往藏在重构、截面、展开或多步面积比例中，需要先搭出中间关系。",
+        "牛吃草模型": "难点在于要同时处理原有量、新增量和消耗量，先分清每单位时间的变化关系。",
+        "定义新运算": "难点在于不能按常规运算直接算，要先把题目给出的新规则逐层展开再代入。",
+        "裂项与长链消去": "难点在于要把算式改写成前后能抵消的结构，找不到拆分方式就会变成硬算。",
+        "递推与差分": "难点在于要从相邻项或相邻变化里找规律，再把局部规律连续推到目标位置。",
+        "周期问题": "难点在于要先找准循环节和余数位置，不能只按前几项表面规律直接延伸。",
+        "抽屉原理": "难点在于要先设计合适的分类盒子，再用最不利情况说明为什么一定会出现某种结果。",
+        "博弈策略": "难点在于要倒推必胜或必败状态，找到对手每一步都无法避开的应对策略。",
+        "构造类问题": "难点在于要同时满足多个限制条件，通常需要边试边排除，并检查构造是否真的符合题意。",
+        "跨专题综合": "难点在于要把多个模型串起来使用，前一部分得到的关系会继续限制后一部分的选择。",
+        "典型应用题入门模型": "难点在于要先把文字条件整理成数量关系，再选择合适的和差倍、还原或盈亏模型。",
+        "简单规律与数列": "难点在于要从变化过程里找出稳定规律，再用这个规律定位到指定项或指定位置。",
+        "简单枚举与分类": "难点在于要把情况分完整，并保持每一类之间不重复。",
+        "图形割补与组合图形": "难点在于要把不规则图形拆成可计算的部分，或通过补形把隐藏面积关系补出来。",
+        "数字谜与数阵图入门": "难点在于要利用行列、位置或总和约束逐步试填，不能随意猜数。",
+        "高年级校内数与代数": "难点在于要把分数、百分数、比例或方程关系对应清楚，再按校内方法稳定计算。",
+        "高年级校内图形公式": "难点在于要先找准半径、直径、高或底面积等关键量，再代入图形公式。",
+        "常规数量关系应用": "难点在于要分清速度、效率、单价或浓度等数量关系，再把已知量和所求量对应起来。",
+        "统计与可能性": "难点在于要先读准图表或可能性条件，再把数据整理成可计算的数量关系。",
+        "因数倍数与质合数": "难点在于要根据因数、倍数、质数或合数条件缩小数字范围，再逐一排除不符合的数。",
+        "基础四则与一步应用": "难点在于要准确对应题意和运算，避免把一步数量关系看反。",
+        "基础平面图形公式": "难点在于要认清图形对应的长、宽、底或高，再直接使用基础面积公式。",
+    }
+    DIM5_DOMAIN_DIFFICULTY_REASONS = {
+        "counting_combinatorics": "难点在于要把情况分完整，并检查是否有重复或遗漏。",
+        "number_theory": "难点在于要用整除、余数或质因数条件不断缩小数字范围。",
+        "geometry_spatial": "难点在于要先发现图形中的隐藏关系，再把它转成面积、长度或体积关系。",
+        "quantity_application": "难点在于要先把文字条件整理成数量关系，再决定从哪个量入手。",
+        "number_operation": "难点在于要先看出算式或数量的结构，再选择更合适的计算方式。",
+        "pattern_sequence": "难点在于要找出变化中的稳定规律，再推到指定位置。",
+        "logic_strategy_construction": "难点在于要同时照顾多个限制条件，并检查每一步是否还能满足题意。",
+        "statistics_probability": "难点在于要先读准数据或可能性条件，再转成可计算关系。",
+        "school_general": "难点在于要把题意中的已知量和所用公式对应准确。",
+    }
+    DIM3_APPLICATION_TASK_LABELS = {
+        "chart_table_conversion": "图表数据转化",
+        "percentage_base_change": "百分数基准量变化",
+        "reverse_process": "逆向过程整理",
+        "multi_object_distribution": "多对象分配关系",
+        "equation_setup": "等量关系建模",
+        "ratio_allocation": "多对象分配关系",
+        "work_rate": "工效关系建模",
+        "queue_growth": "增长与消耗关系整理",
+        "concentration_mixture": "浓度关系转化",
+        "profit_discount": "多阶段数量关系整理",
+        "travel_meeting_chasing": "行程关系建模",
+        "optimization_comparison": "多方案比较",
+        "conservation_transfer": "守恒转移关系整理",
+        "cycle_period": "周期关系整理",
+        "average_total": "平均数总量关系",
+        "range_narrowing": "分段判断与范围缩小",
+    }
+    DIM3_FORBIDDEN_DISPLAY_FRAGMENTS = (
+        "信息提取与转化负担较高",
+        "信息处理能力要求较高",
+        "题干较长",
+        "信息量较大",
+        "适合观察信息提取能力",
+        "需要较强的信息整合能力",
+        "dim3_level",
+        "information_role",
+        "representation_conversion",
+        "quantity_relation_structure",
+        "evidence_summary",
+    )
+    DIM6_LOGIC_TASK_LABELS = {
+        "work_rate_chain": "多步条件推进",
+        "queue_growth_chain": "多轮变化整理",
+        "multi_stage_state_change": "多轮变化整理",
+        "percentage_base_shift_chain": "多轮变化整理",
+        "travel_meeting_chasing_chain": "多轮变化整理",
+        "cyclic_schedule_chain": "周期位置判断",
+        "reverse_process_chain": "倒着推回原条件",
+        "bounded_case_enumeration": "多种情况判断",
+        "optimization_comparison": "方案比较判断",
+        "global_constraint_system": "多条件同时成立",
+        "periodic_sequence_position": "周期位置判断",
+        "shared_variable_coupling": "多条件同时成立",
+    }
+    DIM6_FORBIDDEN_DISPLAY_FRAGMENTS = (
+        "逻辑负担",
+        "约束一致",
+        "高阶收束",
+        "dim6_level",
+        "reasoning_role",
+        "chain_span",
+    )
 
     COUNTED_QUESTION_FULL_REASON_HIDDEN_MARKERS = ("依据标签：", "核心事实：", "依据来源：")
 
-    COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN = re.compile(r"^(L[1-5])\s+[^：:]{1,40}[：:]\s*(.+)$")
+    COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN = re.compile(r"^(L[1-5])(?:\s+[^：:]{1,40})?[：:]\s*(.+)$")
 
     @classmethod
     def _format_counted_question_analysis(cls, text: object) -> str:
@@ -129,6 +349,103 @@ class PaperAggregator:
         if match:
             normalized = f"{match.group(1)}：{match.group(2).strip()}"
         return normalized.rstrip(" 。；;，,")
+
+    @classmethod
+    def _dim1_level_from_score(cls, score: object) -> str:
+        try:
+            score_value = float(score or 0.0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+        if score_value >= 9:
+            return "L5"
+        if score_value >= 8:
+            return "L4"
+        if score_value >= 6:
+            return "L3"
+        if score_value >= 4:
+            return "L2"
+        return "L1"
+
+    @classmethod
+    def _dim1_difficulty_label(cls, level_code: str) -> str:
+        return cls.DIM1_LEVEL_DIFFICULTY_LABELS.get(level_code, cls.DIM1_LEVEL_DIFFICULTY_LABELS["L1"])
+
+    @classmethod
+    def _build_dim1_score_overview(cls, score: object) -> str:
+        try:
+            score_value = float(score or 0.0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+
+        if score_value >= 9:
+            explanation = "说明本卷计算要求很高，包含较强的多步、结构化或拓展计算，对综合计算能力要求突出。"
+        elif score_value >= 8:
+            explanation = "说明本卷计算难度较高，计算题和应用题中的核心计算都会拉开学生差距。"
+        elif score_value >= 6:
+            explanation = "说明本卷有一定计算难度，除准确率外，也考查多步运算和常见转化。"
+        elif score_value >= 4:
+            explanation = "说明本卷计算难度整体偏常规，重点考查校内计算的熟练度和稳定性。"
+        else:
+            explanation = "说明本卷计算要求以基础运算为主，主要看基本规则掌握和计算准确率。"
+        return f"计算维度，综合得分 {score_value:.1f} 分，{explanation}"
+
+    @classmethod
+    def _build_dim2_score_overview(cls, score: object) -> str:
+        try:
+            score_value = float(score or 0.0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+
+        if score_value >= 9:
+            explanation = "说明本卷几何与空间要求很高，包含高强度空间重构、多视图或高阶几何模型。"
+        elif score_value >= 8:
+            explanation = "说明本卷几何难度较高，复合图形、隐含关系或空间转换会明显拉开差距。"
+        elif score_value >= 6:
+            explanation = "说明本卷有一定几何与空间难度，除基本公式外，也考查图形关系整理和模型识别。"
+        elif score_value >= 4:
+            explanation = "说明本卷以常规图形关系为主，重点考查读图准确性和单步空间转化。"
+        else:
+            explanation = "说明本卷主要覆盖基础识图和直接几何公式，重点看图形概念和基本关系是否掌握。"
+        return f"几何直观与空间想象维度，综合得分 {score_value:.1f} 分，{explanation}"
+
+    @classmethod
+    def _build_dim3_score_overview(cls, score: object) -> str:
+        try:
+            score_value = float(score or 0.0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+
+        if score_value >= 9:
+            explanation = "说明本卷读题场景理解与信息重构要求很高，包含复杂规则、多源材料、嵌套关系或自建表示。"
+        elif score_value >= 8:
+            explanation = "说明本卷读题与信息组织难度较高，分散条件、规则理解、隐含关系或表示转化会拉开差距。"
+        elif score_value >= 6:
+            explanation = "说明本卷有一定场景理解和信息整理难度，需要读懂题意规则、筛选多条条件并建立数量关系。"
+        elif score_value >= 4:
+            explanation = "说明本卷以常规场景理解和信息转化为主，重点看能否把题意条件对应到算式或关系。"
+        else:
+            explanation = "说明本卷信息处理要求较基础，主要是直接读懂题干并定位有效条件。"
+        return f"信息提取与转化维度，综合得分 {score_value:.1f} 分，{explanation}"
+
+    @classmethod
+    def _build_dim6_score_overview(cls, score: object) -> str:
+        try:
+            score_value = float(score or 0.0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+
+        if score_value >= 9:
+            explanation = "说明本卷逻辑链条很长，题目往往需要多次推出中间结论，并让多个条件同时对上。"
+        elif score_value >= 8:
+            explanation = "说明本卷逻辑链条较长，较多题需要处理多轮变化、倒推或多种情况。"
+        elif score_value >= 6:
+            explanation = "说明本卷有一定逻辑推进要求，部分题需要连续推出多个中间结论。"
+        elif score_value >= 4:
+            explanation = "说明本卷逻辑链条整体偏常规，少量题需要把前一步结果接到下一步条件中。"
+        else:
+            explanation = "说明本卷多数题的推理链较短，通常一步或直接条件判断即可完成。"
+
+        return f"综合得分 {score_value:.1f} 分，{explanation}"
 
     @staticmethod
     def _dimension_status(question: QuestionDimensionScore, dimension_code: str) -> str:
@@ -244,10 +561,17 @@ class PaperAggregator:
             dict.fromkeys(message.strip() for message in warning_messages if message.strip())
         )
 
-        evidence = (
-            f"共 {question_count} 道相关题目；"
-            f"题级平均维度分 {paper_score:.1f} 分，判定为 {level_label}。"
-        )
+        if dimension_code == "dim2":
+            evidence = self._build_dim2_score_overview(paper_score)
+        elif dimension_code == "dim3":
+            evidence = self._build_dim3_score_overview(paper_score)
+        elif dimension_code == "dim6":
+            evidence = self._build_dim6_score_overview(paper_score)
+        else:
+            evidence = (
+                f"共 {question_count} 道相关题目；"
+                f"题级平均维度分 {paper_score:.1f} 分，判定为 {level_label}。"
+            )
 
         return PaperDimensionSummary(
             dimension_code=dimension_code,
@@ -677,21 +1001,7 @@ class PaperAggregator:
             "aggregation_rule": rule_label,
         }
 
-        evidence_parts = [
-            f"共 {question_count} 道相关题目",
-            (
-                f"纯计算 {len(pure_questions)} 道，均分 {pure_average:.1f}，"
-                f"权重 {pure_weight:.0%}"
-            ),
-            (
-                f"嵌入式计算 {len(embedded_questions)} 道，均分 {embedded_average:.1f}，"
-                f"权重 {embedded_weight:.0%}"
-            ),
-            f"加权维度分 {paper_score:.1f} 分，判定为 {level_label}",
-        ]
-        if embedded_questions and not pure_questions:
-            evidence_parts.append("本卷无纯计算专项题，dim1 由嵌入式计算估计")
-        evidence = "；".join(evidence_parts) + "。"
+        evidence = self._build_dim1_score_overview(paper_score)
 
         return PaperDimensionSummary(
             dimension_code="dim1",
@@ -908,23 +1218,153 @@ class PaperAggregator:
             if dedupe_key in seen_display_labels:
                 continue
 
+            dim_score = question.dim_scores.get(dimension_code, 0.0)
+            level_code = self._question_level_code(question, dimension_code, dim_score)
             seen_display_labels.add(dedupe_key)
-            selected.append(
-                {
-                    "page_no": question.page_no,
-                    "question_no": question.question_no or question.question_id,
-                    "question_label_raw": question.question_label_raw or question.question_no or question.question_id,
-                    "section_index_raw": question.section_index_raw or "",
-                    "question_display_label": question_display_label,
-                    "summary": question.question_summary or "",
-                    "reason": self._build_display_reason(question, dimension_code),
-                    "full_reason": self._build_full_display_reason(question, dimension_code),
-                }
-            )
+            selected_item = {
+                "page_no": question.page_no,
+                "question_no": question.question_no or question.question_id,
+                "question_label_raw": question.question_label_raw or question.question_no or question.question_id,
+                "section_index_raw": question.section_index_raw or "",
+                "question_display_label": question_display_label,
+                "summary": question.question_summary or "",
+                "score": round(dim_score, 1),
+                "level_code": level_code,
+                "difficulty_label": (
+                    self._dim1_difficulty_label(level_code)
+                    if dimension_code in {"dim1", "dim2", "dim3", "dim4", "dim5", "dim6"}
+                    else ""
+                ),
+                "reason": self._build_display_reason(question, dimension_code),
+                "full_reason": self._build_full_display_reason(question, dimension_code),
+            }
+            if dimension_code == "dim4":
+                selected_item.update(self._dim4_counted_question_fields(question, level_code))
+            if dimension_code == "dim5":
+                selected_item.update(self._dim5_counted_question_fields(question, level_code))
+            selected.append(selected_item)
             if len(selected) >= self.REPRESENTATIVE_LIMIT:
                 break
 
         return selected
+
+    @classmethod
+    def _question_level_code(
+        cls,
+        question: QuestionDimensionScore,
+        dimension_code: str,
+        dim_score: object,
+    ) -> str:
+        details = question.dim_details.get(dimension_code, {}) if isinstance(question.dim_details, dict) else {}
+        if isinstance(details, dict):
+            for key in (f"{dimension_code}_level", "dim1_level", "knowledge_level"):
+                level_code = str(details.get(key) or "").strip().upper()
+                if level_code in {"L1", "L2", "L3", "L4", "L5"}:
+                    return level_code
+        if dimension_code == "dim4":
+            return cls._dim4_level_for_question(question)
+        if dimension_code == "dim1":
+            return cls._dim1_level_from_score(dim_score)
+        try:
+            score_value = float(dim_score or 0.0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+        if score_value >= 9:
+            return "L5"
+        if score_value >= 8:
+            return "L4"
+        if score_value >= 6:
+            return "L3"
+        if score_value >= 4:
+            return "L2"
+        return "L1"
+
+    @classmethod
+    def _dimension_details(cls, question: QuestionDimensionScore, dimension_code: str) -> dict[str, Any]:
+        details = question.dim_details.get(dimension_code, {}) if isinstance(question.dim_details, dict) else {}
+        return details if isinstance(details, dict) else {}
+
+    @classmethod
+    def _dim2_model_types(cls, details: dict[str, Any]) -> set[str]:
+        raw_model_types = details.get("geometry_model_types")
+        if isinstance(raw_model_types, str):
+            raw_items = raw_model_types.replace("，", ",").replace("、", ",").split(",")
+        elif isinstance(raw_model_types, list):
+            raw_items = raw_model_types
+        else:
+            raw_items = []
+        return {str(item or "").strip().lower() for item in raw_items if str(item or "").strip()}
+
+    @classmethod
+    def _dim2_combined_evidence_text(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+    ) -> str:
+        parts: list[str] = [
+            question.question_summary or "",
+            question.dim_reasons.get("dim2", ""),
+            str(details.get("evidence_summary") or ""),
+            str(details.get("domain_gate_reason") or ""),
+        ]
+        for key in (
+            "evidence_tags",
+            "matched_geometry_knowledge_points",
+            "display_geometry_knowledge_points",
+        ):
+            raw_items = details.get(key)
+            if isinstance(raw_items, list):
+                parts.extend(str(item or "") for item in raw_items)
+        return " ".join(part.strip() for part in parts if str(part or "").strip())
+
+    @classmethod
+    def _is_stable_dim2_text_geometry_candidate(cls, question: QuestionDimensionScore) -> bool:
+        details = cls._dimension_details(question, "dim2")
+        task_form = str(details.get("task_form") or "").strip().lower()
+        figure_complexity = str(details.get("figure_complexity") or "").strip().lower()
+        image_dependency = str(details.get("image_dependency") or "").strip().lower()
+        fallback_source = str(details.get("fallback_source") or "").strip()
+        evidence_summary = str(details.get("evidence_summary") or "")
+        model_types = cls._dim2_model_types(details)
+
+        has_stable_geometry_facts = (
+            task_form in {"explicit_visual", "geometry_embedded", "text_only_geometry"}
+            or figure_complexity not in {"", "none"}
+            or bool(model_types)
+        )
+        if not has_stable_geometry_facts:
+            return False
+
+        generic_visual_fallback = (
+            fallback_source == "visual_geometry"
+            and (
+                evidence_summary.startswith("图像几何兜底事实")
+                or model_types == {"composite_area_model"}
+            )
+        )
+        if generic_visual_fallback:
+            return False
+
+        if (
+            task_form == "text_only_geometry"
+            and image_dependency in {"", "none", "helpful"}
+            and (
+                figure_complexity == "solid_3d"
+                or "solid_formula" in model_types
+                or fallback_source == "text_hollow_cylinder_geometry"
+            )
+        ):
+            return True
+
+        domain = str(details.get("geometry_domain_gate") or "").strip()
+        if not domain:
+            domain, _ = classify_dim2_geometry_domain(
+                question.question_summary or question.dim_reasons.get("dim2", ""),
+                details,
+                parse_audit=None,
+            )
+
+        return domain in {"geometry_core", "geometry_area_relation", "solid_geometry"}
 
     def _is_low_quality_candidate(
         self,
@@ -941,7 +1381,16 @@ class PaperAggregator:
 
         if dimension_code in {"dim2", "dim3"}:
             warnings = question.dim_warnings.get(dimension_code, [])
-            if any(hint in warning for hint in self.IMAGE_FALLBACK_HINTS for warning in warnings):
+            has_image_fallback_warning = any(
+                hint in warning for hint in self.IMAGE_FALLBACK_HINTS for warning in warnings
+            )
+            if (
+                has_image_fallback_warning
+                and (
+                    dimension_code != "dim2"
+                    or not self._is_stable_dim2_text_geometry_candidate(question)
+                )
+            ):
                 return True
 
         return False
@@ -993,6 +1442,42 @@ class PaperAggregator:
                 self._question_no_sort_key(question.question_no),
             )
 
+        if dimension_code == "dim2":
+            details = question.dim_details.get("dim2", {}) if isinstance(question.dim_details, dict) else {}
+            if not isinstance(details, dict):
+                details = {}
+            domain = str(details.get("geometry_domain_gate") or "").strip()
+            if not domain:
+                domain, _ = classify_dim2_geometry_domain(
+                    question.question_summary or question.dim_reasons.get("dim2", ""),
+                    details,
+                    parse_audit=None,
+                )
+            domain_priority = {
+                "geometry_area_relation": 0,
+                "solid_geometry": 0,
+                "geometry_core": 1,
+            }.get(domain, 2)
+            fallback_source = str(details.get("fallback_source") or "")
+            evidence_summary = str(details.get("evidence_summary") or "")
+            generic_visual_fallback = int(
+                fallback_source == "visual_geometry"
+                and (
+                    evidence_summary.startswith("图像几何兜底事实")
+                    or details.get("geometry_model_types") == ["composite_area_model"]
+                )
+            )
+            return (
+                domain_priority,
+                generic_visual_fallback,
+                len(warnings),
+                -question.dim_scores.get(dimension_code, 0.0),
+                -confidence,
+                -min(len(reason), 160),
+                question.page_no if question.page_no is not None else 10**9,
+                self._question_no_sort_key(question.question_no),
+            )
+
         return (
             -question.dim_scores.get(dimension_code, 0.0),
             -confidence,
@@ -1004,6 +1489,19 @@ class PaperAggregator:
 
     @classmethod
     def _build_display_reason(cls, question: QuestionDimensionScore, dimension_code: str) -> str:
+        if dimension_code == "dim1":
+            return cls._build_dim1_counted_question_reason(question)
+        if dimension_code == "dim2":
+            return cls._build_dim2_counted_question_reason(question)
+        if dimension_code == "dim3":
+            return cls._build_dim3_counted_question_reason(question)
+        if dimension_code == "dim4":
+            return cls._build_dim4_counted_question_reason(question)
+        if dimension_code == "dim5":
+            return cls._build_dim5_counted_question_reason(question)
+        if dimension_code == "dim6":
+            return cls._build_dim6_counted_question_reason(question)
+
         reason = " ".join((question.dim_reasons.get(dimension_code) or "").split()).strip()
         if not reason:
             return ""
@@ -1022,7 +1520,1284 @@ class PaperAggregator:
 
     @classmethod
     def _build_full_display_reason(cls, question: QuestionDimensionScore, dimension_code: str) -> str:
+        if dimension_code == "dim1":
+            return cls._build_dim1_counted_question_reason(question)
+        if dimension_code == "dim2":
+            return cls._build_dim2_counted_question_reason(question)
+        if dimension_code == "dim3":
+            return cls._build_dim3_counted_question_reason(question)
+        if dimension_code == "dim4":
+            return cls._build_dim4_counted_question_reason(question)
+        if dimension_code == "dim5":
+            return cls._build_dim5_counted_question_reason(question)
+        if dimension_code == "dim6":
+            return cls._build_dim6_counted_question_reason(question)
         return cls._format_counted_question_analysis(question.dim_reasons.get(dimension_code) or "")
+
+    @classmethod
+    def _dim4_counted_question_fields(
+        cls,
+        question: QuestionDimensionScore,
+        level_code: str = "",
+    ) -> Dict[str, str]:
+        details = question.dim_details.get("dim4", {}) if isinstance(question.dim_details, dict) else {}
+        if not isinstance(details, dict):
+            details = {}
+        normalized_level = level_code or cls._dim4_level_for_question(question)
+        knowledge_point = cls._dim4_knowledge_point_text(question, details)
+        practice_level = cls._dim4_practice_level_text(normalized_level)
+        return {
+            "knowledge_point_text": knowledge_point,
+            "practice_level_text": practice_level,
+            "score_reason": cls._dim4_score_reason(
+                question,
+                details,
+                normalized_level,
+                knowledge_point,
+            ),
+        }
+
+    @classmethod
+    def _build_dim4_counted_question_reason(cls, question: QuestionDimensionScore) -> str:
+        level_code = cls._dim4_level_for_question(question)
+        fields = cls._dim4_counted_question_fields(question, level_code)
+        difficulty = cls._dim1_difficulty_label(level_code)
+        knowledge_point = fields["knowledge_point_text"]
+        practice_level = fields["practice_level_text"]
+        score_reason = fields["score_reason"]
+
+        if knowledge_point and practice_level:
+            target = f"本题是{knowledge_point}中的{practice_level}"
+        elif knowledge_point:
+            target = f"本题是{knowledge_point}的实践创新题"
+        elif practice_level:
+            target = f"本题属于{practice_level}题"
+        else:
+            target = "本题属于实践创新题"
+        return f"{difficulty}：{target}；{score_reason}"
+
+    @classmethod
+    def _dim4_knowledge_point_text(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+    ) -> str:
+        for key in (
+            "knowledge_point",
+            "canonical_knowledge_point",
+            "primary_knowledge_point",
+            "topic_knowledge_point",
+        ):
+            point = cls._clean_dim4_text(details.get(key))
+            if cls._is_specific_dim4_knowledge_text(point):
+                return point
+
+        for key in ("evidence_tags", "knowledge_tags", "core_knowledge_units"):
+            raw_items = details.get(key)
+            if not isinstance(raw_items, (list, tuple, set)):
+                continue
+            points = [
+                cls._clean_dim4_text(item)
+                for item in raw_items
+                if cls._is_specific_dim4_knowledge_text(item)
+            ]
+            if points:
+                return "、".join(dict.fromkeys(points[:2]))
+
+        summary = cls._clean_dim4_text(question.question_summary)
+        if cls._is_specific_dim4_knowledge_text(summary):
+            return summary
+        return ""
+
+    @classmethod
+    def _dim4_practice_level_text(cls, level_code: str) -> str:
+        return cls.DIM4_PRACTICE_LEVEL_LABELS.get(
+            str(level_code or "").strip().upper(),
+            "",
+        )
+
+    @classmethod
+    def _dim4_score_reason(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+        level_code: str,
+        knowledge_point: str,
+    ) -> str:
+        evidence_note = cls._dim4_note_from_evidence(
+            details.get("evidence_summary")
+            or details.get("anchor_evidence")
+            or question.dim_reasons.get("dim4")
+            or ""
+        )
+        if evidence_note:
+            return evidence_note
+
+        template_note = cls._dim4_template_score_reason(details, level_code, knowledge_point)
+        if template_note:
+            return template_note
+
+        if level_code == "L5":
+            return "难点在于要从全局构造或证明可行性，局部算对还不够。"
+        if level_code == "L4":
+            return "难点在于不能直接套模板，需要构造中间量、分类回查或重组关系。"
+        if level_code == "L3":
+            return "难点在于要完成一次策略转换或模型迁移，再沿新关系推进。"
+        if level_code == "L2":
+            return "难点在于要在常规模板上做少量调整，分清变化后的条件。"
+        return "难点在于要识别基础模板，并按常规关系直接推进。"
+
+    @classmethod
+    def _dim4_template_score_reason(
+        cls,
+        details: dict[str, Any],
+        level_code: str,
+        knowledge_point: str,
+    ) -> str:
+        point_candidates = [
+            cls._clean_dim4_text(details.get("knowledge_point")),
+            cls._clean_dim4_text(details.get("canonical_knowledge_point")),
+            cls._clean_dim4_text(details.get("primary_knowledge_point")),
+            cls._clean_dim4_text(knowledge_point),
+        ]
+        for point in point_candidates:
+            if not point:
+                continue
+            exact_note = cls.DIM4_KNOWLEDGE_DIFFICULTY_REASONS.get(point)
+            if exact_note:
+                return exact_note
+        for point in point_candidates:
+            if not point:
+                continue
+            for key, note in cls.DIM4_KNOWLEDGE_DIFFICULTY_REASONS.items():
+                if key in point or point in key:
+                    return note
+
+        strategy_candidates = [
+            cls._clean_dim4_text(details.get("breakthrough_type")),
+            cls._clean_dim4_text(details.get("construction_requirement")),
+            cls._clean_dim4_text(details.get("exploration_space")),
+        ]
+        if details.get("global_strategy_required") in (1, "1", True):
+            return "难点在于要从全局检查方案是否成立，局部满足条件还不够。"
+        for item in strategy_candidates:
+            note = cls.DIM4_STRATEGY_DIFFICULTY_REASONS.get(item)
+            if note:
+                return note
+        shift_count = str(details.get("strategy_shift_count") or "").strip()
+        if shift_count in {"2", "3+"}:
+            return "难点在于解题过程中不止一次换策略，需要把前后关系重新接上。"
+        if shift_count == "1":
+            return "难点在于中途要完成一次策略转换，不能一直沿常规模板推进。"
+        if str(details.get("template_fit") or "").strip().lower() == "reframed":
+            return "难点在于要换一种表示或看法，把原条件重组成可推进的关系。"
+        if str(details.get("template_fit") or "").strip().lower() == "non_routine":
+            return "难点在于题目不贴合常规模板，需要先判断可行路径。"
+        if level_code == "L4":
+            return "难点在于不能直接套模板，需要构造中间量、分类回查或重组关系。"
+        if level_code == "L5":
+            return "难点在于要从全局构造或证明可行性，局部算对还不够。"
+        return ""
+
+    @classmethod
+    def _dim4_note_from_evidence(cls, value: object) -> str:
+        text = cls._clean_dim4_text(value)
+        if not text:
+            return ""
+        for marker in cls.COUNTED_QUESTION_FULL_REASON_HIDDEN_MARKERS:
+            text = text.split(marker, 1)[0].strip()
+        match = cls.COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN.match(text)
+        if match:
+            text = match.group(2).strip()
+        if "内定位为" in text and "。" in text:
+            text = text.split("。", 1)[1].strip()
+        text = text.rstrip("。；;，,")
+        if not text:
+            return ""
+        if any(fragment in text for fragment in cls.DIM4_SCORE_REASON_FORBIDDEN_FRAGMENTS):
+            return ""
+        for prefix in ("本题难点在于", "难点在于"):
+            if text.startswith(prefix):
+                body = text[len(prefix) :].strip("，,；;。 ")
+                return f"难点在于{body}。" if body else ""
+        if text.startswith("需要"):
+            body = text[2:].strip("，,；;。 ")
+            return f"难点在于要{body}。" if body else ""
+        if text.startswith("要"):
+            return f"难点在于{text}。"
+        if text.startswith("只需") or text.startswith("直接") or text.startswith("可以直接"):
+            return "难点在于要识别这是一道基础模板题，按常规关系直接推进。"
+        return f"难点在于{text}。"
+
+    @classmethod
+    def _is_specific_dim4_knowledge_text(cls, value: object) -> bool:
+        text = cls._clean_dim4_text(value)
+        if not text or len(text) < 2:
+            return False
+        lowered = text.lower()
+        if lowered in cls.DIM4_GENERIC_KNOWLEDGE_POINTS or "dim4" in lowered:
+            return False
+        return text not in cls.DIM4_GENERIC_KNOWLEDGE_POINTS
+
+    @staticmethod
+    def _clean_dim4_text(value: object) -> str:
+        return " ".join(str(value or "").split()).strip(" 。；;，,")
+
+    @classmethod
+    def _dim5_counted_question_fields(
+        cls,
+        question: QuestionDimensionScore,
+        level_code: str = "",
+    ) -> Dict[str, str]:
+        details = question.dim_details.get("dim5", {}) if isinstance(question.dim_details, dict) else {}
+        if not isinstance(details, dict):
+            details = {}
+        normalized_level = level_code or cls._dim5_level_for_question(question)
+        knowledge_point = cls._dim5_knowledge_point_text(question, details)
+        knowledge_source = cls._dim5_knowledge_source_text(details)
+        return {
+            "knowledge_source_text": knowledge_source,
+            "knowledge_point_text": knowledge_point,
+            "score_reason": cls._dim5_score_reason(
+                question,
+                details,
+                normalized_level,
+                knowledge_point,
+                knowledge_source,
+            ),
+        }
+
+    @classmethod
+    def _build_dim5_counted_question_reason(cls, question: QuestionDimensionScore) -> str:
+        level_code = cls._dim5_level_for_question(question)
+        fields = cls._dim5_counted_question_fields(question, level_code)
+        difficulty = cls._dim1_difficulty_label(level_code)
+        knowledge_source = fields["knowledge_source_text"]
+        knowledge_point = fields["knowledge_point_text"]
+        score_reason = fields["score_reason"]
+
+        if knowledge_source and knowledge_point:
+            target = f"本题属于{knowledge_source}的{knowledge_point}"
+        elif knowledge_source:
+            target = f"本题属于{knowledge_source}知识范围"
+        elif knowledge_point:
+            target = f"本题主要考查{knowledge_point}"
+        else:
+            target = "本题主要考查可识别的核心知识点"
+        return f"{difficulty}：{target}；{score_reason}"
+
+    @classmethod
+    def _dim5_knowledge_source_text(cls, details: dict[str, Any]) -> str:
+        bucket = str(details.get("knowledge_source_bucket") or "").strip()
+        band = cls._clean_dim5_text(details.get("band"))
+        section_label = cls._clean_dim5_text(
+            details.get("gaosi_section_label") or details.get("gaosi_section_level")
+        )
+        grade_label = cls._dim5_grade_label(details.get("gaosi_grade"))
+
+        if bucket in {"low_gaosi", "high_gaosi", "beyond"}:
+            source = f"{grade_label}高思导引" if grade_label else "高思导引"
+            if section_label in {"兴趣篇", "拓展篇", "超越篇"}:
+                source = f"{source}{section_label}"
+            elif bucket == "beyond":
+                source = f"{source}超越篇"
+            return source
+
+        if bucket == "junior_bridge":
+            return "初中前置"
+
+        if bucket == "school" or "校内" in band:
+            return f"{grade_label}校内" if grade_label else "校内"
+
+        if "高思导引" in band:
+            return f"{grade_label}高思导引" if grade_label else "高思导引"
+
+        return ""
+
+    @classmethod
+    def _dim5_grade_label(cls, value: object) -> str:
+        text = cls._clean_dim5_text(value)
+        if not text:
+            return ""
+        if "5、6" in text or "5,6" in text or "五六" in text or "五、六" in text:
+            return "五六年级"
+        for key, label in cls.DIM5_GRADE_LABELS.items():
+            if key in text:
+                return f"{label}及以前" if "及以前" in text else label
+        return ""
+
+    @classmethod
+    def _dim5_grade_label_from_band(cls, band: str) -> str:
+        if "5、6年级" in band or "五六年级" in band or "五、六年级" in band:
+            return "五六年级"
+        if "4年级及以前" in band or "四年级及以前" in band:
+            return "四年级及以前"
+        return ""
+
+    @classmethod
+    def _dim5_knowledge_point_text(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+    ) -> str:
+        for key in ("canonical_knowledge_point", "primary_knowledge_point"):
+            point = cls._clean_dim5_text(details.get(key))
+            if cls._is_specific_dim5_knowledge_text(point):
+                return point
+
+        for key in ("knowledge_tags", "core_knowledge_units", "canonical_alias_hits"):
+            points = cls._dim5_specific_terms(details.get(key), limit=2)
+            if points:
+                return "、".join(points)
+
+        summary = cls._clean_dim5_text(question.question_summary)
+        if cls._is_specific_dim5_knowledge_text(summary):
+            return summary
+        return ""
+
+    @classmethod
+    def _dim5_score_reason(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+        level_code: str,
+        knowledge_point: str,
+        knowledge_source: str,
+    ) -> str:
+        evidence_note = cls._dim5_note_from_evidence(
+            details.get("level_evidence")
+            or details.get("evidence_summary")
+            or question.dim_reasons.get("dim5")
+            or ""
+        )
+        if evidence_note:
+            return evidence_note
+
+        template_note = cls._dim5_template_score_reason(details, level_code, knowledge_point)
+        if template_note:
+            return template_note
+
+        if knowledge_source == "初中前置":
+            return "难点在于要把初中前置关系转成小学题目里的数量关系。"
+        if level_code == "L5":
+            return "难点在于要把多个条件或模型放在一起推进，中间一步出错会影响后续判断。"
+        if level_code == "L4":
+            return "难点在于要先看出题目隐藏的模型关系，再选择对应的方法处理。"
+        if level_code == "L3":
+            return "难点在于要把校内知识向外延伸一步，先整理关系再计算。"
+        if level_code == "L2" or bool(details.get("canonical_direct_formula_guard")):
+            return "难点在于要把题目中的已知量和公式关系对应准确。"
+        return "难点在于要准确读出题意，并完成基础概念或一步应用。"
+
+    @classmethod
+    def _dim5_template_score_reason(
+        cls,
+        details: dict[str, Any],
+        level_code: str,
+        knowledge_point: str,
+    ) -> str:
+        point_candidates = [
+            cls._clean_dim5_text(details.get("canonical_knowledge_point")),
+            cls._clean_dim5_text(details.get("primary_knowledge_point")),
+            cls._clean_dim5_text(knowledge_point),
+        ]
+        point_candidates.extend(cls._dim5_specific_terms(details.get("knowledge_tags"), limit=3))
+        point_candidates.extend(cls._dim5_specific_terms(details.get("core_knowledge_units"), limit=3))
+        point_candidates.extend(cls._dim5_specific_terms(details.get("canonical_alias_hits"), limit=3))
+
+        for point in point_candidates:
+            if not point:
+                continue
+            exact_note = cls.DIM5_POINT_DIFFICULTY_REASONS.get(point)
+            if exact_note:
+                return exact_note
+
+        for point in point_candidates:
+            if not point:
+                continue
+            for key, note in cls.DIM5_POINT_DIFFICULTY_REASONS.items():
+                if key in point or point in key:
+                    return note
+
+        domain = str(
+            details.get("canonical_knowledge_domain")
+            or details.get("knowledge_domain")
+            or details.get("domain")
+            or ""
+        ).strip()
+        if domain in cls.DIM5_DOMAIN_DIFFICULTY_REASONS:
+            return cls.DIM5_DOMAIN_DIFFICULTY_REASONS[domain]
+
+        if level_code == "L5":
+            return "难点在于要把多个条件或模型放在一起推进，中间一步出错会影响后续判断。"
+        if level_code == "L4":
+            return "难点在于要先看出题目隐藏的模型关系，再选择对应的方法处理。"
+        return ""
+
+    @classmethod
+    def _dim5_note_from_evidence(cls, value: object) -> str:
+        text = cls._clean_dim5_text(value)
+        if not text:
+            return ""
+        for marker in cls.COUNTED_QUESTION_FULL_REASON_HIDDEN_MARKERS:
+            text = text.split(marker, 1)[0].strip()
+        match = cls.COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN.match(text)
+        if match:
+            text = match.group(2).strip()
+        text = text.rstrip("。；;，,")
+        if not text:
+            return ""
+        if any(fragment in text for fragment in cls.DIM5_SCORE_REASON_FORBIDDEN_FRAGMENTS):
+            return ""
+        for prefix in ("本题难点在于", "难点在于"):
+            if text.startswith(prefix):
+                body = text[len(prefix) :].strip("，,；;。 ")
+                return f"难点在于{body}。" if body else ""
+        if text.startswith("需要"):
+            body = text[2:].strip("，,；;。 ")
+            return f"难点在于要{body}。" if body else ""
+        if text.startswith("要"):
+            return f"难点在于{text}。"
+        if text.startswith("只需") or text.startswith("直接"):
+            body = text.strip("，,；;。 ")
+            return f"难点在于{body}时容易看错条件。"
+        return f"难点在于{text}。"
+
+    @classmethod
+    def _dim5_specific_terms(cls, value: object, *, limit: int) -> List[str]:
+        if isinstance(value, dict):
+            raw_items = value.values()
+        elif isinstance(value, (list, tuple, set)):
+            raw_items = value
+        else:
+            raw_items = [value]
+        terms: List[str] = []
+        for item in raw_items:
+            term = cls._clean_dim5_text(item)
+            if not cls._is_specific_dim5_knowledge_text(term):
+                continue
+            if term not in terms:
+                terms.append(term)
+            if len(terms) >= limit:
+                break
+        return terms
+
+    @classmethod
+    def _is_specific_dim5_knowledge_text(cls, value: object) -> bool:
+        text = cls._clean_dim5_text(value)
+        return bool(text) and text not in cls.DIM5_GENERIC_KNOWLEDGE_POINTS and len(text) >= 2
+
+    @staticmethod
+    def _clean_dim5_text(value: object) -> str:
+        text = " ".join(str(value or "").split()).strip()
+        if not text:
+            return ""
+        return (
+            text.replace("竞赛数学导引", "高思导引")
+            .replace("奥数", "高思导引")
+            .strip(" 。；;，,")
+        )
+
+    @classmethod
+    def _build_dim1_counted_question_reason(cls, question: QuestionDimensionScore) -> str:
+        score = question.dim_scores.get("dim1", 0.0)
+        details = question.dim_details.get("dim1", {}) if isinstance(question.dim_details, dict) else {}
+        if not isinstance(details, dict):
+            details = {}
+
+        range_label = str(
+            details.get("knowledge_range_label")
+            or details.get("display_knowledge_range_label")
+            or ""
+        ).strip()
+        points = cls._dim1_display_points(details)
+
+        if range_label and points:
+            target = f"{range_label}的{points}"
+        elif points:
+            target = points
+        elif range_label:
+            target = f"{range_label}的计算知识"
+        else:
+            target = cls._dim1_summary_or_fallback_knowledge(question, details)
+
+        dim1_level = str(details.get("dim1_level") or "").strip().upper()
+        if not dim1_level:
+            dim1_level = cls._dim1_level_from_score(score)
+
+        note = cls.DIM1_COUNTED_QUESTION_LEVEL_NOTES.get(
+            dim1_level,
+            cls.DIM1_COUNTED_QUESTION_LEVEL_NOTES["L1"],
+        )
+
+        return f"{cls._dim1_difficulty_label(dim1_level)}：主要考查{target}；{note}"
+
+    @classmethod
+    def _dim1_display_points(cls, details: dict[str, Any]) -> str:
+        for key in ("matched_knowledge_points", "display_knowledge_points"):
+            raw_points = details.get(key)
+            if not isinstance(raw_points, list):
+                continue
+            points = [
+                str(item).strip()
+                for item in raw_points
+                if cls._is_specific_dim1_knowledge_text(item)
+            ]
+            if points:
+                return "、".join(points[:2])
+        return ""
+
+    @classmethod
+    def _is_specific_dim1_knowledge_text(cls, value: object) -> bool:
+        text = str(value or "").strip()
+        if not text:
+            return False
+        generic_terms = {
+            "计算",
+            "核心计算",
+            "核心计算能力",
+            "综合问题",
+            "综合题",
+            "综合题型",
+            "基础题型",
+        }
+        return text not in generic_terms and len(text) >= 2
+
+    @classmethod
+    def _dim1_summary_or_fallback_knowledge(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+    ) -> str:
+        summary = str(question.question_summary or "").strip().rstrip("。；;，,")
+        if cls._is_specific_dim1_knowledge_text(summary):
+            return summary
+
+        calc_subtype = str(details.get("calc_subtype") or "").strip().lower()
+        number_mix = str(details.get("number_mix") or "").strip().lower()
+        step_chain = str(details.get("step_chain") or "").strip()
+        structural_method = str(details.get("structural_method") or "").strip().lower()
+        patterns = details.get("structure_patterns") or []
+        pattern_set = {str(item or "").strip().lower() for item in patterns if str(item or "").strip()}
+
+        if calc_subtype == "proportion_equation":
+            return "比例计算"
+        if calc_subtype == "equation":
+            return "方程计算"
+        if calc_subtype == "defined_operation":
+            return "定义新运算"
+        if calc_subtype == "sequence_series":
+            return "数列计算"
+        if calc_subtype == "nested_fraction":
+            return "繁分式计算"
+        if calc_subtype == "fraction_comparison":
+            return "分数比较大小"
+        if calc_subtype == "factorial_ratio":
+            return "阶乘约分"
+        if {
+            "fraction_decimal_percent_conversion",
+            "reciprocal_conversion",
+            "factorial_cancellation",
+        } & pattern_set or number_mix in {"mixed", "symbolic"}:
+            return "分数小数混合计算"
+        if {"common_factor", "grouping", "decimal_scaling"} & pattern_set or structural_method == "shortcut":
+            return "凑整与分组计算"
+        if step_chain in {"3-4", "5+"}:
+            return "多步四则混合运算"
+        return "四则运算"
+
+    @classmethod
+    def _build_dim2_counted_question_reason(cls, question: QuestionDimensionScore) -> str:
+        score = question.dim_scores.get("dim2", 0.0)
+        details = question.dim_details.get("dim2", {}) if isinstance(question.dim_details, dict) else {}
+        if not isinstance(details, dict):
+            details = {}
+
+        range_label = str(
+            details.get("knowledge_range_label")
+            or details.get("display_geometry_knowledge_range_label")
+            or ""
+        ).strip()
+        range_label = cls._dim2_display_range_label(question, details, range_label)
+        points = cls._dim2_display_points(question, details)
+
+        if range_label and points:
+            target = f"{range_label}的{points}"
+        elif points:
+            target = points
+        elif range_label:
+            target = f"{range_label}的几何知识"
+        else:
+            target = cls._dim2_summary_or_fallback_knowledge(question, details)
+
+        dim2_level = str(details.get("dim2_level") or "").strip().upper()
+        if not dim2_level:
+            dim2_level = cls._dim1_level_from_score(score)
+
+        note = cls._dim2_specific_difficulty_note(question, details)
+        return f"{cls._dim1_difficulty_label(dim2_level)}：主要考查{target}；{note}"
+
+    @classmethod
+    def _dim2_display_points(cls, question: QuestionDimensionScore, details: dict[str, Any]) -> str:
+        if cls._dim2_is_cylinder_geometry(question, details):
+            return "圆柱表面积与体积、圆环面积"
+        if cls._dim2_is_rotation_sector_shadow_geometry(question, details):
+            return "旋转图形与圆/扇形阴影面积"
+
+        for key in ("matched_geometry_knowledge_points", "display_geometry_knowledge_points"):
+            raw_points = details.get(key)
+            if not isinstance(raw_points, list):
+                continue
+            points = [
+                str(item).strip()
+                for item in raw_points
+                if cls._is_specific_dim2_knowledge_text(item)
+            ]
+            if points:
+                return "、".join(points[:2])
+
+        model_points = [
+            point
+            for point in geometry_model_display_points(details.get("geometry_model_types"), limit=2)
+            if cls._is_specific_dim2_knowledge_text(point)
+        ]
+        if model_points:
+            return "、".join(model_points)
+
+        summary = str(question.question_summary or "").strip().rstrip("。；;，,")
+        if cls._is_specific_dim2_knowledge_text(summary):
+            return summary
+        return ""
+
+    @classmethod
+    def _dim2_display_range_label(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+        current_label: str,
+    ) -> str:
+        if cls._dim2_is_cylinder_geometry(question, details):
+            return "校内六年级"
+        if cls._dim2_is_rotation_sector_shadow_geometry(question, details):
+            return "校内六年级"
+        return current_label
+
+    @classmethod
+    def _dim2_is_cylinder_geometry(cls, question: QuestionDimensionScore, details: dict[str, Any]) -> bool:
+        model_types = cls._dim2_model_types(details)
+        combined_text = cls._dim2_combined_evidence_text(question, details)
+        cylinder_markers = ("圆柱", "木桶", "圆环", "内直径", "外直径", "内高", "外高")
+        return (
+            ("solid_formula" in model_types or str(details.get("figure_complexity") or "") == "solid_3d")
+            and any(marker in combined_text for marker in cylinder_markers)
+        )
+
+    @classmethod
+    def _dim2_is_rotation_sector_shadow_geometry(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+    ) -> bool:
+        model_types = cls._dim2_model_types(details)
+        combined_text = cls._dim2_combined_evidence_text(question, details)
+        return (
+            {"circle_sector_cut_fill", "figure_transformation"}.issubset(model_types)
+            and (
+                str(details.get("final_level_adjustment_reason") or "")
+                == "standard_rotation_sector_shadow_area"
+                or ("旋转" in combined_text and ("阴影" in combined_text or "扇形" in combined_text))
+            )
+        )
+
+    @classmethod
+    def _is_specific_dim2_knowledge_text(cls, value: object) -> bool:
+        text = str(value or "").strip()
+        if not text:
+            return False
+        generic_terms = {
+            "几何",
+            "图形",
+            "空间",
+            "空间想象",
+            "几何直观",
+            "图形关系",
+            "几何知识",
+            "综合问题",
+            "综合题",
+        }
+        return text not in generic_terms and len(text) >= 2
+
+    @classmethod
+    def _dim2_summary_or_fallback_knowledge(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+    ) -> str:
+        summary = str(question.question_summary or "").strip().rstrip("。；;，,")
+        if cls._is_specific_dim2_knowledge_text(summary):
+            return summary
+
+        model_points = geometry_model_display_points(details.get("geometry_model_types"), limit=1)
+        if model_points:
+            return model_points[0]
+
+        figure_complexity = str(details.get("figure_complexity") or "").strip().lower()
+        structural_method = str(details.get("structural_visual_method") or "").strip().lower()
+        if structural_method == "auxiliary_line":
+            return "辅助线与图形关系"
+        if structural_method == "decomposition":
+            return "图形分解与组合"
+        if structural_method == "3d_transform":
+            return "立体图形空间转换"
+        if figure_complexity == "net_section_multi_view":
+            return "展开图与多视图"
+        if figure_complexity == "solid_3d":
+            return "立体图形关系"
+        if figure_complexity == "composite_2d":
+            return "组合图形关系"
+        return "基础图形关系"
+
+    @classmethod
+    def _dim2_specific_difficulty_note(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+    ) -> str:
+        evidence_note = cls._dim2_note_from_evidence(
+            details.get("evidence_summary")
+            or question.dim_reasons.get("dim2")
+            or question.question_summary
+            or ""
+        )
+        model_hint = geometry_model_difficulty_hint(details.get("geometry_model_types"))
+        if evidence_note and cls._is_specific_dim2_difficulty_note(evidence_note):
+            return evidence_note
+        if model_hint:
+            return model_hint
+
+        structural_method = str(details.get("structural_visual_method") or "").strip().lower()
+        relation_hops = str(details.get("relation_hops") or "").strip()
+        hidden_relation_count = str(details.get("hidden_relation_count") or "").strip()
+        image_dependency = str(details.get("image_dependency") or "").strip().lower()
+        figure_complexity = str(details.get("figure_complexity") or "").strip().lower()
+
+        if structural_method == "auxiliary_line":
+            return "本题难点在于要补出辅助线或辅助关系，再把隐藏条件转成可用的几何关系。"
+        if structural_method == "decomposition":
+            return "本题难点在于要把组合图形拆成可计算部分，再重新组织面积或长度关系。"
+        if structural_method == "3d_transform":
+            return "本题难点在于要把立体结构、展开图或视图信息相互对应。"
+        if hidden_relation_count in {"1", "2+"}:
+            return "本题难点在于要找出图形中的隐含关系，并把它转成可计算条件。"
+        if relation_hops in {"3-4", "5+"}:
+            return "本题难点在于要连续整理多段图形关系，避免关系链中断。"
+        if figure_complexity in {"solid_3d", "net_section_multi_view"}:
+            return "本题难点在于要稳定对应立体图形中的面、棱或视图关系。"
+        if image_dependency == "required":
+            return "本题难点在于要准确读取图中标注和形状关系，再对应到几何条件。"
+        return "本题关键在于准确读取图形条件，并对应到基本几何关系。"
+
+    @classmethod
+    def _dim2_note_from_evidence(cls, value: object) -> str:
+        text = " ".join(str(value or "").split()).strip()
+        if not text:
+            return ""
+        for marker in cls.COUNTED_QUESTION_FULL_REASON_HIDDEN_MARKERS:
+            text = text.split(marker, 1)[0].strip()
+        match = cls.COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN.match(text)
+        if match:
+            text = match.group(2).strip()
+        text = re.sub(r"^图像几何兜底事实[：:]", "", text).strip()
+        text = re.sub(r"^图形结构兜底事实[：:]", "", text).strip()
+        text = text.rstrip("。；;，,")
+        if not text:
+            return ""
+        if "主要考查" in text and "综合判为" in text:
+            return ""
+
+        forbidden_fragments = (
+            "空间想象要求较高",
+            "图形结构偏复杂",
+            "适合观察几何能力",
+            "常见失分点是读图",
+        )
+        if any(fragment in text for fragment in forbidden_fragments):
+            return ""
+
+        if text.startswith("需要"):
+            body = text[2:].strip("，,；;。 ")
+            return f"本题难点在于要{body}。"
+        if text.startswith("核心负担是"):
+            body = text[len("核心负担是") :].strip("，,；;。 ")
+            return f"本题难点在于{body}。"
+        if text.startswith("核心门槛是"):
+            body = text[len("核心门槛是") :].strip("，,；;。 ")
+            return f"本题难点在于{body}。"
+        if text.startswith("只需") or text.startswith("直接"):
+            return f"本题关键在于{text}。"
+        return f"本题难点在于{text}。"
+
+    @staticmethod
+    def _is_specific_dim2_difficulty_note(note: str) -> bool:
+        generic_fragments = (
+            "空间想象要求较高",
+            "图形结构偏复杂",
+            "适合观察几何能力",
+            "常见失分点是读图",
+            "需要读取图形关系",
+        )
+        return bool(note.strip()) and not any(fragment in note for fragment in generic_fragments)
+
+    @classmethod
+    def _build_dim3_counted_question_reason(cls, question: QuestionDimensionScore) -> str:
+        score = question.dim_scores.get("dim3", 0.0)
+        details = question.dim_details.get("dim3", {}) if isinstance(question.dim_details, dict) else {}
+        if not isinstance(details, dict):
+            details = {}
+
+        dim3_level = str(details.get("dim3_level") or "").strip().upper()
+        if not dim3_level:
+            dim3_level = cls._dim1_level_from_score(score)
+
+        task = cls._dim3_information_task(details)
+        note = cls._dim3_specific_processing_note(question, details)
+        return f"{cls._dim1_difficulty_label(dim3_level)}：主要考查{task}；{note}"
+
+    @classmethod
+    def _dim3_information_task(cls, details: dict[str, Any]) -> str:
+        relation_types = cls._dim3_relation_types(details)
+        relation_set = set(relation_types)
+        source_form = str(details.get("source_form") or "").strip().lower()
+        condition_distribution = str(details.get("condition_distribution") or "").strip().lower()
+        extraction_depth = str(details.get("extraction_depth") or "").strip().lower()
+        representation_conversion = str(details.get("representation_conversion") or "").strip().lower()
+        target_representation = str(details.get("target_representation") or "").strip().lower()
+        quantity_relation_structure = str(details.get("quantity_relation_structure") or "").strip().lower()
+        relevant_condition_count = str(details.get("relevant_condition_count") or "").strip()
+        distractor_pressure = str(details.get("distractor_pressure") or "").strip().lower()
+        base_quantity_shift = str(details.get("base_quantity_shift") or "").strip().lower()
+        object_count_band = str(details.get("object_count_band") or "").strip()
+
+        if source_form == "multi_source" or condition_distribution == "cross_modal":
+            return "多源信息重构"
+        if quantity_relation_structure == "nested_relation":
+            return "嵌套数量关系整理"
+        if base_quantity_shift in {"single", "multiple"}:
+            return "百分数基准量变化"
+
+        priority = (
+            "chart_table_conversion",
+            "percentage_base_change",
+            "reverse_process",
+            "multi_object_distribution",
+            "ratio_allocation",
+            "equation_setup",
+            "work_rate",
+            "queue_growth",
+            "concentration_mixture",
+            "profit_discount",
+            "travel_meeting_chasing",
+            "optimization_comparison",
+            "range_narrowing",
+            "conservation_transfer",
+            "cycle_period",
+            "average_total",
+        )
+        for relation_type in priority:
+            if relation_type in relation_set:
+                return cls.DIM3_APPLICATION_TASK_LABELS[relation_type]
+
+        if source_form in {"table_chart", "image_text"} or target_representation == "table_list":
+            return "图表数据转化"
+        if representation_conversion in {"relation_mapping", "model_mapping", "custom_model"}:
+            return "等量关系建模"
+        if target_representation in {"equation_relation", "custom_model"}:
+            return "等量关系建模"
+        if object_count_band in {"3", "4+"}:
+            return "多对象分配关系"
+        if condition_distribution in {"split", "cross_sentence"}:
+            return "分散条件归类"
+        if relevant_condition_count in {"5-6", "7+"} or distractor_pressure == "heavy":
+            return "多条件筛选"
+        if extraction_depth in {"selected", "reorganized", "inferred"}:
+            return "多条件筛选"
+        return "条件定位"
+
+    @classmethod
+    def _dim3_specific_processing_note(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+    ) -> str:
+        evidence_note = cls._dim3_note_from_evidence(
+            details.get("evidence_summary")
+            or question.dim_reasons.get("dim3")
+            or question.question_summary
+            or ""
+        )
+        if evidence_note and cls._is_specific_dim3_processing_note(evidence_note):
+            return evidence_note
+
+        relation_set = set(cls._dim3_relation_types(details))
+        source_form = str(details.get("source_form") or "").strip().lower()
+        condition_distribution = str(details.get("condition_distribution") or "").strip().lower()
+        extraction_depth = str(details.get("extraction_depth") or "").strip().lower()
+        representation_conversion = str(details.get("representation_conversion") or "").strip().lower()
+        target_representation = str(details.get("target_representation") or "").strip().lower()
+        quantity_relation_structure = str(details.get("quantity_relation_structure") or "").strip().lower()
+        relevant_condition_count = str(details.get("relevant_condition_count") or "").strip()
+        distractor_pressure = str(details.get("distractor_pressure") or "").strip().lower()
+        base_quantity_shift = str(details.get("base_quantity_shift") or "").strip().lower()
+        object_count_band = str(details.get("object_count_band") or "").strip()
+        implicit_relation_count = str(details.get("implicit_relation_count") or "").strip()
+        comparison_candidate_count = str(details.get("comparison_candidate_count") or "").strip()
+
+        if source_form == "multi_source" or condition_distribution == "cross_modal":
+            return "本题难点在于要同时对齐图表、文字或图像信息，再把分散条件整理到同一关系中。"
+        if "chart_table_conversion" in relation_set or source_form in {"table_chart", "image_text"}:
+            return "本题难点在于要先从图表或图文材料中读出关键数据，再转写成可比较的数量关系。"
+        if "percentage_base_change" in relation_set or base_quantity_shift in {"single", "multiple"}:
+            return "本题难点在于要分清变化前后的基准量，避免把不同阶段的百分数直接合并。"
+        if quantity_relation_structure == "nested_relation":
+            return "本题难点在于要把嵌套数量关系拆开，再整理成可求解的表示。"
+        if representation_conversion == "custom_model" or target_representation == "custom_model":
+            return "本题难点在于要把文字条件重构成模型表示，再统一比较各对象之间的关系。"
+        if "reverse_process" in relation_set:
+            return "本题难点在于要按结果倒推过程，重新排列条件之间的先后关系。"
+        if "multi_object_distribution" in relation_set or object_count_band in {"3", "4+"}:
+            return "本题难点在于要把条件按对象重新归类，再对应到同一套分配关系。"
+        if "optimization_comparison" in relation_set or comparison_candidate_count == "3+":
+            return "本题难点在于要先形成多个候选方案，再把每个方案放到同一标准下比较。"
+        if implicit_relation_count in {"1", "2", "3+"}:
+            return "本题难点在于要补出题目没有直接写明的数量关系，再接到已有条件上。"
+        if (
+            representation_conversion in {"relation_mapping", "model_mapping"}
+            or target_representation == "equation_relation"
+        ):
+            return "本题难点在于要把文字条件转成等量关系，再确定未知量之间的对应。"
+        if condition_distribution in {"split", "cross_sentence"}:
+            return "本题难点在于要把分散在不同句子里的条件重新归类，再接到同一个数量关系上。"
+        if distractor_pressure == "heavy":
+            return "本题难点在于要筛出真正参与求解的条件，避免把干扰信息带入关系式。"
+        if relevant_condition_count in {"5-6", "7+"}:
+            return "本题难点在于要先筛选多条有效条件，再判断它们各自对应的数量关系。"
+        if extraction_depth in {"selected", "reorganized", "inferred"}:
+            return "本题难点在于要从文字叙述中筛出有效条件，排除与求解无关的信息。"
+        return "本题关键在于准确定位直接条件，并对应到求解目标。"
+
+    @classmethod
+    def _dim3_note_from_evidence(cls, value: object) -> str:
+        text = " ".join(str(value or "").split()).strip()
+        if not text:
+            return ""
+        for marker in cls.COUNTED_QUESTION_FULL_REASON_HIDDEN_MARKERS:
+            text = text.split(marker, 1)[0].strip()
+        match = cls.COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN.match(text)
+        if match:
+            text = match.group(2).strip()
+        text = text.rstrip("。；;，,")
+        if not text:
+            return ""
+        if "主要考查" in text or any(fragment in text for fragment in cls.DIM3_FORBIDDEN_DISPLAY_FRAGMENTS):
+            return ""
+        if text.startswith("需要"):
+            body = text[2:].strip("，,；;。 ")
+            return f"本题难点在于要{body}。"
+        if text.startswith("要"):
+            body = text[1:].strip("，,；;。 ")
+            return f"本题难点在于要{body}。"
+        if text.startswith("先"):
+            return f"本题难点在于要{text}。"
+        if text.startswith("只需") or text.startswith("直接"):
+            return f"本题关键在于{text}。"
+        return f"本题难点在于{text}。"
+
+    @classmethod
+    def _is_specific_dim3_processing_note(cls, note: str) -> bool:
+        return bool(note.strip()) and not any(
+            fragment in note
+            for fragment in cls.DIM3_FORBIDDEN_DISPLAY_FRAGMENTS
+        )
+
+    @staticmethod
+    def _dim3_relation_types(details: dict[str, Any]) -> List[str]:
+        raw_types = details.get("application_relation_types")
+        if isinstance(raw_types, str):
+            items = raw_types.replace("，", ",").replace("、", ",").split(",")
+        elif isinstance(raw_types, list):
+            items = raw_types
+        else:
+            items = []
+        return [
+            str(item or "").strip().lower()
+            for item in items
+            if str(item or "").strip()
+        ]
+
+    @classmethod
+    def _build_dim6_counted_question_reason(cls, question: QuestionDimensionScore) -> str:
+        score = question.dim_scores.get("dim6", 0.0)
+        details = question.dim_details.get("dim6", {}) if isinstance(question.dim_details, dict) else {}
+        if not isinstance(details, dict):
+            details = {}
+
+        dim6_level = str(details.get("dim6_level") or "").strip().upper()
+        if not dim6_level:
+            dim6_level = cls._dim1_level_from_score(score)
+
+        task = cls._dim6_logic_task(details)
+        evidence = cls._dim6_specific_reasoning_evidence(question, details)
+        return f"{cls._dim1_difficulty_label(dim6_level)}：本题逻辑链条难在{task}；依据是{evidence}。"
+
+    @classmethod
+    def _dim6_logic_task(cls, details: dict[str, Any]) -> str:
+        structures = set(cls._dim6_structure_types(details))
+        chain_span = str(details.get("chain_span") or "").strip()
+        hidden_dependency = str(details.get("hidden_dependency") or "").strip().lower()
+        reversibility = str(details.get("reversibility") or "").strip().lower()
+        constraint_coupling = str(details.get("constraint_coupling") or "").strip().lower()
+        global_consistency_required = details.get("global_consistency_required")
+        state_transition_count = str(details.get("state_transition_count") or "").strip()
+        case_count_band = str(details.get("case_count_band") or "").strip()
+        backtrack_depth = str(details.get("backtrack_depth") or "").strip()
+        consistency_constraint_count = str(details.get("consistency_constraint_count") or "").strip()
+        phase_count_band = str(details.get("phase_count_band") or "").strip()
+        periodic_cycle_dependency = details.get("periodic_cycle_dependency")
+        optimization_requirement = str(details.get("optimization_requirement") or "").strip().lower()
+
+        if structures & {"periodic_sequence_position", "cyclic_schedule_chain"} or periodic_cycle_dependency == 1:
+            return "周期位置连续定位"
+        if "optimization_comparison" in structures or optimization_requirement in {"bounded_choice", "global_minmax"}:
+            return "多个方案比较取舍"
+        if "bounded_case_enumeration" in structures or case_count_band in {"2", "3-5", "6+"}:
+            return "多种情况逐一判断"
+        if (
+            "reverse_process_chain" in structures
+            or reversibility in {"backward", "bidirectional"}
+            or backtrack_depth in {"1", "2", "3+"}
+        ):
+            return "从结果倒推回原条件"
+        if (
+            structures & {"global_constraint_system", "shared_variable_coupling"}
+            or constraint_coupling in {"coupled", "nested"}
+            or global_consistency_required == 1
+            or consistency_constraint_count in {"2-3", "4+"}
+        ):
+            return "多个条件同时对上"
+        if (
+            structures
+            & {
+                "queue_growth_chain",
+                "multi_stage_state_change",
+                "percentage_base_shift_chain",
+                "travel_meeting_chasing_chain",
+            }
+            or state_transition_count in {"2", "3+"}
+            or phase_count_band in {"3-4", "5+"}
+        ):
+            return "多轮变化前后衔接"
+        if "work_rate_chain" in structures or chain_span in {"3-4", "5+"} or hidden_dependency in {"cross_condition", "global"}:
+            return "连续推出中间结论"
+        if chain_span == "2" or hidden_dependency == "local":
+            return "连续推出中间结论"
+        return "直接条件判断"
+
+    @classmethod
+    def _dim6_specific_reasoning_evidence(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+    ) -> str:
+        evidence_note = cls._dim6_note_from_evidence(
+            details.get("evidence_summary")
+            or question.dim_reasons.get("dim6")
+            or question.question_summary
+            or ""
+        )
+        if evidence_note and cls._dim6_evidence_has_specific_content(evidence_note):
+            return evidence_note
+
+        fact_evidence = cls._dim6_evidence_from_facts(details)
+        if fact_evidence:
+            return fact_evidence
+
+        summary = str(question.question_summary or "").strip().rstrip("。；;，,")
+        if summary:
+            return f"题目摘要指向{summary}，需要把相关条件逐步接到最终结论"
+        return "题目需要把已有条件逐步接到最终结论"
+
+    @classmethod
+    def _dim6_note_from_evidence(cls, value: object) -> str:
+        text = " ".join(str(value or "").split()).strip()
+        if not text:
+            return ""
+        for marker in cls.COUNTED_QUESTION_FULL_REASON_HIDDEN_MARKERS:
+            text = text.split(marker, 1)[0].strip()
+        match = cls.COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN.match(text)
+        if match:
+            text = match.group(2).strip()
+        text = text.rstrip("。；;，,")
+        if not text:
+            return ""
+        if "主要考查" in text or any(fragment in text for fragment in cls.DIM6_FORBIDDEN_DISPLAY_FRAGMENTS):
+            return ""
+
+        if text.startswith("需要"):
+            text = f"题目需要{text[2:].strip('，,；;。 ')}"
+        if text.startswith("要"):
+            text = f"题目需要{text[1:].strip('，,；;。 ')}"
+
+        replacements = {
+            "多分支": "多种情况",
+            "分支": "情况",
+            "分类讨论": "多种情况判断",
+            "分类": "多种情况",
+            "回查": "对应",
+            "约束": "条件",
+            "全局一致性": "多个条件同时对上",
+            "全局一致": "多个条件同时对上",
+            "收束": "确定结果",
+        }
+        for source, target in replacements.items():
+            text = text.replace(source, target)
+        text = text.rstrip("。；;，,")
+        return text
+
+    @classmethod
+    def _dim6_evidence_from_facts(cls, details: dict[str, Any]) -> str:
+        structures = set(cls._dim6_structure_types(details))
+        clauses: List[str] = []
+
+        backtrack_depth = str(details.get("backtrack_depth") or "").strip()
+        case_count_band = str(details.get("case_count_band") or "").strip()
+        consistency_constraint_count = str(details.get("consistency_constraint_count") or "").strip()
+        phase_count_band = str(details.get("phase_count_band") or "").strip()
+        state_transition_count = str(details.get("state_transition_count") or "").strip()
+        chain_span = str(details.get("chain_span") or "").strip()
+        optimization_requirement = str(details.get("optimization_requirement") or "").strip().lower()
+        periodic_cycle_dependency = details.get("periodic_cycle_dependency")
+
+        if "global_constraint_system" in structures or "shared_variable_coupling" in structures:
+            clauses.append("题目属于多对象或共享变量关系")
+        if "reverse_process_chain" in structures:
+            clauses.append("题面存在倒推还原结构")
+        if "bounded_case_enumeration" in structures:
+            clauses.append("题面存在有限候选情况")
+        if "optimization_comparison" in structures or optimization_requirement in {"bounded_choice", "global_minmax"}:
+            clauses.append("题目需要在多个方案中比较取舍")
+        if structures & {"queue_growth_chain", "multi_stage_state_change", "percentage_base_shift_chain", "travel_meeting_chasing_chain"}:
+            clauses.append("题目包含多轮状态变化")
+        if structures & {"periodic_sequence_position", "cyclic_schedule_chain"} or periodic_cycle_dependency == 1:
+            clauses.append("题目需要定位周期中的目标位置")
+
+        if backtrack_depth == "3+":
+            clauses.append("需要三层以上倒推")
+        elif backtrack_depth == "2":
+            clauses.append("需要两层倒推")
+        elif backtrack_depth == "1":
+            clauses.append("需要从结果往前还原一步")
+
+        if case_count_band == "6+":
+            clauses.append("需要判断 6 种以上可能情况")
+        elif case_count_band == "3-5":
+            clauses.append("需要判断 3-5 种可能情况")
+        elif case_count_band == "2":
+            clauses.append("需要判断 2 种可能情况")
+
+        if consistency_constraint_count == "4+":
+            clauses.append("需要同时满足 4 个以上条件")
+        elif consistency_constraint_count == "2-3":
+            clauses.append("需要同时满足 2-3 个条件")
+
+        if phase_count_band == "5+":
+            clauses.append("推进过程有 5 段以上")
+        elif phase_count_band == "3-4":
+            clauses.append("推进过程有 3-4 段")
+
+        if state_transition_count == "3+":
+            clauses.append("包含 3 次以上状态变化")
+        elif state_transition_count == "2":
+            clauses.append("包含 2 次状态变化")
+
+        if chain_span == "5+":
+            clauses.append("推理链需要 5 步以上推进")
+        elif chain_span == "3-4":
+            clauses.append("推理链需要 3-4 步推进")
+
+        deduped = list(dict.fromkeys(clauses))
+        if not deduped:
+            return ""
+        return "，".join(deduped[:3])
+
+    @classmethod
+    def _dim6_evidence_has_specific_content(cls, evidence: str) -> bool:
+        text = str(evidence or "").strip()
+        if not text:
+            return False
+        generic_fragments = (
+            "旧版分析不应直接展示",
+            "本题逻辑链条较长",
+            "该题难度较高",
+            "综合判为困难",
+            "需要串联多个条件并对应条件",
+            "需要多种情况、对应并维持多个条件同时对上",
+            "需要多种情况确定结果并做多个条件同时对上检验",
+        )
+        if any(fragment in text for fragment in generic_fragments):
+            return False
+        concrete_markers = (
+            "原有",
+            "持续",
+            "检票",
+            "队伍",
+            "到达",
+            "消耗",
+            "工程",
+            "效率",
+            "标价",
+            "寄售",
+            "损坏",
+            "出售",
+            "相遇",
+            "速度",
+            "剩余路程",
+            "票价",
+            "铺管",
+            "方案",
+            "对象",
+            "分配",
+            "多对象",
+            "倒推",
+            "还原",
+            "周期",
+            "循环",
+            "状态",
+            "阶段",
+            "候选",
+            "总量",
+            "比例",
+            "余量",
+            "位置",
+            "次数",
+            "条件",
+            "目标",
+        )
+        return bool(re.search(r"\d", text)) or any(marker in text for marker in concrete_markers)
+
+    @staticmethod
+    def _dim6_structure_types(details: dict[str, Any]) -> List[str]:
+        raw_types = details.get("logic_structure_types")
+        if isinstance(raw_types, str):
+            items = raw_types.replace("，", ",").replace("、", ",").split(",")
+        elif isinstance(raw_types, list):
+            items = raw_types
+        else:
+            items = []
+        return [
+            str(item or "").strip().lower()
+            for item in items
+            if str(item or "").strip()
+        ]
 
     @staticmethod
     def _question_no_sort_key(question_no: str) -> tuple:

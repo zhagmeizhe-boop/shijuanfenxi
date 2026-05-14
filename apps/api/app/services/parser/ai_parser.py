@@ -178,6 +178,7 @@ DIM3_SOURCE_FORM_VALUES = {"text_only", "table_chart", "image_text", "multi_sour
 DIM3_RELEVANT_CONDITION_COUNT_VALUES = {"1-2", "3-4", "5-6", "7+"}
 DIM3_DISTRACTOR_PRESSURE_VALUES = {"none", "light", "heavy"}
 DIM3_CONDITION_DISTRIBUTION_VALUES = {"compact", "split", "cross_sentence", "cross_modal"}
+DIM3_SCENARIO_COMPREHENSION_LOAD_VALUES = {"none", "light", "medium", "heavy"}
 DIM3_EXTRACTION_DEPTH_VALUES = {"direct", "selected", "reorganized", "inferred"}
 DIM3_REPRESENTATION_CONVERSION_VALUES = {
     "none",
@@ -214,6 +215,7 @@ DIM3_APPLICATION_RELATION_TYPE_VALUES = {
     "optimization_comparison",
     "multi_object_distribution",
     "conservation_transfer",
+    "range_narrowing",
 }
 DIM3_OBJECT_COUNT_BAND_VALUES = {"1", "2", "3", "4+"}
 DIM3_APPLICATION_COUNT_VALUES = {"0", "1", "2", "3+"}
@@ -820,6 +822,10 @@ class AIParser:
                 feature.get("condition_distribution"),
                 DIM3_CONDITION_DISTRIBUTION_VALUES,
             ),
+            "scenario_comprehension_load": self._normalize_choice(
+                feature.get("scenario_comprehension_load"),
+                DIM3_SCENARIO_COMPREHENSION_LOAD_VALUES,
+            ) or "none",
             "extraction_depth": self._normalize_choice(
                 feature.get("extraction_depth"),
                 DIM3_EXTRACTION_DEPTH_VALUES,
@@ -1367,6 +1373,10 @@ class AIParser:
     def _dim3_comparison_count_rank(value: str) -> int:
         return {"0": 0, "2": 2, "3+": 3}.get(str(value or "").strip(), 0)
 
+    @staticmethod
+    def _dim3_scenario_load_rank(value: str) -> int:
+        return {"none": 0, "light": 1, "medium": 2, "heavy": 3}.get(str(value or "").strip(), 0)
+
     @classmethod
     def _dim3_has_high_burden_signal(cls, feature: Dict[str, Any]) -> bool:
         relation_types = set(feature.get("application_relation_types") or [])
@@ -1383,6 +1393,7 @@ class AIParser:
                 feature.get("target_representation") in {"table_list", "equation_relation", "custom_model"},
                 feature.get("global_organizing_required") == 1,
                 feature.get("image_dependency") == "required",
+                cls._dim3_scenario_load_rank(feature.get("scenario_comprehension_load", "")) >= 3,
                 bool(
                     relation_types
                     & {
@@ -1394,6 +1405,7 @@ class AIParser:
                         "reverse_process",
                         "conservation_transfer",
                         "multi_object_distribution",
+                        "range_narrowing",
                     }
                 ),
                 cls._dim3_object_count_rank(feature.get("object_count_band", "")) >= 3,
@@ -1407,6 +1419,8 @@ class AIParser:
     @classmethod
     def _dim3_is_low_barrier_direct_extraction(cls, feature: Dict[str, Any]) -> bool:
         relation_types = set(feature.get("application_relation_types") or [])
+        if cls._dim3_scenario_load_rank(feature.get("scenario_comprehension_load", "")) >= 2:
+            return False
         if relation_types - {"average_total"}:
             return False
         if (
@@ -1432,6 +1446,9 @@ class AIParser:
         )
 
     def _dim3_should_validate(self, feature: Dict[str, Any], question: ParsedQuestion) -> bool:
+        if self._dim3_scenario_load_rank(feature.get("scenario_comprehension_load", "")) >= 1:
+            return True
+
         if any(
             feature.get(key)
             not in ("", None, [], {})

@@ -18,6 +18,13 @@ export interface CountedQuestion {
   section_index_raw?: string;
   question_display_label?: string;
   summary: string;
+  score?: number;
+  level_code?: string;
+  difficulty_label?: string;
+  knowledge_source_text?: string;
+  knowledge_point_text?: string;
+  practice_level_text?: string;
+  score_reason?: string;
   reason: string;
   full_reason?: string;
 }
@@ -35,12 +42,42 @@ export interface DimensionScore {
   score_breakdown?: Record<string, unknown>;
 }
 
+export interface QuestionDifficultyItem {
+  page_no?: number;
+  question_no: string;
+  question_label_raw?: string;
+  section_index_raw?: string;
+  question_display_label?: string;
+  question_short_label?: string;
+  average_score: number;
+}
+
+export interface QuestionDifficultyBucket {
+  key: string;
+  label: string;
+  description?: string;
+  count: number;
+  percentage: number;
+  questions: QuestionDifficultyItem[];
+}
+
+export interface QuestionDifficultyDistribution {
+  basis: string;
+  classification: string;
+  total_count: number;
+  classified_count: number;
+  unclassified_count: number;
+  buckets: QuestionDifficultyBucket[];
+}
+
 export interface DifficultyPosition {
   level: number;
   label: string;
   overall_score: number;
   target_students: string;
   description: string;
+  parent_summary?: string[];
+  question_distribution?: QuestionDifficultyDistribution;
   dimension_distribution: {
     code: string;
     name: string;

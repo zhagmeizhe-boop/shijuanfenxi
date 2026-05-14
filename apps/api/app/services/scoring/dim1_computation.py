@@ -10,6 +10,10 @@ from __future__ import annotations
 from typing import Any, Dict, Iterable, List
 
 from app.services.scoring.base import BaseDimensionScorer, DimensionScore
+from app.services.scoring.dim1_knowledge_range import (
+    match_dim1_display_knowledge,
+    match_dim1_knowledge_range,
+)
 
 STEP_CHAIN_VALUES = {"1", "2", "3-4", "5+"}
 NUMBER_MIX_VALUES = {"plain", "standard", "mixed", "symbolic"}
@@ -47,6 +51,14 @@ STRUCTURE_PATTERN_VALUES = {
 }
 TERM_COUNT_BAND_VALUES = {"1-2", "3-5", "6-10", "11+"}
 SYMBOLIC_DEPENDENCY_VALUES = {"none", "single_unknown", "multi_unknown", "parameterized"}
+
+KNOWLEDGE_BURDEN_LEVEL_MATRIX = {
+    "K1": {"B1": "L1", "B2": "L1", "B3": "L2", "B4": "L2", "B5": "L3"},
+    "K2": {"B1": "L2", "B2": "L2", "B3": "L2", "B4": "L3", "B5": "L4"},
+    "K3": {"B1": "L2", "B2": "L3", "B3": "L3", "B4": "L4", "B5": "L4"},
+    "K4": {"B1": "L3", "B2": "L3", "B3": "L4", "B4": "L4", "B5": "L5"},
+    "K5": {"B1": "L4", "B2": "L4", "B3": "L5", "B4": "L5", "B5": "L5"},
+}
 
 DIM1_LEVELS = {
     "L1": {"score": 2.0, "level": 1, "label": "L1 直接运算"},
@@ -173,6 +185,89 @@ class Dim1ComputationScorer(BaseDimensionScorer):
             details={"status": "not_applicable", "dim1_level": "N/A"},
         )
 
+    def _finalize_score(
+        self,
+        burden_result: DimensionScore,
+        features: Dict[str, Any],
+        *,
+        evidence_summary: str,
+        calc_bucket: str,
+    ) -> DimensionScore:
+        if not burden_result.applicable:
+            return burden_result
+
+        burden_dim1_level = str(burden_result.details.get("dim1_level") or f"L{burden_result.level}")
+        burden_level = (
+            f"B{burden_dim1_level[1:]}"
+            if burden_dim1_level.startswith("L")
+            else f"B{burden_result.level}"
+        )
+        level_map = EMBEDDED_DIM1_LEVELS if calc_bucket == "embedded_calculation" else DIM1_LEVELS
+        details = dict(burden_result.details)
+        details.update(
+            {
+                "burden_level": burden_level,
+                "burden_dim1_level": burden_dim1_level,
+                "burden_score": burden_result.score,
+                "burden_level_label": burden_result.level_label,
+            }
+        )
+
+        knowledge_match = match_dim1_knowledge_range(features)
+        details.update(knowledge_match.to_details())
+        display_knowledge_match = match_dim1_display_knowledge(features, knowledge_match)
+        details.update(display_knowledge_match.to_details())
+
+        if not knowledge_match.knowledge_range_level:
+            details.update(
+                {
+                    "dim1_level": burden_dim1_level,
+                    "rule_family": f"{calc_bucket}_burden_only",
+                    "combined_rule": "burden_only_knowledge_range_unmatched",
+                }
+            )
+            evidence = (
+                f"{burden_result.level_label}：知识范围未稳定识别；"
+                f"主要依据题目的步骤长度、数字形式和结构变形要求，综合判为{burden_dim1_level}。"
+            )
+            return DimensionScore(
+                dimension_code=self.DIMENSION_CODE,
+                score=burden_result.score,
+                level=burden_result.level,
+                level_label=burden_result.level_label,
+                evidence=evidence,
+                applicable=True,
+                details=details,
+            )
+
+        final_level = KNOWLEDGE_BURDEN_LEVEL_MATRIX.get(
+            knowledge_match.knowledge_range_level,
+            {},
+        ).get(burden_level, burden_dim1_level)
+        level = level_map[final_level]
+        matched_points = "、".join(knowledge_match.matched_knowledge_points[:3]) or "核心计算知识点"
+        details.update(
+            {
+                "dim1_level": final_level,
+                "rule_family": f"{calc_bucket}_knowledge_range_matrix",
+                "combined_rule": "knowledge_range_burden_matrix",
+                "knowledge_burden_matrix_cell": f"{knowledge_match.knowledge_range_level}+{burden_level}",
+            }
+        )
+        evidence = (
+            f"{level['label']}：主要考查{knowledge_match.knowledge_range_label}的{matched_points}；"
+            f"结合知识范围和运算组织要求，综合判为{final_level}。"
+        )
+        return DimensionScore(
+            dimension_code=self.DIMENSION_CODE,
+            score=level["score"],
+            level=level["level"],
+            level_label=level["label"],
+            evidence=evidence,
+            applicable=True,
+            details=details,
+        )
+
     def _calculate_score(self, features: Dict[str, Any]) -> DimensionScore:
         task_form = _normalize_choice(features.get("task_form"), TASK_FORM_VALUES)
         step_chain = _normalize_choice(features.get("step_chain"), STEP_CHAIN_VALUES)
@@ -198,7 +293,7 @@ class Dim1ComputationScorer(BaseDimensionScorer):
 
         routine_rank = _routine_rank(routine_transform_count)
         if calc_bucket == "embedded_calculation":
-            return self._score_embedded(
+            burden_result = self._score_embedded(
                 features,
                 step_chain=step_chain,
                 number_mix=number_mix,
@@ -207,8 +302,14 @@ class Dim1ComputationScorer(BaseDimensionScorer):
                 global_view_required=global_view_required,
                 evidence_summary=evidence_summary,
             )
+            return self._finalize_score(
+                burden_result,
+                features,
+                evidence_summary=evidence_summary,
+                calc_bucket=calc_bucket,
+            )
 
-        return self._score_pure(
+        burden_result = self._score_pure(
             features,
             step_chain=step_chain,
             number_mix=number_mix,
@@ -217,6 +318,12 @@ class Dim1ComputationScorer(BaseDimensionScorer):
             calc_role=calc_role,
             global_view_required=global_view_required,
             evidence_summary=evidence_summary,
+        )
+        return self._finalize_score(
+            burden_result,
+            features,
+            evidence_summary=evidence_summary,
+            calc_bucket=calc_bucket,
         )
 
     def _score_pure(
