@@ -20,11 +20,17 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple
 
+from app.core.config import settings
 from app.services.llm.moonshot_client import MoonshotClient
 from app.services.ocr.base import ParsedPaper, ParsedQuestion, QuestionType
 from app.services.parser.prompts import (
     QUESTION_ANALYSIS_SYSTEM_PROMPT,
     QUESTION_ANALYSIS_USER_PROMPT_TEMPLATE,
+)
+from app.services.parser.dim5_grounding import (
+    DIM5_GROUNDING_VERSION,
+    GROUNDING_USE_CONFIDENCE_THRESHOLD,
+    Dim5KnowledgeGroundingService,
 )
 from app.services.parser.dim5_retrieval import Dim5RetrievalService
 from app.services.parser.reference_standard import get_reference_standard
@@ -474,6 +480,42 @@ Return strict JSON with exactly these keys:
 }}
 """
 DIM5_RETRY_LOW_CONFIDENCE_THRESHOLD = 0.55
+DIM5_GROUNDED_SELECTION_SYSTEM_PROMPT = """
+You are a constrained selector for dimension-5 math knowledge points.
+You must choose from the provided knowledge candidates only, or return no_match.
+Do not rewrite dim1, dim2, dim3, dim4, or dim6.
+Use the original question text first. analysis_facts are only supporting evidence.
+If a candidate is marked analysis_facts_only, it cannot be selected with high confidence unless the original question text also supports it.
+Return strict JSON only.
+"""
+DIM5_GROUNDED_SELECTION_USER_PROMPT_TEMPLATE = """
+Question metadata:
+- question_no: {question_no}
+- question_type: {question_type}
+
+Question text:
+{question_text}
+
+Neutral analysis_facts:
+{analysis_facts_json}
+
+Knowledge candidates:
+{candidates_json}
+
+Choose exactly one:
+- candidate_id from the candidates
+- or "no_match"
+
+Return JSON with exactly these keys:
+{{
+  "selected_candidate_id": "candidate_id or no_match",
+  "confidence": 0.0,
+  "evidence": "quote or paraphrase question-text evidence",
+  "rejected_candidates": [
+    {{"candidate_id": "id", "reason": "why it is not the best match"}}
+  ]
+}}
+"""
 DIM6_REASONING_ROLE_VALUES = {"none", "supporting", "core"}
 DIM6_CHAIN_SPAN_VALUES = {"1", "2", "3-4", "5+"}
 DIM6_HIDDEN_DEPENDENCY_VALUES = {"none", "local", "cross_condition", "global"}
@@ -604,6 +646,7 @@ class AIParser:
         self.llm = llm_client or self._create_default_client()
         self.reference_standard = get_reference_standard()
         self.dim5_retrieval = Dim5RetrievalService(self.reference_standard)
+        self.dim5_grounding = Dim5KnowledgeGroundingService(self.reference_standard)
         logger.info("AIParser 初始化完成")
 
     def _create_default_client(self) -> MoonshotClient:
@@ -1146,6 +1189,34 @@ class AIParser:
             "rejected_retrieval_candidate_ids": self._normalize_string_list(
                 feature.get("rejected_retrieval_candidate_ids")
             ),
+            "knowledge_grounding_context": self._normalize_optional_dict(
+                feature.get("knowledge_grounding_context")
+            ),
+            "knowledge_grounding_candidates": self._normalize_dict_list(
+                feature.get("knowledge_grounding_candidates")
+            ),
+            "grounded_selection_status": str(feature.get("grounded_selection_status", "")).strip(),
+            "selected_knowledge_candidate_id": str(
+                feature.get("selected_knowledge_candidate_id", "")
+            ).strip(),
+            "grounded_canonical_knowledge_point": str(
+                feature.get("grounded_canonical_knowledge_point", "")
+            ).strip(),
+            "grounded_knowledge_domain": str(feature.get("grounded_knowledge_domain", "")).strip(),
+            "grounded_knowledge_source_text": str(
+                feature.get("grounded_knowledge_source_text", "")
+            ).strip(),
+            "grounded_knowledge_level": normalize_dim5_knowledge_level(
+                feature.get("grounded_knowledge_level")
+            ),
+            "grounded_confidence": self._normalize_confidence(feature.get("grounded_confidence")),
+            "grounded_evidence": str(feature.get("grounded_evidence", "")).strip(),
+            "grounded_match_source": str(feature.get("grounded_match_source", "")).strip(),
+            "grounded_risk_flags": self._normalize_string_list(feature.get("grounded_risk_flags")),
+            "grounded_rejected_candidates": self._normalize_dict_list(
+                feature.get("grounded_rejected_candidates")
+            ),
+            "grounded_selector": str(feature.get("grounded_selector", "")).strip(),
         }
 
     def _normalize_dim6_feature(self, value: Any) -> Dict[str, Any]:
@@ -3525,6 +3596,252 @@ class AIParser:
         self.dim5_retrieval = service
         return service
 
+    def _get_dim5_grounding_service(self) -> Dim5KnowledgeGroundingService:
+        service = getattr(self, "dim5_grounding", None)
+        if isinstance(service, Dim5KnowledgeGroundingService):
+            return service
+        service = Dim5KnowledgeGroundingService(self.reference_standard)
+        self.dim5_grounding = service
+        return service
+
+    def _build_dim5_grounding_context(
+        self,
+        question: ParsedQuestion,
+        *,
+        analysis_facts: Optional[Dict[str, Any]] = None,
+        max_candidates: int = 8,
+    ) -> Dict[str, Any]:
+        try:
+            return self._get_dim5_grounding_service().ground(
+                question_text=question.raw_text or "",
+                question_type=str(getattr(question.question_type, "value", question.question_type) or ""),
+                analysis_facts=analysis_facts or {},
+                max_candidates=max_candidates,
+            )
+        except Exception as exc:
+            logger.warning(
+                "dim5 grounding failed question=%s error=%s",
+                question.question_no,
+                exc,
+            )
+            return {
+                "version": DIM5_GROUNDING_VERSION,
+                "query": {"text_excerpt": (question.raw_text or "")[:180]},
+                "candidates": [],
+                "selection_status": "no_match",
+                "selected_candidate_id": "no_match",
+                "grounded_canonical_knowledge_point": "",
+                "grounded_knowledge_domain": "",
+                "grounded_knowledge_source_text": "",
+                "grounded_knowledge_level": "",
+                "grounded_confidence": 0.0,
+                "grounded_match_source": "",
+                "grounded_evidence": str(exc)[:240],
+                "grounded_risk_flags": ["grounding_error"],
+                "grounded_rejected_candidates": [],
+                "grounded_selector": "local_grounding_selector",
+            }
+
+    def _apply_dim5_grounding(
+        self,
+        dim5_feature: Dict[str, Any],
+        *,
+        question: ParsedQuestion,
+        analysis_facts: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        if (
+            str((dim5_feature or {}).get("grounded_selector") or "") == "llm_candidate_selector"
+            and str((dim5_feature or {}).get("selected_knowledge_candidate_id") or "").strip()
+        ):
+            return self._normalize_dim5_feature(dim5_feature)
+        grounding = self._build_dim5_grounding_context(
+            question,
+            analysis_facts=analysis_facts,
+        )
+        merged = dict(dim5_feature or {})
+        merged["knowledge_grounding_context"] = {
+            "version": grounding.get("version", DIM5_GROUNDING_VERSION),
+            "query": grounding.get("query", {}),
+            "selection_status": grounding.get("selection_status", ""),
+        }
+        merged["knowledge_grounding_candidates"] = list(grounding.get("candidates") or [])
+        merged["grounded_selection_status"] = str(grounding.get("selection_status") or "").strip()
+        merged["selected_knowledge_candidate_id"] = str(
+            grounding.get("selected_candidate_id") or ""
+        ).strip()
+        for key in (
+            "grounded_canonical_knowledge_point",
+            "grounded_knowledge_domain",
+            "grounded_knowledge_source_text",
+            "grounded_knowledge_level",
+            "grounded_confidence",
+            "grounded_evidence",
+            "grounded_match_source",
+            "grounded_risk_flags",
+            "grounded_rejected_candidates",
+            "grounded_selector",
+        ):
+            merged[key] = grounding.get(key)
+        return self._normalize_dim5_feature(merged)
+
+    @staticmethod
+    def _dim5_grounding_high_enough(feature: Dict[str, Any]) -> bool:
+        try:
+            confidence = float(feature.get("grounded_confidence") or 0.0)
+        except (TypeError, ValueError):
+            confidence = 0.0
+        if confidence < GROUNDING_USE_CONFIDENCE_THRESHOLD:
+            return False
+        risks = {
+            str(flag).strip()
+            for flag in feature.get("grounded_risk_flags", []) or []
+            if str(flag).strip()
+        }
+        return not (
+            risks
+            & {
+                "analysis_facts_only",
+                "blocked_number_theory_in_calculation",
+                "weak_question_text_match",
+                "no_grounded_match",
+            }
+        )
+
+    def _build_dim5_grounding_selection_messages(
+        self,
+        *,
+        question: ParsedQuestion,
+        analysis_facts: Dict[str, Any],
+        candidates: List[Dict[str, Any]],
+    ) -> List[Dict[str, str]]:
+        trimmed_facts = {
+            "core_task": analysis_facts.get("core_task", ""),
+            "core_knowledge_points": analysis_facts.get("core_knowledge_points", []),
+            "core_methods": analysis_facts.get("core_methods", []),
+        }
+        candidate_payload = [
+            {
+                "candidate_id": candidate.get("candidate_id", ""),
+                "knowledge_point": candidate.get("canonical_knowledge_point", ""),
+                "knowledge_domain": candidate.get("knowledge_domain", ""),
+                "source_label": candidate.get("source_label", ""),
+                "matched_evidence": candidate.get("matched_evidence", []),
+                "match_source": candidate.get("match_source", ""),
+                "score": candidate.get("score", 0.0),
+                "risk_flags": candidate.get("risk_flags", []),
+                "rejected_contexts": candidate.get("excluded_contexts", []),
+                "confusing_with": candidate.get("confusing_with", []),
+            }
+            for candidate in candidates[:8]
+        ]
+        prompt_text = DIM5_GROUNDED_SELECTION_USER_PROMPT_TEMPLATE.format(
+            question_no=question.question_no,
+            question_type=getattr(question.question_type, "value", question.question_type),
+            question_text=question.raw_text or "",
+            analysis_facts_json=self._dim5_dump_json(trimmed_facts),
+            candidates_json=self._dim5_dump_json(candidate_payload),
+        ).strip()
+        return [
+            {"role": "system", "content": DIM5_GROUNDED_SELECTION_SYSTEM_PROMPT.strip()},
+            {"role": "user", "content": prompt_text},
+        ]
+
+    def _parse_dim5_grounding_selection_response(self, response: str) -> Dict[str, Any]:
+        payload = self._extract_json_body(response)
+        try:
+            data = json.loads(payload)
+        except json.JSONDecodeError:
+            data = json.loads(self._repair_common_json_issues(payload))
+        return data if isinstance(data, dict) else {}
+
+    def _apply_dim5_grounding_selection_payload(
+        self,
+        feature: Dict[str, Any],
+        payload: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        candidates = list(feature.get("knowledge_grounding_candidates") or [])
+        by_id = {
+            str(candidate.get("candidate_id") or ""): candidate
+            for candidate in candidates
+            if isinstance(candidate, dict)
+        }
+        selected_id = str(payload.get("selected_candidate_id") or "").strip()
+        merged = dict(feature or {})
+        if selected_id == "no_match" or selected_id not in by_id:
+            merged["grounded_selection_status"] = "no_match"
+            merged["selected_knowledge_candidate_id"] = "no_match"
+            merged["grounded_confidence"] = 0.0
+            merged["grounded_evidence"] = str(payload.get("evidence") or "no_match").strip()
+            merged["grounded_selector"] = "llm_candidate_selector"
+            merged["grounded_risk_flags"] = ["no_grounded_match"]
+            return self._normalize_dim5_feature(merged)
+
+        candidate = by_id[selected_id]
+        confidence = self._normalize_confidence(payload.get("confidence"))
+        risk_flags = self._normalize_string_list(candidate.get("risk_flags"))
+        if "analysis_facts_only" in risk_flags:
+            confidence = min(confidence, 0.54)
+        merged["grounded_selection_status"] = "selected"
+        merged["selected_knowledge_candidate_id"] = selected_id
+        merged["grounded_canonical_knowledge_point"] = str(
+            candidate.get("canonical_knowledge_point") or ""
+        ).strip()
+        merged["grounded_knowledge_domain"] = str(candidate.get("knowledge_domain") or "").strip()
+        merged["grounded_knowledge_source_text"] = str(candidate.get("source_label") or "").strip()
+        merged["grounded_knowledge_level"] = normalize_dim5_knowledge_level(
+            candidate.get("recommended_level")
+        )
+        merged["grounded_confidence"] = confidence
+        merged["grounded_match_source"] = str(candidate.get("match_source") or "").strip()
+        merged["grounded_evidence"] = str(payload.get("evidence") or "").strip() or str(
+            "、".join(candidate.get("matched_evidence", [])[:4])
+        )
+        merged["grounded_risk_flags"] = risk_flags
+        merged["grounded_rejected_candidates"] = self._normalize_dict_list(
+            payload.get("rejected_candidates")
+        )
+        merged["grounded_selector"] = "llm_candidate_selector"
+        return self._normalize_dim5_feature(merged)
+
+    async def _ensure_dim5_grounding_with_llm(
+        self,
+        normalized_features: Dict[str, Dict[str, Any]],
+        *,
+        question: ParsedQuestion,
+        analysis_facts: Dict[str, Any],
+    ) -> None:
+        if not getattr(settings, "DIM5_GROUNDED_LLM_ENABLED", False):
+            return
+        dim5_feature = normalized_features["dim5_knowledge"]
+        candidates = list(dim5_feature.get("knowledge_grounding_candidates") or [])
+        if not candidates:
+            return
+        if self._dim5_grounding_high_enough(dim5_feature):
+            return
+        messages = self._build_dim5_grounding_selection_messages(
+            question=question,
+            analysis_facts=analysis_facts,
+            candidates=candidates,
+        )
+        try:
+            response = await self.llm.chat(
+                messages,
+                temperature=0.0,
+                max_tokens=900,
+                response_format=DEFAULT_JSON_RESPONSE_FORMAT,
+            )
+            payload = self._parse_dim5_grounding_selection_response(response)
+            normalized_features["dim5_knowledge"] = self._apply_dim5_grounding_selection_payload(
+                dim5_feature,
+                payload,
+            )
+        except Exception as exc:
+            logger.warning(
+                "dim5 grounded selector failed question=%s error=%s",
+                question.question_no,
+                exc,
+            )
+
     def _build_dim5_retrieval_context(
         self,
         question: ParsedQuestion,
@@ -3917,6 +4234,11 @@ class AIParser:
                 question_summary=question_summary,
                 analysis_facts=analysis_facts,
             )
+            normalized_features[feature_key] = self._apply_dim5_grounding(
+                normalized_features[feature_key],
+                question=question,
+                analysis_facts=analysis_facts,
+            )
             normalized_features[feature_key] = self._finalize_dim5_feature(
                 normalized_features[feature_key],
                 analysis_facts=analysis_facts,
@@ -3943,6 +4265,11 @@ class AIParser:
             normalized_features["dim5_knowledge"],
             question=question,
             question_summary=question_summary,
+            analysis_facts=analysis_facts,
+        )
+        normalized_features["dim5_knowledge"] = self._apply_dim5_grounding(
+            normalized_features["dim5_knowledge"],
+            question=question,
             analysis_facts=analysis_facts,
         )
         normalized_features["dim5_knowledge"] = self._finalize_dim5_feature(
@@ -4074,6 +4401,16 @@ class AIParser:
             question=question,
             analysis_facts=analysis_facts,
             applicable_dimensions=applicable_dimensions,
+        )
+        normalized_features["dim5_knowledge"] = self._apply_dim5_grounding(
+            normalized_features["dim5_knowledge"],
+            question=question,
+            analysis_facts=analysis_facts,
+        )
+        await self._ensure_dim5_grounding_with_llm(
+            normalized_features,
+            question=question,
+            analysis_facts=analysis_facts,
         )
         feature_map["dim4_innovation"] = normalized_features["dim4_innovation"]
         feature_map["dim5_knowledge"] = normalized_features["dim5_knowledge"]

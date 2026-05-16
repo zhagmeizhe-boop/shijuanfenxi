@@ -70,6 +70,15 @@ L5_STRUCTURE_PATTERN = re.compile(
 CANONICAL_KNOWLEDGE_RULES: tuple[CanonicalKnowledgeRule, ...] = (
     # L5: high-order contest / cross-topic knowledge.
     CanonicalKnowledgeRule(
+        point="博弈策略与必胜策略",
+        domain="logic_strategy_construction",
+        level="L5",
+        family="game_olympiad_model",
+        aliases=("博弈策略与必胜策略", "博弈必胜策略", "全局制胜策略", "制胜策略", "必胜策略"),
+        structure_aliases=("玩家", "棋子", "轮流", "无法移动", "输掉游戏", "对称策略"),
+        evidence="核心门槛是构造能保证获胜的博弈策略。",
+    ),
+    CanonicalKnowledgeRule(
         point="跨专题综合",
         domain="logic_strategy_construction",
         level="L5",
@@ -106,6 +115,42 @@ CANONICAL_KNOWLEDGE_RULES: tuple[CanonicalKnowledgeRule, ...] = (
         evidence="几何知识范围达到复杂综合或空间重构层级。",
     ),
     # L4: named olympiad topics and models.
+    CanonicalKnowledgeRule(
+        point="分数裂项求和",
+        domain="number_operation",
+        level="L4",
+        family="calculation_olympiad_model",
+        aliases=("分数裂项求和", "裂项相消", "分数裂项", "长链求和", "连续分式求和"),
+        structure_aliases=("求和", "省略号", "分母连续", "首尾项"),
+        evidence="核心门槛是识别分数裂项相消结构。",
+    ),
+    CanonicalKnowledgeRule(
+        point="三视图与立体图形",
+        domain="geometry_spatial",
+        level="L4",
+        family="geometry_spatial_model",
+        aliases=("三视图与立体图形", "正方体投影", "三视图", "左视图", "正视图", "空间投影"),
+        structure_aliases=("正方体", "立体图形", "从左面", "从前面", "观察", "看到的图形"),
+        evidence="核心门槛是把立体结构投影到指定观察方向。",
+    ),
+    CanonicalKnowledgeRule(
+        point="抽屉原理与组合枚举",
+        domain="counting_combinatorics",
+        level="L4",
+        family="combinatorics_olympiad_model",
+        aliases=("抽屉原理与组合枚举", "抽屉原理", "整数拆分", "组合枚举", "最不利原则"),
+        structure_aliases=("至少有", "完全相同", "分类", "枚举", "保证"),
+        evidence="核心门槛是先枚举分类盒子，再用抽屉原理保证结论。",
+    ),
+    CanonicalKnowledgeRule(
+        point="三视图空间极值构造",
+        domain="geometry_spatial",
+        level="L4",
+        family="geometry_spatial_model",
+        aliases=("三视图空间极值构造", "空间极值构造", "三视图极值", "立体图形极值"),
+        structure_aliases=("三视图", "透明积木", "从前面", "从左面", "最少", "最多"),
+        evidence="核心门槛是在多个视图约束下构造最少和最多方案。",
+    ),
     CanonicalKnowledgeRule(
         point="牛吃草模型",
         domain="quantity_application",
@@ -223,6 +268,33 @@ CANONICAL_KNOWLEDGE_RULES: tuple[CanonicalKnowledgeRule, ...] = (
         evidence="核心知识点是构造、规则反推或策略组织。",
     ),
     # L3: school extension / entry-level topics.
+    CanonicalKnowledgeRule(
+        point="倍半递推与倒推还原",
+        domain="pattern_sequence",
+        level="L3",
+        family="entry_pattern_sequence",
+        aliases=("倍半递推与倒推还原", "倍半递推", "连续减半", "连续按一半变化", "指数型变化"),
+        structure_aliases=("一半", "每小时", "小时后", "倒推", "逆推"),
+        evidence="核心门槛是沿连续倍半变化从末端倒推初始量。",
+    ),
+    CanonicalKnowledgeRule(
+        point="数字性质与9的倍数判定",
+        domain="number_theory",
+        level="L3",
+        family="entry_number_theory",
+        aliases=("数字性质与9的倍数判定", "9的倍数判定", "数位和性质", "数字和性质", "整除性质"),
+        structure_aliases=("四位数", "数字之和", "数位", "删去数字", "被删去"),
+        evidence="核心门槛是把数位和转化为 9 的倍数整除性质。",
+    ),
+    CanonicalKnowledgeRule(
+        point="比例整体关系",
+        domain="quantity_application",
+        level="L3",
+        family="entry_application_model",
+        aliases=("比例整体关系", "整体与部分关系", "比例关系", "部分与整体", "整体量转化"),
+        structure_aliases=("之和的比", "销售总量", "总量", "方程思想"),
+        evidence="核心门槛是把部分与其余部分之比统一到整体量。",
+    ),
     CanonicalKnowledgeRule(
         point="典型应用题入门模型",
         domain="quantity_application",
@@ -624,6 +696,61 @@ def _retrieval_evidence(candidate: Dict[str, Any]) -> str:
     return "本地知识点检索提供辅助证据。"
 
 
+def _grounded_risk_flags(feature: Dict[str, Any]) -> set[str]:
+    raw = feature.get("grounded_risk_flags")
+    if isinstance(raw, list):
+        return {str(item).strip() for item in raw if str(item).strip()}
+    text = str(raw or "").strip()
+    return {part.strip() for part in text.split(",") if part.strip()}
+
+
+def _grounded_override(feature: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        confidence = float(feature.get("grounded_confidence") or 0.0)
+    except (TypeError, ValueError):
+        confidence = 0.0
+    point = str(feature.get("grounded_canonical_knowledge_point") or "").strip()
+    domain = str(feature.get("grounded_knowledge_domain") or "").strip()
+    level = normalize_dim5_knowledge_level(feature.get("grounded_knowledge_level"))
+    if not point or domain not in DIM5_KNOWLEDGE_DOMAINS or not level:
+        return {}
+    if confidence < 0.55:
+        return {}
+    risks = _grounded_risk_flags(feature)
+    if risks & {
+        "analysis_facts_only",
+        "blocked_number_theory_in_calculation",
+        "blocked_number_theory_without_terms",
+        "conflicting_question_structure",
+        "missing_necessary_structure",
+        "generic_calculation_over_specific_structure",
+        "generic_geometry_over_spatial_view",
+        "weak_evidence",
+        "weak_question_text_match",
+        "weak_reference_match",
+        "no_grounded_match",
+    }:
+        return {}
+    evidence = str(feature.get("grounded_evidence") or "").strip()
+    return {
+        "canonical_knowledge_point": point,
+        "canonical_knowledge_domain": domain,
+        "canonical_knowledge_family": str(
+            feature.get("canonical_knowledge_family") or "grounded_candidate"
+        ).strip(),
+        "knowledge_level": level,
+        "level_source": "grounded_knowledge_candidate",
+        "level_evidence": evidence or "维度5知识库候选选择命中题面证据。",
+        "canonical_match_source": str(
+            feature.get("grounded_match_source") or "grounded_candidate"
+        ).strip(),
+        "canonical_match_confidence": confidence,
+        "canonical_alias_hits": _unique([point]),
+        "canonical_structure_hits": [],
+        "canonical_direct_formula_guard": bool(feature.get("canonical_direct_formula_guard")),
+    }
+
+
 def _score_rule(rule: CanonicalKnowledgeRule, combined: str) -> tuple[int, List[str], List[str]]:
     alias_hits = [alias for alias in rule.aliases if alias and alias in combined]
     if not alias_hits:
@@ -643,6 +770,10 @@ def classify_dim5_knowledge_scope(
     question_text: str = "",
     question_summary: str = "",
 ) -> Dict[str, Any]:
+    grounded = _grounded_override(feature)
+    if grounded:
+        return grounded
+
     parts = _collect_signal_parts(
         feature,
         analysis_facts=analysis_facts or {},

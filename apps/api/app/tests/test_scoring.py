@@ -14,8 +14,9 @@ import pytest
 from app.services.report.report_service import ReportService
 from app.services.ocr.base import ParseAudit, ParsedQuestion, QuestionType
 from app.services.parser.ai_parser import AIParser
+from app.services.parser.dim5_grounding import Dim5KnowledgeGroundingService
 from app.services.parser.dim5_retrieval import Dim5RetrievalService
-from app.services.parser.reference_standard import ReferenceEntry, WorkbookReferenceStandard
+from app.services.parser.reference_standard import ReferenceEntry, WorkbookReferenceStandard, get_reference_standard
 from app.services.scoring.dim1_applicability import (
     evaluate_dim1_applicability,
     is_bare_calculation_fill_blank,
@@ -4289,6 +4290,266 @@ class TestDim5RetrievalService:
         )
 
 
+class TestDim5KnowledgeGroundingService:
+    def _service(self, entries=None):
+        return Dim5KnowledgeGroundingService(SimpleNamespace(entries=entries or []))
+
+    @staticmethod
+    def _weak_fragment_entries():
+        return [
+            ReferenceEntry(
+                source="gaosi_question_pdf",
+                sheet_name="",
+                category="",
+                title="简单规律与数列",
+                track="",
+                keywords=("10", "12", "13", "14", "15", "20", "25", "30", "52", "81", "120"),
+                dimension_profiles={"dim5": {"knowledge_tags": ["简单规律与数列"]}},
+            ),
+            ReferenceEntry(
+                source="gaosi_question_pdf",
+                sheet_name="",
+                category="",
+                title="高阶数论综合",
+                track="",
+                keywords=("ab", "abc", "ade", "de", "34"),
+                dimension_profiles={"dim5": {"knowledge_tags": ["高阶数论综合"]}},
+            ),
+        ]
+
+    @pytest.mark.parametrize(
+        "question_text",
+        [
+            "(5/6 * 10.68 + 8.52 * 5/6) / 1 3/5",
+            "68.1 + 53 * 6.81 - 0.13 * 681",
+            "68.1 + 53 \u00d7 6.81 - 0.13 \u00d7 681",
+        ],
+    )
+    def test_pure_calculation_prefers_distributive_law_over_number_theory(
+        self,
+        question_text,
+    ):
+        service = self._service()
+
+        result = service.ground(
+            question_text=question_text,
+            question_type="calculation",
+            analysis_facts={
+                "core_knowledge_points": ["因数倍数与质合数"],
+                "core_methods": ["提取公因数"],
+            },
+        )
+
+        assert result["grounded_canonical_knowledge_point"] == "乘法分配律与简便计算"
+        assert result["grounded_confidence"] >= 0.70
+        assert result["grounded_risk_flags"] == []
+        assert all(
+            candidate["canonical_knowledge_point"] != "因数倍数与质合数"
+            or "blocked_number_theory_in_calculation" in candidate["risk_flags"]
+            or candidate["match_source"] == "analysis_facts_only"
+            for candidate in result["candidates"]
+        )
+
+    def test_analysis_facts_only_candidate_is_risk_flagged_and_low_confidence(self):
+        service = self._service()
+
+        result = service.ground(
+            question_text="这道题的原题文本缺失，只保留了题号。",
+            question_type="calculation",
+            analysis_facts={
+                "core_knowledge_points": ["因数倍数与质合数"],
+                "core_methods": ["整除"],
+            },
+        )
+
+        assert result["grounded_confidence"] < 0.55
+        assert "analysis_facts_only" in result["grounded_risk_flags"]
+        assert any(
+            "analysis_facts_only" in candidate["risk_flags"]
+            for candidate in result["candidates"]
+        )
+
+    def test_real_number_theory_question_still_selects_factor_multiple_prime(self):
+        service = self._service()
+
+        result = service.ground(
+            question_text="一个两位数既是 6 的倍数，又有 4 个因数，判断它可能是多少。",
+            question_type="application",
+            analysis_facts={},
+        )
+
+        assert result["grounded_canonical_knowledge_point"] == "因数倍数与质合数"
+        assert result["grounded_confidence"] >= 0.55
+        assert "blocked_number_theory_in_calculation" not in result["grounded_risk_flags"]
+
+    def test_profit_problem_rejects_numeric_sequence_fragment_match(self):
+        service = self._service(self._weak_fragment_entries())
+
+        result = service.ground(
+            question_text=(
+                "商品甲在进价的基础上加价20%出售获利30元，商品乙在进价的基础上加价25%后"
+                "与甲商品的销售价一样，则乙商品的进价是（  ）元。A.100 B.120 C.125 D.144"
+            ),
+            question_type="application",
+            analysis_facts={
+                "core_knowledge_points": ["百分数应用", "利润问题", "等量关系"],
+                "core_methods": ["列方程"],
+            },
+        )
+
+        assert result["grounded_canonical_knowledge_point"] in {"利润折扣问题", "比例百分数应用"}
+        assert result["grounded_canonical_knowledge_point"] != "简单规律与数列"
+        assert result["grounded_confidence"] >= 0.55
+        assert any("weak_evidence" in candidate["risk_flags"] for candidate in result["candidates"])
+
+    def test_work_rate_problem_rejects_numeric_sequence_fragment_match(self):
+        service = self._service(self._weak_fragment_entries())
+
+        result = service.ground(
+            question_text=(
+                "某工程由甲单独做20天完成，由乙单独做30天完成，开始时甲、乙两人合作，"
+                "中途甲因有事走了几天，经过15天才完成工程，甲中途走了（  ）天。A.2 B.3 C.5 D.10"
+            ),
+            question_type="application",
+            analysis_facts={
+                "core_knowledge_points": ["工程问题", "工作效率", "合作与中断"],
+                "core_methods": ["列方程"],
+            },
+        )
+
+        assert result["grounded_canonical_knowledge_point"] == "工程效率问题"
+        assert result["grounded_confidence"] >= 0.55
+        assert all(
+            candidate["canonical_knowledge_point"] != "简单规律与数列"
+            or "weak_evidence" in candidate["risk_flags"]
+            or "conflicting_question_structure" in candidate["risk_flags"]
+            for candidate in result["candidates"]
+        )
+
+    def test_geometry_folding_problem_rejects_letter_fragment_number_theory_match(self):
+        service = self._service(self._weak_fragment_entries())
+
+        result = service.ground(
+            question_text=(
+                "如图，点D、E分别是△ABC的边AB、AC的中点，连接DE，将△ADE沿DE翻折，"
+                "点A正落在BC边的点F上，若△ABC的面积是34，则△FDE的面积是______。"
+            ),
+            question_type="geometry",
+            analysis_facts={
+                "core_knowledge_points": ["三角形中位线定理", "图形翻折对称性质", "三角形面积关系"],
+                "core_methods": ["几何面积关系"],
+            },
+        )
+
+        assert result["grounded_canonical_knowledge_point"] == "三角形中位线与翻折面积"
+        assert result["grounded_knowledge_domain"] == "geometry_spatial"
+        assert result["grounded_canonical_knowledge_point"] != "高阶数论综合"
+        assert any("weak_evidence" in candidate["risk_flags"] for candidate in result["candidates"])
+
+    def test_grazing_slot_requires_growth_and_consumption_structure(self):
+        service = self._service()
+
+        result = service.ground(
+            question_text="一片草地原有草量，每天均匀生长，若干头牛每天吃草，最后吃完。",
+            question_type="application",
+            analysis_facts={},
+        )
+
+        assert result["grounded_canonical_knowledge_point"] == "牛吃草模型"
+        assert result["grounded_confidence"] >= 0.70
+        assert result["grounded_match_source"] == "structure"
+
+    @pytest.mark.parametrize(
+        (
+            "question_text",
+            "analysis_facts",
+            "expected_point",
+            "expected_level",
+            "wrong_points",
+        ),
+        [
+            (
+                "一块冰，每小时失去其质量的一半，八小时后其质量为 9/64 千克，那么这块冰一开始的质量是（  ）千克。 A.3 B.24 C.36 D.48",
+                {"core_knowledge_points": ["倒推还原", "分数乘除", "指数变化"], "core_methods": ["逆推"]},
+                "倍半递推与倒推还原",
+                "L3",
+                {"行程问题"},
+            ),
+            (
+                "计算：3/(2×7) + 3/(7×12) + 3/(12×17) + ... + 3/(47×52) = （  ）。 A. 5/52 B. 15/52 C. 75/52 D. 81/260",
+                {"core_knowledge_points": ["分数裂项求和", "等差数列通项", "数列求和"], "core_methods": ["裂项相消"]},
+                "分数裂项求和",
+                "L4",
+                {"小数分数混合运算"},
+            ),
+            (
+                "将透明正方体的部分顶点和棱的中点连起来得到如下图，从左面观察该正方体，看到的图形是（  ）。",
+                {"core_knowledge_points": ["三视图", "正方体", "左视图", "投影"], "core_methods": ["空间想象"]},
+                "三视图与立体图形",
+                "L4",
+                {"高年级校内图形公式"},
+            ),
+            (
+                "魔术师让观众在心里想一个四位数写在纸上，不让任何人看见。再让观众用这个四位数减去各个数位上的数字之和，得到的结果仍然是一个四位数，再将得到的结果任意删去一个非零的数字，最后说出剩下的3个数字，这名观众说出剩下的数字是3，5，7。那么被删去的数字是（  ）。 A.5 B.4 C.3 D.2",
+                {"core_knowledge_points": ["数字和性质", "9的倍数判定", "整除性质"], "core_methods": ["数字性质"]},
+                "数字性质与9的倍数判定",
+                "L3",
+                {"还原与盈亏问题"},
+            ),
+            (
+                "某旅游团56人在快餐店就餐，该店备有9种菜，每份单价分别为4、5、6、7、8、9、10、11、12元，该旅游团领队交代：每人可选不同的菜，但金额都正好是16元，且每种菜最多只能买一份。这样，该团成员中，购菜品种完全相同的至少有（  ）人。 A.9 B.10 C.11 D.12",
+                {"core_knowledge_points": ["抽屉原理", "整数拆分", "组合枚举"], "core_methods": ["最不利原则"]},
+                "抽屉原理与组合枚举",
+                "L4",
+                {"还原与盈亏问题"},
+            ),
+            (
+                "按照下面的规则，欧欧和小泉分别选一种颜色的棋子（黑色或白色），在棋盘上移动棋子。如果欧欧选择的是黑色棋子，此时轮到他移动棋子，他若想获胜，需要采取的制胜策略是（  ）。 规则：①黑色棋子只能向右移动，白色棋子只能向左移动。②每个玩家每次可以将棋子移动任意格数（注意移动的棋子不能跳过其他棋子）。③最后无法移动棋子的玩家输掉游戏。",
+                {"core_knowledge_points": ["博弈必胜策略", "对称策略", "状态镜像"], "core_methods": ["制胜策略"]},
+                "博弈策略与必胜策略",
+                "L5",
+                {"还原与盈亏问题"},
+            ),
+            (
+                "某公司一月到四月的产品销售量有如下关系：一月的销售量与二、三、四月的销售量之和的比是1:4；二月的销售量与一、三、四月的销售量之和的比是1:3；三月的销售量与一、二、四月的销售量之和的比是1:2。四月的销售量是455台，那么这四个月的销售总量是_______台。",
+                {"core_knowledge_points": ["比例关系", "方程组", "整体与部分关系"], "core_methods": ["比例转化"]},
+                "比例整体关系",
+                "L3",
+                {"高年级校内数与代数"},
+            ),
+            (
+                "从左图立体图形的27个透明积木中，选若干个用绿色积木（不透明）替换后，从前面和左面看到的图形如右图所示。第一问：最少可以用______个绿色积木。第二问：最多可以用______个绿色积木。",
+                {"core_knowledge_points": ["三视图", "立体图形", "空间想象", "极值分析"], "core_methods": ["空间极值构造"]},
+                "三视图空间极值构造",
+                "L4",
+                {"典型应用题入门模型"},
+            ),
+        ],
+    )
+    def test_wmo_26_structure_slots_override_generic_or_weak_matches(
+        self,
+        question_text,
+        analysis_facts,
+        expected_point,
+        expected_level,
+        wrong_points,
+    ):
+        service = Dim5KnowledgeGroundingService(get_reference_standard())
+
+        result = service.ground(
+            question_text=question_text,
+            question_type="competition",
+            analysis_facts=analysis_facts,
+        )
+
+        assert result["grounded_canonical_knowledge_point"] == expected_point
+        assert result["grounded_knowledge_level"] == expected_level
+        assert result["grounded_confidence"] >= 0.70
+        assert result["grounded_match_source"] in {"structure", "question_text+structure", "both"}
+        assert result["grounded_canonical_knowledge_point"] not in wrong_points
+        assert not result["grounded_risk_flags"]
+
+
 class TestDim5KnowledgeScorer:
     """测试维度5：知识点广度评分器"""
 
@@ -4313,6 +4574,21 @@ class TestDim5KnowledgeScorer:
                 {"core_knowledge_points": ["循环规律"], "core_methods": ["周期余数"]},
                 "按周期排列，求第 n 项的位置。",
                 "周期问题",
+            ),
+            (
+                {"core_knowledge_points": ["倍半递推与倒推还原"], "core_methods": ["逆推"]},
+                "每小时失去一半，八小时后已知末端质量。",
+                "倍半递推与倒推还原",
+            ),
+            (
+                {"core_knowledge_points": ["数字性质与9的倍数判定"], "core_methods": ["数位和"]},
+                "四位数减去各个数位上的数字之和后，再删去一个数字。",
+                "数字性质与9的倍数判定",
+            ),
+            (
+                {"core_knowledge_points": ["三视图空间极值构造"], "core_methods": ["空间极值构造"]},
+                "根据从前面和左面看到的图形，求透明积木替换的最少和最多个数。",
+                "三视图空间极值构造",
             ),
         ],
     )
@@ -5941,6 +6217,59 @@ class TestPaperAggregator:
         assert result.score_breakdown["final_score"] == pytest.approx(139 / 21)
         assert "超越篇" not in result.evidence
 
+    def test_dim5_wmo_26_updated_level_mix_recalculates_to_7_5(self, aggregator):
+        wmo_questions = [
+            ("2", 6.0, "L3", "倍半递推与倒推还原", "pattern_sequence"),
+            ("3", 8.0, "L4", "分数裂项求和", "number_operation"),
+            ("5", 8.0, "L4", "三视图与立体图形", "geometry_spatial"),
+            ("6", 6.0, "L3", "数论约束", "number_theory"),
+            ("10", 6.0, "L3", "数量关系应用", "quantity_application"),
+            ("11", 6.0, "L3", "数字性质与9的倍数判定", "number_theory"),
+            ("12", 8.0, "L4", "抽屉原理与组合枚举", "counting_combinatorics"),
+            ("13", 9.5, "L5", "博弈策略与必胜策略", "logic_strategy_construction"),
+            ("14", 8.0, "L4", "组合计数", "counting_combinatorics"),
+            ("15", 6.0, "L3", "数量关系应用", "quantity_application"),
+            ("17", 6.0, "L3", "比例整体关系", "quantity_application"),
+            ("18", 4.0, "L2", "校内数与运算", "number_operation"),
+            ("19", 8.0, "L4", "三视图空间极值构造", "geometry_spatial"),
+        ]
+        questions = [
+            QuestionDimensionScore(
+                question_id=f"wmo-{question_no}",
+                question_no=question_no,
+                score=5.0,
+                dim_scores={"dim5": score},
+                applicable_dims=["dim5"],
+                question_summary=f"第{question_no}题",
+                dim_reasons={"dim5": f"{level} {point}"},
+                dim_confidences={"dim5": 0.9},
+                dim_statuses={"dim5": "applicable"},
+                dim_details={
+                    "dim5": {
+                        "knowledge_source_bucket": "school"
+                        if level == "L2"
+                        else ("beyond" if level == "L5" else "high_gaosi"),
+                        "knowledge_level": level,
+                        "canonical_knowledge_point": point,
+                        "canonical_knowledge_domain": domain,
+                        "grounded_canonical_knowledge_point": point,
+                        "grounded_knowledge_domain": domain,
+                        "grounded_confidence": 0.9,
+                        "grounded_risk_flags": [],
+                    }
+                },
+            )
+            for question_no, score, level, point, domain in wmo_questions
+        ]
+
+        result = aggregator.aggregate(questions, "dim5")
+
+        assert result.question_count == 13
+        assert result.paper_score == pytest.approx(293 / 39)
+        assert round(result.paper_score, 1) == 7.5
+        assert result.score_breakdown["weighted_score_sum"] == pytest.approx(293)
+        assert result.score_breakdown["total_weight"] == pytest.approx(39)
+
     def test_dim5_unknown_bucket_without_valid_score_is_excluded_from_average(self, aggregator):
         questions = [
             self._dim5_question(index, "school")
@@ -6064,6 +6393,61 @@ class TestPaperAggregator:
             "难点在于要识别等高、共边或割补关系，并把图形面积关系转化为比例关系。"
         )
         assert "因此计为" not in counted_question["score_reason"]
+
+    def test_dim5_counted_question_prefers_grounded_point_and_source(self, aggregator):
+        question = self._dim5_question(1, "high_gaosi")
+        question.dim_scores["dim5"] = 4.0
+        question.dim_details["dim5"].update(
+            {
+                "knowledge_level": "L2",
+                "canonical_knowledge_point": "因数倍数与质合数",
+                "canonical_knowledge_domain": "number_theory",
+                "gaosi_grade": "3",
+                "grounded_canonical_knowledge_point": "乘法分配律与简便计算",
+                "grounded_knowledge_domain": "number_operation",
+                "grounded_knowledge_source_text": "校内数与运算",
+                "grounded_confidence": 0.91,
+                "grounded_evidence": "题面是纯计算，出现乘法与加减组合，并存在共同因数或小数缩放。",
+                "grounded_risk_flags": [],
+            }
+        )
+
+        result = aggregator.aggregate([question], "dim5")
+        counted_question = result.counted_questions[0]
+
+        assert counted_question["knowledge_point_text"] == "乘法分配律与简便计算"
+        assert counted_question["knowledge_source_text"] == "校内数与运算"
+        assert counted_question["knowledge_source_text"] != "三年级奥数"
+
+    def test_dim5_representative_questions_filter_weak_grounded_candidates(self, aggregator):
+        weak = self._dim5_question(1, "beyond")
+        weak.dim_scores["dim5"] = 10.0
+        weak.dim_details["dim5"].update(
+            {
+                "knowledge_level": "L5",
+                "canonical_knowledge_point": "高阶数论综合",
+                "grounded_canonical_knowledge_point": "高阶数论综合",
+                "grounded_knowledge_domain": "number_theory",
+                "grounded_confidence": 0.95,
+                "grounded_risk_flags": ["weak_evidence", "conflicting_question_structure"],
+            }
+        )
+        clean = self._dim5_question(2, "high_gaosi")
+        clean.dim_scores["dim5"] = 8.0
+        clean.dim_details["dim5"].update(
+            {
+                "knowledge_level": "L4",
+                "canonical_knowledge_point": "工程效率问题",
+                "grounded_canonical_knowledge_point": "工程效率问题",
+                "grounded_knowledge_domain": "quantity_application",
+                "grounded_confidence": 0.86,
+                "grounded_risk_flags": [],
+            }
+        )
+
+        result = aggregator.aggregate([weak, clean], "dim5")
+
+        assert [item["question_no"] for item in result.counted_questions] == ["2"]
 
     def test_dim5_counted_question_source_uses_bucket_grade_band_when_explicit_grade_missing(self, aggregator):
         question = self._dim5_question(1, "high_gaosi")

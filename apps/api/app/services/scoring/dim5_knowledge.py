@@ -510,6 +510,20 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
             "dim5_retrieval_decision",
             "accepted_retrieval_candidate_ids",
             "rejected_retrieval_candidate_ids",
+            "knowledge_grounding_context",
+            "knowledge_grounding_candidates",
+            "grounded_selection_status",
+            "selected_knowledge_candidate_id",
+            "grounded_canonical_knowledge_point",
+            "grounded_knowledge_domain",
+            "grounded_knowledge_source_text",
+            "grounded_knowledge_level",
+            "grounded_confidence",
+            "grounded_evidence",
+            "grounded_match_source",
+            "grounded_risk_flags",
+            "grounded_rejected_candidates",
+            "grounded_selector",
         ):
             if score_features.get(key) not in ("", None, [], {}):
                 details[key] = score_features.get(key)

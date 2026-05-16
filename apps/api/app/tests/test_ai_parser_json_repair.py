@@ -271,6 +271,8 @@ def test_initial_prompt_excludes_dim5_retrieval_context():
     user_content = messages[1]["content"]
     assert "dim5 本地检索候选" not in user_content
     assert "dim5_retrieval_context" not in user_content
+    assert "knowledge_grounding_candidates" not in user_content
+    assert "grounded_canonical_knowledge_point" not in user_content
     assert "candidate_id" not in user_content
     assert "reference_question" not in user_content
     assert "topic_structure" not in user_content
@@ -303,6 +305,45 @@ def test_dim5_retrieval_context_is_attached_after_main_parse():
     ):
         assert "dim5_retrieval_context" not in other_feature
         assert "dim5_retrieval_candidates" not in other_feature
+        assert "knowledge_grounding_candidates" not in other_feature
+
+
+def test_dim5_grounding_overrides_number_theory_for_distributive_calculation():
+    fake_llm = FakeLLM()
+    parser = make_parser(fake_llm)
+    question = ParsedQuestion(
+        question_no="7",
+        question_type=QuestionType.CALCULATION,
+        raw_text="68.1 + 53 * 6.81 - 0.13 * 681",
+        page_no=1,
+    )
+    payload = json.loads(valid_payload("小数简便计算"))
+    payload["analysis_facts"]["core_knowledge_points"] = ["因数倍数与质合数"]
+    payload["analysis_facts"]["core_methods"] = ["提取公因数"]
+    payload["features"]["dim5_knowledge"].update(
+        {
+            "canonical_knowledge_point": "因数倍数与质合数",
+            "canonical_knowledge_domain": "number_theory",
+            "knowledge_level": "L2",
+            "knowledge_tags": ["因数倍数与质合数"],
+            "core_knowledge_units": ["因数倍数与质合数"],
+        }
+    )
+
+    features = asyncio.run(
+        parser._parse_response_with_repairs(
+            json.dumps(payload, ensure_ascii=False),
+            question,
+        )
+    )
+
+    assert features.parse_failed is False
+    assert features.dim5_knowledge["grounded_canonical_knowledge_point"] == "乘法分配律与简便计算"
+    assert features.dim5_knowledge["canonical_knowledge_point"] == "乘法分配律与简便计算"
+    assert features.dim5_knowledge["canonical_knowledge_domain"] == "number_operation"
+    assert features.dim5_knowledge["grounded_confidence"] >= 0.70
+    assert features.dim5_knowledge["grounded_knowledge_source_text"] != "三年级奥数"
+    assert fake_llm.calls == []
 
 
 def test_dim2_normalizes_geometry_model_fields():

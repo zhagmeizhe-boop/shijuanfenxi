@@ -1506,7 +1506,7 @@ class PaperAggregator:
             for question in applicable_questions
             if not self._is_low_quality_candidate(question, dimension_code)
         ]
-        candidates = filtered_questions or applicable_questions
+        candidates = filtered_questions if dimension_code == "dim5" else (filtered_questions or applicable_questions)
 
         ranked = sorted(
             candidates,
@@ -1696,6 +1696,14 @@ class PaperAggregator:
                 )
             ):
                 return True
+
+        if dimension_code == "dim5":
+            details = question.dim_details.get("dim5", {}) if isinstance(question.dim_details, dict) else {}
+            if isinstance(details, dict):
+                if self._dim5_grounding_has_blocking_risk(details):
+                    return True
+                if "grounded_confidence" in details and self._dim5_grounded_confidence(details) < 0.55:
+                    return True
 
         return False
 
@@ -2118,6 +2126,11 @@ class PaperAggregator:
 
     @classmethod
     def _dim5_knowledge_source_text(cls, details: dict[str, Any]) -> str:
+        grounded_confidence = cls._dim5_grounded_confidence(details)
+        grounded_source = cls._clean_dim5_text(details.get("grounded_knowledge_source_text"))
+        if grounded_confidence >= 0.70:
+            return grounded_source
+
         bucket = str(details.get("knowledge_source_bucket") or "").strip()
         band = cls._clean_dim5_text(details.get("band"))
         grade_label = cls._dim5_grade_label(details.get("gaosi_grade"))
@@ -2161,6 +2174,37 @@ class PaperAggregator:
         return ""
 
     @classmethod
+    def _dim5_grounded_confidence(cls, details: dict[str, Any]) -> float:
+        try:
+            return float(details.get("grounded_confidence") or 0.0)
+        except (TypeError, ValueError):
+            return 0.0
+
+    @classmethod
+    def _dim5_grounding_has_blocking_risk(cls, details: dict[str, Any]) -> bool:
+        raw = details.get("grounded_risk_flags")
+        if isinstance(raw, list):
+            flags = {str(item).strip() for item in raw if str(item).strip()}
+        else:
+            flags = {part.strip() for part in str(raw or "").split(",") if part.strip()}
+        return bool(
+            flags
+            & {
+                "analysis_facts_only",
+                "blocked_number_theory_in_calculation",
+                "blocked_number_theory_without_terms",
+                "conflicting_question_structure",
+                "missing_necessary_structure",
+                "generic_calculation_over_specific_structure",
+                "generic_geometry_over_spatial_view",
+                "weak_evidence",
+                "weak_question_text_match",
+                "weak_reference_match",
+                "no_grounded_match",
+            }
+        )
+
+    @classmethod
     def _dim5_grade_label(cls, value: object) -> str:
         text = cls._clean_dim5_text(value)
         if not text:
@@ -2186,6 +2230,14 @@ class PaperAggregator:
         question: QuestionDimensionScore,
         details: dict[str, Any],
     ) -> str:
+        grounded_point = cls._clean_dim5_text(details.get("grounded_canonical_knowledge_point"))
+        if (
+            cls._dim5_grounded_confidence(details) >= 0.55
+            and not cls._dim5_grounding_has_blocking_risk(details)
+            and cls._is_specific_dim5_knowledge_text(grounded_point)
+        ):
+            return grounded_point
+
         for key in ("canonical_knowledge_point", "primary_knowledge_point"):
             point = cls._clean_dim5_text(details.get(key))
             if cls._is_specific_dim5_knowledge_text(point):
@@ -2210,6 +2262,14 @@ class PaperAggregator:
         knowledge_point: str,
         knowledge_source: str,
     ) -> str:
+        if (
+            cls._dim5_grounded_confidence(details) >= 0.55
+            and not cls._dim5_grounding_has_blocking_risk(details)
+        ):
+            grounded_note = cls._dim5_note_from_evidence(details.get("grounded_evidence") or "")
+            if grounded_note:
+                return grounded_note
+
         evidence_note = cls._dim5_note_from_evidence(
             details.get("level_evidence")
             or details.get("evidence_summary")
