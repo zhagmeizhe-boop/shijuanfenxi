@@ -26,6 +26,7 @@ from app.services.parser.prompts import (
     QUESTION_ANALYSIS_SYSTEM_PROMPT,
     QUESTION_ANALYSIS_USER_PROMPT_TEMPLATE,
 )
+from app.services.parser.dim5_retrieval import Dim5RetrievalService
 from app.services.parser.reference_standard import get_reference_standard
 from app.services.scoring.banded_dimension import BAND_SCORE_MAP, _normalize_band, _normalize_sublevel
 from app.services.scoring.dim5_canonical import canonicalize_dim5_knowledge, normalize_dim5_knowledge_level
@@ -221,6 +222,21 @@ DIM3_OBJECT_COUNT_BAND_VALUES = {"1", "2", "3", "4+"}
 DIM3_APPLICATION_COUNT_VALUES = {"0", "1", "2", "3+"}
 DIM3_BASE_QUANTITY_SHIFT_VALUES = {"none", "single", "multiple"}
 DIM3_COMPARISON_CANDIDATE_COUNT_VALUES = {"0", "2", "3+"}
+DIM3_SCENARIO_RULE_COUNT_VALUES = {"0", "1", "2", "3+"}
+DIM3_PROCESS_STAGE_COUNT_VALUES = {"1", "2", "3", "4+"}
+DIM3_FEEDBACK_MECHANISM_VALUES = {"none", "simple", "conditional"}
+DIM3_COMPARISON_BASIS_VALUES = {"none", "direct", "implicit", "multi_condition"}
+DIM3_DIAGRAM_CORRESPONDENCE_VALUES = {"none", "helpful", "required", "multi_step"}
+DIM3_SCENARIO_RULE_TYPE_VALUES = {
+    "sequence_order",
+    "comparison_basis",
+    "feedback_rule",
+    "conditional_trigger",
+    "diagram_mapping",
+    "multi_object_roles",
+    "multi_stage_process",
+    "custom_rule_system",
+}
 DIM4_STRATEGY_ROLE_VALUES = {"none", "supporting", "core"}
 DIM4_TEMPLATE_FIT_VALUES = {"direct", "adapted", "reframed", "non_routine"}
 DIM4_BREAKTHROUGH_TYPE_VALUES = {
@@ -294,6 +310,57 @@ Return strict JSON with exactly these keys:
   "confidence": 0.0
 }}
 """
+DIM_SECOND_REVIEW_SYSTEM_PROMPT = """
+你是一位小学数学教研复评专家。你只复评一个指定维度是否稳定适用以及 L1-L5 等级。
+不要完整解题，不要使用试卷名称、WMO、竞赛、省测、高思等来源标签抬分。
+使用小学数学表述，不使用算法、信息论、搜索模型等专业术语。
+只返回一个 JSON 对象。
+"""
+DIM_SECOND_REVIEW_USER_PROMPT_TEMPLATE = """
+请对下面题目的 {dimension_name} 做二次复评。
+
+题号：{question_no}
+OCR识别题型：{question_type}
+是否提供题块图片：{has_image}
+OCR警告：{ocr_warnings}
+解析审计：{parse_audit_summary}
+
+题目原文：
+{question_text}
+
+初评可验证事实：
+{analysis_facts_json}
+
+初评该维度字段：
+{initial_feature_json}
+
+初评适用性结论：
+{initial_status_json}
+
+复评口径：
+{dimension_criteria}
+
+等级规则：
+{level_rules}
+
+输出要求：
+- status 只能是 "applicable" / "not_applicable" / "unresolved"。
+- applicable 时必须给出 level=L1-L5，score 必须对应 L1=2.0、L2=4.0、L3=6.0、L4=8.0、L5=9.5。
+- not_applicable 表示复评确认该维度没有真实负担，score=0.0，level="N/A"。
+- unresolved 表示题面、图文或字段仍无法稳定判断，score=0.0，level="N/A"，后续会舍弃该题该维度。
+- evidence_summary 只写题目事实，不写“因为是竞赛卷所以难”。
+- confidence 是 0-1 小数；低于 0.55 时请返回 unresolved。
+
+严格返回如下 JSON：
+{{
+  "status": "applicable|not_applicable|unresolved",
+  "level": "L1|L2|L3|L4|L5|N/A",
+  "score": 0.0,
+  "evidence_summary": "一句小学数学语言的事实依据",
+  "confidence": 0.0,
+  "exclude_reason": "不适用或无法稳定判断时填写"
+}}
+"""
 DIM5_SUBLEVEL_VALUES = {"low", "mid", "high"}
 DIM5_KNOWLEDGE_FAMILY_COUNT_VALUES = {"1", "2", "3+"}
 DIM5_KNOWLEDGE_INTEGRATION_VALUES = {
@@ -340,11 +407,11 @@ DIM5_OLYMPIAD_ANCHOR_PATTERN = re.compile(
 DIM5_BAND_RETRY_SYSTEM_PROMPT = """
 You only classify the knowledge-breadth band for one elementary math question.
 Return exactly one JSON object. Do not solve the problem.
-Only judge the highest core knowledge threshold required by the question.
+Only judge the minimum sufficient knowledge level required by the question.
 Do not use calculation workload, reasoning chain length, strategy novelty, or overall problem difficulty to raise dim5.
-If the question belongs to GaoSi Guide / olympiad / contest-prep / final-challenge style, normalize it as GaoSi Guide grade + section.
-Do not map "olympiad", "contest-prep", or "final challenge" directly to beyond; only GaoSi challenge section maps to beyond.
-Treat explicit core knowledge anchors such as defined operations, telescoping cancellation, recurrence/difference, pigeonhole principle, combinatorics, game winning strategy, invariant, modular arithmetic, extremal construction, complex geometric cut-and-fill, and rule reverse-engineering as GaoSi Guide candidates. Use them to decide between extension and challenge only when the question text or local candidates support that threshold.
+If the question belongs to GaoSi Guide / olympiad / contest-prep / final-challenge style, normalize it as a school grade, olympiad grade, or seventh-grade prerequisite threshold.
+Do not map "olympiad", "contest-prep", "GaoSi challenge", or "final challenge" directly to L5; L5 requires hard variant, final-challenge structure, multi-condition coupling, complex case analysis, hidden structure, reverse checking, or a seventh-grade core threshold.
+Treat explicit core knowledge anchors such as defined operations, telescoping cancellation, recurrence/difference, pigeonhole principle, combinatorics, game winning strategy, invariant, modular arithmetic, extremal construction, complex geometric cut-and-fill, and rule reverse-engineering as olympiad candidates. Use them to decide between L3/L4/L5 only when the question text or local candidates support that threshold.
 """
 DIM5_BAND_RETRY_USER_PROMPT_TEMPLATE = """
 Question metadata:
@@ -374,15 +441,22 @@ If the question should be classified into GaoSi Guide, also choose:
 - gaosi_section_level: "interest"|"extension"|"challenge"
 - gaosi_section_label: "兴趣篇"|"拓展篇"|"超越篇"
 
-GaoSi mapping rule:
-- 兴趣篇 -> corresponding grade GaoSi band, sublevel low
-- 拓展篇 -> corresponding grade GaoSi band, sublevel mid
-- 超越篇 -> 高思导引超越篇难度, sublevel high
+Knowledge-level rule:
+- L1: one-to-three-grade school basics.
+- L2: four-to-six-grade school core knowledge.
+- L3: school synthesis or grade 3/4 olympiad entry models.
+- L4: grade 5/6 olympiad typical topics or light seventh-grade prerequisite.
+- L5: hard grade 6 olympiad variants, xiaoshengchu final-challenge problems, multi-condition/hidden/reverse-checking structures, or seventh-grade core threshold.
+
+GaoSi section labels are audit fields, not final scoring rules:
+- 兴趣篇 usually supports L3 when the actual structure is entry-level.
+- 拓展篇 usually supports L3/L4 depending on grade and structure.
+- 超越篇 supports L5 only with strong question-level match or hard-structure evidence.
 
 WMO/contest-style knowledge anchors:
-- 定义新运算、裂项/长链消去、差分/递推、抽屉、组合计数、博弈必胜、不变量、同余、极值构造、复杂几何割补、规则反推 should usually be classified as GaoSi Guide extension or challenge candidates rather than ordinary school textbook knowledge.
+- 定义新运算、裂项/长链消去、差分/递推、抽屉、组合计数、博弈必胜、不变量、同余、极值构造、复杂几何割补、规则反推 should usually be classified as olympiad L4 or L5 candidates rather than ordinary school textbook knowledge.
 - Direct textbook formula problems, direct percentage applications, and direct cylinder/cone volume-ratio problems must stay in the school band unless a concrete GaoSi question-level candidate or a genuinely advanced knowledge structure supports a higher band.
-- Do not use a contest name, file title, or general "olympiad" wording alone to choose challenge/beyond.
+- Do not use a contest name, file title, or general "olympiad" wording alone to choose challenge/beyond/L5.
 - Use medium-relaxed judgement: when a concrete olympiad knowledge point or topic+structure candidate is present, do not keep the question in ordinary school band solely because the original analysis was conservative.
 
 Return strict JSON with exactly these keys:
@@ -529,6 +603,7 @@ class AIParser:
     def __init__(self, llm_client: Optional[MoonshotClient] = None):
         self.llm = llm_client or self._create_default_client()
         self.reference_standard = get_reference_standard()
+        self.dim5_retrieval = Dim5RetrievalService(self.reference_standard)
         logger.info("AIParser 初始化完成")
 
     def _create_default_client(self) -> MoonshotClient:
@@ -662,6 +737,16 @@ class AIParser:
         if not isinstance(value, list):
             return []
         return [str(item).strip() for item in value if str(item).strip()]
+
+    @staticmethod
+    def _normalize_dict_list(value: Any) -> List[Dict[str, Any]]:
+        if not isinstance(value, list):
+            return []
+        return [dict(item) for item in value if isinstance(item, dict)]
+
+    @staticmethod
+    def _normalize_optional_dict(value: Any) -> Dict[str, Any]:
+        return dict(value) if isinstance(value, dict) else {}
 
     @staticmethod
     def _normalize_confidence(value: Any) -> float:
@@ -877,6 +962,30 @@ class AIParser:
                 feature.get("comparison_candidate_count"),
                 DIM3_COMPARISON_CANDIDATE_COUNT_VALUES,
             ),
+            "scenario_rule_count": self._normalize_choice(
+                feature.get("scenario_rule_count", "0"),
+                DIM3_SCENARIO_RULE_COUNT_VALUES,
+            ),
+            "process_stage_count": self._normalize_choice(
+                feature.get("process_stage_count", "1"),
+                DIM3_PROCESS_STAGE_COUNT_VALUES,
+            ),
+            "feedback_mechanism": self._normalize_choice(
+                feature.get("feedback_mechanism", "none"),
+                DIM3_FEEDBACK_MECHANISM_VALUES,
+            ),
+            "comparison_basis": self._normalize_choice(
+                feature.get("comparison_basis", "none"),
+                DIM3_COMPARISON_BASIS_VALUES,
+            ),
+            "diagram_correspondence": self._normalize_choice(
+                feature.get("diagram_correspondence", "none"),
+                DIM3_DIAGRAM_CORRESPONDENCE_VALUES,
+            ),
+            "scenario_rule_types": self._normalize_choice_list(
+                feature.get("scenario_rule_types"),
+                DIM3_SCENARIO_RULE_TYPE_VALUES,
+            ),
             "evidence_summary": str(feature.get("evidence_summary", "")).strip(),
             "evidence_tags": self._normalize_string_list(feature.get("evidence_tags")),
             "applicability_confidence": self._normalize_confidence(feature.get("applicability_confidence")),
@@ -1024,6 +1133,19 @@ class AIParser:
             in (1, "1", True),
             "dim5_fallback_mode": str(feature.get("dim5_fallback_mode", "")).strip(),
             "dim5_upshift_reason": str(feature.get("dim5_upshift_reason", "")).strip(),
+            "dim5_retrieval_context": self._normalize_optional_dict(
+                feature.get("dim5_retrieval_context")
+            ),
+            "dim5_retrieval_candidates": self._normalize_dict_list(
+                feature.get("dim5_retrieval_candidates")
+            ),
+            "dim5_retrieval_decision": str(feature.get("dim5_retrieval_decision", "")).strip(),
+            "accepted_retrieval_candidate_ids": self._normalize_string_list(
+                feature.get("accepted_retrieval_candidate_ids")
+            ),
+            "rejected_retrieval_candidate_ids": self._normalize_string_list(
+                feature.get("rejected_retrieval_candidate_ids")
+            ),
         }
 
     def _normalize_dim6_feature(self, value: Any) -> Dict[str, Any]:
@@ -1377,42 +1499,68 @@ class AIParser:
     def _dim3_scenario_load_rank(value: str) -> int:
         return {"none": 0, "light": 1, "medium": 2, "heavy": 3}.get(str(value or "").strip(), 0)
 
+    @staticmethod
+    def _dim3_rule_count_rank(value: str) -> int:
+        return {"0": 0, "1": 1, "2": 2, "3+": 3}.get(str(value or "").strip(), 0)
+
+    @staticmethod
+    def _dim3_stage_count_rank(value: str) -> int:
+        return {"1": 1, "2": 2, "3": 3, "4+": 4}.get(str(value or "").strip(), 1)
+
+    @staticmethod
+    def _dim3_feedback_rank(value: str) -> int:
+        return {"none": 0, "simple": 1, "conditional": 2}.get(str(value or "").strip(), 0)
+
+    @staticmethod
+    def _dim3_comparison_basis_rank(value: str) -> int:
+        return {"none": 0, "direct": 1, "implicit": 2, "multi_condition": 3}.get(str(value or "").strip(), 0)
+
+    @staticmethod
+    def _dim3_diagram_rank(value: str) -> int:
+        return {"none": 0, "helpful": 1, "required": 2, "multi_step": 3}.get(str(value or "").strip(), 0)
+
     @classmethod
     def _dim3_has_high_burden_signal(cls, feature: Dict[str, Any]) -> bool:
         relation_types = set(feature.get("application_relation_types") or [])
+        scenario_rule_types = set(feature.get("scenario_rule_types") or [])
+        stage_rank = max(
+            cls._dim3_stage_count_rank(feature.get("process_stage_count", "")),
+            cls._dim3_application_count_rank(feature.get("state_change_count", "")) + 1,
+        )
+        comparison_rank = max(
+            cls._dim3_comparison_basis_rank(feature.get("comparison_basis", "")),
+            cls._dim3_comparison_count_rank(feature.get("comparison_candidate_count", "")),
+        )
         return any(
             [
                 feature.get("source_form") == "multi_source",
-                cls._dim3_condition_count_rank(feature.get("relevant_condition_count", "")) >= 3,
                 feature.get("distractor_pressure") == "heavy",
-                feature.get("condition_distribution") in {"split", "cross_sentence", "cross_modal"},
-                feature.get("extraction_depth") in {"reorganized", "inferred"},
-                feature.get("representation_conversion") in {"relation_mapping", "model_mapping", "custom_model"},
-                cls._dim3_conversion_rank(feature.get("conversion_step_count", "")) >= 2,
-                feature.get("quantity_relation_structure") in {"multi_relation", "nested_relation"},
-                feature.get("target_representation") in {"table_list", "equation_relation", "custom_model"},
-                feature.get("global_organizing_required") == 1,
+                feature.get("condition_distribution") == "cross_modal",
                 feature.get("image_dependency") == "required",
                 cls._dim3_scenario_load_rank(feature.get("scenario_comprehension_load", "")) >= 3,
+                cls._dim3_rule_count_rank(feature.get("scenario_rule_count", "")) >= 2,
+                stage_rank >= 3,
+                cls._dim3_feedback_rank(feature.get("feedback_mechanism", "")) >= 1,
+                comparison_rank >= 2,
+                cls._dim3_diagram_rank(feature.get("diagram_correspondence", "")) >= 2,
+                bool(
+                    scenario_rule_types
+                    & {
+                        "feedback_rule",
+                        "conditional_trigger",
+                        "diagram_mapping",
+                        "multi_stage_process",
+                        "custom_rule_system",
+                    }
+                ),
                 bool(
                     relation_types
                     & {
-                        "queue_growth",
-                        "travel_meeting_chasing",
-                        "profit_discount",
-                        "concentration_mixture",
                         "optimization_comparison",
-                        "reverse_process",
-                        "conservation_transfer",
-                        "multi_object_distribution",
                         "range_narrowing",
                     }
                 ),
                 cls._dim3_object_count_rank(feature.get("object_count_band", "")) >= 3,
-                cls._dim3_application_count_rank(feature.get("state_change_count", "")) >= 2,
-                cls._dim3_application_count_rank(feature.get("implicit_relation_count", "")) >= 2,
-                feature.get("base_quantity_shift") in {"single", "multiple"},
-                cls._dim3_comparison_count_rank(feature.get("comparison_candidate_count", "")) >= 3,
             ]
         )
 
@@ -1421,13 +1569,22 @@ class AIParser:
         relation_types = set(feature.get("application_relation_types") or [])
         if cls._dim3_scenario_load_rank(feature.get("scenario_comprehension_load", "")) >= 2:
             return False
-        if relation_types - {"average_total"}:
+        if set(feature.get("scenario_rule_types") or []):
+            return False
+        if (
+            cls._dim3_rule_count_rank(feature.get("scenario_rule_count", "")) >= 1
+            or cls._dim3_stage_count_rank(feature.get("process_stage_count", "")) >= 2
+            or cls._dim3_feedback_rank(feature.get("feedback_mechanism", "")) >= 1
+            or cls._dim3_comparison_basis_rank(feature.get("comparison_basis", "")) >= 1
+            or cls._dim3_diagram_rank(feature.get("diagram_correspondence", "")) >= 1
+            or feature.get("image_dependency") in {"helpful", "required"}
+        ):
+            return False
+        if relation_types & {"optimization_comparison", "range_narrowing"}:
             return False
         if (
             cls._dim3_object_count_rank(feature.get("object_count_band", "")) >= 2
             or cls._dim3_application_count_rank(feature.get("state_change_count", "")) >= 1
-            or cls._dim3_application_count_rank(feature.get("implicit_relation_count", "")) >= 1
-            or feature.get("base_quantity_shift") in {"single", "multiple"}
             or cls._dim3_comparison_count_rank(feature.get("comparison_candidate_count", "")) >= 2
         ):
             return False
@@ -1438,41 +1595,66 @@ class AIParser:
             and feature.get("distractor_pressure") == "none"
             and feature.get("condition_distribution") == "compact"
             and feature.get("extraction_depth") == "direct"
-            and feature.get("representation_conversion") in {"none", "direct_mapping"}
-            and feature.get("target_representation") in {"none", "direct_formula", "table_list"}
-            and feature.get("quantity_relation_structure") in {"none", "single_relation"}
-            and cls._dim3_conversion_rank(feature.get("conversion_step_count", "")) <= 1
-            and feature.get("global_organizing_required") == 0
         )
 
     def _dim3_should_validate(self, feature: Dict[str, Any], question: ParsedQuestion) -> bool:
         if self._dim3_scenario_load_rank(feature.get("scenario_comprehension_load", "")) >= 1:
             return True
 
-        if any(
-            feature.get(key)
-            not in ("", None, [], {})
-            for key in (
-                "information_role",
-                "source_form",
-                "relevant_condition_count",
-                "distractor_pressure",
-                "condition_distribution",
-                "extraction_depth",
-                "representation_conversion",
-                "conversion_step_count",
-                "quantity_relation_structure",
-                "target_representation",
-                "image_dependency",
-                "evidence_summary",
-                "application_relation_types",
-                "object_count_band",
-                "state_change_count",
-                "implicit_relation_count",
-                "base_quantity_shift",
-                "comparison_candidate_count",
-            )
+        neutral_values = {
+            "relevant_condition_count": {"0"},
+            "distractor_pressure": {"none"},
+            "condition_distribution": {"compact"},
+            "extraction_depth": {"direct"},
+            "representation_conversion": {"none", "direct_mapping"},
+            "conversion_step_count": {"0"},
+            "quantity_relation_structure": {"none", "single_relation"},
+            "target_representation": {"none"},
+            "image_dependency": {"none"},
+            "object_count_band": {"1"},
+            "state_change_count": {"0"},
+            "implicit_relation_count": {"0"},
+            "base_quantity_shift": {"none"},
+            "comparison_candidate_count": {"0"},
+            "scenario_comprehension_load": {"none"},
+            "scenario_rule_count": {"0"},
+            "process_stage_count": {"1"},
+            "feedback_mechanism": {"none"},
+            "comparison_basis": {"none"},
+            "diagram_correspondence": {"none"},
+        }
+        for key in (
+            "information_role",
+            "source_form",
+            "relevant_condition_count",
+            "distractor_pressure",
+            "condition_distribution",
+            "extraction_depth",
+            "representation_conversion",
+            "conversion_step_count",
+            "quantity_relation_structure",
+            "target_representation",
+            "image_dependency",
+            "evidence_summary",
+            "application_relation_types",
+            "object_count_band",
+            "state_change_count",
+            "implicit_relation_count",
+            "base_quantity_shift",
+            "comparison_candidate_count",
+            "scenario_comprehension_load",
+            "scenario_rule_count",
+            "process_stage_count",
+            "feedback_mechanism",
+            "comparison_basis",
+            "diagram_correspondence",
+            "scenario_rule_types",
         ):
+            value = feature.get(key)
+            if value in ("", None, [], {}):
+                continue
+            if key in neutral_values and str(value) in neutral_values[key]:
+                continue
             return True
 
         audit = getattr(question, "parse_audit", None)
@@ -1497,21 +1679,13 @@ class AIParser:
         required_fields = [
             "information_role",
             "source_form",
-            "relevant_condition_count",
-            "distractor_pressure",
-            "condition_distribution",
-            "extraction_depth",
-            "representation_conversion",
-            "conversion_step_count",
-            "quantity_relation_structure",
-            "target_representation",
-            "global_organizing_required",
+            "scenario_comprehension_load",
             "image_dependency",
             "evidence_summary",
         ]
         missing = [field for field in required_fields if feature.get(field) in ("", None)]
         if missing:
-            warnings.append(f"dim3 缺少关键信息提取事实字段：{'、'.join(missing)}。")
+            warnings.append(f"dim3 缺少关键场景理解事实字段：{'、'.join(missing)}。")
 
         dim3_confidence = feature.get("applicability_confidence", 0.0) or confidence
         information_role = feature.get("information_role")
@@ -1524,13 +1698,13 @@ class AIParser:
             )
 
         if information_role == "none" and self._dim3_has_high_burden_signal(feature):
-            warnings.append("dim3 标记为 none，但信息提取与转化负担特征明显偏高。")
+            warnings.append("dim3 标记为 none，但场景理解负担特征明显偏高。")
         if (
             feature.get("source_form") == "multi_source"
             and feature.get("condition_distribution") == "compact"
-            and feature.get("conversion_step_count") == "0"
+            and self._dim3_scenario_load_rank(feature.get("scenario_comprehension_load", "")) <= 1
         ):
-            warnings.append("dim3 标记为 multi_source，但条件组织与转化步数明显偏低。")
+            warnings.append("dim3 标记为 multi_source，但场景理解负担明显偏低。")
         if information_role == "core" and self._dim3_is_low_barrier_direct_extraction(feature):
             warnings.append("dim3 标记为 core，但当前更像直接读条件代入的低门槛题。")
 
@@ -1638,7 +1812,7 @@ class AIParser:
         ]
         missing = [field for field in required_fields if feature.get(field) in ("", None)]
         if missing:
-            warnings.append(f"dim4 缺少关键策略创新事实字段：{'、'.join(missing)}。")
+            warnings.append(f"dim4 缺少关键建模解题事实字段：{'、'.join(missing)}。")
 
         dim4_confidence = feature.get("applicability_confidence", 0.0) or confidence
         strategy_role = feature.get("strategy_role")
@@ -1654,9 +1828,9 @@ class AIParser:
             self._dim4_has_high_burden_signal(feature)
             or DIM4_STRATEGY_SIGNAL_PATTERN.search(question.raw_text or "")
         ):
-            warnings.append("dim4 标记为 none，但题面或策略突破特征明显偏高。")
+            warnings.append("dim4 标记为 none，但题面或建模解题特征明显偏高。")
         if strategy_role == "supporting" and self._dim4_has_high_burden_signal(feature):
-            warnings.append("dim4 标记为 supporting，但策略突破与构造特征明显偏高。")
+            warnings.append("dim4 标记为 supporting，但建模组织与构造特征明显偏高。")
         if feature.get("template_fit") == "direct" and (
             feature.get("breakthrough_type") in {"constructive", "exploratory_search"}
             or feature.get("exploration_space") == "open"
@@ -1670,7 +1844,7 @@ class AIParser:
         ):
             warnings.append("dim4 标记为多答案开放路径，但 strategy_role 偏低。")
         if strategy_role == "core" and self._dim4_is_low_barrier_direct_template(feature):
-            warnings.append("dim4 标记为 core，但当前更像直接模板套用题。")
+            warnings.append("dim4 标记为 core，但当前更像直接计算、直接代公式或普通一步应用题。")
 
         audit = getattr(question, "parse_audit", None)
         if getattr(audit, "image_required_hint", False) and feature.get("image_dependency") == "none":
@@ -1947,6 +2121,8 @@ class AIParser:
         if normalized.get("dim5_excluded_reason") == "retry_failed":
             normalized["band"] = ""
             normalized["sublevel"] = ""
+            normalized["knowledge_level"] = ""
+            return normalized
 
         inferred_sublevel = self._infer_dim5_sublevel(normalized)
         current_sublevel = normalized.get("sublevel", "")
@@ -2159,9 +2335,43 @@ class AIParser:
             return False
         if level_source == "review_failed":
             return False
-        if knowledge_point and classify_dim4_topic_level(knowledge_point, raw_text, dim4_feature):
+
+        declared_dim4 = any(
+            str(item).strip() == "dim4"
+            for item in applicable_dimensions
+            if isinstance(applicable_dimensions, list)
+        )
+        has_dim4_feature_signal = any(
+            str(dim4_feature.get(key) or "").strip()
+            for key in (
+                "strategy_role",
+                "template_fit",
+                "breakthrough_type",
+                "strategy_shift_count",
+                "construction_requirement",
+                "exploration_space",
+                "representation_reframe",
+                "path_openness",
+                "dead_end_risk",
+                "evidence_summary",
+                "anchor_evidence",
+            )
+        )
+        has_raw_strategy_signal = bool(DIM4_STRATEGY_SIGNAL_PATTERN.search(str(raw_text or "")))
+        has_topic_anchor = bool(
+            knowledge_point and classify_dim4_topic_level(knowledge_point, raw_text, dim4_feature)
+        )
+        if not (
+            declared_dim4
+            or has_dim4_feature_signal
+            or has_raw_strategy_signal
+            or has_topic_anchor
+            or (dim5_feature and self._dim5_feature_is_beyond(dim5_feature))
+        ):
+            return False
+        if has_topic_anchor:
             return True
-        if any(str(item).strip() == "dim4" for item in applicable_dimensions if isinstance(applicable_dimensions, list)):
+        if declared_dim4:
             return True
         if dim4_feature.get("strategy_role") == "core":
             return True
@@ -2169,7 +2379,7 @@ class AIParser:
             return True
         if dim5_feature and self._dim5_feature_is_beyond(dim5_feature):
             return True
-        return bool(DIM4_STRATEGY_SIGNAL_PATTERN.search(str(raw_text or "")))
+        return has_raw_strategy_signal
 
     def _apply_dim4_topic_anchor(
         self,
@@ -2324,6 +2534,196 @@ class AIParser:
             data = json.loads(self._repair_common_json_issues(payload))
         return data if isinstance(data, dict) else {}
 
+    @staticmethod
+    def _second_review_dimension_name(dim_code: str) -> str:
+        if dim_code == "dim1":
+            return "维度1：数学运算"
+        if dim_code == "dim3":
+            return "维度3：场景理解复杂度"
+        if dim_code == "dim4":
+            return "维度4：建模解题复杂度"
+        if dim_code == "dim6":
+            return "维度6：逻辑链条"
+        return dim_code
+
+    @staticmethod
+    def _second_review_dimension_criteria(dim_code: str) -> str:
+        if dim_code == "dim1":
+            return (
+                "只看计算执行是否构成核心门槛：是否需要完成稳定的算式运算、方程求解、"
+                "比例/分数/百分数计算、结构变形、简便运算或嵌入应用题中的核心计算。"
+                "重点核对试算验证、余数回查、长链消去、多比例消元、连续公式代入等是否真实存在。"
+                "不要把题干长、知识点难、读题理解、建模策略、逻辑推理、辅助计算、"
+                "普通概念识别、空间想象或 OCR 不清写成 dim1 依据；也不要沿用其他题号的证据。"
+                "二次复评只补录 L2-L5 的核心计算负担；若只是一步直接算、口算、"
+                "轻量代入或计算只是辅助步骤，请返回 not_applicable。"
+            )
+        if dim_code == "dim3":
+            return (
+                "只看读题层面：学生是否能读懂题目场景、规则、过程、反馈、"
+                "比较口径、图文对应。不要把列式、方程、建表、分类、倒推、"
+                "构造或解题策略写成 dim3 依据。"
+            )
+        if dim_code == "dim4":
+            return (
+                "只看读懂后的解题组织：是否需要整理条件、建立数量关系、"
+                "建表/画图、分类、倒推、方案比较、构造、试探或换角度推进。"
+                "不要把题干场景包装、来源标签、计算量或知识广度写成 dim4 依据。"
+            )
+        if dim_code == "dim6":
+            return (
+                "只看信息已提取、表示已建立、主要方法已选定之后，解法推进、隐含关系串联、"
+                "分支控制、倒推、结果检验与约束回查是否构成核心门槛。不要把题干长度、"
+                "计算量、知识点难度、方法新颖性、图形识别或普通竖式流程写成 dim6 依据。"
+                "二次复评只补录核心逻辑链条题；若只能达到直接观察、直接代入或一两步常规"
+                "检验的 L1/L2 负担，请返回 not_applicable。"
+            )
+        return ""
+
+    @staticmethod
+    def _second_review_level_rules(dim_code: str) -> str:
+        if dim_code == "dim1":
+            return (
+                "L1 一步直接计算、口算或轻量代入；L2 常规两步计算、竖式/脱式、"
+                "简单方程或常规单位换算；L3 多步嵌入计算、结构变形、分数小数百分数混合、"
+                "定义运算展开或常规简便运算；L4 高错误压力计算，包括多阶段百分数/浓度/比例方程、"
+                "连续公式代入、结构化裂项、多个中间量、系统性试算或余数回查；"
+                "L5 竞赛型计算结构，包括长链裂项/消去、复杂定义运算、多位数字约束试算、"
+                "多方程消元、参数化或全局约束下的连续计算。dim1 二次复评只有 L2-L5 可以返回 applicable；"
+                "L1 请返回 not_applicable。"
+            )
+        if dim_code == "dim3":
+            return (
+                "L1 场景直读；L2 分清简单对象、动作顺序或图中对应；"
+                "L3 读懂一个关键问法、比较口径、简单新定义或单一规则；"
+                "L4 同时整合多个场景要素，例如对象、阶段、规则、图文对应、"
+                "状态变化或比较条件；L5 多规则相互作用、条件触发、反馈判断"
+                "或多阶段系统组成完整新规则系统。evidence_summary 必须写清具体"
+                "读题要素，不要只泛泛写比较口径理解。"
+            )
+        if dim_code == "dim4":
+            return (
+                "L1 建立一个基础关系；L2 一次简单转化、一步方程、一次取数或轻度整理；"
+                "L3 整理多条条件，建立常见数量关系、表格、方程、比例关系或简单方案比较；"
+                "L4 多阶段、多对象、多关系、多方案、状态变化、倒推或分类框架；"
+                "L5 自建整体解题结构，并结合隐藏条件、全局比较/回查、构造、试探、分类或换角度推进。"
+            )
+        if dim_code == "dim6":
+            return (
+                "L1 直接判断或一步推出；L2 一两步衔接、局部倒推或结果检验；"
+                "L3 连续多步推进、显式分支判断、局部约束回查或简单倒推链；"
+                "L4 多分支、多阶段、跨条件串联、倒推回查或约束耦合；"
+                "L5 长链条、多条件全局一致性、穷举收束、全局最值或复杂回查。"
+                "dim6 二次复评只有 L3-L5 可以返回 applicable；L1/L2 请返回 not_applicable。"
+            )
+        return ""
+
+    def _build_second_review_messages(
+        self,
+        *,
+        question: ParsedQuestion,
+        dim_code: str,
+        analysis_facts: Dict[str, Any],
+        initial_feature: Dict[str, Any],
+        initial_status: Dict[str, Any],
+    ) -> Tuple[List[Dict[str, Any]], bool]:
+        prompt_text = DIM_SECOND_REVIEW_USER_PROMPT_TEMPLATE.format(
+            dimension_name=self._second_review_dimension_name(dim_code),
+            question_no=question.question_no,
+            question_type=getattr(question.question_type, "value", question.question_type),
+            has_image="是" if self._should_attach_image(question) else "否",
+            ocr_warnings="；".join(question.parse_warnings) if question.parse_warnings else "无",
+            parse_audit_summary=self._format_parse_audit(question),
+            question_text=question.raw_text or "",
+            analysis_facts_json=self._dim5_dump_json(analysis_facts or {}),
+            initial_feature_json=self._dim5_dump_json(initial_feature or {}),
+            initial_status_json=self._dim5_dump_json(initial_status or {}),
+            dimension_criteria=self._second_review_dimension_criteria(dim_code),
+            level_rules=self._second_review_level_rules(dim_code),
+        ).strip()
+
+        if self._should_attach_image(question):
+            image_data_url = self._load_image_as_data_url(question.image_block_url or "")
+            if image_data_url:
+                return (
+                    [
+                        {"role": "system", "content": DIM_SECOND_REVIEW_SYSTEM_PROMPT.strip()},
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt_text},
+                                {"type": "image_url", "image_url": {"url": image_data_url}},
+                            ],
+                        },
+                    ],
+                    True,
+                )
+        return (
+            [
+                {"role": "system", "content": DIM_SECOND_REVIEW_SYSTEM_PROMPT.strip()},
+                {"role": "user", "content": prompt_text},
+            ],
+            False,
+        )
+
+    def _parse_second_review_response(self, response: str) -> Dict[str, Any]:
+        payload = self._extract_json_body(response)
+        try:
+            data = json.loads(payload)
+        except json.JSONDecodeError:
+            data = json.loads(self._repair_common_json_issues(payload))
+        if not isinstance(data, dict):
+            raise ValueError("second review returned non-object JSON")
+        return {
+            "status": str(data.get("status") or "").strip().lower(),
+            "level": str(data.get("level") or "").strip().upper(),
+            "score": data.get("score", 0.0),
+            "evidence_summary": str(data.get("evidence_summary") or "").strip(),
+            "confidence": self._normalize_confidence(data.get("confidence")),
+            "exclude_reason": str(data.get("exclude_reason") or "").strip(),
+        }
+
+    async def review_dim3_dim4_applicability(
+        self,
+        question: ParsedQuestion,
+        *,
+        dim_code: str,
+        analysis_facts: Dict[str, Any],
+        initial_feature: Dict[str, Any],
+        initial_status: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        if dim_code not in {"dim1", "dim3", "dim4", "dim6"}:
+            raise ValueError("second review only supports dim1/dim3/dim4/dim6")
+
+        messages, used_image = self._build_second_review_messages(
+            question=question,
+            dim_code=dim_code,
+            analysis_facts=analysis_facts,
+            initial_feature=initial_feature,
+            initial_status=initial_status,
+        )
+        try:
+            response = await self.llm.chat(messages, response_format=DEFAULT_JSON_RESPONSE_FORMAT)
+            payload = self._parse_second_review_response(response)
+            payload["used_image"] = used_image
+            return payload
+        except Exception as exc:
+            logger.warning(
+                "dim second review failed question=%s dim=%s error=%s",
+                question.question_no,
+                dim_code,
+                exc,
+            )
+            return {
+                "status": "unresolved",
+                "level": "N/A",
+                "score": 0.0,
+                "evidence_summary": "",
+                "confidence": 0.0,
+                "exclude_reason": "题目信息不足或判定不稳定，二次复评未能形成稳定结论。",
+                "used_image": used_image if "used_image" in locals() else False,
+            }
+
     def _apply_dim4_topic_fallback_payload(
         self,
         feature: Dict[str, Any],
@@ -2345,7 +2745,7 @@ class AIParser:
         if confidence < DIM4_REVIEW_CONFIDENCE_THRESHOLD:
             merged["warning"] = self._merge_feature_warning(
                 merged.get("warning", ""),
-                f"dim4 知识点内等级兜底判定置信度低于 {DIM4_REVIEW_CONFIDENCE_THRESHOLD:.2f}，自动评分结果需要谨慎解读。",
+                f"dim4 建模解题等级兜底判定置信度低于 {DIM4_REVIEW_CONFIDENCE_THRESHOLD:.2f}，自动评分结果需要谨慎解读。",
             )
         return self._normalize_dim4_feature(merged)
 
@@ -2362,7 +2762,7 @@ class AIParser:
         merged["fallback_error"] = str(fallback_error or "")[:240]
         merged["warning"] = self._merge_feature_warning(
             merged.get("warning", ""),
-            "dim4 知识点内等级兜底判定失败，已按保守 L1 自动纳入实践创新评分。",
+            "dim4 建模解题等级兜底判定失败；若缺少稳定建模事实，将不纳入自动评分。",
         )
         merged["applicability_confidence"] = 0.0
         return self._normalize_dim4_feature(merged)
@@ -2831,14 +3231,15 @@ class AIParser:
             )
             return False
 
+        normalized_candidate = self._normalize_dim5_feature(candidate)
+        if not self._dim5_has_valid_band_and_sublevel(normalized_candidate):
+            return False
         normalized_candidate = self._finalize_dim5_feature(
-            self._normalize_dim5_feature(candidate),
+            normalized_candidate,
             analysis_facts=analysis_facts,
             question_text=question.raw_text,
             question_summary=question_summary,
         )
-        if not self._dim5_has_valid_band_and_sublevel(normalized_candidate):
-            return False
 
         normalized_features["dim5_knowledge"] = normalized_candidate
         logger.info(
@@ -3115,6 +3516,67 @@ class AIParser:
     @staticmethod
     def _build_system_prompt() -> str:
         return f"{QUESTION_ANALYSIS_SYSTEM_PROMPT}\n\n{STRICT_JSON_OUTPUT_INSTRUCTIONS.strip()}"
+
+    def _get_dim5_retrieval_service(self) -> Dim5RetrievalService:
+        service = getattr(self, "dim5_retrieval", None)
+        if isinstance(service, Dim5RetrievalService):
+            return service
+        service = Dim5RetrievalService(self.reference_standard)
+        self.dim5_retrieval = service
+        return service
+
+    def _build_dim5_retrieval_context(
+        self,
+        question: ParsedQuestion,
+        *,
+        question_summary: str = "",
+        analysis_facts: Optional[Dict[str, Any]] = None,
+        dim5_feature: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        try:
+            return self._get_dim5_retrieval_service().retrieve(
+                question_text=question.raw_text or "",
+                question_summary=question_summary or (question.raw_text or "")[:120],
+                analysis_facts=analysis_facts or {},
+                dim5_feature=dim5_feature or {},
+                limit_per_scope=3,
+                overall_limit=9,
+            )
+        except Exception as exc:
+            logger.warning(
+                "dim5 retrieval failed question=%s error=%s",
+                question.question_no,
+                exc,
+            )
+            return {
+                "version": "dim5_retrieval_v1",
+                "query": {"terms": [], "direct_formula_guard": False},
+                "candidates": [],
+                "knowledge_point_candidates": [],
+                "topic_structure_candidates": [],
+                "reference_question_candidates": [],
+                "top_recommendation": {},
+                "error": str(exc)[:240],
+            }
+
+    def _attach_dim5_retrieval_context(
+        self,
+        dim5_feature: Dict[str, Any],
+        *,
+        question: ParsedQuestion,
+        question_summary: str,
+        analysis_facts: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        context = self._build_dim5_retrieval_context(
+            question,
+            question_summary=question_summary,
+            analysis_facts=analysis_facts,
+            dim5_feature=dim5_feature,
+        )
+        merged = dict(dim5_feature or {})
+        merged["dim5_retrieval_context"] = context
+        merged["dim5_retrieval_candidates"] = list(context.get("candidates") or [])
+        return merged
 
     def _build_prompt(self, question: ParsedQuestion) -> Tuple[List[Dict[str, Any]], bool]:
         system_prompt = self._build_system_prompt()
@@ -3449,6 +3911,12 @@ class AIParser:
                 question_summary=question_summary,
                 analysis_facts=analysis_facts,
             )
+            normalized_features[feature_key] = self._attach_dim5_retrieval_context(
+                normalized_features[feature_key],
+                question=question,
+                question_summary=question_summary,
+                analysis_facts=analysis_facts,
+            )
             normalized_features[feature_key] = self._finalize_dim5_feature(
                 normalized_features[feature_key],
                 analysis_facts=analysis_facts,
@@ -3471,6 +3939,12 @@ class AIParser:
         analysis_facts = self._normalize_analysis_facts(data.get("analysis_facts"))
         confidence = float(data.get("confidence", 0.0) or 0.0)
         question_summary = str(data.get("question_summary", "")).strip() or question.raw_text[:80]
+        normalized_features["dim5_knowledge"] = self._attach_dim5_retrieval_context(
+            normalized_features["dim5_knowledge"],
+            question=question,
+            question_summary=question_summary,
+            analysis_facts=analysis_facts,
+        )
         normalized_features["dim5_knowledge"] = self._finalize_dim5_feature(
             normalized_features["dim5_knowledge"],
             analysis_facts=analysis_facts,
@@ -3574,14 +4048,6 @@ class AIParser:
         dim5_retry_required = not self._dim5_has_valid_band_and_sublevel(
             normalized_features["dim5_knowledge"]
         )
-        normalized_features["dim5_knowledge"] = self._finalize_dim5_feature(
-            normalized_features["dim5_knowledge"],
-            analysis_facts=analysis_facts,
-            question_text=question.raw_text,
-            question_summary=question_summary,
-        )
-        if self._dim5_has_valid_knowledge_level(normalized_features["dim5_knowledge"]):
-            dim5_retry_required = False
         dim5_reference_filled = False
         if (
             not self._dim5_has_valid_knowledge_level(normalized_features["dim5_knowledge"])

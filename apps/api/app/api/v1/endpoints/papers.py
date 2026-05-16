@@ -26,6 +26,7 @@ from app.schemas import (
 from app.services.ocr.base import IMAGE_MANIFEST_KIND
 from app.services.ocr.factory import create_ocr_provider, get_ocr_preflight_status
 from app.services.ocr.mock_provider import MockOCRProvider
+from app.services.paper_analysis_runner import mark_stale_analysis_tasks
 from app.tasks import describe_queue_dispatch_error, enqueue_paper_analysis_task, get_queue_preflight_status
 
 router = APIRouter()
@@ -102,6 +103,23 @@ async def _enforce_analysis_queue_capacity(db: AsyncSession) -> None:
 
 async def _enforce_analysis_capacity(db: AsyncSession) -> None:
     await _enforce_analysis_queue_capacity(db)
+
+
+async def _cleanup_analysis_slots_for_waiting_status(paper: Paper) -> None:
+    if not (
+        paper.parse_status == ModelParseStatus.PENDING
+        and paper.last_stage == "queued_waiting_for_analysis_slot"
+    ):
+        return
+
+    try:
+        await mark_stale_analysis_tasks(settings.TASK_STALE_MINUTES)
+    except Exception:
+        logger.warning(
+            "Failed to cleanup analysis slots while polling waiting paper=%s",
+            paper.paper_id,
+            exc_info=True,
+        )
 
 
 def _display_size(size: int) -> str:
@@ -398,6 +416,8 @@ async def get_paper_status(
     paper = await db.get(Paper, paper_id)
     if not paper:
         raise HTTPException(status_code=404, detail="试卷不存在")
+
+    await _cleanup_analysis_slots_for_waiting_status(paper)
 
     return PaperStatusResponse(
         paper_id=paper_id,

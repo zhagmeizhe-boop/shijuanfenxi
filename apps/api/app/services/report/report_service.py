@@ -52,37 +52,37 @@ class ReportService:
     ]
 
     PARENT_DIFFICULTY_OPENERS = {
-        1: "这张试卷整体难度较低，属于基础巩固型试卷，适合用来检查孩子的基本概念和常规方法是否掌握。",
-        2: "这张试卷整体难度适中，属于稳步提升型试卷，适合基础一般、需要从课内掌握走向稳定提升的孩子。",
-        3: "这张试卷整体有一定挑战，属于拔高训练型试卷，适合基础较好、需要强化综合运用能力的孩子。",
-        4: "这张试卷整体难度偏高，属于选拔区分型试卷，适合基础扎实、希望检验综合解题稳定性的孩子。",
-        5: "这张试卷整体难度很高，属于竞赛挑战型试卷，适合能力突出的孩子检验高强度综合解题水平。",
+        1: "这张试卷整体比较基础，主要是课内概念、基础计算和常规题型。",
+        2: "这张试卷整体难度适中，大部分题还是课内常规，但会要求孩子把学过的方法稳定用出来。",
+        3: "这张试卷有一定挑战，基础题之外会有一些需要整理条件、转一步弯或综合运用的题。",
+        4: "这张试卷难度偏高，已经不只是考会不会知识点，更看孩子综合解题是否稳定。",
+        5: "这张试卷难度很高，很多题会有明显区分度，需要孩子同时处理复杂条件、方法选择和连续推理。",
     }
 
     PARENT_DIMENSION_DIFFICULTY_NOTES = {
         "dim1": {
-            "short": "复杂计算",
-            "detail": "连续化简、分步计算和计算准确率",
+            "short": "计算",
+            "detail": "把多步算式算稳，减少化简、分步计算或准确率上的失误",
         },
         "dim2": {
-            "short": "图形关系识别",
-            "detail": "图形关系识别、空间想象和辅助关系整理",
+            "short": "几何",
+            "detail": "先看懂图形关系，再判断面积、长度或空间关系",
         },
         "dim3": {
-            "short": "信息提取与数量关系建模",
-            "detail": "从题干中筛选条件、整理数量关系并转成可求解的表示",
+            "short": "读题理解",
+            "detail": "把题目里的对象、规则、过程和问法分清楚",
         },
         "dim4": {
-            "short": "非常规思路与方法迁移",
-            "detail": "跳出直接模板、选择策略并迁移方法",
+            "short": "解题组织",
+            "detail": "先整理条件，再建立数量关系或选择合适方法",
         },
         "dim5": {
-            "short": "跨知识点综合",
-            "detail": "调动多个知识点并处理拓展知识的综合应用",
+            "short": "知识跨度",
+            "detail": "判断这题到底用课内知识、奥数模型还是更高年级知识",
         },
         "dim6": {
-            "short": "多步推理",
-            "detail": "连续推进解题步骤、分步判断并回查条件",
+            "short": "推理链条",
+            "detail": "一步一步往下推，并在关键条件上回查",
         },
     }
 
@@ -280,7 +280,7 @@ class ReportService:
                         dim_confidences[dim_code] = float(row.confidence or 0.0)
                     except (TypeError, ValueError):
                         dim_confidences[dim_code] = 0.0
-                elif dim_status == "review":
+                elif dim_status in {"review", "needs_second_review"}:
                     dim_reasons[dim_code] = (
                         str(status_payload.get("reason", "")).strip()
                         or str(row.score_evidence or "").strip()
@@ -682,20 +682,58 @@ class ReportService:
             return normalized[0]
         return "、".join(normalized)
 
+    @staticmethod
+    def _join_parent_summary_phrases(items: List[str]) -> str:
+        normalized = [str(item).strip() for item in items if str(item).strip()]
+        if not normalized:
+            return ""
+        if len(normalized) == 1:
+            return normalized[0]
+        if len(normalized) == 2:
+            return f"{normalized[0]}和{normalized[1]}"
+        return f"{'、'.join(normalized[:-1])}和{normalized[-1]}"
+
+    @staticmethod
+    def _join_parent_summary_requirements(items: List[str]) -> str:
+        normalized = [str(item).strip() for item in items if str(item).strip()]
+        if not normalized:
+            return ""
+        if len(normalized) == 1:
+            return normalized[0]
+        return f"{'，'.join(normalized[:-1])}，也要{normalized[-1]}"
+
+    @classmethod
+    def _parent_summary_structure_intro(
+        cls,
+        question_distribution: Optional[Dict[str, Any]],
+    ) -> str:
+        if isinstance(question_distribution, dict):
+            buckets = question_distribution.get("buckets")
+            if isinstance(buckets, list):
+                for bucket in buckets:
+                    if not isinstance(bucket, dict) or bucket.get("key") != "hard":
+                        continue
+                    percentage = cls._safe_float_value(bucket.get("percentage"))
+                    if percentage is not None:
+                        return f"从题目结构看，较难题约占 {percentage:.1f}%。"
+        return "从题目结构看，暂时没有足够的题目难度结构数据。"
+
     @classmethod
     def _build_parent_summary(
         cls,
         difficulty_level: int,
         dimension_details: List[Dict[str, Any]],
+        question_distribution: Optional[Dict[str, Any]] = None,
     ) -> List[str]:
         opening = cls.PARENT_DIFFICULTY_OPENERS.get(
             difficulty_level,
-            "这张试卷整体有一定挑战，适合用来观察孩子的基础掌握、综合运用和解题稳定性。",
+            "这张试卷有一定挑战，基础题之外会有一些需要整理条件、转一步弯或综合运用的题。",
         )
 
         scored_dimensions = []
         for detail in dimension_details:
-            if detail.get("score_status", "scored") != "scored" or int(detail.get("level") or 0) <= 0:
+            level = cls._safe_float_value(detail.get("level"))
+            if detail.get("score_status", "scored") != "scored" or level is None or level <= 0:
                 continue
             score = cls._safe_float_value(detail.get("score"))
             if score is None:
@@ -712,23 +750,29 @@ class ReportService:
         scored_dimensions.sort(
             key=lambda item: (-item[0], dimension_order.get(item[1], 999))
         )
-        top_dimensions = [code for score, code in scored_dimensions if score >= 6.0][:3]
-        if not top_dimensions:
-            top_dimensions = [code for _, code in scored_dimensions[:2]]
+        high_dimensions = [code for score, code in scored_dimensions if score >= 6.0]
+        top_dimensions = high_dimensions[:3] if high_dimensions else [code for _, code in scored_dimensions[:2]]
+        structure_intro = cls._parent_summary_structure_intro(question_distribution)
 
         if not top_dimensions:
             return [
                 opening,
-                "难点需要结合具体题目再看：家长可以重点观察孩子是否能稳定读懂题意、列出关系并完成计算。",
+                f"{structure_intro}主要难点还需要结合具体题目看，建议重点观察孩子读题、列关系和计算是否稳定。",
             ]
 
-        short_topics = cls._join_chinese_phrases(
+        short_topics = cls._join_parent_summary_phrases(
             [cls.PARENT_DIMENSION_DIFFICULTY_NOTES[code]["short"] for code in top_dimensions]
         )
-        detail_topics = cls._join_chinese_phrases(
+        detail_topics = cls._join_parent_summary_requirements(
             [cls.PARENT_DIMENSION_DIFFICULTY_NOTES[code]["detail"] for code in top_dimensions[:2]]
         )
-        second_sentence = f"难点主要集中在{short_topics}上：孩子需要{detail_topics}。"
+        top_score = scored_dimensions[0][0] if scored_dimensions else 0.0
+        if top_score >= 8.0:
+            second_sentence = f"{structure_intro}最明显的压力在{short_topics}：孩子需要{detail_topics}。"
+        elif top_score >= 6.0:
+            second_sentence = f"{structure_intro}主要难点在{short_topics}：孩子需要{detail_topics}。"
+        else:
+            second_sentence = f"{structure_intro}整体没有特别突出的单一难点，相对需要留意的是{short_topics}。"
         return [opening, second_sentence]
 
     @classmethod
@@ -750,6 +794,11 @@ class ReportService:
         if not isinstance(dimension_details, list):
             dimension_details = []
 
+        question_distribution = position.get("question_distribution")
+        if not isinstance(question_distribution, dict):
+            question_distribution = cls._build_question_distribution(question_scores)
+            position["question_distribution"] = question_distribution
+
         parent_summary = position.get("parent_summary")
         if not (
             isinstance(parent_summary, list)
@@ -758,10 +807,8 @@ class ReportService:
             position["parent_summary"] = cls._build_parent_summary(
                 difficulty_level,
                 dimension_details,
+                question_distribution,
             )
-
-        if not isinstance(position.get("question_distribution"), dict):
-            position["question_distribution"] = cls._build_question_distribution(question_scores)
 
     async def _load_question_scores_from_db(
         self,
@@ -822,8 +869,12 @@ class ReportService:
         )
         difficulty_level = self._calculate_difficulty_level(overall_score)
         detail_by_code = {detail["code"]: detail for detail in dimension_details}
-        parent_summary = self._build_parent_summary(difficulty_level, dimension_details)
         question_distribution = self._build_question_distribution(question_scores)
+        parent_summary = self._build_parent_summary(
+            difficulty_level,
+            dimension_details,
+            question_distribution,
+        )
 
         return {
             "report_id": paper_id,
@@ -851,8 +902,8 @@ class ReportService:
                 "dimension_distribution": [
                     {"code": "dim1", "name": "数学运算", "percentage": 17, "color": "#3B82F6"},
                     {"code": "dim2", "name": "几何直观", "percentage": 16, "color": "#8B5CF6"},
-                    {"code": "dim3", "name": "信息提取与转化", "percentage": 17, "color": "#EC4899"},
-                    {"code": "dim4", "name": "实践创新", "percentage": 17, "color": "#10B981"},
+                    {"code": "dim3", "name": "场景理解复杂度", "percentage": 17, "color": "#EC4899"},
+                    {"code": "dim4", "name": "建模解题复杂度", "percentage": 17, "color": "#10B981"},
                     {"code": "dim5", "name": "知识广度", "percentage": 16, "color": "#F59E0B"},
                     {"code": "dim6", "name": "逻辑链条", "percentage": 17, "color": "#EF4444"},
                 ],
@@ -1049,19 +1100,19 @@ class ReportService:
                 },
                 {
                     "code": "dim3",
-                    "name": "信息提取与转化",
+                    "name": "场景理解复杂度",
                     "score": 8.0,
                     "level": 4,
                     "level_label": "较难",
-                    "evidence": "需要从图文材料中筛选条件，整理数量关系后再转成可求解表示，信息提取与转化负担较高。",
+                    "evidence": "需要读懂图文材料中的对象、规则和对应关系，场景理解负担较高。",
                 },
                 {
                     "code": "dim4",
-                    "name": "实践创新",
+                    "name": "建模解题复杂度",
                     "score": 7.0,
                     "level": 4,
                     "level_label": "较难",
-                    "evidence": "需要跳出直接模板，重新选择解题路径并构造中间对象。策略突破负担中等偏高，存在换路与构造要求。",
+                    "evidence": "读懂后还需要整理条件、构造中间量并组织解题路径，建模解题负担较高。",
                 },
                 {
                     "code": "dim5",
@@ -1090,7 +1141,7 @@ class ReportService:
                 "description": "面向选拔区分阶段，突出多步推进、策略迁移与复杂问题收束。",
                 "parent_summary": [
                     "这张试卷整体难度偏高，属于选拔区分型试卷，适合基础扎实、希望检验综合解题稳定性的孩子。",
-                    "难点主要集中在信息提取与数量关系建模、多步推理上：孩子需要从题干中筛选条件、整理数量关系并转成可求解的表示、连续推进解题步骤、分步判断并回查条件。",
+                    "难点主要集中在场景规则理解、建模解题组织和多步推理上：孩子需要读懂题目规则、过程反馈或比较口径，再整理数量关系、连续推进解题步骤并回查条件。",
                 ],
                 "question_distribution": {
                     "basis": "question_count",
@@ -1141,8 +1192,8 @@ class ReportService:
                 "dimension_distribution": [
                     {"code": "dim1", "name": "计算", "percentage": 18, "color": "#3B82F6"},
                     {"code": "dim2", "name": "概念", "percentage": 16, "color": "#8B5CF6"},
-                    {"code": "dim3", "name": "信息提取与转化", "percentage": 20, "color": "#EC4899"},
-                    {"code": "dim4", "name": "实践创新", "percentage": 14, "color": "#10B981"},
+                    {"code": "dim3", "name": "场景理解复杂度", "percentage": 20, "color": "#EC4899"},
+                    {"code": "dim4", "name": "建模解题复杂度", "percentage": 14, "color": "#10B981"},
                     {"code": "dim5", "name": "应用", "percentage": 16, "color": "#F59E0B"},
                     {"code": "dim6", "name": "逻辑链条", "percentage": 16, "color": "#EF4444"},
                 ],
@@ -1178,17 +1229,17 @@ class ReportService:
                     "question_no": "第3题",
                     "content": "甲、乙两数的比是3:5，它们的和是48，求这两个数。",
                     "dimension_code": "dim3",
-                    "dimension_name": "信息提取与转化",
+                    "dimension_name": "场景理解复杂度",
                     "score": 8.0,
                     "level": 4,
-                    "evidence": "需要从文字条件中整理比例关系并转成可求解的等量表示",
+                    "evidence": "需要读懂文字条件中对象与问题要求的对应关系",
                 },
             ],
 
-            "overall_summary": "本试卷整体难度较高，以拔高为主，注重考查学生的综合应用能力、策略突破能力与逻辑链条推进能力。计算部分以分数运算为主，几何部分涉及空间判断，信息提取与转化部分强调条件整理和表示构建。",
+            "overall_summary": "本试卷整体难度较高，以拔高为主，注重考查学生的综合应用能力、建模解题组织能力与逻辑链条推进能力。计算部分以分数运算为主，几何部分涉及空间判断，场景理解部分强调规则、过程和比较口径的读懂。",
             "recommendations": [
                 "建议学生重点复习分数运算和比例应用",
-                "加强条件筛选、关系整理和表示转化训练",
+                "加强场景规则理解、条件整理和建模解题训练",
                 "适当拓展几何辅助线的添加技巧",
                 "关注实际应用题的解题策略",
             ],
@@ -1255,7 +1306,7 @@ class ReportService:
             return 2
         elif overall_score <= 6.0:
             return 3
-        elif overall_score <= 8.0:
+        elif overall_score <= 7.0:
             return 4
         else:
             return 5

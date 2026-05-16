@@ -73,7 +73,7 @@ export function DifficultyPositioning({ data }: DifficultyPositioningProps) {
       ? data.parent_summary.slice(0, 2)
       : [
           `这张试卷整体定位为${levelLabel}，${targetStudents}`,
-          '具体难点可以结合下方六维评价明细和题目难度结构继续查看。',
+          '具体难点要结合各维度得分看，重点关注计算、几何、读题、解题组织、知识跨度和推理链条里分数偏高的部分。',
         ];
   const distribution = data.question_distribution;
   const distributionBuckets = getOrderedBuckets(distribution?.buckets || []);

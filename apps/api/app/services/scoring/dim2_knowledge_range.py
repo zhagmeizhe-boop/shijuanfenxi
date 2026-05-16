@@ -28,6 +28,8 @@ GENERIC_GEOMETRY_TERMS = {
     "综合问题",
     "综合题",
     "基本公式",
+    "形面积",
+    "图形面积",
     "面积关系",
     "面积计算",
     "周长计算",
@@ -47,6 +49,20 @@ GENERIC_GEOMETRY_TERMS = {
     "立方体",
     "长正方体",
     "解决问题",
+}
+
+WEAK_SUBSTRING_MATCH_KEYS = {
+    "形面积",
+    "图形面积",
+    "面积",
+    "表面积",
+    "求面积",
+    "求周长",
+    "面积关系",
+    "面积计算",
+    "周长计算",
+    "长度计算",
+    "体积计算",
 }
 
 KNOWLEDGE_RANGE_LABELS = {
@@ -352,9 +368,17 @@ def _match_quality(candidate_key: str, entry: dict[str, Any]) -> int:
             continue
         if candidate_key == match_key:
             best = max(best, 4)
-        elif match_key in candidate_key and len(match_key) >= 3:
+        elif (
+            match_key in candidate_key
+            and len(match_key) >= 4
+            and match_key not in WEAK_SUBSTRING_MATCH_KEYS
+        ):
             best = max(best, 3)
-        elif candidate_key in match_key and len(candidate_key) >= 4:
+        elif (
+            candidate_key in match_key
+            and len(candidate_key) >= 4
+            and candidate_key not in WEAK_SUBSTRING_MATCH_KEYS
+        ):
             best = max(best, 2)
     return best
 

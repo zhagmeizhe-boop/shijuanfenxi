@@ -1,8 +1,10 @@
 """
-dim4 practice-innovation scorer.
+dim4 modeling and solution-organization scorer.
 
-Primary semantics: identify the knowledge point first, then score how far the
-question varies from the basic template inside that knowledge point.
+The historical ``dim4_innovation`` payload key is kept for compatibility. The
+dimension now measures solving-level complexity: organizing conditions,
+building relationships, using tables/diagrams, classifying, reversing,
+comparing schemes, constructing, or changing strategy after the scene is read.
 """
 
 from __future__ import annotations
@@ -63,7 +65,7 @@ def _shift_rank(value: str) -> int:
 
 class Dim4InnovationScorer(BaseDimensionScorer):
     DIMENSION_CODE = "dim4"
-    DIMENSION_NAME = "实践创新"
+    DIMENSION_NAME = "建模解题复杂度"
 
     def __init__(self):
         super().__init__(config=None)
@@ -98,7 +100,7 @@ class Dim4InnovationScorer(BaseDimensionScorer):
                 details["reference_calibration_action"] = calibration.get("action")
         evidence = f"{level['label']}：{evidence_summary}"
         if calibrated and isinstance(calibration, dict):
-            evidence = f"{evidence} 高思题目级参考画像已校准到 {level_code}。"
+            evidence = f"{evidence} 参考题结构画像已校准到 {level_code}。"
         return DimensionScore(
             dimension_code=self.DIMENSION_CODE,
             score=level["score"],
@@ -110,19 +112,20 @@ class Dim4InnovationScorer(BaseDimensionScorer):
         )
 
     def _invalid_score(self, evidence: str) -> DimensionScore:
-        result = self._build_score(
-            "L1",
-            f"{evidence} 已按保守 L1 基础模板纳入实践创新评分。",
-        )
-        result.details.update(
-            {
-                "fallback_used": True,
+        return DimensionScore(
+            dimension_code=self.DIMENSION_CODE,
+            score=0.0,
+            level=0,
+            level_label="N/A",
+            evidence=evidence,
+            applicable=False,
+            details={
+                "status": "not_applicable",
+                "dim4_level": "N/A",
+                "fallback_used": False,
                 "fallback_reason": evidence,
-                "level_source": "conservative_fallback",
-                "topic_level": "L1",
-            }
+            },
         )
-        return result
 
     def _calculate_score(self, features: Dict[str, Any]) -> DimensionScore:
         topic_level_code = normalize_dim4_level(features.get("topic_level"))
@@ -133,7 +136,7 @@ class Dim4InnovationScorer(BaseDimensionScorer):
             evidence_summary = (
                 str(features.get("evidence_summary") or "").strip()
                 or anchor_evidence
-                or "已按知识点内部 L1-L5 标尺完成定位。"
+                or "已按建模解题 L1-L5 标尺完成定位。"
             )
             local_variant_calibration = calibrate_dim4_competition_variant_level(
                 features,
@@ -239,7 +242,7 @@ class Dim4InnovationScorer(BaseDimensionScorer):
             evidence_summary,
         ]
         if any(value in ("", None) for value in required_values) or global_strategy_required is None:
-            return self._invalid_score("dim4 关键策略创新事实不完整，无法自动判级。")
+            return self._invalid_score("dim4 关键建模解题事实不完整，无法自动判级。")
 
         reference_level_code = self._normalize_level_code(features.get("reference_calibrated_level"))
         if reference_level_code:

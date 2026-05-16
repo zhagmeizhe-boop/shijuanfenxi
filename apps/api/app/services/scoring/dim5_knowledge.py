@@ -32,11 +32,11 @@ BAND_RANKS = {
 RANK_BANDS = {rank: band for band, rank in BAND_RANKS.items()}
 
 DIM5_BUCKET_LABELS = {
-    "school": "校内教材",
-    "low_gaosi": "低段高思拓展",
-    "high_gaosi": "高年级高思拓展",
-    "junior_bridge": "初中前置",
-    "beyond": "高思超越篇",
+    "school": "校内知识",
+    "low_gaosi": "三四年级奥数入门",
+    "high_gaosi": "五六年级奥数典型专题",
+    "junior_bridge": "七年级基础前置",
+    "beyond": "六年级奥数较难 / 七年级核心门槛",
     "unknown": "未稳定归类",
 }
 
@@ -505,6 +505,11 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
             "competition_signal",
             "knowledge_integration",
             "novel_definition_dependency",
+            "dim5_retrieval_context",
+            "dim5_retrieval_candidates",
+            "dim5_retrieval_decision",
+            "accepted_retrieval_candidate_ids",
+            "rejected_retrieval_candidate_ids",
         ):
             if score_features.get(key) not in ("", None, [], {}):
                 details[key] = score_features.get(key)

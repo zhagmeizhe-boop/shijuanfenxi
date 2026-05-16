@@ -81,8 +81,8 @@ describe('DifficultyPositioning', () => {
     target_students: '适合基础扎实、需要面向选拔场景提升综合稳定性的学生。',
     description: '面向选拔区分场景，重视复杂问题解决、策略迁移与稳定性。',
     parent_summary: [
-      '这张试卷整体难度偏高，属于选拔区分型试卷。',
-      '难点主要集中在信息提取与数量关系建模、多步推理上。',
+      '这张试卷难度偏高，已经不只是考会不会知识点，更看孩子综合解题是否稳定。',
+      '从题目结构看，较难题约占 33.3%。最明显的压力在读题理解和推理链条：孩子需要把题目里的对象、规则、过程和问法分清楚，也要一步一步往下推，并在关键条件上回查。',
     ],
     question_distribution: {
       basis: 'question_count',
@@ -124,8 +124,8 @@ describe('DifficultyPositioning', () => {
     render(<DifficultyPositioning data={mockDifficulty} />);
 
     expect(screen.getByText('家长速读')).toBeInTheDocument();
-    expect(screen.getByText('这张试卷整体难度偏高，属于选拔区分型试卷。')).toBeInTheDocument();
-    expect(screen.getByText('难点主要集中在信息提取与数量关系建模、多步推理上。')).toBeInTheDocument();
+    expect(screen.getByText('这张试卷难度偏高，已经不只是考会不会知识点，更看孩子综合解题是否稳定。')).toBeInTheDocument();
+    expect(screen.getByText(/最明显的压力在读题理解和推理链条/)).toBeInTheDocument();
     expect(screen.getByText('题目难度结构')).toBeInTheDocument();
     expect(screen.getByText('基础题')).toBeInTheDocument();
     expect(screen.getByText('中等题')).toBeInTheDocument();
@@ -136,6 +136,18 @@ describe('DifficultyPositioning', () => {
     expect(screen.queryByText('（18）')).not.toBeInTheDocument();
     expect(screen.queryByText('三-15')).not.toBeInTheDocument();
     expect(screen.getByText('另有 1 道题缺少可用于分桶的维度分，未强行归类。')).toBeInTheDocument();
+  });
+
+  it('uses parent-friendly fallback summary when parent summary is missing', () => {
+    const { parent_summary: _parentSummary, ...difficultyWithoutSummary } = mockDifficulty;
+
+    render(<DifficultyPositioning data={difficultyWithoutSummary} />);
+
+    expect(screen.getByText(/这张试卷整体定位为/)).toBeInTheDocument();
+    expect(
+      screen.getByText('具体难点要结合各维度得分看，重点关注计算、几何、读题、解题组织、知识跨度和推理链条里分数偏高的部分。'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/六维评价明细/)).not.toBeInTheDocument();
   });
 });
 
@@ -186,11 +198,11 @@ describe('DimensionScoreCards', () => {
     expect(screen.getByText(/图形关系整理和模型识别/)).toBeInTheDocument();
   });
 
-  it('explains dim3 score as information processing difficulty', () => {
+  it('explains dim3 score as scenario comprehension complexity', () => {
     const dimensions: DimensionScore[] = [
       {
         code: 'dim3',
-        name: '信息提取与转化',
+        name: '场景理解复杂度',
         score: 8.6,
         level: 4,
         level_label: '较难',
@@ -200,8 +212,11 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    const evidence = screen.getByText(/信息提取与转化维度，综合得分 8.6 分/);
-    expect(evidence).toHaveTextContent('说明本卷读题与信息组织难度较高');
+    const evidence = screen.getByText(/场景理解复杂度维度，综合得分 8.6 分/);
+    expect(evidence).toHaveTextContent('学生读题理解题意上设置了明显难度');
+    expect(evidence).toHaveTextContent('场景相对复杂');
+    expect(evidence).not.toHaveTextContent('按题目等级加权');
+    expect(evidence).not.toHaveTextContent('高等级题');
     expect(evidence).not.toHaveTextContent('共 4 道相关题目');
     expect(evidence).not.toHaveTextContent('题级平均维度分');
   });
@@ -222,8 +237,9 @@ describe('DimensionScoreCards', () => {
 
     expect(screen.getByText('逻辑链条')).toBeInTheDocument();
     expect(screen.queryByText('逻辑链条长度')).not.toBeInTheDocument();
-    const evidence = screen.getByText(/综合得分 8.6 分/);
-    expect(evidence).toHaveTextContent('说明本卷逻辑链条较长');
+    const evidence = screen.getByText(/逻辑推理综合得分 8.6 分/);
+    expect(evidence).toHaveTextContent('这张试卷不少题解题链条较长');
+    expect(evidence).toHaveTextContent('连续推进 3-4 步');
     expect(evidence).not.toHaveTextContent('逻辑链条维度，综合得分');
     expect(evidence).not.toHaveTextContent('共 4 道相关题目');
     expect(evidence).not.toHaveTextContent('题级平均维度分');
@@ -245,7 +261,7 @@ describe('DimensionScoreCards', () => {
 
     const evidence = screen.getByText(/知识广度综合得分 8.6 分/);
     expect(evidence).toHaveTextContent('说明本卷知识广度较高');
-    expect(evidence).toHaveTextContent('高思导引专题或跨专题知识');
+    expect(evidence).toHaveTextContent('五六年级奥数典型方法或七年级基础前置知识');
     expect(evidence).not.toHaveTextContent('按知识范围等级权重计算');
   });
 
@@ -360,7 +376,7 @@ describe('DimensionScoreCards', () => {
     const dimensions: DimensionScore[] = [
       {
         code: 'dim3',
-        name: '信息提取与转化',
+        name: '场景理解复杂度',
         score: 8.0,
         level: 4,
         level_label: '较难',
@@ -371,14 +387,14 @@ describe('DimensionScoreCards', () => {
             question_display_label: '1',
             summary: '百分数变化',
             score: 8.0,
-            reason: '8.0分：主要考查百分数基准量变化；本题难点在于要分清变化前后的基准量。',
+            reason: '8.0分：主要考查比较基准理解；本题难点在于要分清变化前后的基准量。',
           },
           {
             question_no: '2',
             question_display_label: '2',
-            summary: '表格转化',
+            summary: '表格对应',
             level_code: 'L3',
-            reason: 'L3：主要考查图表数据转化；本题难点在于要先从表格筛选数据。',
+            reason: 'L3：主要考查图文对应理解；本题难点在于要先看懂表格项目和题目问法的对应关系。',
           },
         ],
       },
@@ -386,8 +402,8 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    expect(screen.getAllByText('较难（8.0）：主要考查百分数基准量变化；本题难点在于要分清变化前后的基准量').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('中等（6.0）：主要考查图表数据转化；本题难点在于要先从表格筛选数据').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('较难（8.0）：主要考查比较基准理解；本题难点在于要分清变化前后的基准量').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('中等（6.0）：主要考查图文对应理解；本题难点在于要先看懂表格项目和题目问法的对应关系').length).toBeGreaterThan(0);
   });
 
   it('normalizes dim6 counted-question prefixes to difficulty labels', () => {
@@ -420,8 +436,9 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    expect(screen.getAllByText('较难（8.0）：本题逻辑链条难在多轮变化前后衔接；依据是题目包含多轮状态变化').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('中等（6.0）：本题逻辑链条难在连续推出中间结论；依据是题目需要把前一步结果接到下一步条件中').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('较难（8.0）：这题的解题链条较长，通常需要多步推进，并伴随分类、倒推、回查或多条件检查；学生需要按阶段记录变化，把上一阶段的结果接到下一阶段条件中').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('中等（6.0）：这题的解题链条有一定长度，通常需要把前后条件连续接起来；学生需要把前一步得到的结果接到下一步条件里，连续推出中间结论').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/依据是/)).not.toBeInTheDocument();
   });
 
   it('renders dim5 counted questions as one continuous structured sentence', () => {
@@ -441,7 +458,7 @@ describe('DimensionScoreCards', () => {
             score: 8.0,
             level_code: 'L4',
             difficulty_label: '较难（8.0）',
-            knowledge_source_text: '高思导引',
+            knowledge_source_text: '五六年级奥数',
             knowledge_point_text: '面积比模型',
             score_reason: '难点在于要识别等高、共边或割补关系，并把图形面积关系转化为比例关系。',
             reason: '旧文案：奥数面积比，因此计为较难。',
@@ -453,24 +470,23 @@ describe('DimensionScoreCards', () => {
     render(<DimensionScoreCards dimensions={dimensions} />);
 
     const expected = (
-      '较难（8.0）：本题属于高思导引的面积比模型；' +
+      '较难（8.0）：本题属于五六年级奥数的面积比模型；' +
       '难点在于要识别等高、共边或割补关系，并把图形面积关系转化为比例关系。'
     );
     expect(screen.getAllByText(expected).length).toBeGreaterThan(0);
     expect(screen.queryByText(/命中/)).not.toBeInTheDocument();
     expect(screen.queryByText(/因此计为/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/奥数/)).not.toBeInTheDocument();
   });
 
-  it('explains dim4 score as practice innovation level', () => {
+  it('explains dim4 score as modeling solution complexity', () => {
     const dimensions: DimensionScore[] = [
       {
         code: 'dim4',
-        name: '实践创新',
+        name: '建模解题复杂度',
         score: 8.2,
         level: 4,
         level_label: '拔高',
-        evidence: '共 15 道题纳入实践创新评分；L3 1 道、L4 13 道、L5 1 道；人工复核 1 道未计入；权重得分 8.2 分，判定为 拔高。',
+        evidence: '共 15 道题纳入建模解题复杂度评分；L3 1 道、L4 13 道、L5 1 道；人工复核 1 道未计入；权重得分 8.2 分，判定为 拔高。',
         score_breakdown: {
           valid_score_question_count: 15,
           review_count: 1,
@@ -489,11 +505,18 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    const evidence = screen.getByText(/实践创新综合得分 8.2 分/);
-    expect(evidence).toHaveTextContent('说明本卷实践创新要求较高');
-    expect(evidence).toHaveTextContent('构造中间量、分类回查或重组关系');
-    expect(evidence).not.toHaveTextContent('共 15 道题纳入实践创新评分');
-    expect(evidence).not.toHaveTextContent('按高阶创新等级权重计算');
+    const evidence = screen.getByText(/综合得分为 8.2 分/);
+    expect(evidence).toHaveTextContent('在解题思路上有较明显难度');
+    expect(evidence).toHaveTextContent('先把条件之间的关系理清楚');
+    expect(evidence).not.toHaveTextContent('建模解题复杂度综合得分');
+    expect(evidence).not.toHaveTextContent('按题目等级加权');
+    expect(evidence).not.toHaveTextContent('列表');
+    expect(evidence).not.toHaveTextContent('画图');
+    expect(evidence).not.toHaveTextContent('比例');
+    expect(evidence).not.toHaveTextContent('方程');
+    expect(evidence).not.toHaveTextContent('表格');
+    expect(evidence).not.toHaveTextContent('共 15 道题纳入建模解题复杂度评分');
+    expect(evidence).not.toHaveTextContent('按建模解题等级权重计算');
     expect(evidence).not.toHaveTextContent('权重得分');
     expect(screen.queryByText(/L4 13 道/)).not.toBeInTheDocument();
   });
@@ -502,7 +525,7 @@ describe('DimensionScoreCards', () => {
     const dimensions: DimensionScore[] = [
       {
         code: 'dim4',
-        name: '实践创新',
+        name: '建模解题复杂度',
         score: 9.5,
         level: 5,
         level_label: '选拔',
@@ -516,7 +539,7 @@ describe('DimensionScoreCards', () => {
             level_code: 'L5',
             difficulty_label: '困难（9.5）',
             knowledge_point_text: '数论约束',
-            practice_level_text: '压轴创新',
+            practice_level_text: '综合构造建模',
             score_reason: '难点在于要把整除、余数和范围条件一起回查，逐步排除不满足条件的数。',
             reason: '高思题目级参考画像已校准到 L5。',
           },
@@ -527,7 +550,7 @@ describe('DimensionScoreCards', () => {
     render(<DimensionScoreCards dimensions={dimensions} />);
 
     const expected = (
-      '困难（9.5）：本题是数论约束中的压轴创新；' +
+      '困难（9.5）：本题是数论约束中的综合构造建模；' +
       '难点在于要把整除、余数和范围条件一起回查，逐步排除不满足条件的数。'
     );
     expect(screen.getAllByText(expected).length).toBeGreaterThan(0);
@@ -535,11 +558,49 @@ describe('DimensionScoreCards', () => {
     expect(screen.queryByText(/参考画像/)).not.toBeInTheDocument();
   });
 
+  it('filters English dim4 counted-question score reasons from historical snapshots', () => {
+    const dimensions: DimensionScore[] = [
+      {
+        code: 'dim4',
+        name: '建模解题复杂度',
+        score: 8.0,
+        level: 4,
+        level_label: '拔高',
+        evidence: '旧概览。',
+        counted_questions: [
+          {
+            question_no: '20',
+            question_display_label: '20',
+            summary: '反射路径',
+            score: 8.0,
+            level_code: 'L4',
+            difficulty_label: '较难（8.0）',
+            knowledge_point_text: '反射路径',
+            practice_level_text: '多关系建模',
+            score_reason:
+              'This problem requires understanding the 90-degree reflection rule, then applying coordinate management through multiple reflections.',
+            reason: '旧文案。',
+          },
+        ],
+      },
+    ];
+
+    render(<DimensionScoreCards dimensions={dimensions} />);
+
+    const expected = (
+      '较难（8.0）：本题是反射路径中的多关系建模；' +
+      '难点在于不能直接套模板，需要构造中间量、分类回查或重组关系。'
+    );
+    expect(screen.getAllByText(expected).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/This problem/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/requires understanding/)).not.toBeInTheDocument();
+  });
+
   it('falls back for historical dim4 counted-question text', () => {
     const dimensions: DimensionScore[] = [
       {
         code: 'dim4',
-        name: '实践创新',
+        name: '建模解题复杂度',
         score: 8.0,
         level: 4,
         level_label: '拔高',

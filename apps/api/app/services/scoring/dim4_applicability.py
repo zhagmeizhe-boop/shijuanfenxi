@@ -1,9 +1,11 @@
 """
 dim4 applicability gating.
 
-dim4 evaluates topic-internal practice innovation. Product behavior tries to
-score every question, but questions with no stable automatic facts are ignored
-instead of being sent to manual review.
+dim4 now evaluates modeling and solution-organization burden. Pure
+calculation, direct formula substitution, and ordinary one-step applications
+should not enter the dimension unless stable modeling or strategy facts show a
+real solving-structure burden. L1/L2 can enter when that burden is present but
+light; L3+ means the burden starts to become a visible difficulty.
 """
 
 from __future__ import annotations
@@ -18,7 +20,8 @@ from app.services.scoring.dim4_topic_levels import (
 )
 
 DIM4_STATUS_APPLICABLE = "applicable"
-DIM4_STATUS_REVIEW = "review"
+DIM4_STATUS_NEEDS_SECOND_REVIEW = "needs_second_review"
+DIM4_STATUS_REVIEW = DIM4_STATUS_NEEDS_SECOND_REVIEW
 DIM4_STATUS_NOT_APPLICABLE = "not_applicable"
 DIM4_REVIEW_CONFIDENCE_THRESHOLD = 0.55
 
@@ -53,6 +56,10 @@ STRATEGY_SIGNAL_PATTERN = re.compile(
 )
 LIGHT_VARIANT_PATTERN = re.compile(
     r"(轻微变化|改问法|单位换算|多一步|一次变式|轻度变式|一处辅助线|平移|等积替换|简单设置|简单倒推)"
+)
+MODELING_ORGANIZATION_PATTERN = re.compile(
+    r"(整理|建表|列表|表格|方案|状态表|数量关系|比例关系|方程|统一标准|比较方案|同一口径|倒推|分类|构造|"
+    r"回查|试探|换角度|中间量|总量转化|多阶段|多对象|多关系|隐藏条件|增长量|消耗量|剩余量|约束)"
 )
 
 
@@ -203,12 +210,9 @@ def _has_light_variant_evidence(feature: Dict[str, Any], raw_text: str) -> bool:
     )
 
 
-def _has_core_innovation_evidence(feature: Dict[str, Any], raw_text: str) -> bool:
-    return (
-        _normalize_choice(feature.get("strategy_role"), STRATEGY_ROLE_VALUES) == "core"
-        and not _is_low_barrier_direct_template(feature)
-        and (_has_high_burden_signal(feature) or _has_strategy_signal(raw_text))
-    )
+def _has_modeling_organization_text(feature: Dict[str, Any], raw_text: str) -> bool:
+    text = _feature_signal_text(feature, raw_text)
+    return bool(MODELING_ORGANIZATION_PATTERN.search(text) or STRATEGY_SIGNAL_PATTERN.search(text))
 
 
 def _has_high_burden_signal(feature: Dict[str, Any]) -> bool:
@@ -312,6 +316,25 @@ def _is_low_barrier_direct_template(feature: Dict[str, Any]) -> bool:
     )
 
 
+def _has_modeling_entry_signal(feature: Dict[str, Any], raw_text: str, topic_level: str = "") -> bool:
+    strategy_role = _normalize_choice(feature.get("strategy_role"), STRATEGY_ROLE_VALUES)
+    if strategy_role == "core" and not _is_low_barrier_direct_template(feature):
+        return True
+    if _has_high_burden_signal(feature):
+        return True
+    if _has_modeling_organization_text(feature, raw_text):
+        return True
+    if (
+        topic_level in {"L3", "L4", "L5"}
+        and _has_light_variant_evidence(feature, raw_text)
+        and not _is_low_barrier_direct_template(feature)
+    ):
+        return True
+    if topic_level == "L2" and _has_light_variant_evidence(feature, raw_text):
+        return True
+    return False
+
+
 def _has_internal_conflict(feature: Dict[str, Any], raw_text: str) -> bool:
     strategy_role = _normalize_choice(feature.get("strategy_role"), STRATEGY_ROLE_VALUES)
     template_fit = _normalize_choice(feature.get("template_fit"), TEMPLATE_FIT_VALUES)
@@ -376,20 +399,21 @@ def evaluate_dim4_applicability(
 
     if level_source == "review_failed":
         reason = str(feature.get("fallback_error") or "").strip()
-        warnings.append(reason or "dim4 知识点内等级兜底判定失败。")
         if not _feature_present(feature) and not _has_strategy_signal(raw_text):
             return {
                 "status": DIM4_STATUS_NOT_APPLICABLE,
-                "reason": "dim4 未获得稳定策略创新事实，已自动未覆盖。",
-                "warnings": list(dict.fromkeys(item for item in warnings if item)),
+                "reason": "dim4 未获得稳定建模解题事实，已自动未覆盖。",
+                "warnings": [reason or "dim4 知识点内等级兜底判定失败。"],
             }
-        return {
-            "status": DIM4_STATUS_APPLICABLE,
-            "reason": "dim4 未能稳定判定知识点内部等级，已按结构事实或保守 L1 自动纳入评分。",
-            "warnings": list(dict.fromkeys(item for item in warnings if item)),
-        }
+        topic_level = ""
 
     if topic_level:
+        if not _has_modeling_entry_signal(feature, raw_text, topic_level):
+            return {
+                "status": DIM4_STATUS_NOT_APPLICABLE,
+                "reason": "该题读懂后只是直接计算、直接代公式或普通一步应用，没有形成稳定的建模解题负担，dim4 不适用。",
+                "warnings": [],
+            }
         feature_confidence = _normalize_float(feature.get("applicability_confidence"))
         fallback_confidence = (
             _normalize_float(feature.get("fallback_confidence"))
@@ -412,7 +436,7 @@ def evaluate_dim4_applicability(
         )
         if effective_confidence is not None and effective_confidence < DIM4_REVIEW_CONFIDENCE_THRESHOLD:
             warnings.append(
-                f"dim4 知识点内等级判定置信度低于自动判分阈值（{DIM4_REVIEW_CONFIDENCE_THRESHOLD:.2f}）。"
+                f"dim4 建模解题事实判定置信度低于自动判分阈值（{DIM4_REVIEW_CONFIDENCE_THRESHOLD:.2f}）。"
             )
         if image_dependency == "required" and not used_image:
             warnings.append("dim4 依赖图片，但当前未稳定使用题块图片。")
@@ -424,13 +448,13 @@ def evaluate_dim4_applicability(
             warnings.append("dim4 题面存在 OCR 或题块质量问题，自动评分结果需要谨慎解读。")
         if warnings:
             return {
-                "status": DIM4_STATUS_APPLICABLE,
-                "reason": "dim4 已按当前知识点内部 L1-L5 判定自动纳入评分，风险信息仅作评分提示。",
+                "status": DIM4_STATUS_NEEDS_SECOND_REVIEW,
+                "reason": "dim4 建模解题事实存在置信度、图文依赖或题块质量风险，当前题目进入二次复评。",
                 "warnings": list(dict.fromkeys(item for item in warnings if item)),
             }
         return {
             "status": DIM4_STATUS_APPLICABLE,
-            "reason": "已稳定识别题目所属知识点，并完成该知识点内部 L1-L5 创新等级定位，dim4 适用。",
+            "reason": "已稳定识别题目的建模组织、条件整理或策略选择负担，dim4 适用。",
             "warnings": [],
         }
 
@@ -439,23 +463,33 @@ def evaluate_dim4_applicability(
         reference_warning = str(feature.get("warning") or "").strip()
         if not reference_warning and isinstance(calibration, dict):
             reference_warning = str(calibration.get("warning") or "").strip()
-        warnings.append(reference_warning or "相似高思参考题显示策略创新负担，自动评分结果需要谨慎解读。")
+        warnings.append(reference_warning or "相似参考题显示建模解题负担，自动评分结果需要谨慎解读。")
+        if not _has_modeling_entry_signal(feature, raw_text):
+            return {
+                "status": DIM4_STATUS_NOT_APPLICABLE,
+                "reason": "当前题面缺少稳定建模解题事实，不能只凭参考来源或相似线索纳入 dim4。",
+                "warnings": list(dict.fromkeys(item for item in warnings if item)),
+            }
         return {
             "status": DIM4_STATUS_APPLICABLE,
-            "reason": "dim4 当前本地事实不足但存在高思参考线索，已按自动保守规则纳入评分。",
+            "reason": "dim4 当前存在可核对的建模解题事实，参考题线索仅作为风险提示。",
             "warnings": list(dict.fromkeys(item for item in warnings if item)),
         }
 
     if not _feature_present(feature) and not _has_strategy_signal(raw_text):
         return {
             "status": DIM4_STATUS_NOT_APPLICABLE,
-            "reason": "dim4 缺少稳定的知识点内 L1-L5 判级事实，已自动未覆盖。",
-            "warnings": ["dim4 未获得可稳定兜底判级的策略创新事实字段。"],
+            "reason": "dim4 缺少稳定的建模组织或策略选择事实，已自动未覆盖。",
+            "warnings": ["dim4 未获得可稳定判级的建模解题事实字段。"],
         }
 
     missing_fields = _missing_fields(feature)
     if missing_fields:
-        warnings.append(f"dim4 缺少关键策略创新事实字段：{'、'.join(missing_fields)}。")
+        return {
+            "status": DIM4_STATUS_NEEDS_SECOND_REVIEW,
+            "reason": "dim4 关键建模解题事实不完整，当前题目进入二次复评。",
+            "warnings": [f"dim4 缺少关键建模解题事实字段：{'、'.join(missing_fields)}。"],
+        }
 
     feature_confidence = _normalize_float(feature.get("applicability_confidence"))
     effective_confidence = feature_confidence if feature_confidence is not None else _normalize_float(llm_confidence)
@@ -477,31 +511,31 @@ def evaluate_dim4_applicability(
     if _has_ocr_damage_signals(parse_warnings):
         warnings.append("dim4 题面存在 OCR 或题块质量问题，自动评分结果需要谨慎解读。")
     if _has_internal_conflict(feature, raw_text):
-        warnings.append("dim4 策略角色与策略突破特征冲突，自动评分结果需要谨慎解读。")
+        warnings.append("dim4 建模角色与解题组织特征冲突，自动评分结果需要谨慎解读。")
 
     if warnings:
         return {
-            "status": DIM4_STATUS_APPLICABLE,
-            "reason": "dim4 策略创新事实存在缺失、冲突或题块质量风险，已按自动保守 L1 规则纳入评分。",
+            "status": DIM4_STATUS_NEEDS_SECOND_REVIEW,
+            "reason": "dim4 建模解题事实存在冲突或题块质量风险，当前题目进入二次复评。",
             "warnings": list(dict.fromkeys(item for item in warnings if item)),
         }
 
-    if strategy_role == "core" and not _is_low_barrier_direct_template(feature):
+    if _has_modeling_entry_signal(feature, raw_text):
         return {
             "status": DIM4_STATUS_APPLICABLE,
-            "reason": "策略突破、构造或换路负担构成该题核心门槛，dim4 适用。",
+            "reason": "题目存在条件组织、数量关系建立、方案比较、分类倒推、构造或换策略等解题负担，dim4 适用。",
             "warnings": [],
         }
 
     if strategy_role in {"none", "supporting"} or _is_low_barrier_direct_template(feature):
         return {
-            "status": DIM4_STATUS_APPLICABLE,
-            "reason": "已稳定识别题目属于低创新负担模板或轻度变式，dim4 按 L1/L2 兜底纳入评分。",
+            "status": DIM4_STATUS_NOT_APPLICABLE,
+            "reason": "该题读懂后只是直接计算、直接代公式或普通一步应用，没有形成稳定的建模解题负担，dim4 不适用。",
             "warnings": [],
         }
 
     return {
-        "status": DIM4_STATUS_APPLICABLE,
-        "reason": "dim4 边界题缺少稳定自动判级依据，已按保守 L1 自动纳入评分。",
-        "warnings": ["dim4 边界题缺少稳定自动判级依据。"],
+        "status": DIM4_STATUS_NOT_APPLICABLE,
+        "reason": "dim4 边界题缺少稳定建模解题判级依据，当前维度不纳入自动评分。",
+        "warnings": ["dim4 边界题缺少稳定建模解题判级依据。"],
     }

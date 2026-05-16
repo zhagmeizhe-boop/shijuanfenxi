@@ -32,11 +32,11 @@ DIM5_LEVEL_SCORES = {
 }
 
 DIM5_LEVEL_LABELS = {
-    "L1": "基础校内直达知识",
-    "L2": "小学高年级校内核心知识",
-    "L3": "校内延伸 / 入门专题知识",
-    "L4": "典型奥数专题知识",
-    "L5": "高阶竞赛 / 跨专题知识",
+    "L1": "一至三年级校内基础",
+    "L2": "四至六年级校内核心",
+    "L3": "校内综合 / 三四年级奥数入门",
+    "L4": "五六年级奥数典型专题 / 七年级基础前置",
+    "L5": "六年级奥数较难题 / 小升初压轴 / 七年级核心门槛",
 }
 
 
@@ -59,10 +59,11 @@ DIRECT_FORMULA_PATTERN = re.compile(
 )
 
 L5_STRUCTURE_PATTERN = re.compile(
-    r"(?:多模型|多个模型|模型嵌套|嵌套模型|跨专题|综合压轴|复杂容斥|复杂计数|"
-    r"数论综合|同余.*不变量|不变量.*同余|高阶数论|不定方程|进位制|取整|"
-    r"全局必胜|全局制胜|完整状态回查|复杂面积比链|复杂立体|截面|展开图|初中前置|"
-    r"七年级|七上|初中|二元一次|一次函数|方程组)"
+    r"(?:多模型|多个模型|模型嵌套|嵌套模型|跨专题|综合压轴|小升初压轴|压轴|"
+    r"六年级奥数较难|较难变式|隐藏结构|多条件联动|多阶段建模|复杂分类|分类讨论|反推回查|"
+    r"复杂容斥|复杂计数|复杂组合计数|数论综合|同余.*不变量|不变量.*同余|高阶数论|不定方程|进位制|取整|"
+    r"全局必胜|全局制胜|完整状态回查|复杂面积比链|复杂立体|截面|展开图|"
+    r"七年级核心|初中核心|七上核心|二元一次|一次函数|方程组|不等式|整式|有理数)"
 )
 
 
@@ -73,25 +74,25 @@ CANONICAL_KNOWLEDGE_RULES: tuple[CanonicalKnowledgeRule, ...] = (
         domain="logic_strategy_construction",
         level="L5",
         family="cross_topic_competition",
-        aliases=("跨专题", "综合压轴", "多个奥数模型", "模型嵌套", "多模型组合", "高阶竞赛"),
+        aliases=("跨专题", "综合压轴", "小升初压轴", "多个奥数模型", "模型嵌套", "多模型组合", "隐藏结构", "多条件联动"),
         structure_aliases=("全局", "回查", "综合", "嵌套"),
-        evidence="需要跨专题或多模型组合，知识范围达到高阶竞赛层级。",
+        evidence="需要跨专题、多模型组合或压轴型隐藏结构，知识门槛达到 L5。",
     ),
     CanonicalKnowledgeRule(
         point="高阶数论综合",
         domain="number_theory",
         level="L5",
         family="advanced_number_theory",
-        aliases=("数论综合", "同余", "不变量", "不定方程", "进位制", "取整符号", "模运算"),
+        aliases=("数论综合", "高阶数论", "同余不变量", "不变量同余", "不定方程", "进位制", "取整符号", "模运算综合"),
         structure_aliases=("构造", "反推", "联合", "综合"),
-        evidence="数论约束与构造/不变量等联合成为核心门槛。",
+        evidence="数论约束与构造、反推或不变量等联合成为核心门槛。",
     ),
     CanonicalKnowledgeRule(
         point="复杂组合计数",
         domain="counting_combinatorics",
         level="L5",
         family="advanced_combinatorics",
-        aliases=("复杂组合计数", "复杂容斥", "计数综合", "排列组合综合", "多层分类"),
+        aliases=("复杂组合计数", "复杂计数", "复杂容斥", "计数综合", "排列组合综合", "多层分类"),
         structure_aliases=("不重不漏", "多层", "容斥", "综合"),
         evidence="计数知识超过单一入门模型，需要综合组织。",
     ),
@@ -362,7 +363,9 @@ OLD_BAND_TO_LEVEL = {
     "5、6年级校内课本难度": "L2",
     "4年级及以前高思导引拓展篇及以下难度": "L3",
     "5、6年级及以前高思导引拓展篇及以下难度 或 七年级及以上校内课本难度": "L4",
-    "高思导引超越篇难度": "L5",
+    # Legacy "超越篇" band is retained as audit input only. It no longer
+    # directly forces L5; L5 needs concrete hard-structure evidence below.
+    "高思导引超越篇难度": "L4",
 }
 
 
@@ -455,7 +458,7 @@ def _old_band_level(feature: Dict[str, Any]) -> str:
     if band in OLD_BAND_TO_LEVEL:
         return OLD_BAND_TO_LEVEL[band]
     if "超越篇" in band:
-        return "L5"
+        return "L4"
     if "高思" in band or "七年级" in band or "初中" in band:
         return "L4"
     if "5、6年级" in band or "五" in band or "六" in band:
@@ -463,6 +466,162 @@ def _old_band_level(feature: Dict[str, Any]) -> str:
     if "4年级" in band or "四" in band:
         return "L1"
     return ""
+
+
+def _l5_supported(feature: Dict[str, Any], combined: str, *, base_level: str = "") -> bool:
+    if L5_STRUCTURE_PATTERN.search(combined):
+        return True
+    if _level_rank(base_level) >= 5:
+        return True
+    family = str(feature.get("canonical_knowledge_family") or "").strip()
+    if family in {
+        "cross_topic_competition",
+        "advanced_number_theory",
+        "advanced_combinatorics",
+        "advanced_geometry_competition",
+    }:
+        return True
+    return (
+        feature.get("competition_signal") == "strong"
+        and feature.get("knowledge_integration") in {"cross_family_combo", "cross_domain_bridge"}
+    )
+
+
+def _as_dict_list(value: Any) -> List[Dict[str, Any]]:
+    if not isinstance(value, list):
+        return []
+    return [dict(item) for item in value if isinstance(item, dict)]
+
+
+def _retrieval_candidates(feature: Dict[str, Any]) -> List[Dict[str, Any]]:
+    candidates: List[Dict[str, Any]] = []
+    context = feature.get("dim5_retrieval_context")
+    if isinstance(context, dict):
+        candidates.extend(_as_dict_list(context.get("candidates")))
+        for key in (
+            "reference_question_candidates",
+            "topic_structure_candidates",
+            "knowledge_point_candidates",
+        ):
+            candidates.extend(_as_dict_list(context.get(key)))
+    candidates.extend(_as_dict_list(feature.get("dim5_retrieval_candidates")))
+
+    deduped: List[Dict[str, Any]] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        candidate_id = str(candidate.get("candidate_id") or "").strip()
+        if not candidate_id:
+            candidate_id = "|".join(
+                str(candidate.get(key) or "")
+                for key in ("match_scope", "source", "title", "question_no")
+            )
+        if not candidate_id or candidate_id in seen:
+            continue
+        seen.add(candidate_id)
+        deduped.append(candidate)
+    return deduped
+
+
+def _candidate_level(candidate: Dict[str, Any]) -> str:
+    return normalize_dim5_knowledge_level(candidate.get("recommended_level"))
+
+
+def _candidate_quality_flags(candidate: Dict[str, Any]) -> set[str]:
+    raw = candidate.get("quality_flags")
+    if isinstance(raw, list):
+        return {str(item).strip() for item in raw if str(item).strip()}
+    text = str(raw or "").strip()
+    return {part.strip() for part in text.split(",") if part.strip()}
+
+
+def _candidate_l5_supported(candidate: Dict[str, Any]) -> bool:
+    text = _flatten_text(
+        [
+            candidate.get("title"),
+            candidate.get("matched_terms"),
+            candidate.get("structure_signals"),
+            candidate.get("grade"),
+            candidate.get("grade_hint"),
+            candidate.get("section_label"),
+            candidate.get("section_level"),
+            candidate.get("question_text_excerpt"),
+        ]
+    )
+    return bool(L5_STRUCTURE_PATTERN.search(text))
+
+
+def _retrieval_override(
+    feature: Dict[str, Any],
+    *,
+    direct_formula_guard: bool,
+) -> Dict[str, Any]:
+    candidates = _retrieval_candidates(feature)
+    if not candidates:
+        return {}
+
+    def candidate_sort_key(candidate: Dict[str, Any]) -> tuple[int, int, int, int]:
+        scope_rank = {
+            "knowledge_point": 1,
+            "topic_structure": 2,
+            "reference_question": 3,
+        }.get(str(candidate.get("match_scope") or ""), 0)
+        return (
+            1 if candidate.get("can_raise_level") else 0,
+            scope_rank,
+            _level_rank(_candidate_level(candidate)),
+            int(float(candidate.get("score") or 0.0)),
+        )
+
+    for candidate in sorted(candidates, key=candidate_sort_key, reverse=True):
+        level = _candidate_level(candidate)
+        if not level:
+            continue
+        scope = str(candidate.get("match_scope") or "").strip()
+        flags = _candidate_quality_flags(candidate)
+        can_raise = bool(candidate.get("can_raise_level"))
+        if direct_formula_guard and _level_rank(level) > 2:
+            continue
+        if scope == "knowledge_point":
+            continue
+        if scope == "reference_question":
+            strength = int(candidate.get("match_strength") or 0)
+            if not can_raise or strength < 2 or flags:
+                continue
+        elif scope == "topic_structure":
+            if not can_raise or not candidate.get("structure_signals"):
+                continue
+            if _level_rank(level) > 4 and not _candidate_l5_supported(candidate):
+                level = "L4"
+        else:
+            continue
+
+        return {
+            "knowledge_level": level,
+            "level_source": f"retrieval_{scope}",
+            "level_evidence": _retrieval_evidence(candidate),
+            "canonical_match_source": scope,
+            "canonical_match_confidence": 0.9
+            if scope == "reference_question"
+            else 0.82,
+            "canonical_alias_hits": _unique(candidate.get("matched_terms") or []),
+            "canonical_structure_hits": _unique(candidate.get("structure_signals") or []),
+            "retrieval_candidate_id": str(candidate.get("candidate_id") or ""),
+        }
+    return {}
+
+
+def _retrieval_evidence(candidate: Dict[str, Any]) -> str:
+    scope = str(candidate.get("match_scope") or "")
+    title = str(candidate.get("title") or "").strip()
+    level = _candidate_level(candidate)
+    if scope == "reference_question":
+        section = str(candidate.get("section_label") or candidate.get("section_level") or "").strip()
+        strength = candidate.get("similarity_type") or candidate.get("match_strength") or ""
+        return f"本地题目级参考命中 {title or '高思参考题'}{('（' + section + '）') if section else ''}，匹配强度 {strength}，支持 {level}。"
+    if scope == "topic_structure":
+        signals = "、".join(str(item) for item in (candidate.get("structure_signals") or [])[:4])
+        return f"本地专题结构命中 {title or '专题结构'}{('：' + signals) if signals else ''}，支持 {level}。"
+    return "本地知识点检索提供辅助证据。"
 
 
 def _score_rule(rule: CanonicalKnowledgeRule, combined: str) -> tuple[int, List[str], List[str]]:
@@ -492,22 +651,49 @@ def classify_dim5_knowledge_scope(
     )
     combined = " ".join(parts)
     direct_formula_guard = bool(DIRECT_FORMULA_PATTERN.search(combined))
+    retrieval_override = _retrieval_override(
+        feature,
+        direct_formula_guard=direct_formula_guard,
+    )
 
     explicit_level = normalize_dim5_knowledge_level(feature.get("knowledge_level"))
     explicit_domain = str(feature.get("canonical_knowledge_domain") or "").strip()
     explicit_point = str(feature.get("canonical_knowledge_point") or "").strip()
     if explicit_level and explicit_domain in DIM5_KNOWLEDGE_DOMAINS and explicit_point:
+        final_level = explicit_level
+        level_source = str(feature.get("level_source") or "").strip() or "model"
+        level_evidence = str(feature.get("level_evidence") or "").strip() or "LLM 已给出知识范围档位。"
+        canonical_match_source = str(feature.get("canonical_match_source") or "").strip() or "model"
+        canonical_match_confidence = float(feature.get("canonical_match_confidence") or 0.72)
+        alias_hits = _unique(feature.get("canonical_alias_hits") or [])
+        structure_hits = _unique(feature.get("canonical_structure_hits") or [])
+        if retrieval_override and _level_rank(retrieval_override["knowledge_level"]) > _level_rank(final_level):
+            final_level = retrieval_override["knowledge_level"]
+            level_source = retrieval_override["level_source"]
+            level_evidence = retrieval_override["level_evidence"]
+            canonical_match_source = retrieval_override["canonical_match_source"]
+            canonical_match_confidence = retrieval_override["canonical_match_confidence"]
+            alias_hits = _unique([*alias_hits, *retrieval_override["canonical_alias_hits"]])
+            structure_hits = _unique([*structure_hits, *retrieval_override["canonical_structure_hits"]])
+        if final_level == "L5" and not _l5_supported(feature, combined):
+            final_level = "L4"
+            level_source = "minimum_sufficient_level_guard"
+            level_evidence = "未见压轴变式、多条件联动、复杂分类讨论或七年级核心门槛，仅作为五六年级奥数/前置层级处理。"
+        if direct_formula_guard and _level_rank(final_level) > 2:
+            final_level = "L2" if explicit_domain in {"geometry_spatial", "quantity_application", "statistics_probability"} else "L1"
+            level_source = "direct_formula_guard"
+            level_evidence = "题目为直接公式/直接代入，不因本地检索或模型候选升到高阶知识范围。"
         return {
             "canonical_knowledge_point": explicit_point,
             "canonical_knowledge_domain": explicit_domain,
             "canonical_knowledge_family": str(feature.get("canonical_knowledge_family") or "").strip(),
-            "knowledge_level": explicit_level,
-            "level_source": str(feature.get("level_source") or "").strip() or "model",
-            "level_evidence": str(feature.get("level_evidence") or "").strip() or "LLM 已给出知识范围档位。",
-            "canonical_match_source": str(feature.get("canonical_match_source") or "").strip() or "model",
-            "canonical_match_confidence": float(feature.get("canonical_match_confidence") or 0.72),
-            "canonical_alias_hits": _unique(feature.get("canonical_alias_hits") or []),
-            "canonical_structure_hits": _unique(feature.get("canonical_structure_hits") or []),
+            "knowledge_level": final_level,
+            "level_source": level_source,
+            "level_evidence": level_evidence,
+            "canonical_match_source": canonical_match_source,
+            "canonical_match_confidence": canonical_match_confidence,
+            "canonical_alias_hits": alias_hits,
+            "canonical_structure_hits": structure_hits,
             "canonical_direct_formula_guard": direct_formula_guard
             or bool(feature.get("canonical_direct_formula_guard")),
         }
@@ -516,7 +702,7 @@ def classify_dim5_knowledge_scope(
         str(feature.get(key) or "")
         for key in ("gaosi_section_level", "gaosi_section_label")
     )
-    explicit_challenge = "challenge" in gaosi_section_text.lower() or "超越篇" in gaosi_section_text
+    section_only_challenge = "challenge" in gaosi_section_text.lower() or "超越篇" in gaosi_section_text
 
     candidates: List[tuple[int, CanonicalKnowledgeRule, List[str], List[str]]] = []
     if combined:
@@ -555,8 +741,7 @@ def classify_dim5_knowledge_scope(
             }
 
         if (
-            explicit_challenge
-            or (L5_STRUCTURE_PATTERN.search(combined) and _level_rank(level) >= 4)
+            (_l5_supported(feature, combined, base_level=level) and _level_rank(level) >= 4)
             or (
                 _level_rank(level) >= 4
                 and feature.get("competition_signal") == "strong"
@@ -568,14 +753,30 @@ def classify_dim5_knowledge_scope(
             # Reference-library hits remain calibration signals, but are expressed
             # as knowledge-scope levels instead of GaoSi user-facing bands.
             level = old_level
+        if retrieval_override and _level_rank(retrieval_override["knowledge_level"]) > _level_rank(level):
+            level = retrieval_override["knowledge_level"]
+            source = retrieval_override["canonical_match_source"]
+            confidence = max(confidence, retrieval_override["canonical_match_confidence"])
+            alias_hits = _unique([*alias_hits, *retrieval_override["canonical_alias_hits"]])
+            structure_hits = _unique([*structure_hits, *retrieval_override["canonical_structure_hits"]])
+            level_source = retrieval_override["level_source"]
+            level_evidence = retrieval_override["level_evidence"]
+        else:
+            level_source = "canonical_rule"
+            level_evidence = rule.evidence or DIM5_LEVEL_LABELS[level]
+            if section_only_challenge and level != "L5":
+                level_evidence = (
+                    "高思篇章只作为审计线索；未见压轴变式、多条件联动、复杂分类讨论或七年级核心门槛，"
+                    f"按最小充分知识层级归入 {level}。"
+                )
 
         return {
             "canonical_knowledge_point": rule.point,
             "canonical_knowledge_domain": rule.domain,
             "canonical_knowledge_family": rule.family,
             "knowledge_level": level,
-            "level_source": "canonical_rule",
-            "level_evidence": rule.evidence or DIM5_LEVEL_LABELS[level],
+            "level_source": level_source,
+            "level_evidence": level_evidence,
             "canonical_match_source": source,
             "canonical_match_confidence": confidence,
             "canonical_alias_hits": alias_hits,
@@ -586,22 +787,39 @@ def classify_dim5_knowledge_scope(
     domain = explicit_domain if explicit_domain in DIM5_KNOWLEDGE_DOMAINS else _pick_domain(combined)
     point, fallback_level = _fallback_for_domain(domain)
     level = old_level or fallback_level
-    if explicit_challenge or L5_STRUCTURE_PATTERN.search(combined):
+    if _l5_supported(feature, combined):
         level = "L5"
+    if retrieval_override and _level_rank(retrieval_override["knowledge_level"]) > _level_rank(level):
+        level = retrieval_override["knowledge_level"]
+        level_source = retrieval_override["level_source"]
+        level_evidence = retrieval_override["level_evidence"]
+        match_source = retrieval_override["canonical_match_source"]
+        match_confidence = retrieval_override["canonical_match_confidence"]
+        alias_hits = retrieval_override["canonical_alias_hits"]
+        structure_hits = retrieval_override["canonical_structure_hits"]
+    else:
+        level_source = "domain_fallback" if not old_level else "legacy_band_calibration"
+        level_evidence = "未命中具体标准知识点，按知识域和参考库信号保守兜底，保证可读题目进入评分。"
+        match_source = "domain_fallback" if not old_level else "legacy_band_calibration"
+        match_confidence = 0.58 if combined else 0.45
+        alias_hits = []
+        structure_hits = []
     if direct_formula_guard and _level_rank(level) > 2:
         level = "L2" if domain in {"geometry_spatial", "quantity_application", "statistics_probability"} else "L1"
+        level_source = "direct_formula_guard"
+        level_evidence = "题目为直接公式/直接代入，不因本地检索或模型候选升到高阶知识范围。"
 
     return {
         "canonical_knowledge_point": explicit_point or str(feature.get("primary_knowledge_point") or "").strip() or point,
         "canonical_knowledge_domain": domain,
         "canonical_knowledge_family": str(feature.get("canonical_knowledge_family") or "").strip() or "domain_fallback",
         "knowledge_level": level,
-        "level_source": "domain_fallback" if not old_level else "legacy_band_calibration",
-        "level_evidence": "未命中具体标准知识点，按知识域和参考库信号保守兜底，保证可读题目进入评分。",
-        "canonical_match_source": "domain_fallback" if not old_level else "legacy_band_calibration",
-        "canonical_match_confidence": 0.58 if combined else 0.45,
-        "canonical_alias_hits": [],
-        "canonical_structure_hits": [],
+        "level_source": level_source,
+        "level_evidence": level_evidence,
+        "canonical_match_source": match_source,
+        "canonical_match_confidence": match_confidence,
+        "canonical_alias_hits": alias_hits,
+        "canonical_structure_hits": structure_hits,
         "canonical_direct_formula_guard": direct_formula_guard,
     }
 

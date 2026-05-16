@@ -522,7 +522,9 @@ class VisionLLMProvider(BaseOCRProvider):
     def _repair_common_json_issues(self, payload: str) -> str:
         repaired = payload.strip()
         repaired = self._strip_trailing_commas(repaired)
+        repaired = self._insert_missing_commas(repaired)
         repaired = self._escape_unescaped_inner_quotes(repaired)
+        repaired = self._insert_missing_commas(repaired)
         repaired = self._strip_trailing_commas(repaired)
         return repaired
 
@@ -532,6 +534,101 @@ class VisionLLMProvider(BaseOCRProvider):
         while index < len(payload) and payload[index].isspace():
             index += 1
         return payload[index] if index < len(payload) else ""
+
+    @classmethod
+    def _string_is_object_key(cls, payload: str, quote_index: int) -> bool:
+        index = quote_index + 1
+        escape_next = False
+        while index < len(payload):
+            char = payload[index]
+            if escape_next:
+                escape_next = False
+            elif char == "\\":
+                escape_next = True
+            elif char == '"':
+                return cls._next_non_whitespace_char(payload, index + 1) == ":"
+            index += 1
+        return False
+
+    @staticmethod
+    def _is_json_value_start(char: str) -> bool:
+        return char in {'"', "{", "[", "-"} or char.isdigit() or char in {"t", "f", "n"}
+
+    @staticmethod
+    def _is_json_value_end(char: str) -> bool:
+        return char in {'"', "}", "]"} or char.isdigit() or char in {"e", "l"}
+
+    def _should_insert_missing_comma(
+        self,
+        payload: str,
+        index: int,
+        previous_significant: str,
+        stack: Sequence[str],
+    ) -> bool:
+        if not stack or not self._is_json_value_end(previous_significant):
+            return False
+        if previous_significant in {"", "{", "[", ":", ","}:
+            return False
+
+        char = payload[index]
+        container = stack[-1]
+        if container == "[":
+            return self._is_json_value_start(char)
+        if container == "{":
+            return char == '"' and self._string_is_object_key(payload, index)
+        return False
+
+    def _insert_missing_commas(self, payload: str) -> str:
+        """Repair common Vision LLM omissions such as `} "next_key"` or `} {`.
+
+        This is intentionally a small JSON-state scanner instead of a broad
+        regex, so punctuation inside question text is never treated as structure.
+        """
+
+        result: List[str] = []
+        stack: List[str] = []
+        in_string = False
+        escape_next = False
+        previous_significant = ""
+
+        for index, char in enumerate(payload):
+            if in_string:
+                result.append(char)
+                if escape_next:
+                    escape_next = False
+                elif char == "\\":
+                    escape_next = True
+                elif char == '"':
+                    in_string = False
+                    previous_significant = '"'
+                continue
+
+            if char.isspace():
+                result.append(char)
+                continue
+
+            if self._should_insert_missing_comma(payload, index, previous_significant, stack):
+                result.append(",")
+                previous_significant = ","
+
+            result.append(char)
+
+            if char == '"':
+                in_string = True
+                escape_next = False
+                continue
+            if char in ("{", "["):
+                stack.append(char)
+            elif char in ("}", "]"):
+                if stack:
+                    expected = "{" if char == "}" else "["
+                    if stack[-1] == expected:
+                        stack.pop()
+                    else:
+                        stack.pop()
+            previous_significant = char
+
+        return "".join(result)
 
     def _escape_unescaped_inner_quotes(self, payload: str) -> str:
         result: List[str] = []
@@ -628,7 +725,9 @@ class VisionLLMProvider(BaseOCRProvider):
     ) -> Dict[str, Any]:
         repair_prompt = (
             "下面是一个视觉试卷解析 JSON，但格式无法解析。请只返回修复后的 JSON 对象，"
-            "不要改变原始语义，不要新增不存在的题目。\n"
+            "只修复 JSON 语法，不要改写题干，不要改变原始语义，不要新增不存在的题目。\n"
+            "返回结构必须是页面级对象，字段包括 page_no、page_width、page_height、"
+            "declared_question_count、warnings、questions；questions 必须是数组。\n"
             f"页码：{page_image.page_no}\n"
             f"错误：{error_message}\n"
             f"原始响应：\n{response}"
@@ -637,7 +736,13 @@ class VisionLLMProvider(BaseOCRProvider):
         repaired = await asyncio.wait_for(
             client.chat(
                 [
-                    {"role": "system", "content": "你只修复 JSON 格式，严格返回一个 JSON 对象。"},
+                    {
+                        "role": "system",
+                        "content": (
+                            "你只修复 JSON 语法，严格返回一个页面级 JSON 对象。"
+                            "不要输出 Markdown，不要解释，不要新增题目。"
+                        ),
+                    },
                     {"role": "user", "content": repair_prompt},
                 ],
                 response_format=VISION_JSON_RESPONSE_FORMAT,

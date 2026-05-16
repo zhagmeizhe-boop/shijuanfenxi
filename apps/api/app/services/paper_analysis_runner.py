@@ -12,6 +12,7 @@ from sqlalchemy.exc import DBAPIError
 
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal, close_db
+from app.services.concurrency.analysis_slots import cleanup_stale_analysis_slots
 from app.models import (
     DimensionCode as ModelDimensionCode,
     Paper,
@@ -34,6 +35,8 @@ from app.services.parser import create_ai_parser
 from app.services.report.report_service import ReportService
 from app.services.scoring.dim1_applicability import (
     DIM1_STATUS_APPLICABLE,
+    DIM1_STATUS_NEEDS_SECOND_REVIEW,
+    DIM1_STATUS_NOT_APPLICABLE,
     DIM1_STATUS_REVIEW,
     evaluate_dim1_applicability,
 )
@@ -45,16 +48,31 @@ from app.services.scoring.dim2_applicability import (
 )
 from app.services.scoring.dim3_applicability import (
     DIM3_STATUS_APPLICABLE,
+    DIM3_STATUS_NEEDS_SECOND_REVIEW,
+    DIM3_STATUS_NOT_APPLICABLE,
     enrich_dim3_text_length_facts,
     evaluate_dim3_applicability,
 )
 from app.services.scoring.dim4_applicability import (
     DIM4_STATUS_APPLICABLE,
+    DIM4_STATUS_NEEDS_SECOND_REVIEW,
+    DIM4_STATUS_NOT_APPLICABLE,
     evaluate_dim4_applicability,
 )
 from app.services.scoring.dim6_applicability import (
     DIM6_STATUS_APPLICABLE,
+    DIM6_STATUS_NEEDS_SECOND_REVIEW,
+    DIM6_STATUS_NOT_APPLICABLE,
+    DIM6_STATUS_REVIEW,
     evaluate_dim6_applicability,
+)
+from app.services.scoring.dim_second_review import (
+    SECOND_REVIEW_STATUS_APPLICABLE,
+    SECOND_REVIEW_STATUS_FAILED_EXCLUDED,
+    SECOND_REVIEW_STATUS_NOT_APPLICABLE,
+    build_second_review_dimension_score,
+    build_second_review_exclusion_details,
+    normalize_second_review_payload,
 )
 from app.services.scoring.paper_aggregator import QuestionDimensionScore
 
@@ -202,6 +220,8 @@ def _collect_dimension_warnings(
     dim_code: str | None = None,
 ) -> List[str]:
     warnings: List[str] = []
+    if dim_code in {"dim1", "dim3", "dim4", "dim6"} and feature_dict.get("second_review_status") == "applicable":
+        return []
     if dim_code == "dim2":
         if feature_dict.get("fallback_source") != "visual_geometry":
             warnings.extend(
@@ -345,6 +365,39 @@ def _serialize_question_tag_payload(question, features, dimension_statuses: Opti
     return json.dumps(payload, ensure_ascii=False)
 
 
+def _second_review_exclusion_reason(dim_code: str, normalized_review: dict[str, Any]) -> str:
+    if dim_code == "dim1":
+        if normalized_review.get("status") == SECOND_REVIEW_STATUS_NOT_APPLICABLE:
+            return (
+                str(normalized_review.get("exclude_reason") or "").strip()
+                or "二次复评确认该题没有稳定的核心计算执行负担，未计入该维度。"
+            )
+        return (
+            str(normalized_review.get("exclude_reason") or "").strip()
+            or "该题因题面信息不足或判定不稳定，未计入数学运算评分。"
+        )
+    if dim_code == "dim6":
+        if normalized_review.get("status") == SECOND_REVIEW_STATUS_NOT_APPLICABLE:
+            return (
+                str(normalized_review.get("exclude_reason") or "").strip()
+                or "二次复评确认该题没有稳定的逻辑链条负担，未计入该维度。"
+            )
+        return (
+            str(normalized_review.get("exclude_reason") or "").strip()
+            or "该题因题面信息不足或判定不稳定，未计入逻辑链条评分。"
+        )
+    dimension_name = "场景理解复杂度" if dim_code == "dim3" else "建模解题复杂度"
+    if normalized_review.get("status") == SECOND_REVIEW_STATUS_NOT_APPLICABLE:
+        return (
+            str(normalized_review.get("exclude_reason") or "").strip()
+            or f"二次复评确认该题没有稳定的{dimension_name}负担，未计入该维度。"
+        )
+    return (
+        str(normalized_review.get("exclude_reason") or "").strip()
+        or f"该题因图文信息不足或判定不稳定，未计入{dimension_name}评分。"
+    )
+
+
 def _highest_grade_hint(features) -> Optional[str]:
     dim5_feature = features.get_feature("dim5") if hasattr(features, "get_feature") else {}
     grade_clues = _list_strings(dim5_feature.get("grade_clues", []))
@@ -422,6 +475,7 @@ async def _update_paper_state(
 async def mark_stale_analysis_tasks(stale_minutes: int | None = None) -> int:
     stale_minutes = stale_minutes or settings.TASK_STALE_MINUTES
     cutoff = datetime.utcnow() - timedelta(minutes=stale_minutes)
+    stale_count = 0
 
     async with AsyncSessionLocal() as db:
         result = await db.execute(
@@ -431,16 +485,27 @@ async def mark_stale_analysis_tasks(stale_minutes: int | None = None) -> int:
             )
         )
         stale_papers = result.scalars().all()
-        if not stale_papers:
-            return 0
 
         for paper in stale_papers:
             paper.parse_status = ModelParseStatus.PARSE_FAILED
             paper.last_stage = paper.last_stage or "parsing"
             paper.error_message = "任务中断或 worker 退出，请重新上传"
 
-        await db.commit()
-        return len(stale_papers)
+        stale_count = len(stale_papers)
+        if stale_papers:
+            await db.commit()
+
+        active_result = await db.execute(
+            select(Paper.paper_id).where(Paper.parse_status == ModelParseStatus.PARSING)
+        )
+        active_paper_ids = [str(row[0]) for row in active_result.all() if row[0]]
+
+    try:
+        cleanup_stale_analysis_slots(active_paper_ids)
+    except Exception:
+        logger.warning("Failed to cleanup stale analysis slots", exc_info=True)
+
+    return stale_count
 
 
 async def mark_paper_waiting_for_analysis_slot(paper_id: str) -> None:
@@ -668,6 +733,7 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                 for dim_code, scorer in report_service.scorers.items():
                     feature_dict = features.get_feature(dim_code) if hasattr(features, "get_feature") else {}
                     reason = ""
+                    dim_result_override = None
 
                     if dim_code == "dim1":
                         feature_dict = _dim1_feature_with_knowledge_context(feature_dict, features)
@@ -689,13 +755,84 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                             dim_warnings[dim_code] = list(
                                 dict.fromkeys(str(item).strip() for item in dim1_status["warnings"] if str(item).strip())
                             )
-                            manual_review_needed = True
                         dimension_status_payload[dim_code] = {
                             "status": dim_status,
                             "reason": reason,
                             "warnings": dim_warnings.get(dim_code, []),
                             "normalized_facts": feature_dict,
                         }
+                        if dim_status in {DIM1_STATUS_NEEDS_SECOND_REVIEW, DIM1_STATUS_REVIEW}:
+                            second_review_raw = await ai_parser.review_dim3_dim4_applicability(
+                                question,
+                                dim_code=dim_code,
+                                analysis_facts=getattr(features, "analysis_facts", {}) or {},
+                                initial_feature=feature_dict,
+                                initial_status=dim1_status,
+                            )
+                            normalized_review = normalize_second_review_payload(dim_code, second_review_raw)
+                            dimension_status_payload[dim_code]["initial_status"] = dim1_status
+                            dimension_status_payload[dim_code]["second_review"] = normalized_review
+                            if normalized_review["status"] == SECOND_REVIEW_STATUS_APPLICABLE:
+                                dim_result_override = build_second_review_dimension_score(
+                                    dim_code,
+                                    second_review_raw,
+                                    initial_feature=feature_dict,
+                                    initial_status=dim1_status,
+                                )
+                                feature_dict = dict(dim_result_override.details or {})
+                                setattr(features, "dim1_computation", feature_dict)
+                                dim_status = DIM1_STATUS_APPLICABLE
+                                reason = dim_result_override.evidence
+                                dim_statuses[dim_code] = dim_status
+                                dim_warnings.pop(dim_code, None)
+                                dimension_status_payload[dim_code].update(
+                                    {
+                                        "status": dim_status,
+                                        "reason": reason,
+                                        "warnings": [],
+                                        "normalized_facts": feature_dict,
+                                        "score_details": dim_result_override.details,
+                                    }
+                                )
+                            else:
+                                final_status = (
+                                    DIM1_STATUS_NOT_APPLICABLE
+                                    if normalized_review["status"] == SECOND_REVIEW_STATUS_NOT_APPLICABLE
+                                    else SECOND_REVIEW_STATUS_FAILED_EXCLUDED
+                                )
+                                reason = _second_review_exclusion_reason(dim_code, normalized_review)
+                                exclusion_details = build_second_review_exclusion_details(
+                                    dim_code,
+                                    second_review_raw,
+                                    initial_feature=feature_dict,
+                                    initial_status=dim1_status,
+                                )
+                                dim_statuses[dim_code] = final_status
+                                dim_warnings.pop(dim_code, None)
+                                dim_reasons[dim_code] = reason
+                                dim_confidences[dim_code] = float(normalized_review.get("confidence", 0.0) or 0.0)
+                                dim_details[dim_code] = exclusion_details
+                                dimension_status_payload[dim_code].update(
+                                    {
+                                        "status": final_status,
+                                        "reason": reason,
+                                        "warnings": [],
+                                        "normalized_facts": exclusion_details,
+                                        "score_details": exclusion_details,
+                                    }
+                                )
+                                question_dim_rows.append(
+                                    QuestionDimScore(
+                                        question_id=question_id,
+                                        dim_code=ModelDimensionCode(dim_code),
+                                        dim_score=0.0,
+                                        is_applicable=False,
+                                        score_evidence=reason,
+                                        rule_version="v3.0-accuracy",
+                                        confidence=float(normalized_review.get("confidence", 0.0) or 0.0),
+                                    )
+                                )
+                                continue
                         if dim_status != DIM1_STATUS_APPLICABLE:
                             dim_reasons[dim_code] = reason
                             dim_confidences[dim_code] = _dimension_confidence(feature_dict, features)
@@ -786,13 +923,84 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                             dim_warnings[dim_code] = list(
                                 dict.fromkeys(str(item).strip() for item in dim3_status["warnings"] if str(item).strip())
                             )
-                            manual_review_needed = True
                         dimension_status_payload[dim_code] = {
                             "status": dim_status,
                             "reason": reason,
                             "warnings": dim_warnings.get(dim_code, []),
                             "normalized_facts": feature_dict,
                         }
+                        if dim_status == DIM3_STATUS_NEEDS_SECOND_REVIEW:
+                            second_review_raw = await ai_parser.review_dim3_dim4_applicability(
+                                question,
+                                dim_code=dim_code,
+                                analysis_facts=getattr(features, "analysis_facts", {}) or {},
+                                initial_feature=feature_dict,
+                                initial_status=dim3_status,
+                            )
+                            normalized_review = normalize_second_review_payload(dim_code, second_review_raw)
+                            dimension_status_payload[dim_code]["initial_status"] = dim3_status
+                            dimension_status_payload[dim_code]["second_review"] = normalized_review
+                            if normalized_review["status"] == SECOND_REVIEW_STATUS_APPLICABLE:
+                                dim_result_override = build_second_review_dimension_score(
+                                    dim_code,
+                                    second_review_raw,
+                                    initial_feature=feature_dict,
+                                    initial_status=dim3_status,
+                                )
+                                feature_dict = dict(dim_result_override.details or {})
+                                setattr(features, "dim3_information", feature_dict)
+                                dim_status = DIM3_STATUS_APPLICABLE
+                                reason = dim_result_override.evidence
+                                dim_statuses[dim_code] = dim_status
+                                dim_warnings.pop(dim_code, None)
+                                dimension_status_payload[dim_code].update(
+                                    {
+                                        "status": dim_status,
+                                        "reason": reason,
+                                        "warnings": [],
+                                        "normalized_facts": feature_dict,
+                                        "score_details": dim_result_override.details,
+                                    }
+                                )
+                            else:
+                                final_status = (
+                                    DIM3_STATUS_NOT_APPLICABLE
+                                    if normalized_review["status"] == SECOND_REVIEW_STATUS_NOT_APPLICABLE
+                                    else SECOND_REVIEW_STATUS_FAILED_EXCLUDED
+                                )
+                                reason = _second_review_exclusion_reason(dim_code, normalized_review)
+                                exclusion_details = build_second_review_exclusion_details(
+                                    dim_code,
+                                    second_review_raw,
+                                    initial_feature=feature_dict,
+                                    initial_status=dim3_status,
+                                )
+                                dim_statuses[dim_code] = final_status
+                                dim_warnings.pop(dim_code, None)
+                                dim_reasons[dim_code] = reason
+                                dim_confidences[dim_code] = float(normalized_review.get("confidence", 0.0) or 0.0)
+                                dim_details[dim_code] = exclusion_details
+                                dimension_status_payload[dim_code].update(
+                                    {
+                                        "status": final_status,
+                                        "reason": reason,
+                                        "warnings": [],
+                                        "normalized_facts": exclusion_details,
+                                        "score_details": exclusion_details,
+                                    }
+                                )
+                                question_dim_rows.append(
+                                    QuestionDimScore(
+                                        question_id=question_id,
+                                        dim_code=ModelDimensionCode(dim_code),
+                                        dim_score=0.0,
+                                        is_applicable=False,
+                                        score_evidence=reason,
+                                        rule_version="v3.0-accuracy",
+                                        confidence=float(normalized_review.get("confidence", 0.0) or 0.0),
+                                    )
+                                )
+                                continue
                         if dim_status != DIM3_STATUS_APPLICABLE:
                             dim_reasons[dim_code] = reason
                             dim_confidences[dim_code] = _dimension_confidence(feature_dict, features)
@@ -833,6 +1041,78 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                             "warnings": dim_warnings.get(dim_code, []),
                             "normalized_facts": feature_dict,
                         }
+                        if dim_status == DIM4_STATUS_NEEDS_SECOND_REVIEW:
+                            second_review_raw = await ai_parser.review_dim3_dim4_applicability(
+                                question,
+                                dim_code=dim_code,
+                                analysis_facts=getattr(features, "analysis_facts", {}) or {},
+                                initial_feature=feature_dict,
+                                initial_status=dim4_status,
+                            )
+                            normalized_review = normalize_second_review_payload(dim_code, second_review_raw)
+                            dimension_status_payload[dim_code]["initial_status"] = dim4_status
+                            dimension_status_payload[dim_code]["second_review"] = normalized_review
+                            if normalized_review["status"] == SECOND_REVIEW_STATUS_APPLICABLE:
+                                dim_result_override = build_second_review_dimension_score(
+                                    dim_code,
+                                    second_review_raw,
+                                    initial_feature=feature_dict,
+                                    initial_status=dim4_status,
+                                )
+                                feature_dict = dict(dim_result_override.details or {})
+                                setattr(features, "dim4_innovation", feature_dict)
+                                dim_status = DIM4_STATUS_APPLICABLE
+                                reason = dim_result_override.evidence
+                                dim_statuses[dim_code] = dim_status
+                                dim_warnings.pop(dim_code, None)
+                                dimension_status_payload[dim_code].update(
+                                    {
+                                        "status": dim_status,
+                                        "reason": reason,
+                                        "warnings": [],
+                                        "normalized_facts": feature_dict,
+                                        "score_details": dim_result_override.details,
+                                    }
+                                )
+                            else:
+                                final_status = (
+                                    DIM4_STATUS_NOT_APPLICABLE
+                                    if normalized_review["status"] == SECOND_REVIEW_STATUS_NOT_APPLICABLE
+                                    else SECOND_REVIEW_STATUS_FAILED_EXCLUDED
+                                )
+                                reason = _second_review_exclusion_reason(dim_code, normalized_review)
+                                exclusion_details = build_second_review_exclusion_details(
+                                    dim_code,
+                                    second_review_raw,
+                                    initial_feature=feature_dict,
+                                    initial_status=dim4_status,
+                                )
+                                dim_statuses[dim_code] = final_status
+                                dim_warnings.pop(dim_code, None)
+                                dim_reasons[dim_code] = reason
+                                dim_confidences[dim_code] = float(normalized_review.get("confidence", 0.0) or 0.0)
+                                dim_details[dim_code] = exclusion_details
+                                dimension_status_payload[dim_code].update(
+                                    {
+                                        "status": final_status,
+                                        "reason": reason,
+                                        "warnings": [],
+                                        "normalized_facts": exclusion_details,
+                                        "score_details": exclusion_details,
+                                    }
+                                )
+                                question_dim_rows.append(
+                                    QuestionDimScore(
+                                        question_id=question_id,
+                                        dim_code=ModelDimensionCode(dim_code),
+                                        dim_score=0.0,
+                                        is_applicable=False,
+                                        score_evidence=reason,
+                                        rule_version="v3.0-accuracy",
+                                        confidence=float(normalized_review.get("confidence", 0.0) or 0.0),
+                                    )
+                                )
+                                continue
                         if dim_status != DIM4_STATUS_APPLICABLE:
                             dim_reasons[dim_code] = reason
                             dim_confidences[dim_code] = _dimension_confidence(feature_dict, features)
@@ -865,13 +1145,84 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                             dim_warnings[dim_code] = list(
                                 dict.fromkeys(str(item).strip() for item in dim6_status["warnings"] if str(item).strip())
                             )
-                            manual_review_needed = True
                         dimension_status_payload[dim_code] = {
                             "status": dim_status,
                             "reason": reason,
                             "warnings": dim_warnings.get(dim_code, []),
                             "normalized_facts": feature_dict,
                         }
+                        if dim_status in {DIM6_STATUS_NEEDS_SECOND_REVIEW, DIM6_STATUS_REVIEW}:
+                            second_review_raw = await ai_parser.review_dim3_dim4_applicability(
+                                question,
+                                dim_code=dim_code,
+                                analysis_facts=getattr(features, "analysis_facts", {}) or {},
+                                initial_feature=feature_dict,
+                                initial_status=dim6_status,
+                            )
+                            normalized_review = normalize_second_review_payload(dim_code, second_review_raw)
+                            dimension_status_payload[dim_code]["initial_status"] = dim6_status
+                            dimension_status_payload[dim_code]["second_review"] = normalized_review
+                            if normalized_review["status"] == SECOND_REVIEW_STATUS_APPLICABLE:
+                                dim_result_override = build_second_review_dimension_score(
+                                    dim_code,
+                                    second_review_raw,
+                                    initial_feature=feature_dict,
+                                    initial_status=dim6_status,
+                                )
+                                feature_dict = dict(dim_result_override.details or {})
+                                setattr(features, "dim6_logic", feature_dict)
+                                dim_status = DIM6_STATUS_APPLICABLE
+                                reason = dim_result_override.evidence
+                                dim_statuses[dim_code] = dim_status
+                                dim_warnings.pop(dim_code, None)
+                                dimension_status_payload[dim_code].update(
+                                    {
+                                        "status": dim_status,
+                                        "reason": reason,
+                                        "warnings": [],
+                                        "normalized_facts": feature_dict,
+                                        "score_details": dim_result_override.details,
+                                    }
+                                )
+                            else:
+                                final_status = (
+                                    DIM6_STATUS_NOT_APPLICABLE
+                                    if normalized_review["status"] == SECOND_REVIEW_STATUS_NOT_APPLICABLE
+                                    else SECOND_REVIEW_STATUS_FAILED_EXCLUDED
+                                )
+                                reason = _second_review_exclusion_reason(dim_code, normalized_review)
+                                exclusion_details = build_second_review_exclusion_details(
+                                    dim_code,
+                                    second_review_raw,
+                                    initial_feature=feature_dict,
+                                    initial_status=dim6_status,
+                                )
+                                dim_statuses[dim_code] = final_status
+                                dim_warnings.pop(dim_code, None)
+                                dim_reasons[dim_code] = reason
+                                dim_confidences[dim_code] = float(normalized_review.get("confidence", 0.0) or 0.0)
+                                dim_details[dim_code] = exclusion_details
+                                dimension_status_payload[dim_code].update(
+                                    {
+                                        "status": final_status,
+                                        "reason": reason,
+                                        "warnings": [],
+                                        "normalized_facts": exclusion_details,
+                                        "score_details": exclusion_details,
+                                    }
+                                )
+                                question_dim_rows.append(
+                                    QuestionDimScore(
+                                        question_id=question_id,
+                                        dim_code=ModelDimensionCode(dim_code),
+                                        dim_score=0.0,
+                                        is_applicable=False,
+                                        score_evidence=reason,
+                                        rule_version="v3.0-accuracy",
+                                        confidence=float(normalized_review.get("confidence", 0.0) or 0.0),
+                                    )
+                                )
+                                continue
                         if dim_status != DIM6_STATUS_APPLICABLE:
                             dim_reasons[dim_code] = reason
                             dim_confidences[dim_code] = _dimension_confidence(feature_dict, features)
@@ -910,7 +1261,7 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
                             continue
                         dim_statuses[dim_code] = "applicable"
 
-                    dim_result = scorer.score(feature_dict or {})
+                    dim_result = dim_result_override or scorer.score(feature_dict or {})
                     warning_messages = list(
                         dict.fromkeys(
                             [

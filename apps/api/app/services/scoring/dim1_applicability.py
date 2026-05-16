@@ -4,7 +4,7 @@ dim1 applicability gating.
 dim1 evaluates computation execution burden only.
 It is tri-state:
 - applicable
-- review
+- needs_second_review
 - not_applicable
 """
 
@@ -16,6 +16,7 @@ from typing import Any, Dict, Iterable, List
 from app.services.ocr.base import QuestionType
 
 DIM1_STATUS_APPLICABLE = "applicable"
+DIM1_STATUS_NEEDS_SECOND_REVIEW = "needs_second_review"
 DIM1_STATUS_REVIEW = "review"
 DIM1_STATUS_NOT_APPLICABLE = "not_applicable"
 DIM1_REVIEW_CONFIDENCE_THRESHOLD = 0.5
@@ -40,6 +41,10 @@ CALC_ROLE_VALUES = {"none", "supporting", "core"}
 TASK_FORM_VALUES = {"explicit", "embedded"}
 ERROR_PRESSURE_VALUES = {"low", "medium", "high"}
 OCR_DAMAGE_MARKERS = ("OCR", "残缺", "缺损", "截断", "公式损坏", "识别失败", "无法识别")
+CROSS_QUESTION_REFERENCE_PATTERN = re.compile(
+    r"(?:第\s*)?([0-9]{1,2}|[一二三四五六七八九十]{1,3})\s*题"
+    r"|题\s*([0-9]{1,2}|[一二三四五六七八九十]{1,3})"
+)
 
 
 def _normalize_question_type(question_type: Any) -> str:
@@ -170,6 +175,25 @@ def _has_internal_conflict(feature: Dict[str, Any], explicit_calculation: bool) 
     return False
 
 
+def _has_cross_question_evidence_leak(raw_text: str, feature: Dict[str, Any]) -> bool:
+    evidence_summary = str(feature.get("evidence_summary") or "")
+    if not evidence_summary:
+        return False
+
+    references = {
+        match.group(1) or match.group(2)
+        for match in CROSS_QUESTION_REFERENCE_PATTERN.finditer(evidence_summary)
+    }
+    if len(references) < 2:
+        return False
+
+    raw_references = {
+        match.group(1) or match.group(2)
+        for match in CROSS_QUESTION_REFERENCE_PATTERN.finditer(raw_text or "")
+    }
+    return not references.issubset(raw_references)
+
+
 def _is_lightweight_direct_computation(feature: Dict[str, Any]) -> bool:
     return (
         _normalize_choice(feature.get("calc_role"), CALC_ROLE_VALUES) == "core"
@@ -220,9 +244,12 @@ def evaluate_dim1_applicability(
     if _has_internal_conflict(feature, explicit_calculation):
         warnings.append("dim1 计算角色与计算负担特征冲突，当前结果需人工复核。")
 
+    if _has_cross_question_evidence_leak(normalized_text, feature):
+        warnings.append("dim1 证据疑似混入其他题号，当前题目转入人工复核。")
+
     if warnings:
         return {
-            "status": DIM1_STATUS_REVIEW,
+            "status": DIM1_STATUS_NEEDS_SECOND_REVIEW,
             "reason": "dim1 计算事实缺失、冲突或 OCR 不稳定，当前题目转入人工复核。",
             "warnings": warnings,
         }

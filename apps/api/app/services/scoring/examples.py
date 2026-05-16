@@ -106,48 +106,82 @@ def example_dim2():
 
 
 def example_dim3():
-    """示例3：维度3 - 信息提取与转化"""
+    """示例3：维度3 - 场景理解复杂度"""
     print("\n" + "="*60)
-    print("示例3：维度3 - 信息提取与转化评分")
+    print("示例3：维度3 - 场景理解复杂度评分")
     print("="*60)
 
     scorer = Dim3InformationScorer()
 
-    # 示例3.1：最简单信息处理
+    # 示例3.1：场景直读
     features_1 = {
-        "info_source_type": "text_only",
-        "info_count": "few",
-        "has_noise_info": 0,
-        "condition_scattered": 0,
-        "need_modeling": 0,
-        "relation_complexity": "low",
+        "information_role": "core",
+        "source_form": "text_only",
+        "relevant_condition_count": "1-2",
+        "distractor_pressure": "none",
+        "condition_distribution": "compact",
+        "scenario_comprehension_load": "light",
+        "image_dependency": "none",
+        "text_length_band": "medium",
+        "scenario_rule_count": "0",
+        "process_stage_count": "1",
+        "feedback_mechanism": "none",
+        "comparison_basis": "none",
+        "diagram_correspondence": "none",
+        "scenario_rule_types": [],
+        "evidence_summary": "对象、动作和题目问法都很直接，读完即可理解场景。",
     }
     result_1 = scorer.score(features_1)
-    print_score_result("维度3 - 最简单信息处理", result_1)
+    print_score_result("维度3 - 场景直读", result_1)
 
-    # 示例3.2：中等复杂度
+    # 示例3.2：关键问法理解
     features_2 = {
-        "info_source_type": "image_text",
-        "info_count": "medium",
-        "has_noise_info": 0,
-        "condition_scattered": 0,
-        "need_modeling": 1,
-        "relation_complexity": "medium",
+        "information_role": "core",
+        "source_form": "image_text",
+        "relevant_condition_count": "3-4",
+        "distractor_pressure": "light",
+        "condition_distribution": "split",
+        "scenario_comprehension_load": "medium",
+        "image_dependency": "helpful",
+        "text_length_band": "medium",
+        "scenario_rule_count": "1",
+        "process_stage_count": "2",
+        "feedback_mechanism": "none",
+        "comparison_basis": "implicit",
+        "diagram_correspondence": "helpful",
+        "scenario_rule_types": ["comparison_basis", "diagram_mapping"],
+        "evidence_summary": "需要读懂图文对应，并分清题目实际比较的是同一口径下的表现。",
     }
     result_2 = scorer.score(features_2)
-    print_score_result("维度3 - 中等复杂度", result_2)
+    print_score_result("维度3 - 关键问法理解", result_2)
 
-    # 示例3.3：最复杂信息处理
+    # 示例3.3：复杂规则系统理解
     features_3 = {
-        "info_source_type": "multi_source",
-        "info_count": "many",
-        "has_noise_info": 1,
-        "condition_scattered": 1,
-        "need_modeling": 1,
-        "relation_complexity": "high",
+        "information_role": "core",
+        "source_form": "multi_source",
+        "relevant_condition_count": "7+",
+        "distractor_pressure": "heavy",
+        "condition_distribution": "cross_modal",
+        "scenario_comprehension_load": "heavy",
+        "image_dependency": "required",
+        "text_length_band": "very_long",
+        "object_count_band": "4+",
+        "scenario_rule_count": "3+",
+        "process_stage_count": "4+",
+        "feedback_mechanism": "conditional",
+        "comparison_basis": "multi_condition",
+        "diagram_correspondence": "multi_step",
+        "scenario_rule_types": [
+            "feedback_rule",
+            "conditional_trigger",
+            "diagram_mapping",
+            "multi_stage_process",
+            "custom_rule_system",
+        ],
+        "evidence_summary": "需要整体读懂多对象、多阶段和条件触发反馈组成的新规则系统。",
     }
     result_3 = scorer.score(features_3)
-    print_score_result("维度3 - 最复杂信息处理", result_3)
+    print_score_result("维度3 - 复杂规则系统理解", result_3)
 
 
 def run_all_examples():

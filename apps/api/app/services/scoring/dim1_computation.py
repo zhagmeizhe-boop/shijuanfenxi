@@ -127,6 +127,57 @@ def _term_count_rank(value: str) -> int:
     return {"1-2": 2, "3-5": 5, "6-10": 10, "11+": 11}.get(value, 0)
 
 
+def _stringify_feature_value(value: Any) -> str:
+    if isinstance(value, dict):
+        return " ".join(_stringify_feature_value(item) for item in value.values())
+    if isinstance(value, (list, tuple, set)):
+        return " ".join(_stringify_feature_value(item) for item in value)
+    return str(value or "")
+
+
+def _feature_text(features: Dict[str, Any]) -> str:
+    parts = [
+        features.get("evidence_summary"),
+        features.get("evidence_tags"),
+        features.get("analysis_facts"),
+        features.get("core_knowledge_points"),
+        features.get("knowledge_points"),
+    ]
+    return " ".join(_stringify_feature_value(part) for part in parts).lower()
+
+
+def _has_text_signal(features: Dict[str, Any], keywords: tuple[str, ...]) -> bool:
+    text = _feature_text(features)
+    return any(keyword.lower() in text for keyword in keywords)
+
+
+LONG_CHAIN_SIGNALS = ("长链", "裂项", "相消", "连续消去", "通项", "首尾项")
+TRIAL_CHECK_SIGNALS = (
+    "试算",
+    "试商",
+    "逐位",
+    "数字约束",
+    "多位数",
+    "余数回查",
+    "整除约束",
+    "代入检验",
+    "系统验证",
+)
+DIGIT_TRIAL_L5_SIGNALS = ("试商", "逐位", "数字约束", "多位数", "多轮试算", "反复试算")
+ELIMINATION_SIGNALS = ("消元", "联立", "方程组", "多比例", "多个比例", "三组比例", "多式联算")
+EMBEDDED_HIGH_PRESSURE_SIGNALS = (
+    "两次稀释",
+    "多阶段百分",
+    "利润率",
+    "成本变化",
+    "价格变化",
+    "浓度变化",
+    "多个比例",
+    "三组比例",
+    "多比例",
+)
+
+
 def infer_calc_bucket(features: Dict[str, Any]) -> str:
     explicit_bucket = _normalize_choice(features.get("calc_bucket"), CALC_BUCKET_VALUES)
     if explicit_bucket:
@@ -354,6 +405,10 @@ class Dim1ComputationScorer(BaseDimensionScorer):
             "term_count_band": term_count_band,
             "symbolic_dependency": symbolic_dependency,
         }
+        has_long_chain_signal = _has_text_signal(features, LONG_CHAIN_SIGNALS)
+        has_trial_check_signal = _has_text_signal(features, TRIAL_CHECK_SIGNALS)
+        has_digit_trial_l5_signal = _has_text_signal(features, DIGIT_TRIAL_L5_SIGNALS)
+        has_elimination_signal = _has_text_signal(features, ELIMINATION_SIGNALS)
 
         if (
             structural_method == "olympiad" and global_view_required == 1
@@ -374,6 +429,27 @@ class Dim1ComputationScorer(BaseDimensionScorer):
             symbolic_dependency == "parameterized"
             and global_view_required == 1
             and calc_subtype in {"sequence_series", "pattern_computation", "structural_identity"}
+        ) or (
+            calc_subtype in {"sequence_series", "structural_identity"}
+            and step_chain == "5+"
+            and (
+                term_rank >= 6
+                or has_long_chain_signal
+                or pattern_set & {"telescoping", "symmetric_cancellation", "sequence_generalization"}
+            )
+            and (global_view_required == 1 or routine_rank >= 2 or number_mix in {"mixed", "symbolic"})
+        ) or (
+            calc_subtype == "defined_operation"
+            and step_chain == "5+"
+            and (routine_rank >= 2 or global_view_required == 1)
+        ) or (
+            calc_subtype in {"equation", "proportion_equation"}
+            and step_chain == "5+"
+            and (symbolic_dependency in {"multi_unknown", "parameterized"} or has_elimination_signal)
+        ) or (
+            has_digit_trial_l5_signal
+            and step_chain == "5+"
+            and (global_view_required == 1 or symbolic_dependency in {"multi_unknown", "parameterized"} or routine_rank >= 2)
         ):
             return self._build_score(
                 "L5",
@@ -417,6 +493,17 @@ class Dim1ComputationScorer(BaseDimensionScorer):
             structural_method in {"shortcut", "olympiad"} and global_view_required == 1
         ) or (
             step_chain == "5+" and number_mix in {"mixed", "symbolic"}
+        ) or (
+            has_trial_check_signal
+            and (step_rank >= 3 or routine_rank >= 1 or global_view_required == 1)
+        ) or (
+            has_elimination_signal
+            and calc_subtype in {"equation", "proportion_equation"}
+            and step_rank >= 3
+        ) or (
+            has_long_chain_signal
+            and calc_subtype in {"sequence_series", "structural_identity"}
+            and step_rank >= 3
         ):
             return self._build_score(
                 "L4",
@@ -501,6 +588,37 @@ class Dim1ComputationScorer(BaseDimensionScorer):
         unit_rank = _embedded_count_rank(features.get("unit_conversion_count"))
         formula_rank = _embedded_count_rank(features.get("formula_substitution_count"))
         error_pressure = str(features.get("error_pressure", "")).strip().lower()
+        calc_subtype = _normalize_choice(features.get("calc_subtype"), CALC_SUBTYPE_VALUES)
+        symbolic_dependency = _normalize_choice(
+            features.get("symbolic_dependency"),
+            SYMBOLIC_DEPENDENCY_VALUES,
+        )
+        structure_patterns = _normalize_choice_list(features.get("structure_patterns"), STRUCTURE_PATTERN_VALUES)
+        has_trial_check_signal = _has_text_signal(features, TRIAL_CHECK_SIGNALS)
+        has_digit_trial_l5_signal = _has_text_signal(features, DIGIT_TRIAL_L5_SIGNALS)
+        has_elimination_signal = _has_text_signal(features, ELIMINATION_SIGNALS)
+        has_embedded_pressure_signal = _has_text_signal(features, EMBEDDED_HIGH_PRESSURE_SIGNALS)
+        pressure_signal_count = sum(
+            [
+                error_pressure == "high",
+                intermediate_rank >= 2,
+                unit_rank >= 1,
+                formula_rank >= 2,
+                routine_rank >= 1,
+                number_mix in {"mixed", "symbolic"},
+                symbolic_dependency in {"multi_unknown", "parameterized"},
+                has_embedded_pressure_signal,
+            ]
+        )
+        audit_details = {
+            "calc_subtype": calc_subtype,
+            "structure_patterns": structure_patterns,
+            "symbolic_dependency": symbolic_dependency,
+            "intermediate_quantity_count": str(features.get("intermediate_quantity_count") or ""),
+            "unit_conversion_count": str(features.get("unit_conversion_count") or ""),
+            "formula_substitution_count": str(features.get("formula_substitution_count") or ""),
+            "pressure_signal_count": pressure_signal_count,
+        }
 
         if (
             structural_method == "olympiad"
@@ -511,8 +629,25 @@ class Dim1ComputationScorer(BaseDimensionScorer):
             and routine_rank >= 3
             and global_view_required == 1
             and number_mix in {"mixed", "symbolic"}
+        ) or (
+            step_chain == "5+"
+            and has_elimination_signal
+            and (
+                symbolic_dependency in {"multi_unknown", "parameterized"}
+                or intermediate_rank >= 3
+                or error_pressure == "high"
+            )
+        ) or (
+            step_chain == "5+"
+            and has_digit_trial_l5_signal
+            and (global_view_required == 1 or error_pressure == "high")
         ):
-            return self._build_score("L5", evidence_summary, calc_bucket="embedded_calculation")
+            return self._build_score(
+                "L5",
+                evidence_summary,
+                calc_bucket="embedded_calculation",
+                extra_details=audit_details,
+            )
 
         if (
             step_chain == "5+"
@@ -530,8 +665,31 @@ class Dim1ComputationScorer(BaseDimensionScorer):
             routine_rank >= 2
             and step_rank >= 3
             and error_pressure == "high"
+        ) or (
+            step_chain == "3-4"
+            and error_pressure == "high"
+            and pressure_signal_count >= 3
+        ) or (
+            step_rank >= 3
+            and calc_subtype in {"equation", "proportion_equation"}
+            and (
+                has_elimination_signal
+                or symbolic_dependency in {"multi_unknown", "parameterized"}
+                or has_embedded_pressure_signal
+            )
+            and pressure_signal_count >= 2
+        ) or (
+            step_rank >= 3
+            and formula_rank >= 2
+            and intermediate_rank >= 2
+            and (error_pressure == "high" or number_mix in {"mixed", "symbolic"})
         ):
-            return self._build_score("L4", evidence_summary, calc_bucket="embedded_calculation")
+            return self._build_score(
+                "L4",
+                evidence_summary,
+                calc_bucket="embedded_calculation",
+                extra_details=audit_details,
+            )
 
         if (
             step_chain == "3-4"
@@ -546,7 +704,12 @@ class Dim1ComputationScorer(BaseDimensionScorer):
         ) or (
             formula_rank >= 2
         ):
-            return self._build_score("L3", evidence_summary, calc_bucket="embedded_calculation")
+            return self._build_score(
+                "L3",
+                evidence_summary,
+                calc_bucket="embedded_calculation",
+                extra_details=audit_details,
+            )
 
         if (
             step_chain == "2"
@@ -557,6 +720,16 @@ class Dim1ComputationScorer(BaseDimensionScorer):
         ) or (
             formula_rank >= 1
         ):
-            return self._build_score("L2", evidence_summary, calc_bucket="embedded_calculation")
+            return self._build_score(
+                "L2",
+                evidence_summary,
+                calc_bucket="embedded_calculation",
+                extra_details=audit_details,
+            )
 
-        return self._build_score("L1", evidence_summary, calc_bucket="embedded_calculation")
+        return self._build_score(
+            "L1",
+            evidence_summary,
+            calc_bucket="embedded_calculation",
+            extra_details=audit_details,
+        )

@@ -38,17 +38,17 @@ export const REPORT_DIMENSIONS: ReportDimensionMeta[] = [
   {
     code: 'dim3',
     field: 'logic',
-    name: '信息提取与转化',
-    shortName: '信息提取',
-    chartName: '信息提取\n与转化',
+    name: '场景理解复杂度',
+    shortName: '场景理解',
+    chartName: '场景理解\n复杂度',
     color: '#6f7d48',
   },
   {
     code: 'dim4',
     field: 'spatial',
-    name: '实践创新',
-    shortName: '实践创新',
-    chartName: '实践创新',
+    name: '建模解题复杂度',
+    shortName: '建模解题',
+    chartName: '建模解题\n复杂度',
     color: '#8a6842',
   },
   {

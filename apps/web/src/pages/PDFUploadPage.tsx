@@ -134,7 +134,7 @@ export function getProcessingMessage(payload: PaperStatusPayload, attempt: numbe
   }
 
   if (payload.parse_status === 'pending' && payload.last_stage === 'queued_waiting_for_analysis_slot') {
-    return `前方已有试卷正在分析，当前正在排队${dots}`;
+    return `正在等待分析资源空闲${dots}`;
   }
 
   if (payload.parse_status === 'pending') {
@@ -614,7 +614,7 @@ export function PDFUploadPage() {
   const features = [
     { icon: Zap, title: '数学运算', desc: '识别试卷中的核心计算难度' },
     { icon: Brain, title: '几何直观与空间想象', desc: '评估几何关系与图形推理要求' },
-    { icon: Target, title: '信息提取与转化', desc: '分析条件读取与表达转化能力' },
+    { icon: Target, title: '场景理解复杂度', desc: '分析场景、规则、过程和图文对应理解' },
     { icon: FileCheck, title: '实践与创新', desc: '关注应用建模与开放表达' },
     { icon: BarChart3, title: '知识点广度', desc: '总结整卷覆盖的知识层级' },
     { icon: Sparkles, title: '逻辑链条长度', desc: '衡量推理步骤与结构复杂度' },

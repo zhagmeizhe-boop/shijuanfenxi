@@ -42,15 +42,15 @@ DIM_META = [
     {
         "code": "dim3",
         "field": "logic",
-        "name": "信息提取与转化",
-        "chart_name": "信息提取\n与转化",
+        "name": "场景理解复杂度",
+        "chart_name": "场景理解\n复杂度",
         "color": "#6f7d48",
     },
     {
         "code": "dim4",
         "field": "spatial",
-        "name": "实践创新",
-        "chart_name": "实践创新",
+        "name": "建模解题复杂度",
+        "chart_name": "建模解题\n复杂度",
         "color": "#8a6842",
     },
     {
@@ -286,16 +286,16 @@ class PDFExportService:
             score_value = 0.0
 
         if score_value >= 9:
-            explanation = "说明本卷读题场景理解与信息重构要求很高，包含复杂规则、多源材料、嵌套关系或自建表示。"
+            explanation = "说明这张试卷在学生读题理解题意上设置了较高难度，不少题目需要完整读懂多条规则、多阶段过程或复杂图文关系。"
         elif score_value >= 8:
-            explanation = "说明本卷读题与信息组织难度较高，分散条件、规则理解、隐含关系或表示转化会拉开差距。"
+            explanation = "说明这张试卷在学生读题理解题意上设置了明显难度，部分题目的场景相对复杂，学生需要先理清对象、阶段、规则或图文关系。"
         elif score_value >= 6:
-            explanation = "说明本卷有一定场景理解和信息整理难度，需要读懂题意规则、筛选多条条件并建立数量关系。"
+            explanation = "说明这张试卷在学生读题理解题意上设置了一定难度，部分题目需要先读懂关键问法、比较标准或简单规则。"
         elif score_value >= 4:
-            explanation = "说明本卷以常规场景理解和信息转化为主，重点看能否把题意条件对应到算式或关系。"
+            explanation = "说明这张试卷在学生读题和理解题意上有常规要求，部分题目需要分清对象、顺序或图文对应关系。"
         else:
-            explanation = "说明本卷信息处理要求较基础，主要是直接读懂题干并定位有效条件。"
-        return f"信息提取与转化维度，综合得分 {score_value:.1f} 分，{explanation}"
+            explanation = "说明这张试卷在学生读题和理解题意上的要求比较基础，大多数题目读完后能较快明白题目在说什么。"
+        return f"场景理解复杂度维度，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim4_score_overview(cls, score: object) -> str:
@@ -305,16 +305,16 @@ class PDFExportService:
             score_value = 0.0
 
         if score_value >= 9:
-            explanation = "说明本卷题目创新要求很高，核心题多需要开放探索、全局构造或最优/唯一性证明。"
+            explanation = "说明本卷在解题思路上难度很高。孩子做核心题时，通常不能只按常规步骤推进，需要先找到关键突破口，再持续检查每一步是否和题目条件一致。"
         elif score_value >= 8:
-            explanation = "说明本卷实践创新要求较高，较多题不能直接套模板，需要构造中间量、分类回查或重组关系。"
+            explanation = "说明本卷在解题思路上有较明显难度。孩子做这类题时，往往需要先把条件之间的关系理清楚，再选择合适的切入方式逐步推进。"
         elif score_value >= 6:
-            explanation = "说明本卷有一定变式要求，部分题需要一次策略转换、模型迁移或关系重排。"
+            explanation = "说明本卷在解题思路上有一定难度。部分题目不是读完就能直接下手，需要孩子先整理已知条件和目标之间的关系，再按较清晰的步骤推进。"
         elif score_value >= 4:
-            explanation = "说明本卷主要是轻度变式，通常在常规模板上作少量调整即可推进。"
+            explanation = "说明本卷在解题思路上的要求整体偏常规。多数题目读懂后可以沿常见思路完成，少量题需要先做简单整理再下手。"
         else:
-            explanation = "说明本卷以基础模板题为主，主要考查直接套用和常规迁移。"
-        return f"实践创新综合得分 {score_value:.1f} 分，{explanation}"
+            explanation = "说明本卷在解题思路上的要求比较基础。多数题目读懂题意后，可以直接找到主要关系并完成解答。"
+        return f"综合得分为 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim5_score_overview(cls, score: object) -> str:
@@ -324,15 +324,15 @@ class PDFExportService:
             score_value = 0.0
 
         if score_value >= 9:
-            explanation = "说明本卷知识跨度很高，核心题多进入高思导引超越篇或跨专题竞赛层级，对竞赛型知识储备要求很强。"
+            explanation = "说明本卷知识门槛很高，核心题多接近六年级奥数较难题、小升初压轴题或七年级核心前置知识。"
         elif score_value >= 8:
-            explanation = "说明本卷知识广度较高，较多题目需要高思导引专题或跨专题知识，适合区分高水平学生。"
+            explanation = "说明本卷知识广度较高，较多题目需要五六年级奥数典型方法或七年级基础前置知识。"
         elif score_value >= 6:
-            explanation = "说明本卷有一定知识拓展，除校内核心知识外，还覆盖入门专题或部分高思导引知识。"
+            explanation = "说明本卷有一定知识拓展，除校内核心知识外，还覆盖校内综合或三四年级奥数入门模型。"
         elif score_value >= 4:
-            explanation = "说明本卷主要落在小学高年级校内核心知识，少量题目涉及校内延伸。"
+            explanation = "说明本卷主要落在四至六年级校内核心知识，常规两三步应用、比例、图形公式等是主要要求。"
         else:
-            explanation = "说明本卷以基础校内知识为主，主要考查基本概念和直接应用。"
+            explanation = "说明本卷以一至三年级校内基础知识为主，主要考查基本概念、基础计算和直接应用。"
         return f"知识广度综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
@@ -343,17 +343,17 @@ class PDFExportService:
             score_value = 0.0
 
         if score_value >= 9:
-            explanation = "说明本卷逻辑链条很长，题目往往需要多次推出中间结论，并让多个条件同时对上。"
+            explanation = "这张试卷有少量解题链条很长的压轴题，通常要连续推进 5 步以上，并检查多个条件。"
         elif score_value >= 8:
-            explanation = "说明本卷逻辑链条较长，较多题需要处理多轮变化、倒推或多种情况。"
+            explanation = "这张试卷不少题解题链条较长，通常要连续推进 3-4 步，并穿插分类、倒推或回查。"
         elif score_value >= 6:
-            explanation = "说明本卷有一定逻辑推进要求，部分题需要连续推出多个中间结论。"
+            explanation = "这张试卷部分题解题链条有一定长度，通常要把前后条件接起来推进 2-4 步。"
         elif score_value >= 4:
-            explanation = "说明本卷逻辑链条整体偏常规，少量题需要把前一步结果接到下一步条件中。"
+            explanation = "这张试卷整体解题链条偏短，少量题需要 1-2 步衔接。"
         else:
-            explanation = "说明本卷多数题的推理链较短，通常一步或直接条件判断即可完成。"
+            explanation = "这张试卷多数题解题链条很短，通常读懂条件后一步判断即可。"
 
-        return f"综合得分 {score_value:.1f} 分，{explanation}"
+        return f"逻辑推理综合得分 {score_value:.1f} 分，{explanation}"
 
     DIM1_DIFFICULTY_LABELS = {
         "L1": "简单（2.0）",
@@ -590,17 +590,78 @@ class PDFExportService:
         return " ".join(str(value or "").split()).strip(" 。；;，,")
 
     @classmethod
+    def _is_probably_english_display_text(cls, value: object) -> bool:
+        text = cls._clean_dim4_display_text(value)
+        if not text:
+            return False
+
+        english_words = re.findall(r"[A-Za-z][A-Za-z'-]{2,}", text)
+        if not english_words:
+            return False
+
+        cjk_count = len(re.findall(r"[\u4e00-\u9fff]", text))
+        ascii_letter_count = len(re.findall(r"[A-Za-z]", text))
+        stopwords = {
+            "and",
+            "are",
+            "but",
+            "either",
+            "for",
+            "from",
+            "into",
+            "requires",
+            "that",
+            "the",
+            "then",
+            "this",
+            "through",
+            "to",
+            "with",
+        }
+        stopword_hits = sum(1 for word in english_words if word.lower() in stopwords)
+        has_english_sentence = len(english_words) >= 4 or stopword_hits >= 2
+
+        if cjk_count == 0:
+            return has_english_sentence or ascii_letter_count >= 20
+
+        return (
+            ascii_letter_count >= 30
+            and ascii_letter_count > max(12, cjk_count * 2.5)
+            and stopword_hits >= 1
+        )
+
+    @classmethod
+    def _dim4_fallback_score_reason(cls, entry: dict) -> str:
+        level_code = str(entry.get("level_code") or "").strip().upper()
+        if not level_code:
+            level_code = cls._level_code_from_score(entry.get("score"))
+        if level_code == "L5":
+            return "难点在于要从全局构造或证明可行性，局部算对还不够"
+        if level_code == "L4":
+            return "难点在于不能直接套模板，需要构造中间量、分类回查或重组关系"
+        if level_code == "L3":
+            return "难点在于要完成一次策略转换或模型迁移，再沿新关系推进"
+        if level_code == "L2":
+            return "难点在于要在常规模板上做少量调整，分清变化后的条件"
+        return "难点在于要识别基础模板，并按常规关系直接推进"
+
+    @classmethod
     def _format_dim4_counted_question_analysis(cls, entry: dict, fallback_text: object) -> str:
         difficulty = cls._counted_question_difficulty_label(entry)
         point = cls._clean_dim4_display_text(entry.get("knowledge_point_text"))
         practice_level = cls._clean_dim4_display_text(entry.get("practice_level_text"))
-        reason = cls._clean_dim4_display_text(entry.get("score_reason"))
+        raw_reason = cls._clean_dim4_display_text(entry.get("score_reason"))
+        reason = (
+            raw_reason
+            if raw_reason and not cls._is_probably_english_display_text(raw_reason)
+            else cls._dim4_fallback_score_reason(entry)
+        )
 
         if difficulty and reason and (point or practice_level):
             if point and practice_level:
                 target = f"本题是{point}中的{practice_level}"
             elif point:
-                target = f"本题是{point}的实践创新题"
+                target = f"本题是{point}的建模解题题"
             else:
                 target = f"本题属于{practice_level}题"
             return f"{difficulty}：{target}；{reason}。"
@@ -613,8 +674,8 @@ class PDFExportService:
         if not text:
             return ""
         return (
-            text.replace("竞赛数学导引", "高思导引")
-            .replace("奥数", "高思导引")
+            text.replace("竞赛数学导引", "奥数")
+            .replace("高思导引", "奥数")
             .strip(" 。；;，,")
         )
 
@@ -636,6 +697,70 @@ class PDFExportService:
 
         fallback = cls._format_counted_question_analysis(fallback_text, entry)
         return cls._clean_dim5_display_text(fallback)
+
+    @classmethod
+    def _dim6_student_action_from_task(cls, task: str, evidence: str) -> str:
+        if "周期" in task:
+            return "找准循环节和目标位置，再把余数对应回具体状态"
+        if "方案" in task:
+            return "先列出可行方案，再按同一个标准比较，并检查限制条件是否都满足"
+        if "情况" in task:
+            return "把可能情况分完整，逐一代回条件检查，避免漏掉或重复"
+        if "倒推" in task or "还原" in task:
+            return "从结果往前还原每一步，再检查是否符合原条件"
+        if "条件同时" in task:
+            return "同时盯住多个条件，先缩小范围，再确认每个条件都成立"
+        if "变化" in task or "阶段" in task:
+            return "按阶段记录变化，把上一阶段的结果接到下一阶段条件中"
+        if "中间结论" in task or "前一步" in evidence:
+            return "把前一步得到的结果接到下一步条件里，连续推出中间结论"
+        return "把已有条件一步步接起来，并在最后检查结论是否符合题意"
+
+    @classmethod
+    def _dim6_chain_description_from_entry(cls, entry: dict) -> str:
+        chain_span = str(entry.get("chain_span") or "").strip()
+        if chain_span == "1":
+            return "很短，通常一步判断即可"
+        if chain_span == "2":
+            return "较短，大约需要连续推进 1-2 步"
+        if chain_span == "3-4":
+            return "较长，大约需要连续推进 3-4 步"
+        if chain_span == "5+":
+            return "很长，通常需要连续推进 5 步以上"
+
+        level_code = str(entry.get("level_code") or "").strip().upper()
+        if not level_code:
+            level_code = cls._level_code_from_score(entry.get("score"))
+        if level_code == "L5":
+            return "很长，通常需要多步推进，并伴随分类、倒推、回查或多条件检查"
+        if level_code == "L4":
+            return "较长，通常需要多步推进，并伴随分类、倒推、回查或多条件检查"
+        if level_code == "L3":
+            return "有一定长度，通常需要把前后条件连续接起来"
+        if level_code == "L2":
+            return "较短，通常需要一两步衔接"
+        return "很短，通常一步判断即可"
+
+    @classmethod
+    def _format_dim6_counted_question_analysis(cls, entry: dict, fallback_text: object) -> str:
+        normalized = cls._format_counted_question_analysis(fallback_text, entry)
+        if not normalized:
+            return normalized
+        if "这题的解题链条" in normalized and "学生需要" in normalized:
+            return normalized
+        current_style = re.match(r"^(.+?)：这题难在(.+?)；学生需要(.+)$", normalized)
+        if current_style:
+            difficulty, _task, action = current_style.groups()
+            chain_description = cls._dim6_chain_description_from_entry(entry)
+            return f"{difficulty}：这题的解题链条{chain_description}；学生需要{action.strip()}"
+
+        old_style = re.match(r"^(.+?)：本题逻辑链条难在(.+?)；依据是(.+)$", normalized)
+        if old_style:
+            difficulty, task, evidence = old_style.groups()
+            action = cls._dim6_student_action_from_task(task.strip(), evidence.strip())
+            chain_description = cls._dim6_chain_description_from_entry(entry)
+            return f"{difficulty}：这题的解题链条{chain_description}；学生需要{action}"
+        return normalized
 
     def _build_report_warning_html(self, warnings: list[object]) -> str:
         del warnings
@@ -661,6 +786,8 @@ class PDFExportService:
                 reason_text = self._format_dim4_counted_question_analysis(entry, raw_reason)
             elif detail.get("code") == "dim5":
                 reason_text = self._format_dim5_counted_question_analysis(entry, raw_reason)
+            elif detail.get("code") == "dim6":
+                reason_text = self._format_dim6_counted_question_analysis(entry, raw_reason)
             else:
                 reason_text = self._format_counted_question_analysis(raw_reason, entry)
             reason = escape(reason_text)
@@ -725,7 +852,13 @@ class PDFExportService:
             meter_width = 0 if is_not_covered else max(0, min(score * 10, 100))
             evidence_label = "覆盖状态" if is_not_covered else "得分概览"
             level_label = escape(str(detail.get("level_label") or "未评级"))
-            evidence = escape(self._truncate_text(self._format_dimension_evidence(detail)))
+            evidence_max_length = 120 if detail.get("code") in {"dim3", "dim4"} else 56
+            evidence = escape(
+                self._truncate_text(
+                    self._format_dimension_evidence(detail),
+                    max_length=evidence_max_length,
+                )
+            )
             warning_html = (
                 '<span class="report-inline-tag report-status-tag">评分提示</span>'
                 if detail.get("warning")
@@ -802,7 +935,7 @@ class PDFExportService:
         if len(summary_items) < 2:
             summary_items = [
                 f"这张试卷整体定位为{difficulty_label}，{target_students}",
-                difficulty_description or "具体难点可以结合六维评价明细和题目难度结构继续查看。",
+                "具体难点要结合各维度得分看，重点关注计算、几何、读题、解题组织、知识跨度和推理链条里分数偏高的部分。",
             ]
 
         paragraphs = "".join(

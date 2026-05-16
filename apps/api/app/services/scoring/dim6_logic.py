@@ -47,11 +47,11 @@ PHASE_COUNT_BAND_VALUES = {"1", "2", "3-4", "5+"}
 OPTIMIZATION_REQUIREMENT_VALUES = {"none", "bounded_choice", "global_minmax"}
 
 DIM6_LEVELS = {
-    "L1": {"score": 2.0, "level": 1, "label": "L1 直接串联"},
-    "L2": {"score": 4.0, "level": 2, "label": "L2 局部推演"},
-    "L3": {"score": 6.0, "level": 3, "label": "L3 多步联结"},
-    "L4": {"score": 8.0, "level": 4, "label": "L4 分支与回查"},
-    "L5": {"score": 9.5, "level": 5, "label": "L5 高阶收束"},
+    "L1": {"score": 2.0, "level": 1, "label": "L1 直接判断"},
+    "L2": {"score": 4.0, "level": 2, "label": "L2 一两步衔接"},
+    "L3": {"score": 6.0, "level": 3, "label": "L3 连续多步"},
+    "L4": {"score": 8.0, "level": 4, "label": "L4 分类倒推回查"},
+    "L5": {"score": 9.5, "level": 5, "label": "L5 复合压轴推理"},
 }
 
 
@@ -90,6 +90,27 @@ def _abstraction_rank(value: str) -> int:
 
 def _band_rank(value: str, mapping: Dict[str, int]) -> int:
     return mapping.get(value, -1)
+
+
+def _needs_backcheck(verification_requirement: str) -> bool:
+    return verification_requirement in {"constraint_backcheck", "full_consistency"}
+
+
+def _has_multi_condition_pressure(
+    *,
+    constraint_coupling: str,
+    hidden_dependency: str,
+    global_consistency_required: int,
+    consistency_rank: int,
+    verification_requirement: str,
+) -> bool:
+    return (
+        constraint_coupling in {"coupled", "nested"}
+        or hidden_dependency in {"cross_condition", "global"}
+        or global_consistency_required == 1
+        or consistency_rank >= 2
+        or verification_requirement == "full_consistency"
+    )
 
 
 class Dim6LogicScorer(BaseDimensionScorer):
@@ -232,6 +253,82 @@ class Dim6LogicScorer(BaseDimensionScorer):
             "evidence_summary": evidence_summary,
         }
 
+        multi_condition_pressure = _has_multi_condition_pressure(
+            constraint_coupling=constraint_coupling,
+            hidden_dependency=hidden_dependency,
+            global_consistency_required=global_consistency_required,
+            consistency_rank=consistency_rank,
+            verification_requirement=verification_requirement,
+        )
+        l5_reason_code = ""
+        if (
+            chain_span == "5+"
+            and _needs_backcheck(verification_requirement)
+            and multi_condition_pressure
+        ):
+            l5_reason_code = "long_chain_with_backcheck"
+        elif (
+            state_rank >= 3
+            and (
+                phase_rank >= 3
+                or chain_span in {"3-4", "5+"}
+                or structures
+                & {
+                    "queue_growth_chain",
+                    "multi_stage_state_change",
+                    "percentage_base_shift_chain",
+                    "travel_meeting_chasing_chain",
+                }
+            )
+            and multi_condition_pressure
+        ):
+            l5_reason_code = "state_changes_with_condition_pressure"
+        elif (
+            case_rank >= 3
+            and (
+                branch_control in {"explicit_cases", "multi_branch"}
+                or "bounded_case_enumeration" in structures
+            )
+            and _needs_backcheck(verification_requirement)
+            and (
+                "optimization_comparison" in structures
+                or optimization_requirement == "global_minmax"
+                or conclusion_stability == "exhaustive"
+                or multi_condition_pressure
+            )
+        ):
+            l5_reason_code = "case_backcheck_with_condition_pressure"
+        elif (
+            backtrack_rank >= 2
+            and (
+                reversibility in {"backward", "bidirectional"}
+                or "reverse_process_chain" in structures
+            )
+            and multi_condition_pressure
+            and (state_rank >= 2 or phase_rank >= 3 or consistency_rank >= 2 or chain_span in {"3-4", "5+"})
+        ):
+            l5_reason_code = "reverse_backtrack_with_multiple_conditions"
+        elif (
+            consistency_rank >= 4
+            and (
+                global_consistency_required == 1
+                or constraint_coupling in {"coupled", "nested"}
+                or _needs_backcheck(verification_requirement)
+            )
+        ):
+            l5_reason_code = "four_or_more_conditions"
+        elif (
+            branch_control == "multi_branch"
+            and chain_span in {"3-4", "5+"}
+            and _needs_backcheck(verification_requirement)
+            and multi_condition_pressure
+        ):
+            l5_reason_code = "multi_branch_multistep_backcheck"
+
+        if l5_reason_code:
+            normalized_details["dim6_level_reason_code"] = l5_reason_code
+            return self._build_score("L5", evidence_summary, normalized_details)
+
         if (
             branch_control == "multi_branch"
             and hidden_dependency == "global"
@@ -267,6 +364,7 @@ class Dim6LogicScorer(BaseDimensionScorer):
                 or optimization_requirement == "global_minmax"
             )
         ):
+            normalized_details["dim6_level_reason_code"] = "strict_l5_signal"
             return self._build_score("L5", evidence_summary, normalized_details)
 
         if (

@@ -66,7 +66,8 @@ class Settings(BaseSettings):
     MAX_RUNNING_ANALYSIS_TASKS: Optional[int] = 2
     MAX_QUEUED_ANALYSIS_TASKS: int = 10
     ANALYSIS_SLOT_RETRY_SECONDS: int = 30
-    ANALYSIS_SLOT_TTL_SECONDS: int = 14400
+    ANALYSIS_SLOT_TTL_SECONDS: int = 900
+    ANALYSIS_SLOT_HEARTBEAT_SECONDS: int = 60
 
     # OCR配置
     OCR_PROVIDER: str = "vision_llm"  # vision_llm, paddleocr, baidu, mock

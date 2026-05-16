@@ -260,6 +260,51 @@ def test_dim1_normalizes_pure_calculation_structural_fields():
     assert feature["symbolic_dependency"] == "parameterized"
 
 
+def test_initial_prompt_excludes_dim5_retrieval_context():
+    parser = make_parser(FakeLLM())
+    question = make_question("3")
+    question.raw_text = "甲乙两车同时相向而行，甲车每小时60千米，乙车每小时40千米，几小时后相遇？"
+
+    messages, used_image = parser._build_prompt(question)
+
+    assert used_image is False
+    user_content = messages[1]["content"]
+    assert "dim5 本地检索候选" not in user_content
+    assert "dim5_retrieval_context" not in user_content
+    assert "candidate_id" not in user_content
+    assert "reference_question" not in user_content
+    assert "topic_structure" not in user_content
+
+
+def test_dim5_retrieval_context_is_attached_after_main_parse():
+    parser = make_parser(FakeLLM())
+    question = make_question("3")
+
+    features = asyncio.run(
+        parser._parse_response_with_repairs(
+            valid_payload(),
+            question,
+        )
+    )
+
+    context = features.dim5_knowledge.get("dim5_retrieval_context")
+    assert features.parse_failed is False
+    assert isinstance(context, dict)
+    assert context["version"] == "dim5_retrieval_v1"
+    assert "dim5_retrieval_candidates" in features.dim5_knowledge
+    assert features.dim5_knowledge["knowledge_level"]
+    assert "dim5_retrieval_context" not in features.analysis_facts
+    for other_feature in (
+        features.dim1_computation,
+        features.dim2_spatial,
+        features.dim3_information,
+        features.dim4_innovation,
+        features.dim6_logic,
+    ):
+        assert "dim5_retrieval_context" not in other_feature
+        assert "dim5_retrieval_candidates" not in other_feature
+
+
 def test_dim2_normalizes_geometry_model_fields():
     parser = make_parser(FakeLLM())
 
@@ -717,9 +762,9 @@ def test_parse_response_marks_manual_review_for_dim3_warnings():
     payload = """{
   "question_summary": "根据统计图分析销量变化",
   "analysis_facts": {
-    "core_task": "从统计图和文字中整理销量变化关系",
-    "core_knowledge_points": ["统计图", "数量关系"],
-    "core_methods": ["读图", "整理条件"],
+    "core_task": "看懂统计图和文字说明中的销量变化场景",
+    "core_knowledge_points": ["统计图"],
+    "core_methods": ["读图", "理解图文对应"],
     "visual_elements": ["统计图"],
     "fact_basis": "题面提供统计图和说明文字",
     "image_used": 0,
@@ -742,7 +787,7 @@ def test_parse_response_marks_manual_review_for_dim3_warnings():
     "dim3_information": {
       "information_role": "core",
       "source_form": "table_chart",
-      "evidence_summary": "缺少完整的信息提取事实",
+      "evidence_summary": "缺少完整的场景理解事实",
       "applicability_confidence": 0.4,
       "need_manual_review": 0,
       "warning": ""
@@ -759,7 +804,7 @@ def test_parse_response_marks_manual_review_for_dim3_warnings():
     "dim6_logic": {}
   },
   "confidence": 0.74,
-  "reasoning": "需要从图表中提取条件。"
+  "reasoning": "需要先看懂图表与文字说明的对应关系。"
 }"""
 
     features = asyncio.run(parser._parse_response_with_repairs(payload, question))
@@ -1072,7 +1117,7 @@ def test_parse_response_uses_gaosi_candidate_before_dim4_local_anchor():
     assert "dim4" in features.applicable_dimensions
 
 
-def test_parse_response_dim4_fallback_failure_stays_applicable_with_conservative_score():
+def test_parse_response_dim4_fallback_failure_keeps_existing_applicable_signal():
     fake_llm = FakeLLM(responses=["not json"])
     parser = make_parser(fake_llm)
     question = ParsedQuestion(
@@ -1385,6 +1430,156 @@ def test_parse_response_marks_failed_when_all_repairs_fail():
     assert features.parse_failed is True
     assert features.json_repair_status == JSON_REPAIR_STATUS_FAILED
     assert "LLM JSON 修复失败" in features.warnings
+
+
+def test_second_review_parses_applicable_dim3_payload():
+    fake_llm = FakeLLM(
+        responses=[
+            json.dumps(
+                {
+                    "status": "applicable",
+                    "level": "L4",
+                    "score": 8.0,
+                    "evidence_summary": "需要读懂关阀门后的水表反馈含义。",
+                    "confidence": 0.86,
+                    "exclude_reason": "",
+                },
+                ensure_ascii=False,
+            )
+        ]
+    )
+    parser = make_parser(fake_llm)
+    question = ParsedQuestion(
+        question_no="13",
+        question_type=QuestionType.APPLICATION,
+        raw_text="每次关闭一个阀门，根据水表是否转动判断哪一段漏水。",
+        page_no=1,
+    )
+
+    result = asyncio.run(
+        parser.review_dim3_dim4_applicability(
+            question,
+            dim_code="dim3",
+            analysis_facts={"core_task": "根据水表反馈判断漏水位置"},
+            initial_feature={"information_role": "core"},
+            initial_status={"status": "needs_second_review"},
+        )
+    )
+
+    assert result["status"] == "applicable"
+    assert result["level"] == "L4"
+    assert result["confidence"] == pytest.approx(0.86)
+    call = fake_llm.calls[0]
+    assert call["kwargs"]["response_format"] == {"type": "json_object"}
+    assert "场景理解复杂度" in call["messages"][1]["content"]
+    assert "L3 读懂一个关键问法" in call["messages"][1]["content"]
+    assert "L4 同时整合多个场景要素" in call["messages"][1]["content"]
+
+
+def test_second_review_returns_unresolved_when_response_is_unstable():
+    parser = make_parser(FakeLLM(responses=["not json"]))
+    question = ParsedQuestion(
+        question_no="20",
+        question_type=QuestionType.APPLICATION,
+        raw_text="根据光线反射规则判断路线。",
+        page_no=1,
+    )
+
+    result = asyncio.run(
+        parser.review_dim3_dim4_applicability(
+            question,
+            dim_code="dim4",
+            analysis_facts={"core_task": "判断反射路线"},
+            initial_feature={"strategy_role": "core"},
+            initial_status={"status": "needs_second_review"},
+        )
+    )
+
+    assert result["status"] == "unresolved"
+    assert result["score"] == 0.0
+    assert "判定不稳定" in result["exclude_reason"]
+
+
+def test_second_review_supports_dim6_payload():
+    fake_llm = FakeLLM(
+        responses=[
+            json.dumps(
+                {
+                    "status": "applicable",
+                    "level": "L3",
+                    "score": 6.0,
+                    "evidence_summary": "需要先分支判断，再代回条件检查。",
+                    "confidence": 0.81,
+                    "exclude_reason": "",
+                },
+                ensure_ascii=False,
+            )
+        ]
+    )
+    parser = make_parser(fake_llm)
+    question = ParsedQuestion(
+        question_no="13",
+        question_type=QuestionType.APPLICATION,
+        raw_text="下面竖式中，商的最高位上的数可能是4的是哪一个？",
+        page_no=1,
+    )
+
+    result = asyncio.run(
+        parser.review_dim3_dim4_applicability(
+            question,
+            dim_code="dim6",
+            analysis_facts={"core_task": "判断商的最高位"},
+            initial_feature={"reasoning_role": "supporting", "branch_control": "explicit_cases"},
+            initial_status={"status": "needs_second_review"},
+        )
+    )
+
+    assert result["status"] == "applicable"
+    assert result["level"] == "L3"
+    assert result["confidence"] == pytest.approx(0.81)
+    assert "dim6" in fake_llm.calls[0]["messages"][1]["content"]
+
+
+def test_second_review_supports_dim1_payload():
+    fake_llm = FakeLLM(
+        responses=[
+            json.dumps(
+                {
+                    "status": "applicable",
+                    "level": "L2",
+                    "score": 4.0,
+                    "evidence_summary": "需要完成两步常规计算并检查结果",
+                    "confidence": 0.83,
+                    "exclude_reason": "",
+                },
+                ensure_ascii=False,
+            )
+        ]
+    )
+    parser = make_parser(fake_llm)
+    question = ParsedQuestion(
+        question_no="2",
+        question_type=QuestionType.CALCULATION,
+        raw_text="计算：128÷4，再用商减去15。",
+        page_no=1,
+    )
+
+    result = asyncio.run(
+        parser.review_dim3_dim4_applicability(
+            question,
+            dim_code="dim1",
+            analysis_facts={"core_task": "完成两步计算"},
+            initial_feature={"task_form": "explicit", "calc_role": "core"},
+            initial_status={"status": "needs_second_review"},
+        )
+    )
+
+    assert result["status"] == "applicable"
+    assert result["level"] == "L2"
+    assert result["confidence"] == pytest.approx(0.83)
+    content = fake_llm.calls[0]["messages"][1]["content"]
+    assert "维度1" in content
+    assert "L1 请返回 not_applicable" in content
 
 
 def test_moonshot_client_retries_without_response_format(monkeypatch):

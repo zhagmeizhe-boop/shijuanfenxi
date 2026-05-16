@@ -1,11 +1,11 @@
 """
 dim3 applicability gating.
 
-dim3 evaluates information extraction and representation conversion burden.
-It is tri-state:
-- applicable
-- review
-- not_applicable
+dim3 now evaluates scenario-comprehension burden at the reading layer. It is
+applicable only when the problem has a real scene, rule, process, feedback,
+comparison wording, or text-image correspondence burden. L1/L2 can enter when
+that burden is present but light; L3+ means the reading burden becomes a
+visible difficulty.
 """
 
 from __future__ import annotations
@@ -13,7 +13,8 @@ from __future__ import annotations
 from typing import Any, Dict, Iterable, List
 
 DIM3_STATUS_APPLICABLE = "applicable"
-DIM3_STATUS_REVIEW = "review"
+DIM3_STATUS_NEEDS_SECOND_REVIEW = "needs_second_review"
+DIM3_STATUS_REVIEW = DIM3_STATUS_NEEDS_SECOND_REVIEW
 DIM3_STATUS_NOT_APPLICABLE = "not_applicable"
 DIM3_REVIEW_CONFIDENCE_THRESHOLD = 0.55
 
@@ -64,6 +65,21 @@ OBJECT_COUNT_BAND_VALUES = {"1", "2", "3", "4+"}
 APPLICATION_COUNT_VALUES = {"0", "1", "2", "3+"}
 BASE_QUANTITY_SHIFT_VALUES = {"none", "single", "multiple"}
 COMPARISON_CANDIDATE_COUNT_VALUES = {"0", "2", "3+"}
+SCENARIO_RULE_COUNT_VALUES = {"0", "1", "2", "3+"}
+PROCESS_STAGE_COUNT_VALUES = {"1", "2", "3", "4+"}
+FEEDBACK_MECHANISM_VALUES = {"none", "simple", "conditional"}
+COMPARISON_BASIS_VALUES = {"none", "direct", "implicit", "multi_condition"}
+DIAGRAM_CORRESPONDENCE_VALUES = {"none", "helpful", "required", "multi_step"}
+SCENARIO_RULE_TYPE_VALUES = {
+    "sequence_order",
+    "comparison_basis",
+    "feedback_rule",
+    "conditional_trigger",
+    "diagram_mapping",
+    "multi_object_roles",
+    "multi_stage_process",
+    "custom_rule_system",
+}
 DIM3_VISUAL_CATEGORIES = {"table_chart", "multi_part_layout"}
 OCR_DAMAGE_MARKERS = ("残缺", "缺损", "截断", "识别失败", "公式增强识别失败")
 
@@ -141,39 +157,10 @@ def _missing_fields(feature: Dict[str, Any]) -> List[str]:
     checks = {
         "information_role": _normalize_choice(feature.get("information_role"), INFORMATION_ROLE_VALUES),
         "source_form": _normalize_choice(feature.get("source_form"), SOURCE_FORM_VALUES),
-        "relevant_condition_count": _normalize_choice(
-            feature.get("relevant_condition_count"),
-            RELEVANT_CONDITION_COUNT_VALUES,
+        "scenario_comprehension_load": _normalize_choice(
+            feature.get("scenario_comprehension_load"),
+            SCENARIO_COMPREHENSION_LOAD_VALUES,
         ),
-        "distractor_pressure": _normalize_choice(
-            feature.get("distractor_pressure"),
-            DISTRACTOR_PRESSURE_VALUES,
-        ),
-        "condition_distribution": _normalize_choice(
-            feature.get("condition_distribution"),
-            CONDITION_DISTRIBUTION_VALUES,
-        ),
-        "extraction_depth": _normalize_choice(
-            feature.get("extraction_depth"),
-            EXTRACTION_DEPTH_VALUES,
-        ),
-        "representation_conversion": _normalize_choice(
-            feature.get("representation_conversion"),
-            REPRESENTATION_CONVERSION_VALUES,
-        ),
-        "conversion_step_count": _normalize_choice(
-            feature.get("conversion_step_count"),
-            CONVERSION_STEP_COUNT_VALUES,
-        ),
-        "quantity_relation_structure": _normalize_choice(
-            feature.get("quantity_relation_structure"),
-            QUANTITY_RELATION_STRUCTURE_VALUES,
-        ),
-        "target_representation": _normalize_choice(
-            feature.get("target_representation"),
-            TARGET_REPRESENTATION_VALUES,
-        ),
-        "global_organizing_required": _normalize_zero_one(feature.get("global_organizing_required")),
         "image_dependency": _normalize_choice(feature.get("image_dependency"), IMAGE_DEPENDENCY_VALUES),
         "evidence_summary": str(feature.get("evidence_summary", "")).strip(),
     }
@@ -202,6 +189,26 @@ def _comparison_candidate_rank(value: str) -> int:
 
 def _scenario_load_rank(value: str) -> int:
     return {"none": 0, "light": 1, "medium": 2, "heavy": 3}.get(str(value or "").strip(), 0)
+
+
+def _rule_count_rank(value: str) -> int:
+    return {"0": 0, "1": 1, "2": 2, "3+": 3}.get(str(value or "").strip(), 0)
+
+
+def _stage_count_rank(value: str) -> int:
+    return {"1": 1, "2": 2, "3": 3, "4+": 4}.get(str(value or "").strip(), 1)
+
+
+def _feedback_rank(value: str) -> int:
+    return {"none": 0, "simple": 1, "conditional": 2}.get(str(value or "").strip(), 0)
+
+
+def _comparison_basis_rank(value: str) -> int:
+    return {"none": 0, "direct": 1, "implicit": 2, "multi_condition": 3}.get(str(value or "").strip(), 0)
+
+
+def _diagram_rank(value: str) -> int:
+    return {"none": 0, "helpful": 1, "required": 2, "multi_step": 3}.get(str(value or "").strip(), 0)
 
 
 def _has_ocr_damage_signals(parse_warnings: Iterable[str] | None) -> bool:
@@ -241,6 +248,12 @@ def _feature_present(feature: Dict[str, Any]) -> bool:
             "implicit_relation_count",
             "base_quantity_shift",
             "comparison_candidate_count",
+            "scenario_rule_count",
+            "process_stage_count",
+            "feedback_mechanism",
+            "comparison_basis",
+            "diagram_correspondence",
+            "scenario_rule_types",
         )
     )
 
@@ -260,47 +273,39 @@ def _has_high_burden_signal(feature: Dict[str, Any]) -> bool:
             APPLICATION_RELATION_TYPE_VALUES,
         )
     )
+    scenario_rule_types = set(
+        _normalize_choice_list(
+            feature.get("scenario_rule_types"),
+            SCENARIO_RULE_TYPE_VALUES,
+        )
+    )
+    stage_rank = max(
+        _stage_count_rank(
+            _normalize_choice(feature.get("process_stage_count"), PROCESS_STAGE_COUNT_VALUES)
+            or "1"
+        ),
+        _application_count_rank(
+            _normalize_choice(feature.get("state_change_count"), APPLICATION_COUNT_VALUES)
+        )
+        + 1,
+    )
+    comparison_rank = max(
+        _comparison_basis_rank(
+            _normalize_choice(feature.get("comparison_basis"), COMPARISON_BASIS_VALUES)
+        ),
+        _comparison_candidate_rank(
+            _normalize_choice(feature.get("comparison_candidate_count"), COMPARISON_CANDIDATE_COUNT_VALUES)
+        ),
+    )
     return any(
         [
             _normalize_choice(feature.get("source_form"), SOURCE_FORM_VALUES) == "multi_source",
-            _count_rank(
-                _normalize_choice(
-                    feature.get("relevant_condition_count"),
-                    RELEVANT_CONDITION_COUNT_VALUES,
-                )
-            )
-            >= 3,
             _normalize_choice(feature.get("distractor_pressure"), DISTRACTOR_PRESSURE_VALUES) == "heavy",
             _normalize_choice(
                 feature.get("condition_distribution"),
                 CONDITION_DISTRIBUTION_VALUES,
             )
-            in {"split", "cross_sentence", "cross_modal"},
-            _normalize_choice(feature.get("extraction_depth"), EXTRACTION_DEPTH_VALUES)
-            in {"reorganized", "inferred"},
-            _normalize_choice(
-                feature.get("representation_conversion"),
-                REPRESENTATION_CONVERSION_VALUES,
-            )
-            in {"relation_mapping", "model_mapping", "custom_model"},
-            _conversion_rank(
-                _normalize_choice(
-                    feature.get("conversion_step_count"),
-                    CONVERSION_STEP_COUNT_VALUES,
-                )
-            )
-            >= 2,
-            _normalize_choice(
-                feature.get("quantity_relation_structure"),
-                QUANTITY_RELATION_STRUCTURE_VALUES,
-            )
-            in {"multi_relation", "nested_relation"},
-            _normalize_choice(
-                feature.get("target_representation"),
-                TARGET_REPRESENTATION_VALUES,
-            )
-            in {"table_list", "equation_relation", "custom_model"},
-            _normalize_zero_one(feature.get("global_organizing_required")) == 1,
+            == "cross_modal",
             _normalize_choice(feature.get("image_dependency"), IMAGE_DEPENDENCY_VALUES) == "required",
             _scenario_load_rank(
                 _normalize_choice(
@@ -309,35 +314,38 @@ def _has_high_burden_signal(feature: Dict[str, Any]) -> bool:
                 )
             )
             >= 3,
+            _rule_count_rank(
+                _normalize_choice(feature.get("scenario_rule_count"), SCENARIO_RULE_COUNT_VALUES)
+            )
+            >= 2,
+            stage_rank >= 3,
+            _feedback_rank(
+                _normalize_choice(feature.get("feedback_mechanism"), FEEDBACK_MECHANISM_VALUES)
+            )
+            >= 1,
+            comparison_rank >= 2,
+            _diagram_rank(
+                _normalize_choice(feature.get("diagram_correspondence"), DIAGRAM_CORRESPONDENCE_VALUES)
+            )
+            >= 2,
+            bool(
+                scenario_rule_types
+                & {
+                    "feedback_rule",
+                    "conditional_trigger",
+                    "diagram_mapping",
+                    "multi_stage_process",
+                    "custom_rule_system",
+                }
+            ),
             bool(
                 relation_types
                 & {
-                    "queue_growth",
-                    "travel_meeting_chasing",
-                    "profit_discount",
-                    "concentration_mixture",
                     "optimization_comparison",
-                    "reverse_process",
-                    "conservation_transfer",
-                    "multi_object_distribution",
                     "range_narrowing",
                 }
             ),
             _object_count_rank(_normalize_choice(feature.get("object_count_band"), OBJECT_COUNT_BAND_VALUES)) >= 3,
-            _application_count_rank(
-                _normalize_choice(feature.get("state_change_count"), APPLICATION_COUNT_VALUES)
-            )
-            >= 2,
-            _application_count_rank(
-                _normalize_choice(feature.get("implicit_relation_count"), APPLICATION_COUNT_VALUES)
-            )
-            >= 2,
-            _normalize_choice(feature.get("base_quantity_shift"), BASE_QUANTITY_SHIFT_VALUES)
-            in {"single", "multiple"},
-            _comparison_candidate_rank(
-                _normalize_choice(feature.get("comparison_candidate_count"), COMPARISON_CANDIDATE_COUNT_VALUES)
-            )
-            >= 3,
         ]
     )
 
@@ -353,13 +361,34 @@ def _is_low_barrier_direct_extraction(feature: Dict[str, Any]) -> bool:
     if _scenario_load_rank(scenario_comprehension_load) >= 2:
         return False
 
+    scenario_rule_types = set(
+        _normalize_choice_list(
+            feature.get("scenario_rule_types"),
+            SCENARIO_RULE_TYPE_VALUES,
+        )
+    )
+    if scenario_rule_types:
+        return False
+    if (
+        _rule_count_rank(_normalize_choice(feature.get("scenario_rule_count"), SCENARIO_RULE_COUNT_VALUES)) >= 1
+        or _stage_count_rank(
+            _normalize_choice(feature.get("process_stage_count"), PROCESS_STAGE_COUNT_VALUES) or "1"
+        )
+        >= 2
+        or _feedback_rank(_normalize_choice(feature.get("feedback_mechanism"), FEEDBACK_MECHANISM_VALUES)) >= 1
+        or _comparison_basis_rank(_normalize_choice(feature.get("comparison_basis"), COMPARISON_BASIS_VALUES)) >= 1
+        or _diagram_rank(_normalize_choice(feature.get("diagram_correspondence"), DIAGRAM_CORRESPONDENCE_VALUES)) >= 1
+        or _normalize_choice(feature.get("image_dependency"), IMAGE_DEPENDENCY_VALUES) in {"helpful", "required"}
+    ):
+        return False
+
     relation_types = set(
         _normalize_choice_list(
             feature.get("application_relation_types"),
             APPLICATION_RELATION_TYPE_VALUES,
         )
     )
-    if relation_types - {"average_total"}:
+    if relation_types & {"optimization_comparison", "range_narrowing"}:
         return False
     if (
         _object_count_rank(_normalize_choice(feature.get("object_count_band"), OBJECT_COUNT_BAND_VALUES)) >= 2
@@ -367,12 +396,6 @@ def _is_low_barrier_direct_extraction(feature: Dict[str, Any]) -> bool:
             _normalize_choice(feature.get("state_change_count"), APPLICATION_COUNT_VALUES)
         )
         >= 1
-        or _application_count_rank(
-            _normalize_choice(feature.get("implicit_relation_count"), APPLICATION_COUNT_VALUES)
-        )
-        >= 1
-        or _normalize_choice(feature.get("base_quantity_shift"), BASE_QUANTITY_SHIFT_VALUES)
-        in {"single", "multiple"}
         or _comparison_candidate_rank(
             _normalize_choice(feature.get("comparison_candidate_count"), COMPARISON_CANDIDATE_COUNT_VALUES)
         )
@@ -380,43 +403,26 @@ def _is_low_barrier_direct_extraction(feature: Dict[str, Any]) -> bool:
     ):
         return False
 
+    relevant_condition_count = (
+        _normalize_choice(feature.get("relevant_condition_count"), RELEVANT_CONDITION_COUNT_VALUES)
+        or "1-2"
+    )
+    distractor_pressure = (
+        _normalize_choice(feature.get("distractor_pressure"), DISTRACTOR_PRESSURE_VALUES)
+        or "none"
+    )
+    condition_distribution = (
+        _normalize_choice(feature.get("condition_distribution"), CONDITION_DISTRIBUTION_VALUES)
+        or "compact"
+    )
+    extraction_depth = _normalize_choice(feature.get("extraction_depth"), EXTRACTION_DEPTH_VALUES) or "direct"
+
     return (
         _normalize_choice(feature.get("source_form"), SOURCE_FORM_VALUES) in {"text_only", "table_chart", "image_text"}
-        and _normalize_choice(
-            feature.get("relevant_condition_count"),
-            RELEVANT_CONDITION_COUNT_VALUES,
-        )
-        == "1-2"
-        and _normalize_choice(feature.get("distractor_pressure"), DISTRACTOR_PRESSURE_VALUES) == "none"
-        and _normalize_choice(
-            feature.get("condition_distribution"),
-            CONDITION_DISTRIBUTION_VALUES,
-        )
-        == "compact"
-        and _normalize_choice(feature.get("extraction_depth"), EXTRACTION_DEPTH_VALUES) == "direct"
-        and _normalize_choice(
-            feature.get("representation_conversion"),
-            REPRESENTATION_CONVERSION_VALUES,
-        )
-        in {"none", "direct_mapping"}
-        and _normalize_choice(
-            feature.get("target_representation"),
-            TARGET_REPRESENTATION_VALUES,
-        )
-        in {"none", "direct_formula", "table_list"}
-        and _normalize_choice(
-            feature.get("quantity_relation_structure"),
-            QUANTITY_RELATION_STRUCTURE_VALUES,
-        )
-        in {"none", "single_relation"}
-        and _conversion_rank(
-            _normalize_choice(
-                feature.get("conversion_step_count"),
-                CONVERSION_STEP_COUNT_VALUES,
-            )
-        )
-        <= 1
-        and _normalize_zero_one(feature.get("global_organizing_required")) == 0
+        and relevant_condition_count == "1-2"
+        and distractor_pressure == "none"
+        and condition_distribution == "compact"
+        and extraction_depth == "direct"
     )
 
 
@@ -438,10 +444,6 @@ def _has_internal_conflict(feature: Dict[str, Any], parse_audit: Any) -> bool:
         feature.get("condition_distribution"),
         CONDITION_DISTRIBUTION_VALUES,
     )
-    conversion_step_count = _normalize_choice(
-        feature.get("conversion_step_count"),
-        CONVERSION_STEP_COUNT_VALUES,
-    )
     image_dependency = _normalize_choice(feature.get("image_dependency"), IMAGE_DEPENDENCY_VALUES)
     visual_category = str(_audit_attr(parse_audit, "visual_category", "") or "").strip()
 
@@ -450,7 +452,10 @@ def _has_internal_conflict(feature: Dict[str, Any], parse_audit: Any) -> bool:
     if (
         source_form == "multi_source"
         and condition_distribution == "compact"
-        and conversion_step_count == "0"
+        and _scenario_load_rank(
+            _normalize_choice(feature.get("scenario_comprehension_load"), SCENARIO_COMPREHENSION_LOAD_VALUES)
+        )
+        <= 1
     ):
         return True
     if image_dependency == "required" and source_form == "text_only":
@@ -480,13 +485,13 @@ def evaluate_dim3_applicability(
     if not _feature_present(feature) and not _has_dim3_signal(raw_text, parse_audit):
         return {
             "status": DIM3_STATUS_NOT_APPLICABLE,
-            "reason": "该题没有稳定的信息提取与表示转化负担，dim3 不适用。",
+            "reason": "该题没有稳定的场景、规则、过程、反馈或图文对应负担，dim3 不适用。",
             "warnings": [],
         }
 
     missing_fields = _missing_fields(feature)
     if missing_fields:
-        warnings.append(f"dim3 缺少关键信息提取事实字段：{'、'.join(missing_fields)}。")
+        warnings.append(f"dim3 缺少关键场景理解事实字段：{'、'.join(missing_fields)}。")
 
     feature_confidence = _normalize_float(feature.get("applicability_confidence"))
     effective_confidence = feature_confidence if feature_confidence is not None else _normalize_float(llm_confidence)
@@ -514,39 +519,79 @@ def evaluate_dim3_applicability(
     ):
         warnings.append("dim3 题面存在 OCR 或图片质量问题，当前结果需人工复核。")
     if _has_internal_conflict(feature, parse_audit):
-        warnings.append("dim3 信息角色与提取/转化负担特征冲突，当前结果需人工复核。")
+        warnings.append("dim3 场景角色与场景理解负担特征冲突，当前结果需人工复核。")
 
     if warnings:
         return {
-            "status": DIM3_STATUS_REVIEW,
-            "reason": "dim3 提取与转化事实缺失、冲突或图表依赖不稳定，当前题目转入人工复核。",
+            "status": DIM3_STATUS_NEEDS_SECOND_REVIEW,
+            "reason": "dim3 场景理解事实缺失、冲突或图表依赖不稳定，当前题目进入二次复评。",
             "warnings": list(dict.fromkeys(item for item in warnings if item)),
         }
 
-    text_length_band = _normalize_choice(feature.get("text_length_band"), TEXT_LENGTH_BAND_VALUES)
-    if information_role == "core" and text_length_band == "very_long":
-        return {
-            "status": DIM3_STATUS_APPLICABLE,
-            "reason": "题干长度达到长应用题门槛，信息保持与条件定位构成 dim3 核心负担。",
-            "warnings": [],
-        }
-
-    if information_role == "core" and not _is_low_barrier_direct_extraction(feature):
-        return {
-            "status": DIM3_STATUS_APPLICABLE,
-            "reason": "有效条件抽取与表示转化构成该题核心门槛，dim3 适用。",
-            "warnings": [],
-        }
-
-    if information_role in {"none", "supporting"} or _is_low_barrier_direct_extraction(feature):
+    scenario_load = _normalize_choice(
+        feature.get("scenario_comprehension_load"),
+        SCENARIO_COMPREHENSION_LOAD_VALUES,
+    )
+    source_form = _normalize_choice(feature.get("source_form"), SOURCE_FORM_VALUES)
+    condition_distribution = _normalize_choice(
+        feature.get("condition_distribution"),
+        CONDITION_DISTRIBUTION_VALUES,
+    )
+    has_scene_burden_signal = any(
+        [
+            _scenario_load_rank(scenario_load) >= 1,
+            source_form in {"table_chart", "image_text", "multi_source"},
+            condition_distribution in {"split", "cross_sentence", "cross_modal"},
+            _object_count_rank(_normalize_choice(feature.get("object_count_band"), OBJECT_COUNT_BAND_VALUES)) >= 2,
+            _application_count_rank(
+                _normalize_choice(feature.get("state_change_count"), APPLICATION_COUNT_VALUES)
+            )
+            >= 1,
+            _rule_count_rank(_normalize_choice(feature.get("scenario_rule_count"), SCENARIO_RULE_COUNT_VALUES)) >= 1,
+            _stage_count_rank(
+                _normalize_choice(feature.get("process_stage_count"), PROCESS_STAGE_COUNT_VALUES) or "1"
+            )
+            >= 2,
+            _feedback_rank(_normalize_choice(feature.get("feedback_mechanism"), FEEDBACK_MECHANISM_VALUES)) >= 1,
+            _comparison_basis_rank(_normalize_choice(feature.get("comparison_basis"), COMPARISON_BASIS_VALUES)) >= 1,
+            _diagram_rank(
+                _normalize_choice(feature.get("diagram_correspondence"), DIAGRAM_CORRESPONDENCE_VALUES)
+            )
+            >= 1,
+            bool(_normalize_choice_list(feature.get("scenario_rule_types"), SCENARIO_RULE_TYPE_VALUES)),
+            _has_high_burden_signal(feature),
+        ]
+    )
+    if information_role == "none":
         return {
             "status": DIM3_STATUS_NOT_APPLICABLE,
-            "reason": "该题的信息提取与表示转化不是核心门槛，dim3 不适用。",
+            "reason": "该题没有真实的读题场景理解负担，dim3 不适用。",
+            "warnings": [],
+        }
+    if not has_scene_burden_signal:
+        return {
+            "status": DIM3_STATUS_NOT_APPLICABLE,
+            "reason": "该题主要是直接读数、直接公式或普通一步应用，没有形成稳定的场景理解负担，dim3 不适用。",
+            "warnings": [],
+        }
+
+    text_length_band = _normalize_choice(feature.get("text_length_band"), TEXT_LENGTH_BAND_VALUES)
+    if information_role == "core" and text_length_band == "very_long" and not _is_low_barrier_direct_extraction(feature):
+        return {
+            "status": DIM3_STATUS_APPLICABLE,
+            "reason": "题干承载了场景、对象或规则，需要持续读懂并保持题意，dim3 适用。",
+            "warnings": [],
+        }
+
+    if information_role == "core":
+        return {
+            "status": DIM3_STATUS_APPLICABLE,
+            "reason": "场景、规则、过程、反馈、比较口径或图文对应构成该题核心读题门槛，dim3 适用。",
             "warnings": [],
         }
 
     return {
-        "status": DIM3_STATUS_NOT_APPLICABLE,
-        "reason": "dim3 边界题尚未形成稳定自动判分依据，当前维度不纳入自动评分。",
+        "status": DIM3_STATUS_APPLICABLE,
+        "reason": "题目存在真实的场景、对象、过程或图文对应负担，但难度较轻，dim3 按低档纳入评分。",
         "warnings": [],
     }

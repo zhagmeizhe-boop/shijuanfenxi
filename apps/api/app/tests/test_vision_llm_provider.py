@@ -687,6 +687,81 @@ def test_vision_llm_provider_repairs_invalid_json_with_same_client(tmp_path):
     assert len(fake_client.calls) == 2
 
 
+def test_vision_llm_provider_repairs_missing_comma_between_page_fields(tmp_path):
+    image_path = _make_image(tmp_path)
+    response = (
+        '{"page_no": 1 "page_width": 900, "page_height": 1200, '
+        '"questions": [{"question_no": "1", "question_type": "application", '
+        '"raw_text": "小明有 3 个苹果，又买 2 个，一共有多少个？" '
+        '"score": 3, "confidence": 0.9}]}'
+    )
+    fake_client = FakeVisionClient([response])
+    provider = _make_provider(fake_client)
+
+    parsed = asyncio.run(provider.parse(str(image_path), paper_name="缺逗号页字段测试卷"))
+
+    assert parsed.total_question_count == 1
+    assert parsed.questions[0].question_no == "1"
+    assert parsed.questions[0].raw_text.startswith("小明有 3 个苹果")
+    assert len(fake_client.calls) == 1
+
+
+def test_vision_llm_provider_repairs_missing_comma_after_bbox_object(tmp_path):
+    image_path = _make_image(tmp_path)
+    response = (
+        '{"page_no": 1, "questions": [{"question_no": "2", '
+        '"question_type": "application", "raw_text": "看图求阴影面积。", '
+        '"score": 5, "bbox": {"left": 30, "top": 40, "width": 500, "height": 180} '
+        '"is_continuation": false, "visual_dependency": "required", "confidence": 0.88}]}'
+    )
+    fake_client = FakeVisionClient([response])
+    provider = _make_provider(fake_client)
+
+    parsed = asyncio.run(provider.parse(str(image_path), paper_name="bbox 缺逗号测试卷"))
+
+    assert parsed.total_question_count == 1
+    assert parsed.questions[0].question_no == "2"
+    assert parsed.questions[0].parse_audit.image_required_hint is True
+    assert parsed.questions[0].block_bbox == {"left": 30, "top": 40, "width": 500, "height": 180}
+    assert len(fake_client.calls) == 1
+
+
+def test_vision_llm_provider_repairs_missing_comma_between_question_objects(tmp_path):
+    image_path = _make_image(tmp_path)
+    response = (
+        '{"page_no": 1, "questions": ['
+        '{"question_no": "1", "question_type": "application", "raw_text": "第一题。", "confidence": 0.9} '
+        '{"question_no": "2", "question_type": "application", "raw_text": "第二题。", "confidence": 0.9}'
+        ']}'
+    )
+    fake_client = FakeVisionClient([response])
+    provider = _make_provider(fake_client)
+
+    parsed = asyncio.run(provider.parse(str(image_path), paper_name="题目对象缺逗号测试卷"))
+
+    assert parsed.total_question_count == 2
+    assert [question.question_no for question in parsed.questions] == ["1", "2"]
+    assert len(fake_client.calls) == 1
+
+
+def test_vision_llm_provider_repair_response_also_uses_local_missing_comma_repair(tmp_path):
+    image_path = _make_image(tmp_path)
+    repaired_response = (
+        '{"page_no": 1, "questions": [{"question_no": "4", '
+        '"question_type": "application", "raw_text": "修复后的题目。", '
+        '"score": 4 "confidence": 0.86}]}'
+    )
+    fake_client = FakeVisionClient(["这不是 JSON", repaired_response])
+    provider = _make_provider(fake_client)
+
+    parsed = asyncio.run(provider.parse(str(image_path), paper_name="二次修复缺逗号测试卷"))
+
+    assert parsed.total_question_count == 1
+    assert parsed.questions[0].question_no == "4"
+    assert parsed.questions[0].score == 4
+    assert len(fake_client.calls) == 2
+
+
 def test_vision_llm_provider_reports_page_when_repair_still_invalid(tmp_path):
     image_path = _make_image(tmp_path)
     fake_client = FakeVisionClient(["这不是 JSON", "仍然不是 JSON"])

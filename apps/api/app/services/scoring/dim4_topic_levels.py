@@ -1,8 +1,10 @@
 """
-Topic-internal L1-L5 anchors for dim4 practice innovation.
+L1-L5 anchors for dim4 modeling and solution organization.
 
-dim4 measures how novel or variant a question is inside its own knowledge point.
-It must not represent knowledge breadth, grade band, contest source, or raw difficulty.
+dim4 measures solving-level structure inside elementary mathematics: condition
+organization, relationship building, tables/diagrams, classification, reverse
+reasoning, scheme comparison, construction, and strategy shifts. It must not
+represent knowledge breadth, grade band, contest source, or raw difficulty.
 """
 
 from __future__ import annotations
@@ -12,16 +14,17 @@ from typing import Any, Dict, List, Optional
 
 
 DIM4_TOPIC_LEVELS = {
-    "L1": {"score": 2.0, "level": 1, "label": "L1 基础模板"},
-    "L2": {"score": 4.0, "level": 2, "label": "L2 轻度变式"},
-    "L3": {"score": 6.0, "level": 3, "label": "L3 中度变式"},
-    "L4": {"score": 8.0, "level": 4, "label": "L4 高阶变式"},
-    "L5": {"score": 9.5, "level": 5, "label": "L5 压轴创新"},
+    "L1": {"score": 2.0, "level": 1, "label": "L1 基础关系"},
+    "L2": {"score": 4.0, "level": 2, "label": "L2 简单转化"},
+    "L3": {"score": 6.0, "level": 3, "label": "L3 条件组织"},
+    "L4": {"score": 8.0, "level": 4, "label": "L4 多关系建模"},
+    "L5": {"score": 9.5, "level": 5, "label": "L5 综合构造建模"},
 }
 DIM4_LEVEL_SOURCE_VALUES = {
     "question_bank",
     "knowledge_anchor",
     "llm_fallback",
+    "second_review",
     "review_failed",
 }
 DIM4_NUMERIC_LEVELS = {str(index): f"L{index}" for index in range(1, 6)}

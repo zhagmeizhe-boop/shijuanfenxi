@@ -1,8 +1,10 @@
 """
-dim3 information extraction and conversion burden scorer.
+dim3 scenario-comprehension scorer.
 
-The scorer consumes normalized information-extraction facts and maps them to
-L1-L5 fixed representative scores.
+The scorer keeps the historical ``dim3_information`` payload key for API
+compatibility, but the dimension now measures reading-level scene complexity:
+whether pupils can understand the setting, rules, process, feedback,
+comparison wording, and text-image correspondence before solving.
 """
 
 from __future__ import annotations
@@ -58,13 +60,28 @@ OBJECT_COUNT_BAND_VALUES = {"1", "2", "3", "4+"}
 APPLICATION_COUNT_VALUES = {"0", "1", "2", "3+"}
 BASE_QUANTITY_SHIFT_VALUES = {"none", "single", "multiple"}
 COMPARISON_CANDIDATE_COUNT_VALUES = {"0", "2", "3+"}
+SCENARIO_RULE_COUNT_VALUES = {"0", "1", "2", "3+"}
+PROCESS_STAGE_COUNT_VALUES = {"1", "2", "3", "4+"}
+FEEDBACK_MECHANISM_VALUES = {"none", "simple", "conditional"}
+COMPARISON_BASIS_VALUES = {"none", "direct", "implicit", "multi_condition"}
+DIAGRAM_CORRESPONDENCE_VALUES = {"none", "helpful", "required", "multi_step"}
+SCENARIO_RULE_TYPE_VALUES = {
+    "sequence_order",
+    "comparison_basis",
+    "feedback_rule",
+    "conditional_trigger",
+    "diagram_mapping",
+    "multi_object_roles",
+    "multi_stage_process",
+    "custom_rule_system",
+}
 
 DIM3_LEVELS = {
-    "L1": {"score": 2.0, "level": 1, "label": "L1 直接提取"},
-    "L2": {"score": 4.0, "level": 2, "label": "L2 单次转化"},
-    "L3": {"score": 6.0, "level": 3, "label": "L3 多条件转化"},
-    "L4": {"score": 8.0, "level": 4, "label": "L4 高负担组织"},
-    "L5": {"score": 9.5, "level": 5, "label": "L5 高阶重构建模"},
+    "L1": {"score": 2.0, "level": 1, "label": "L1 场景直读"},
+    "L2": {"score": 4.0, "level": 2, "label": "L2 简单对象过程"},
+    "L3": {"score": 6.0, "level": 3, "label": "L3 关键问法理解"},
+    "L4": {"score": 8.0, "level": 4, "label": "L4 多场景要素整合"},
+    "L5": {"score": 9.5, "level": 5, "label": "L5 复杂规则系统理解"},
 }
 
 
@@ -121,9 +138,29 @@ def _scenario_load_rank(value: str) -> int:
     return {"none": 0, "light": 1, "medium": 2, "heavy": 3}.get(value, 0)
 
 
+def _rule_count_rank(value: str) -> int:
+    return {"0": 0, "1": 1, "2": 2, "3+": 3}.get(value, 0)
+
+
+def _stage_count_rank(value: str) -> int:
+    return {"1": 1, "2": 2, "3": 3, "4+": 4}.get(value, 1)
+
+
+def _feedback_rank(value: str) -> int:
+    return {"none": 0, "simple": 1, "conditional": 2}.get(value, 0)
+
+
+def _comparison_basis_rank(value: str) -> int:
+    return {"none": 0, "direct": 1, "implicit": 2, "multi_condition": 3}.get(value, 0)
+
+
+def _diagram_rank(value: str) -> int:
+    return {"none": 0, "helpful": 1, "required": 2, "multi_step": 3}.get(value, 0)
+
+
 class Dim3InformationScorer(BaseDimensionScorer):
     DIMENSION_CODE = "dim3"
-    DIMENSION_NAME = "信息提取与转化"
+    DIMENSION_NAME = "场景理解复杂度"
 
     def __init__(self):
         super().__init__(config=None)
@@ -248,170 +285,252 @@ class Dim3InformationScorer(BaseDimensionScorer):
         required_values = [
             information_role,
             source_form,
-            relevant_condition_count,
-            distractor_pressure,
-            condition_distribution,
-            extraction_depth,
-            representation_conversion,
-            conversion_step_count,
-            quantity_relation_structure,
-            target_representation,
             image_dependency,
             evidence_summary,
         ]
-        if any(value in ("", None) for value in required_values) or global_organizing_required is None:
-            return self._invalid_score("dim3 关键信息提取事实不完整，无法自动判级。")
+        if any(value in ("", None) for value in required_values):
+            return self._invalid_score("dim3 关键场景理解事实不完整，无法自动判级。")
 
-        if information_role != "core":
-            return self._invalid_score("该题未满足 dim3 的核心信息提取与转化门槛。")
+        if information_role == "none":
+            return self._invalid_score("该题没有真实读题场景负担，dim3 不适用。")
 
-        if (
-            representation_conversion == "custom_model"
-            and target_representation == "custom_model"
-            and quantity_relation_structure == "nested_relation"
-            and global_organizing_required == 1
+        scenario_rule_count = _normalize_choice(
+            features.get("scenario_rule_count"),
+            SCENARIO_RULE_COUNT_VALUES,
+        ) or "0"
+        process_stage_count = _normalize_choice(
+            features.get("process_stage_count"),
+            PROCESS_STAGE_COUNT_VALUES,
+        ) or "1"
+        feedback_mechanism = _normalize_choice(
+            features.get("feedback_mechanism"),
+            FEEDBACK_MECHANISM_VALUES,
+        ) or "none"
+        comparison_basis = _normalize_choice(
+            features.get("comparison_basis"),
+            COMPARISON_BASIS_VALUES,
+        ) or "none"
+        diagram_correspondence = _normalize_choice(
+            features.get("diagram_correspondence"),
+            DIAGRAM_CORRESPONDENCE_VALUES,
         ) or (
-            source_form == "multi_source"
-            and condition_distribution == "cross_modal"
-            and conversion_step_count == "3+"
-            and information_role == "core"
-        ) or (
-            {"reverse_process", "conservation_transfer"}.issubset(application_relation_set)
-            and quantity_relation_structure == "nested_relation"
-            and global_organizing_required == 1
-            and state_rank >= 3
-        ) or (
-            scenario_comprehension_load == "heavy"
-            and quantity_relation_structure == "nested_relation"
-            and global_organizing_required == 1
-            and _conversion_rank(conversion_step_count) >= 2
+            "required"
+            if image_dependency == "required"
+            else "helpful"
+            if image_dependency == "helpful"
+            else "none"
+        )
+        scenario_rule_types = _normalize_choice_list(
+            features.get("scenario_rule_types"),
+            SCENARIO_RULE_TYPE_VALUES,
+        )
+
+        rule_rank = _rule_count_rank(scenario_rule_count)
+        stage_rank = max(_stage_count_rank(process_stage_count), state_rank + 1 if state_rank else 1)
+        feedback_rank = _feedback_rank(feedback_mechanism)
+        comparison_basis_rank = max(_comparison_basis_rank(comparison_basis), comparison_rank)
+        diagram_rank = _diagram_rank(diagram_correspondence)
+        scenario_rule_set = set(scenario_rule_types)
+
+        application_details.update(
+            {
+                "scenario_rule_count": scenario_rule_count,
+                "process_stage_count": process_stage_count,
+                "feedback_mechanism": feedback_mechanism,
+                "comparison_basis": comparison_basis,
+                "diagram_correspondence": diagram_correspondence,
+                "scenario_rule_types": scenario_rule_types,
+            }
+        )
+
+        scenario_integration_axes: List[str] = []
+
+        def add_integration_axis(axis: str, condition: bool) -> None:
+            if condition and axis not in scenario_integration_axes:
+                scenario_integration_axes.append(axis)
+
+        add_integration_axis(
+            "multi_source_or_cross_modal",
+            source_form == "multi_source" or condition_distribution == "cross_modal",
+        )
+        add_integration_axis(
+            "visual_material_mapping",
+            source_form in {"table_chart", "image_text"}
+            and (
+                diagram_rank >= 2
+                or scenario_rank >= 2
+                or rule_rank >= 1
+                or condition_distribution in {"split", "cross_sentence", "cross_modal"}
+            ),
+        )
+        add_integration_axis("multi_object_roles", object_rank >= 3 or "multi_object_roles" in scenario_rule_set)
+        add_integration_axis("multi_stage_process", stage_rank >= 2 or "multi_stage_process" in scenario_rule_set)
+        add_integration_axis(
+            "rule_relationship",
+            rule_rank >= 2
+            or len(scenario_rule_set) >= 2
+            or bool(scenario_rule_set & {"feedback_rule", "conditional_trigger", "custom_rule_system"}),
+        )
+        add_integration_axis(
+            "diagram_rule_mapping",
+            diagram_rank >= 2 or "diagram_mapping" in scenario_rule_set,
+        )
+        add_integration_axis(
+            "comparison_basis",
+            comparison_basis == "multi_condition"
+            or comparison_basis_rank >= 3
+            or (
+                comparison_basis_rank >= 2
+                and (
+                    object_rank >= 2
+                    or stage_rank >= 2
+                    or source_form in {"table_chart", "image_text", "multi_source"}
+                )
+            ),
+        )
+        add_integration_axis("feedback_or_range", feedback_rank >= 1 or "range_narrowing" in application_relation_set)
+        add_integration_axis(
+            "distributed_scene_information",
+            condition_distribution in {"split", "cross_sentence", "cross_modal"},
+        )
+        add_integration_axis(
+            "multi_condition_hold",
+            relevant_condition_count in {"5-6", "7+"}
+            and (scenario_rank >= 2 or rule_rank >= 1 or source_form in {"table_chart", "image_text", "multi_source"}),
+        )
+
+        application_details.update(
+            {
+                "scenario_integration_axes": scenario_integration_axes,
+                "scenario_integration_axis_count": len(scenario_integration_axes),
+            }
+        )
+
+        scene_signal_count = sum(
+            int(flag)
+            for flag in (
+                scenario_rank >= 1,
+                source_form in {"table_chart", "image_text", "multi_source"},
+                condition_distribution in {"split", "cross_sentence", "cross_modal"},
+                object_rank >= 2,
+                stage_rank >= 2,
+                rule_rank >= 1,
+                feedback_rank >= 1,
+                comparison_basis_rank >= 1,
+                diagram_rank >= 1,
+                bool(scenario_rule_set),
+            )
+        )
+        has_real_scene_burden = scene_signal_count >= 1
+        if not has_real_scene_burden:
+            return self._invalid_score("该题没有真实读题场景负担，dim3 不适用。")
+
+        l5_system_axes = sum(
+            int(flag)
+            for flag in (
+                rule_rank >= 3 or len(scenario_rule_set) >= 3,
+                stage_rank >= 3,
+                object_rank >= 3,
+                feedback_rank >= 2,
+                diagram_rank >= 2,
+                comparison_basis_rank >= 3,
+                "conditional_trigger" in scenario_rule_set,
+                "custom_rule_system" in scenario_rule_set,
+            )
+        )
+        if scenario_rank >= 3 and l5_system_axes >= 3 and (
+            rule_rank >= 3
+            or (
+                {"conditional_trigger", "feedback_rule", "custom_rule_system"}.issubset(scenario_rule_set)
+                and stage_rank >= 3
+            )
         ):
             return self._build_score("L5", evidence_summary, extra_details=application_details)
 
         if (
-            representation_conversion in {"model_mapping", "custom_model"}
-            and target_representation in {"equation_relation", "custom_model"}
-            and conversion_step_count in {"2", "3+"}
-        ) or (
-            relevant_condition_count in {"5-6", "7+"}
-            and condition_distribution in {"split", "cross_sentence", "cross_modal"}
-            and extraction_depth in {"reorganized", "inferred"}
-        ) or (
-            quantity_relation_structure in {"multi_relation", "nested_relation"}
+            scenario_rank >= 3
             and (
-                distractor_pressure == "heavy"
-                or global_organizing_required == 1
-                or _conversion_rank(conversion_step_count) >= 2
-            )
-        ) or (
-            source_form == "multi_source"
-            and condition_distribution in {"cross_sentence", "cross_modal"}
-            and extraction_depth in {"reorganized", "inferred"}
-        ) or (
-            text_length_band == "very_long"
-        ) or (
-            "queue_growth" in application_relation_set
-            and (implicit_rank >= 2 or state_rank >= 2 or base_quantity_shift in {"single", "multiple"})
-        ) or (
-            "travel_meeting_chasing" in application_relation_set
-            and (state_rank >= 2 or implicit_rank >= 2 or base_quantity_shift == "multiple")
-        ) or (
-            "profit_discount" in application_relation_set
-            and (state_rank >= 2 or implicit_rank >= 2 or object_rank >= 2)
-        ) or (
-            "concentration_mixture" in application_relation_set
-            and (state_rank >= 2 or base_quantity_shift in {"single", "multiple"})
-        ) or (
-            "optimization_comparison" in application_relation_set
-            and comparison_rank >= 3
-        ) or (
-            "multi_object_distribution" in application_relation_set
-            and object_rank >= 3
-            and implicit_rank >= 2
-        ) or (
-            "reverse_process" in application_relation_set
-            and state_rank >= 3
-        ) or (
-            len(application_relation_set) >= 2
-            and (
-                state_rank >= 2
-                or implicit_rank >= 2
+                rule_rank >= 2
+                or stage_rank >= 3
+                or feedback_rank >= 1
+                or diagram_rank >= 2
                 or object_rank >= 3
-                or comparison_rank >= 3
-            )
-        ) or (
-            scenario_comprehension_load == "heavy"
-            and (
-                relevant_condition_count in {"5-6", "7+"}
-                or condition_distribution in {"split", "cross_sentence", "cross_modal"}
-                or source_form in {"image_text", "multi_source"}
-                or state_rank >= 2
-                or implicit_rank >= 2
-                or object_rank >= 3
-                or comparison_rank >= 3
-                or global_organizing_required == 1
+                or comparison_basis_rank >= 2
+                or source_form == "multi_source"
+                or condition_distribution == "cross_modal"
+                or bool(
+                    scenario_rule_set
+                    & {
+                        "feedback_rule",
+                        "conditional_trigger",
+                        "diagram_mapping",
+                        "multi_stage_process",
+                        "custom_rule_system",
+                    }
+                )
+                or "range_narrowing" in application_relation_set
             )
         ):
             return self._build_score("L4", evidence_summary, extra_details=application_details)
 
+        l4_axis_count = len(scenario_integration_axes)
+        l4_has_core_scene_axis = bool(
+            set(scenario_integration_axes)
+            & {
+                "multi_source_or_cross_modal",
+                "multi_object_roles",
+                "multi_stage_process",
+                "rule_relationship",
+                "diagram_rule_mapping",
+                "comparison_basis",
+                "feedback_or_range",
+            }
+        )
         if (
-            representation_conversion in {"relation_mapping", "model_mapping"}
+            scenario_rank >= 2
+            and l4_axis_count >= 3
+            and l4_has_core_scene_axis
+            and not (scenario_rule_set <= {"comparison_basis"} and l4_axis_count <= 2)
         ) or (
-            extraction_depth in {"reorganized", "inferred"}
-            and representation_conversion in {"direct_mapping", "relation_mapping"}
-            and (
-                _conversion_rank(conversion_step_count) >= 1
-                or target_representation in {"direct_formula", "equation_relation", "table_list"}
-                or quantity_relation_structure == "single_relation"
+            scenario_rank >= 1
+            and l4_axis_count >= 4
+            and l4_has_core_scene_axis
+        ):
+            return self._build_score("L4", evidence_summary, extra_details=application_details)
+
+        if (
+            scenario_rank >= 2
+            or comparison_basis_rank >= 2
+            or condition_distribution in {"split", "cross_sentence"}
+            or (
+                source_form in {"table_chart", "image_text"}
+                and (
+                    scenario_rank >= 2
+                    or condition_distribution in {"split", "cross_sentence", "cross_modal"}
+                    or comparison_basis_rank >= 1
+                    or stage_rank >= 2
+                    or rule_rank >= 1
+                    or relevant_condition_count in {"5-6", "7+"}
+                )
             )
-        ) or (
-            source_form in {"table_chart", "image_text"}
-            and extraction_depth in {"selected", "reorganized", "inferred"}
-            and _conversion_rank(conversion_step_count) >= 1
-            and _condition_count_rank(relevant_condition_count) >= 2
-        ) or (
-            condition_distribution in {"split", "cross_sentence"}
-        ) or (
-            relevant_condition_count in {"5-6", "7+"}
-        ) or (
-            quantity_relation_structure == "multi_relation"
-        ) or (
-            target_representation in {"table_list", "equation_relation"}
-            and _conversion_rank(conversion_step_count) >= 1
-        ) or (
-            text_length_band == "long"
-        ) or (
-            bool(
-                application_relation_set
+            or object_rank >= 3
+            or (object_rank >= 2 and scenario_rank >= 2)
+            or stage_rank >= 3
+            or (stage_rank >= 2 and scenario_rank >= 2)
+            or rule_rank >= 1
+            or feedback_rank >= 1
+            or text_length_band == "long"
+            or bool(
+                scenario_rule_set
                 & {
-                    "work_rate",
-                    "percentage_base_change",
-                    "concentration_mixture",
-                    "profit_discount",
-                    "ratio_allocation",
-                    "travel_meeting_chasing",
-                    "chart_table_conversion",
-                    "equation_setup",
-                    "reverse_process",
-                    "cycle_period",
-                    "multi_object_distribution",
-                    "conservation_transfer",
+                    "sequence_order",
+                    "comparison_basis",
+                    "feedback_rule",
+                    "diagram_mapping",
+                    "multi_object_roles",
+                    "multi_stage_process",
                 }
             )
-        ) or (
-            object_rank >= 2
-        ) or (
-            state_rank >= 1
-        ) or (
-            implicit_rank >= 1
-        ) or (
-            base_quantity_shift in {"single", "multiple"}
-        ) or (
-            comparison_rank >= 2
-        ) or (
-            scenario_rank >= 2
-        ) or (
-            "range_narrowing" in application_relation_set
         ):
             return self._build_score("L3", evidence_summary, extra_details=application_details)
 
@@ -420,14 +539,11 @@ class Dim3InformationScorer(BaseDimensionScorer):
         ) or (
             distractor_pressure == "light"
         ) or (
-            conversion_step_count == "1"
-        ) or (
             source_form in {"table_chart", "image_text"}
-            and target_representation in {"direct_formula", "table_list"}
         ) or (
-            scenario_comprehension_load == "light"
+            object_rank >= 2
         ) or (
-            quantity_relation_structure == "single_relation"
+            stage_rank >= 2
         ):
             return self._build_score("L2", evidence_summary, extra_details=application_details)
 

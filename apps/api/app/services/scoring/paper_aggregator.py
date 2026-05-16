@@ -3,7 +3,7 @@ Paper-level aggregation helpers.
 
 Current rule:
 - each dimension score is the simple average of applicable question scores
-- dim4 uses a level-weighted average over automatically scored questions; invalid/missing scores are ignored without review
+- dim3 and dim4 use a transparent level-weighted average over applicable scored questions; invalid/missing scores are ignored
 - dim5 keeps paper-level knowledge-source composition as explanation, not as the scoring rule
 - counted_questions should surface representative, auditable examples
 """
@@ -18,6 +18,11 @@ from app.services.scoring.dim2_applicability import classify_dim2_geometry_domai
 from app.services.scoring.dim2_knowledge_range import (
     geometry_model_difficulty_hint,
     geometry_model_display_points,
+)
+from app.services.scoring.dim_second_review import (
+    SECOND_REVIEW_STATUS_APPLICABLE,
+    SECOND_REVIEW_STATUS_FAILED_EXCLUDED,
+    SECOND_REVIEW_STATUS_NOT_APPLICABLE,
 )
 
 
@@ -62,8 +67,8 @@ class PaperAggregator:
     DIMENSION_NAMES = {
         "dim1": "数学运算",
         "dim2": "几何直观与空间想象",
-        "dim3": "信息提取与转化",
-        "dim4": "实践创新",
+        "dim3": "场景理解复杂度",
+        "dim4": "建模解题复杂度",
         "dim5": "知识广度",
         "dim6": "逻辑链条",
     }
@@ -78,23 +83,24 @@ class PaperAggregator:
 
     REPRESENTATIVE_LIMIT = 3
     REPRESENTATIVE_CONFIDENCE_THRESHOLD = 0.45
-    DIM4_LEVEL_WEIGHTS = {
-        "L1": 1,
-        "L2": 2,
-        "L3": 7,
-        "L4": 12,
-        "L5": 15,
+    DIMENSION_LEVEL_WEIGHTS = {
+        "L1": 1.0,
+        "L2": 1.0,
+        "L3": 1.0,
+        "L4": 1.25,
+        "L5": 1.6,
     }
+    DIM4_LEVEL_WEIGHTS = DIMENSION_LEVEL_WEIGHTS
     DIM4_PRACTICE_LEVEL_LABELS = {
-        "L1": "基础模板",
-        "L2": "轻度变式",
-        "L3": "中度变式",
-        "L4": "高阶变式",
-        "L5": "压轴创新",
+        "L1": "基础关系",
+        "L2": "简单转化",
+        "L3": "条件组织",
+        "L4": "多关系建模",
+        "L5": "综合构造建模",
     }
     DIM4_GENERIC_KNOWLEDGE_POINTS = {
         "知识点",
-        "实践创新",
+        "建模解题",
         "创新题",
         "变式题",
         "综合题",
@@ -164,11 +170,11 @@ class PaperAggregator:
         "瓶",
     )
     DIM5_BUCKET_LABELS = {
-        "school": "校内教材",
-        "low_gaosi": "低段高思拓展",
-        "high_gaosi": "高年级高思拓展",
-        "junior_bridge": "初中前置",
-        "beyond": "高思超越篇",
+        "school": "校内知识",
+        "low_gaosi": "三四年级奥数入门",
+        "high_gaosi": "五六年级奥数典型专题",
+        "junior_bridge": "七年级基础前置",
+        "beyond": "六年级奥数较难 / 七年级核心门槛",
         "unknown": "未稳定归类",
     }
     DIM5_LEVEL_WEIGHTS = {
@@ -200,6 +206,7 @@ class PaperAggregator:
         "综合问题",
         "高思导引",
         "高思",
+        "奥数",
         "专题",
         "应用题",
         "计算",
@@ -236,6 +243,7 @@ class PaperAggregator:
         "知识域",
         "综合判为",
         "高思导引",
+        "奥数",
         "专题",
         "知识组织",
         "要求较高",
@@ -281,22 +289,22 @@ class PaperAggregator:
         "school_general": "难点在于要把题意中的已知量和所用公式对应准确。",
     }
     DIM3_APPLICATION_TASK_LABELS = {
-        "chart_table_conversion": "图表数据转化",
-        "percentage_base_change": "百分数基准量变化",
-        "reverse_process": "逆向过程整理",
-        "multi_object_distribution": "多对象分配关系",
-        "equation_setup": "等量关系建模",
-        "ratio_allocation": "多对象分配关系",
-        "work_rate": "工效关系建模",
-        "queue_growth": "增长与消耗关系整理",
-        "concentration_mixture": "浓度关系转化",
-        "profit_discount": "多阶段数量关系整理",
-        "travel_meeting_chasing": "行程关系建模",
-        "optimization_comparison": "多方案比较",
-        "conservation_transfer": "守恒转移关系整理",
-        "cycle_period": "周期关系整理",
-        "average_total": "平均数总量关系",
-        "range_narrowing": "分段判断与范围缩小",
+        "chart_table_conversion": "图文对应理解",
+        "percentage_base_change": "比较基准理解",
+        "reverse_process": "过程顺序理解",
+        "multi_object_distribution": "多对象角色理解",
+        "equation_setup": "题目问法理解",
+        "ratio_allocation": "多对象角色理解",
+        "work_rate": "任务场景理解",
+        "queue_growth": "过程变化理解",
+        "concentration_mixture": "状态变化理解",
+        "profit_discount": "规则条件理解",
+        "travel_meeting_chasing": "行程过程理解",
+        "optimization_comparison": "关键问法理解",
+        "conservation_transfer": "转移过程理解",
+        "cycle_period": "循环过程理解",
+        "average_total": "平均口径理解",
+        "range_narrowing": "反馈范围理解",
     }
     DIM3_FORBIDDEN_DISPLAY_FRAGMENTS = (
         "信息提取与转化负担较高",
@@ -310,6 +318,11 @@ class PaperAggregator:
         "representation_conversion",
         "quantity_relation_structure",
         "evidence_summary",
+        "数学表示",
+        "数量关系",
+        "方程",
+        "建模",
+        "表示转化",
     )
     DIM6_LOGIC_TASK_LABELS = {
         "work_rate_chain": "多步条件推进",
@@ -329,14 +342,36 @@ class PaperAggregator:
         "逻辑负担",
         "约束一致",
         "高阶收束",
+        "逻辑链条",
+        "依据是",
         "dim6_level",
         "reasoning_role",
         "chain_span",
+        "constraint_coupling",
     )
 
     COUNTED_QUESTION_FULL_REASON_HIDDEN_MARKERS = ("依据标签：", "核心事实：", "依据来源：")
 
     COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN = re.compile(r"^(L[1-5])(?:\s+[^：:]{1,40})?[：:]\s*(.+)$")
+    CJK_TEXT_PATTERN = re.compile(r"[\u4e00-\u9fff]")
+    ENGLISH_WORD_PATTERN = re.compile(r"[A-Za-z][A-Za-z'-]{2,}")
+    ENGLISH_DISPLAY_STOPWORDS = {
+        "and",
+        "are",
+        "but",
+        "either",
+        "for",
+        "from",
+        "into",
+        "requires",
+        "that",
+        "the",
+        "then",
+        "this",
+        "through",
+        "to",
+        "with",
+    }
 
     @classmethod
     def _format_counted_question_analysis(cls, text: object) -> str:
@@ -416,16 +451,35 @@ class PaperAggregator:
             score_value = 0.0
 
         if score_value >= 9:
-            explanation = "说明本卷读题场景理解与信息重构要求很高，包含复杂规则、多源材料、嵌套关系或自建表示。"
+            explanation = "说明这张试卷在学生读题理解题意上设置了较高难度，不少题目需要完整读懂多条规则、多阶段过程或复杂图文关系。"
         elif score_value >= 8:
-            explanation = "说明本卷读题与信息组织难度较高，分散条件、规则理解、隐含关系或表示转化会拉开差距。"
+            explanation = "说明这张试卷在学生读题理解题意上设置了明显难度，部分题目的场景相对复杂，学生需要先理清对象、阶段、规则或图文关系。"
         elif score_value >= 6:
-            explanation = "说明本卷有一定场景理解和信息整理难度，需要读懂题意规则、筛选多条条件并建立数量关系。"
+            explanation = "说明这张试卷在学生读题理解题意上设置了一定难度，部分题目需要先读懂关键问法、比较标准或简单规则。"
         elif score_value >= 4:
-            explanation = "说明本卷以常规场景理解和信息转化为主，重点看能否把题意条件对应到算式或关系。"
+            explanation = "说明这张试卷在学生读题和理解题意上有常规要求，部分题目需要分清对象、顺序或图文对应关系。"
         else:
-            explanation = "说明本卷信息处理要求较基础，主要是直接读懂题干并定位有效条件。"
-        return f"信息提取与转化维度，综合得分 {score_value:.1f} 分，{explanation}"
+            explanation = "说明这张试卷在学生读题和理解题意上的要求比较基础，大多数题目读完后能较快明白题目在说什么。"
+        return f"场景理解复杂度维度，综合得分 {score_value:.1f} 分，{explanation}"
+
+    @classmethod
+    def _build_dim4_score_overview(cls, score: object) -> str:
+        try:
+            score_value = float(score or 0.0)
+        except (TypeError, ValueError):
+            score_value = 0.0
+
+        if score_value >= 9:
+            explanation = "说明本卷在解题思路上难度很高。孩子做核心题时，通常不能只按常规步骤推进，需要先找到关键突破口，再持续检查每一步是否和题目条件一致。"
+        elif score_value >= 8:
+            explanation = "说明本卷在解题思路上有较明显难度。孩子做这类题时，往往需要先把条件之间的关系理清楚，再选择合适的切入方式逐步推进。"
+        elif score_value >= 6:
+            explanation = "说明本卷在解题思路上有一定难度。部分题目不是读完就能直接下手，需要孩子先整理已知条件和目标之间的关系，再按较清晰的步骤推进。"
+        elif score_value >= 4:
+            explanation = "说明本卷在解题思路上的要求整体偏常规。多数题目读懂后可以沿常见思路完成，少量题需要先做简单整理再下手。"
+        else:
+            explanation = "说明本卷在解题思路上的要求比较基础。多数题目读懂题意后，可以直接找到主要关系并完成解答。"
+        return f"综合得分为 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim6_score_overview(cls, score: object) -> str:
@@ -435,17 +489,17 @@ class PaperAggregator:
             score_value = 0.0
 
         if score_value >= 9:
-            explanation = "说明本卷逻辑链条很长，题目往往需要多次推出中间结论，并让多个条件同时对上。"
+            explanation = "这张试卷有少量解题链条很长的压轴题，通常要连续推进 5 步以上，并检查多个条件。"
         elif score_value >= 8:
-            explanation = "说明本卷逻辑链条较长，较多题需要处理多轮变化、倒推或多种情况。"
+            explanation = "这张试卷不少题解题链条较长，通常要连续推进 3-4 步，并穿插分类、倒推或回查。"
         elif score_value >= 6:
-            explanation = "说明本卷有一定逻辑推进要求，部分题需要连续推出多个中间结论。"
+            explanation = "这张试卷部分题解题链条有一定长度，通常要把前后条件接起来推进 2-4 步。"
         elif score_value >= 4:
-            explanation = "说明本卷逻辑链条整体偏常规，少量题需要把前一步结果接到下一步条件中。"
+            explanation = "这张试卷整体解题链条偏短，少量题需要 1-2 步衔接。"
         else:
-            explanation = "说明本卷多数题的推理链较短，通常一步或直接条件判断即可完成。"
+            explanation = "这张试卷多数题解题链条很短，通常读懂条件后一步判断即可。"
 
-        return f"综合得分 {score_value:.1f} 分，{explanation}"
+        return f"逻辑推理综合得分 {score_value:.1f} 分，{explanation}"
 
     @staticmethod
     def _dimension_status(question: QuestionDimensionScore, dimension_code: str) -> str:
@@ -453,6 +507,37 @@ class PaperAggregator:
         if explicit_status:
             return explicit_status
         return "applicable" if dimension_code in question.applicable_dims else "not_applicable"
+
+    @classmethod
+    def _second_review_counts(
+        cls,
+        question_scores: List[QuestionDimensionScore],
+        dimension_code: str,
+    ) -> Dict[str, int]:
+        counts = {
+            "second_review_requested_count": 0,
+            "second_review_applicable_count": 0,
+            "second_review_not_applicable_count": 0,
+            "second_review_failed_count": 0,
+        }
+        for question in question_scores:
+            details = question.dim_details.get(dimension_code, {}) if isinstance(question.dim_details, dict) else {}
+            if not isinstance(details, dict):
+                continue
+            status = str(details.get("second_review_status") or "").strip()
+            requested = bool(details.get("second_review_requested")) or bool(status)
+            if not requested:
+                continue
+            counts["second_review_requested_count"] += 1
+            if status == SECOND_REVIEW_STATUS_APPLICABLE:
+                counts["second_review_applicable_count"] += 1
+            elif status == SECOND_REVIEW_STATUS_NOT_APPLICABLE:
+                counts["second_review_not_applicable_count"] += 1
+            elif status == SECOND_REVIEW_STATUS_FAILED_EXCLUDED:
+                counts["second_review_failed_count"] += 1
+            else:
+                counts["second_review_failed_count"] += 1
+        return counts
 
     @classmethod
     def _dim2_has_geometry_candidate(cls, question: QuestionDimensionScore) -> bool:
@@ -481,6 +566,8 @@ class PaperAggregator:
     ) -> PaperDimensionSummary:
         if dimension_code == "dim1":
             return self._aggregate_dim1(question_scores)
+        if dimension_code == "dim3":
+            return self._aggregate_dim3(question_scores)
         if dimension_code == "dim4":
             return self._aggregate_dim4(question_scores)
         if dimension_code == "dim5":
@@ -494,7 +581,7 @@ class PaperAggregator:
         review_questions = [
             question
             for question in question_scores
-            if self._dimension_status(question, dimension_code) == "review"
+            if self._dimension_status(question, dimension_code) in {"review", "needs_second_review"}
         ]
 
         total_question_score = sum(question.score for question in applicable_questions)
@@ -507,6 +594,12 @@ class PaperAggregator:
                 sum(1 for question in question_scores if self._dim2_has_geometry_candidate(question))
                 if dimension_code == "dim2"
                 else 0
+            )
+            second_review_counts = self._second_review_counts(question_scores, dimension_code)
+            review_failed_excluded_count = sum(
+                1
+                for question in question_scores
+                if self._dimension_status(question, dimension_code) == SECOND_REVIEW_STATUS_FAILED_EXCLUDED
             )
             if dimension_code == "dim2" and dim2_geometry_candidate_count:
                 evidence = (
@@ -533,6 +626,8 @@ class PaperAggregator:
                 score_breakdown={
                     "geometry_candidate_count": dim2_geometry_candidate_count,
                     "review_question_count": review_question_count,
+                    **second_review_counts,
+                    "review_failed_excluded_count": review_failed_excluded_count,
                 },
             )
 
@@ -541,6 +636,16 @@ class PaperAggregator:
         level, level_label = self._calculate_level(paper_score)
 
         actual_review_question_count = review_question_count
+        second_review_counts = self._second_review_counts(question_scores, dimension_code)
+        review_failed_excluded_count = sum(
+            1
+            for question in question_scores
+            if self._dimension_status(question, dimension_code) == SECOND_REVIEW_STATUS_FAILED_EXCLUDED
+        )
+        score_breakdown = {
+            **second_review_counts,
+            "review_failed_excluded_count": review_failed_excluded_count,
+        }
         review_questions = []
         review_question_count = 0
         warning_messages: List[str] = []
@@ -586,6 +691,7 @@ class PaperAggregator:
             warning_messages=deduped_warnings,
             counted_questions=self._select_representative_questions(applicable_questions, dimension_code),
             review_question_count=actual_review_question_count,
+            score_breakdown=score_breakdown,
         )
 
     @classmethod
@@ -795,13 +901,170 @@ class PaperAggregator:
         }
         for source, target in replacements.items():
             text = text.replace(source, target)
-        return text.replace("未计入均分", "已按保守规则计入")
+        return text.replace("未计入均分", "未计入该维度")
 
     @staticmethod
     def _average_dimension_score(questions: List[QuestionDimensionScore], dimension_code: str) -> float:
         if not questions:
             return 0.0
         return sum(question.dim_scores.get(dimension_code, 0.0) for question in questions) / len(questions)
+
+    @staticmethod
+    def _valid_dimension_question_score(
+        question: QuestionDimensionScore,
+        dimension_code: str,
+    ) -> float | None:
+        raw_score = question.dim_scores.get(dimension_code)
+        try:
+            score = float(raw_score)
+        except (TypeError, ValueError):
+            return None
+        if 0.0 < score <= 10.0:
+            return score
+        return None
+
+    @classmethod
+    def _dimension_level_weight(cls, level: str) -> float:
+        return float(cls.DIMENSION_LEVEL_WEIGHTS.get(level, 1.0))
+
+    def _aggregate_dim3(self, question_scores: List[QuestionDimensionScore]) -> PaperDimensionSummary:
+        level_counts = {f"L{index}": 0 for index in range(1, 6)}
+        scored_questions: List[QuestionDimensionScore] = []
+        raw_score_sum = 0.0
+        weighted_score_sum = 0.0
+        total_weight = 0.0
+        unscored_question_count = 0
+        second_review_counts = self._second_review_counts(question_scores, "dim3")
+
+        applicable_questions = [
+            question
+            for question in question_scores
+            if self._dimension_status(question, "dim3") == "applicable"
+        ]
+        review_questions = [
+            question
+            for question in question_scores
+            if self._dimension_status(question, "dim3") in {"review", "needs_second_review"}
+        ]
+        not_applicable_count = sum(
+            1
+            for question in question_scores
+            if self._dimension_status(question, "dim3") == "not_applicable"
+        )
+        failed_excluded_count = sum(
+            1
+            for question in question_scores
+            if self._dimension_status(question, "dim3") == SECOND_REVIEW_STATUS_FAILED_EXCLUDED
+        )
+
+        for question in applicable_questions:
+            question_score = self._valid_dimension_question_score(question, "dim3")
+            if question_score is None:
+                unscored_question_count += 1
+                continue
+
+            level = self._question_level_code(question, "dim3", question_score)
+            if level not in level_counts:
+                unscored_question_count += 1
+                continue
+
+            level_counts[level] += 1
+            scored_questions.append(question)
+            raw_score_sum += question_score
+            weight = self._dimension_level_weight(level)
+            weighted_score_sum += question_score * weight
+            total_weight += weight
+
+        question_count = len(scored_questions)
+        level_ratios = {
+            level: round(self._ratio(count, question_count), 4)
+            for level, count in level_counts.items()
+        }
+        raw_question_average = raw_score_sum / question_count if question_count else 0.0
+        weighted_question_average = weighted_score_sum / total_weight if total_weight else 0.0
+        breakdown = {
+            "level_counts": level_counts,
+            "level_ratios": level_ratios,
+            "level_weights": self.DIMENSION_LEVEL_WEIGHTS,
+            "raw_question_average": round(raw_question_average, 4),
+            "weighted_question_average": round(weighted_question_average, 4),
+            "weighted_score_sum": round(weighted_score_sum, 4),
+            "total_weight": round(total_weight, 4),
+            "not_applicable_count": not_applicable_count,
+            "review_count": len(review_questions),
+            "review_failed_excluded_count": failed_excluded_count,
+            **second_review_counts,
+            "valid_score_question_count": question_count,
+            "unscored_question_count": unscored_question_count,
+            "auto_ignored_count": (
+                unscored_question_count
+                + len(review_questions)
+                + not_applicable_count
+                + failed_excluded_count
+            ),
+            "high_level_question_count": level_counts["L4"] + level_counts["L5"],
+            "aggregation_rule": "能稳定自动判定 L1-L5 的题纳入场景理解复杂度评分；纯计算、裸公式或无真实读题场景负担的题自动未覆盖；卷级主分按题目等级加权，高等级题权重更高。",
+        }
+
+        if question_count == 0:
+            zero_warning_messages = (
+                ["部分题目因图文信息不足或判定不稳定，未计入该维度。"]
+                if second_review_counts["second_review_failed_count"] > 0
+                else []
+            )
+            return PaperDimensionSummary(
+                dimension_code="dim3",
+                dimension_name=self.DIMENSION_NAMES["dim3"],
+                paper_score=0.0,
+                level=0,
+                level_label="未覆盖",
+                total_question_score=0.0,
+                question_count=0,
+                sample_warning=False,
+                evidence="场景理解复杂度暂无可评分题目，未计入综合分。",
+                warning_messages=zero_warning_messages,
+                counted_questions=[],
+                review_question_count=len(review_questions),
+                score_status="not_covered",
+                score_breakdown=breakdown,
+            )
+
+        paper_score = weighted_question_average
+        level, level_label = self._calculate_level(paper_score)
+        sample_warning = 0 < question_count < 2
+
+        warning_messages: List[str] = []
+        for question in scored_questions:
+            warning_messages.extend(question.dim_warnings.get("dim3", []))
+        if sample_warning:
+            warning_messages.append("该维度当前样本题量偏少，整卷结论稳定性有限。")
+        if second_review_counts["second_review_failed_count"] > 0:
+            warning_messages.append("部分题目因图文信息不足或判定不稳定，未计入该维度。")
+        deduped_warnings = list(
+            dict.fromkeys(message.strip() for message in warning_messages if message.strip())
+        )
+
+        evidence = (
+            f"共 {question_count} 道题纳入场景理解复杂度评分；"
+            "按题目等级加权，高等级题权重更高；"
+            f"权重得分 {paper_score:.1f} 分，判定为 {level_label}。"
+        )
+
+        return PaperDimensionSummary(
+            dimension_code="dim3",
+            dimension_name=self.DIMENSION_NAMES["dim3"],
+            paper_score=paper_score,
+            level=level,
+            level_label=level_label,
+            total_question_score=sum(question.score for question in scored_questions),
+            question_count=question_count,
+            sample_warning=sample_warning,
+            evidence=evidence,
+            warning_messages=deduped_warnings,
+            counted_questions=self._select_representative_questions(scored_questions, "dim3"),
+            review_question_count=len(review_questions),
+            score_breakdown=breakdown,
+        )
 
     def _aggregate_dim4(self, question_scores: List[QuestionDimensionScore]) -> PaperDimensionSummary:
         level_counts = {f"L{index}": 0 for index in range(1, 6)}
@@ -812,8 +1075,27 @@ class PaperAggregator:
         weighted_score_sum = 0.0
         total_weight = 0.0
         ignored_question_count = 0
+        not_applicable_count = 0
+        review_question_count = 0
+        failed_excluded_count = 0
+        second_review_counts = self._second_review_counts(question_scores, "dim4")
 
         for question in question_scores:
+            status = self._dimension_status(question, "dim4")
+            if status in {"review", "needs_second_review"}:
+                review_question_count += 1
+                ignored_question_count += 1
+                continue
+            if status == SECOND_REVIEW_STATUS_FAILED_EXCLUDED:
+                failed_excluded_count += 1
+                not_applicable_count += 1
+                ignored_question_count += 1
+                continue
+            if status != "applicable":
+                not_applicable_count += 1
+                ignored_question_count += 1
+                continue
+
             question_score = self._valid_dim4_question_score(question)
             level = self._dim4_level_for_question(question)
             source = self._dim4_source_for_question(question) or "rule_score"
@@ -832,7 +1114,7 @@ class PaperAggregator:
             source_counts[source] = source_counts.get(source, 0) + 1
             scored_questions.append(question)
             raw_score_sum += question_score
-            weight = float(self.DIM4_LEVEL_WEIGHTS.get(level, 1))
+            weight = self._dimension_level_weight(level)
             weighted_score_sum += question_score * weight
             total_weight += weight
 
@@ -852,8 +1134,10 @@ class PaperAggregator:
             "weighted_question_average": round(weighted_question_average, 4),
             "weighted_score_sum": round(weighted_score_sum, 4),
             "total_weight": round(total_weight, 4),
-            "not_applicable_count": 0,
-            "review_count": 0,
+            "not_applicable_count": not_applicable_count,
+            "review_count": review_question_count,
+            "review_failed_excluded_count": failed_excluded_count,
+            **second_review_counts,
             "l1_excluded_count": 0,
             "fallback_count": fallback_count,
             "valid_score_question_count": question_count,
@@ -861,10 +1145,15 @@ class PaperAggregator:
             "unknown_level_count": ignored_question_count,
             "auto_ignored_count": ignored_question_count,
             "high_level_question_count": level_counts["L4"] + level_counts["L5"],
-            "aggregation_rule": "能稳定自动判定 L1-L5 的题纳入实践创新评分；无法自动判定的题自动未覆盖；卷级主分按高阶创新等级权重计算。",
+            "aggregation_rule": "能稳定自动判定 L1-L5 的题纳入建模解题复杂度评分；纯计算、直接代公式或无真实解题组织负担的题自动未覆盖；卷级主分按题目等级加权，高等级题权重更高。",
         }
 
         if question_count == 0:
+            zero_warning_messages = (
+                ["部分题目因图文信息不足或判定不稳定，未计入该维度。"]
+                if second_review_counts["second_review_failed_count"] > 0
+                else []
+            )
             return PaperDimensionSummary(
                 dimension_code="dim4",
                 dimension_name=self.DIMENSION_NAMES["dim4"],
@@ -874,10 +1163,10 @@ class PaperAggregator:
                 total_question_score=0.0,
                 question_count=0,
                 sample_warning=False,
-                evidence="实践创新暂无可评分题目，未计入综合分。",
-                warning_messages=[],
+                evidence="建模解题复杂度暂无可评分题目，未计入综合分。",
+                warning_messages=zero_warning_messages,
                 counted_questions=[],
-                review_question_count=0,
+                review_question_count=review_question_count,
                 score_status="not_covered",
                 score_breakdown=breakdown,
             )
@@ -892,16 +1181,19 @@ class PaperAggregator:
             warning_messages.extend(self._sanitize_dim4_warning(item) for item in question.dim_warnings.get("dim4", []))
         if sample_warning:
             warning_messages.append("该维度当前样本题量偏少，整卷结论稳定性有限。")
+        if second_review_counts["second_review_failed_count"] > 0:
+            warning_messages.append("部分题目因图文信息不足或判定不稳定，未计入该维度。")
         deduped_warnings = list(
             dict.fromkeys(message.strip() for message in warning_messages if message.strip())
         )
 
         evidence_parts = [
-            f"共 {question_count} 道题纳入实践创新评分",
-            "按高阶创新等级权重计算",
+            f"共 {question_count} 道题纳入建模解题复杂度评分",
+            "按题目等级加权，高等级题权重更高",
         ]
         evidence_parts.append(f"权重得分 {paper_score:.1f} 分，判定为 {level_label}")
-        evidence = "；".join(evidence_parts) + "。"
+        breakdown["technical_evidence"] = "；".join(evidence_parts) + "。"
+        evidence = self._build_dim4_score_overview(paper_score)
 
         return PaperDimensionSummary(
             dimension_code="dim4",
@@ -915,7 +1207,7 @@ class PaperAggregator:
             evidence=evidence,
             warning_messages=deduped_warnings,
             counted_questions=self._select_representative_questions(scored_questions, "dim4"),
-            review_question_count=0,
+            review_question_count=review_question_count,
             score_breakdown=breakdown,
         )
 
@@ -928,11 +1220,17 @@ class PaperAggregator:
         review_questions = [
             question
             for question in question_scores
-            if self._dimension_status(question, "dim1") == "review"
+            if self._dimension_status(question, "dim1") in {"review", "needs_second_review"}
         ]
 
         question_count = len(applicable_questions)
         review_question_count = len(review_questions)
+        second_review_counts = self._second_review_counts(question_scores, "dim1")
+        review_failed_excluded_count = sum(
+            1
+            for question in question_scores
+            if self._dimension_status(question, "dim1") == SECOND_REVIEW_STATUS_FAILED_EXCLUDED
+        )
         if question_count == 0:
             return PaperDimensionSummary(
                 dimension_code="dim1",
@@ -948,6 +1246,10 @@ class PaperAggregator:
                 counted_questions=[],
                 review_question_count=review_question_count,
                 score_status="not_covered",
+                score_breakdown={
+                    **second_review_counts,
+                    "review_failed_excluded_count": review_failed_excluded_count,
+                },
             )
 
         pure_questions = [
@@ -999,6 +1301,8 @@ class PaperAggregator:
                 "weight": embedded_weight,
             },
             "aggregation_rule": rule_label,
+            **second_review_counts,
+            "review_failed_excluded_count": review_failed_excluded_count,
         }
 
         evidence = self._build_dim1_score_overview(paper_score)
@@ -1569,11 +1873,11 @@ class PaperAggregator:
         if knowledge_point and practice_level:
             target = f"本题是{knowledge_point}中的{practice_level}"
         elif knowledge_point:
-            target = f"本题是{knowledge_point}的实践创新题"
+            target = f"本题是{knowledge_point}的建模解题题"
         elif practice_level:
             target = f"本题属于{practice_level}题"
         else:
-            target = "本题属于实践创新题"
+            target = "本题属于建模解题题"
         return f"{difficulty}：{target}；{score_reason}"
 
     @classmethod
@@ -1714,6 +2018,8 @@ class PaperAggregator:
         text = text.rstrip("。；;，,")
         if not text:
             return ""
+        if cls._is_probably_english_display_text(text):
+            return ""
         if any(fragment in text for fragment in cls.DIM4_SCORE_REASON_FORBIDDEN_FRAGMENTS):
             return ""
         for prefix in ("本题难点在于", "难点在于"):
@@ -1728,6 +2034,30 @@ class PaperAggregator:
         if text.startswith("只需") or text.startswith("直接") or text.startswith("可以直接"):
             return "难点在于要识别这是一道基础模板题，按常规关系直接推进。"
         return f"难点在于{text}。"
+
+    @classmethod
+    def _is_probably_english_display_text(cls, value: object) -> bool:
+        text = cls._clean_dim4_text(value)
+        if not text:
+            return False
+
+        english_words = cls.ENGLISH_WORD_PATTERN.findall(text)
+        if not english_words:
+            return False
+
+        cjk_count = len(cls.CJK_TEXT_PATTERN.findall(text))
+        ascii_letter_count = sum(1 for char in text if char.isascii() and char.isalpha())
+        stopword_hits = sum(1 for word in english_words if word.lower() in cls.ENGLISH_DISPLAY_STOPWORDS)
+        has_english_sentence = len(english_words) >= 4 or stopword_hits >= 2
+
+        if cjk_count == 0:
+            return has_english_sentence or ascii_letter_count >= 20
+
+        return (
+            ascii_letter_count >= 30
+            and ascii_letter_count > max(12, cjk_count * 2.5)
+            and stopword_hits >= 1
+        )
 
     @classmethod
     def _is_specific_dim4_knowledge_text(cls, value: object) -> bool:
@@ -1790,27 +2120,43 @@ class PaperAggregator:
     def _dim5_knowledge_source_text(cls, details: dict[str, Any]) -> str:
         bucket = str(details.get("knowledge_source_bucket") or "").strip()
         band = cls._clean_dim5_text(details.get("band"))
-        section_label = cls._clean_dim5_text(
-            details.get("gaosi_section_label") or details.get("gaosi_section_level")
-        )
         grade_label = cls._dim5_grade_label(details.get("gaosi_grade"))
 
+        evidence_blob = cls._clean_dim5_text(
+            " ".join(
+                str(details.get(key) or "")
+                for key in (
+                    "level_evidence",
+                    "evidence_summary",
+                    "canonical_knowledge_point",
+                    "canonical_alias_hits",
+                    "core_knowledge_units",
+                    "knowledge_tags",
+                )
+            )
+        )
+        has_junior_core = any(
+            signal in evidence_blob
+            for signal in ("七年级核心", "初中核心", "方程组", "一次函数", "不等式", "整式", "有理数")
+        )
+
         if bucket in {"low_gaosi", "high_gaosi", "beyond"}:
-            source = f"{grade_label}高思导引" if grade_label else "高思导引"
-            if section_label in {"兴趣篇", "拓展篇", "超越篇"}:
-                source = f"{source}{section_label}"
-            elif bucket == "beyond":
-                source = f"{source}超越篇"
-            return source
+            if bucket == "low_gaosi":
+                return f"{grade_label}奥数" if grade_label else "三四年级奥数"
+            if bucket == "high_gaosi":
+                return f"{grade_label}奥数" if grade_label else "五六年级奥数"
+            if has_junior_core:
+                return "七年级核心前置"
+            return f"{grade_label}奥数较难" if grade_label else "六年级奥数较难"
 
         if bucket == "junior_bridge":
-            return "初中前置"
+            return "七年级基础前置"
 
         if bucket == "school" or "校内" in band:
             return f"{grade_label}校内" if grade_label else "校内"
 
-        if "高思导引" in band:
-            return f"{grade_label}高思导引" if grade_label else "高思导引"
+        if "奥数" in band:
+            return f"{grade_label}奥数" if grade_label else "奥数"
 
         return ""
 
@@ -1993,8 +2339,8 @@ class PaperAggregator:
         if not text:
             return ""
         return (
-            text.replace("竞赛数学导引", "高思导引")
-            .replace("奥数", "高思导引")
+            text.replace("竞赛数学导引", "奥数")
+            .replace("高思导引", "奥数")
             .strip(" 。；;，,")
         )
 
@@ -2377,13 +2723,42 @@ class PaperAggregator:
         distractor_pressure = str(details.get("distractor_pressure") or "").strip().lower()
         base_quantity_shift = str(details.get("base_quantity_shift") or "").strip().lower()
         object_count_band = str(details.get("object_count_band") or "").strip()
+        feedback_mechanism = str(details.get("feedback_mechanism") or "").strip().lower()
+        comparison_basis = str(details.get("comparison_basis") or "").strip().lower()
+        diagram_correspondence = str(details.get("diagram_correspondence") or "").strip().lower()
+        scenario_rule_types = set(cls._dim3_scenario_rule_types(details))
+        dim3_level = str(details.get("dim3_level") or "").strip().upper()
+
+        if dim3_level == "L5":
+            return "复杂规则系统理解"
+        if dim3_level == "L4":
+            return "多个场景关系整合"
+        if dim3_level == "L3":
+            return "关键问法理解"
+
+        if "custom_rule_system" in scenario_rule_types:
+            return "新规则系统理解"
+        if feedback_mechanism in {"simple", "conditional"} or "feedback_rule" in scenario_rule_types:
+            return "反馈规则理解"
+        if comparison_basis in {"implicit", "multi_condition"} or "comparison_basis" in scenario_rule_types:
+            return "比较口径理解"
+        if diagram_correspondence in {"required", "multi_step"} or "diagram_mapping" in scenario_rule_types:
+            return "图文规则对应"
+        if "conditional_trigger" in scenario_rule_types:
+            return "条件触发理解"
+        if "multi_stage_process" in scenario_rule_types:
+            return "多阶段过程理解"
+        if "multi_object_roles" in scenario_rule_types:
+            return "多对象角色理解"
+        if "sequence_order" in scenario_rule_types:
+            return "过程顺序理解"
 
         if source_form == "multi_source" or condition_distribution == "cross_modal":
-            return "多源信息重构"
+            return "多源材料对应"
         if quantity_relation_structure == "nested_relation":
-            return "嵌套数量关系整理"
+            return "复杂题意关系理解"
         if base_quantity_shift in {"single", "multiple"}:
-            return "百分数基准量变化"
+            return "比较基准理解"
 
         priority = (
             "chart_table_conversion",
@@ -2408,20 +2783,20 @@ class PaperAggregator:
                 return cls.DIM3_APPLICATION_TASK_LABELS[relation_type]
 
         if source_form in {"table_chart", "image_text"} or target_representation == "table_list":
-            return "图表数据转化"
+            return "图文信息对应"
         if representation_conversion in {"relation_mapping", "model_mapping", "custom_model"}:
-            return "等量关系建模"
+            return "题意关系理解"
         if target_representation in {"equation_relation", "custom_model"}:
-            return "等量关系建模"
+            return "题意关系理解"
         if object_count_band in {"3", "4+"}:
-            return "多对象分配关系"
+            return "多对象角色理解"
         if condition_distribution in {"split", "cross_sentence"}:
-            return "分散条件归类"
+            return "分散场景信息对应"
         if relevant_condition_count in {"5-6", "7+"} or distractor_pressure == "heavy":
-            return "多条件筛选"
+            return "多条场景信息保持"
         if extraction_depth in {"selected", "reorganized", "inferred"}:
-            return "多条件筛选"
-        return "条件定位"
+            return "有效题意筛选"
+        return "场景直读"
 
     @classmethod
     def _dim3_specific_processing_note(
@@ -2451,39 +2826,63 @@ class PaperAggregator:
         object_count_band = str(details.get("object_count_band") or "").strip()
         implicit_relation_count = str(details.get("implicit_relation_count") or "").strip()
         comparison_candidate_count = str(details.get("comparison_candidate_count") or "").strip()
+        feedback_mechanism = str(details.get("feedback_mechanism") or "").strip().lower()
+        comparison_basis = str(details.get("comparison_basis") or "").strip().lower()
+        diagram_correspondence = str(details.get("diagram_correspondence") or "").strip().lower()
+        scenario_rule_types = set(cls._dim3_scenario_rule_types(details))
+        dim3_level = str(details.get("dim3_level") or "").strip().upper()
+
+        if dim3_level == "L5":
+            return "本题难点在于要整体读懂题目给出的复杂规则系统，再判断各规则如何同时起作用。"
+        if dim3_level == "L4":
+            return "本题难点在于要同时整理多个场景关系，分清对象、阶段、规则或图文对应。"
+        if dim3_level == "L3":
+            return "本题难点在于要读懂题目中的关键问法、比较口径或单一规则。"
+        if "custom_rule_system" in scenario_rule_types:
+            return "本题难点在于要先读懂题目给出的新规则系统，再判断各规则如何同时起作用。"
+        if feedback_mechanism in {"simple", "conditional"} or "feedback_rule" in scenario_rule_types:
+            return "本题难点在于要读懂操作后的反馈含义，知道反馈对应哪一种情况。"
+        if comparison_basis in {"implicit", "multi_condition"} or "comparison_basis" in scenario_rule_types:
+            return "本题难点在于要读懂题目真正比较的口径，避免只按表面数量判断。"
+        if diagram_correspondence in {"required", "multi_step"} or "diagram_mapping" in scenario_rule_types:
+            return "本题难点在于要把文字规则和图中的对象、位置或流程对应起来。"
+        if "conditional_trigger" in scenario_rule_types:
+            return "本题难点在于要读懂条件触发关系，分清什么时候使用哪条规则。"
+        if "multi_stage_process" in scenario_rule_types:
+            return "本题难点在于要按题面过程分阶段理解，不能把不同阶段混在一起。"
 
         if source_form == "multi_source" or condition_distribution == "cross_modal":
-            return "本题难点在于要同时对齐图表、文字或图像信息，再把分散条件整理到同一关系中。"
+            return "本题难点在于要同时对齐图表、文字或图像信息，先读懂各部分对应关系。"
         if "chart_table_conversion" in relation_set or source_form in {"table_chart", "image_text"}:
-            return "本题难点在于要先从图表或图文材料中读出关键数据，再转写成可比较的数量关系。"
+            return "本题难点在于要先读懂图表或图文材料中对象、数据和问题之间的对应关系。"
         if "percentage_base_change" in relation_set or base_quantity_shift in {"single", "multiple"}:
-            return "本题难点在于要分清变化前后的基准量，避免把不同阶段的百分数直接合并。"
+            return "本题难点在于要读懂题目中不同阶段分别以谁为标准，避免比较口径混淆。"
         if quantity_relation_structure == "nested_relation":
-            return "本题难点在于要把嵌套数量关系拆开，再整理成可求解的表示。"
+            return "本题难点在于要先读懂多层题意关系，分清每句话指向的对象和阶段。"
         if representation_conversion == "custom_model" or target_representation == "custom_model":
-            return "本题难点在于要把文字条件重构成模型表示，再统一比较各对象之间的关系。"
+            return "本题难点在于题面给出了不常见规则，需要先读懂规则含义和适用对象。"
         if "reverse_process" in relation_set:
-            return "本题难点在于要按结果倒推过程，重新排列条件之间的先后关系。"
+            return "本题难点在于要按题面过程的先后关系理解，分清原来、变化后和问题所问。"
         if "multi_object_distribution" in relation_set or object_count_band in {"3", "4+"}:
-            return "本题难点在于要把条件按对象重新归类，再对应到同一套分配关系。"
+            return "本题难点在于要同时保持多个对象的身份和动作，避免对象之间对应错位。"
         if "optimization_comparison" in relation_set or comparison_candidate_count == "3+":
-            return "本题难点在于要先形成多个候选方案，再把每个方案放到同一标准下比较。"
+            return "本题难点在于要先读懂多个选项或方案的比较口径，知道题目要求比较什么。"
         if implicit_relation_count in {"1", "2", "3+"}:
-            return "本题难点在于要补出题目没有直接写明的数量关系，再接到已有条件上。"
+            return "本题难点在于题目问法中有隐含口径，需要先把没有直接说出的意思读出来。"
         if (
             representation_conversion in {"relation_mapping", "model_mapping"}
             or target_representation == "equation_relation"
         ):
-            return "本题难点在于要把文字条件转成等量关系，再确定未知量之间的对应。"
+            return "本题难点在于要读懂文字条件之间的对应关系，再判断题目到底要求什么。"
         if condition_distribution in {"split", "cross_sentence"}:
-            return "本题难点在于要把分散在不同句子里的条件重新归类，再接到同一个数量关系上。"
+            return "本题难点在于相关场景信息分散在不同句子里，需要前后对应起来读。"
         if distractor_pressure == "heavy":
-            return "本题难点在于要筛出真正参与求解的条件，避免把干扰信息带入关系式。"
+            return "本题难点在于题面有容易误读的信息，需要分清哪些内容真正描述当前问题。"
         if relevant_condition_count in {"5-6", "7+"}:
-            return "本题难点在于要先筛选多条有效条件，再判断它们各自对应的数量关系。"
+            return "本题难点在于要保持多条场景信息，分清它们各自对应的对象、阶段或规则。"
         if extraction_depth in {"selected", "reorganized", "inferred"}:
-            return "本题难点在于要从文字叙述中筛出有效条件，排除与求解无关的信息。"
-        return "本题关键在于准确定位直接条件，并对应到求解目标。"
+            return "本题难点在于要从文字叙述中筛出真正描述场景和问题要求的信息。"
+        return "本题关键在于直接读懂题目场景、对象和问题要求。"
 
     @classmethod
     def _dim3_note_from_evidence(cls, value: object) -> str:
@@ -2534,6 +2933,21 @@ class PaperAggregator:
             if str(item or "").strip()
         ]
 
+    @staticmethod
+    def _dim3_scenario_rule_types(details: dict[str, Any]) -> List[str]:
+        raw_types = details.get("scenario_rule_types")
+        if isinstance(raw_types, str):
+            items = raw_types.replace("，", ",").replace("、", ",").split(",")
+        elif isinstance(raw_types, list):
+            items = raw_types
+        else:
+            items = []
+        return [
+            str(item or "").strip().lower()
+            for item in items
+            if str(item or "").strip()
+        ]
+
     @classmethod
     def _build_dim6_counted_question_reason(cls, question: QuestionDimensionScore) -> str:
         score = question.dim_scores.get("dim6", 0.0)
@@ -2545,9 +2959,50 @@ class PaperAggregator:
         if not dim6_level:
             dim6_level = cls._dim1_level_from_score(score)
 
-        task = cls._dim6_logic_task(details)
-        evidence = cls._dim6_specific_reasoning_evidence(question, details)
-        return f"{cls._dim1_difficulty_label(dim6_level)}：本题逻辑链条难在{task}；依据是{evidence}。"
+        chain_description = cls._dim6_chain_length_description(details, dim6_level)
+        student_action = cls._dim6_student_action(question, details)
+        return f"{cls._dim1_difficulty_label(dim6_level)}：这题的解题链条{chain_description}；学生需要{student_action}。"
+
+    @classmethod
+    def _dim6_chain_length_description(cls, details: dict[str, Any], dim6_level: str) -> str:
+        chain_span = str(details.get("chain_span") or "").strip()
+        if chain_span == "1":
+            return "很短，通常一步判断即可"
+        if chain_span == "2":
+            return "较短，大约需要连续推进 1-2 步"
+        if chain_span == "3-4":
+            return "较长，大约需要连续推进 3-4 步"
+        if chain_span == "5+":
+            if cls._dim6_has_multi_condition_check(details):
+                return "很长，通常需要连续推进 5 步以上，并同时检查多个条件"
+            return "很长，通常需要连续推进 5 步以上"
+
+        level = str(dim6_level or "").strip().upper()
+        if level == "L5":
+            return "很长，通常需要多步推进，并伴随分类、倒推、回查或多条件检查"
+        if level == "L4":
+            return "较长，通常需要多步推进，并伴随分类、倒推、回查或多条件检查"
+        if level == "L3":
+            return "有一定长度，通常需要把前后条件连续接起来"
+        if level == "L2":
+            return "较短，通常需要一两步衔接"
+        return "很短，通常一步判断即可"
+
+    @classmethod
+    def _dim6_has_multi_condition_check(cls, details: dict[str, Any]) -> bool:
+        structures = set(cls._dim6_structure_types(details))
+        constraint_coupling = str(details.get("constraint_coupling") or "").strip().lower()
+        hidden_dependency = str(details.get("hidden_dependency") or "").strip().lower()
+        consistency_constraint_count = str(details.get("consistency_constraint_count") or "").strip()
+        verification_requirement = str(details.get("verification_requirement") or "").strip().lower()
+        return (
+            details.get("global_consistency_required") == 1
+            or constraint_coupling in {"coupled", "nested"}
+            or hidden_dependency in {"cross_condition", "global"}
+            or consistency_constraint_count in {"2-3", "4+"}
+            or verification_requirement in {"constraint_backcheck", "full_consistency"}
+            or bool(structures & {"global_constraint_system", "shared_variable_coupling"})
+        )
 
     @classmethod
     def _dim6_logic_task(cls, details: dict[str, Any]) -> str:
@@ -2601,6 +3056,121 @@ class PaperAggregator:
         if chain_span == "2" or hidden_dependency == "local":
             return "连续推出中间结论"
         return "直接条件判断"
+
+    @classmethod
+    def _dim6_student_action(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+    ) -> str:
+        if details.get("second_review_status") == SECOND_REVIEW_STATUS_APPLICABLE:
+            evidence_note = cls._dim6_note_from_evidence(
+                details.get("evidence_summary") or details.get("second_review_evidence") or ""
+            )
+            if evidence_note and cls._dim6_evidence_has_specific_content(evidence_note):
+                return cls._clean_dim6_student_action(evidence_note)
+
+        fact_action = cls._dim6_student_action_from_facts(details)
+        if fact_action:
+            return fact_action
+
+        evidence_note = cls._dim6_note_from_evidence(
+            details.get("evidence_summary")
+            or question.dim_reasons.get("dim6")
+            or question.question_summary
+            or ""
+        )
+        if evidence_note and cls._dim6_evidence_has_specific_content(evidence_note):
+            return cls._clean_dim6_student_action(evidence_note)
+
+        summary = str(question.question_summary or "").strip().rstrip("。；;，,")
+        if summary and not any(fragment in summary for fragment in cls.DIM6_FORBIDDEN_DISPLAY_FRAGMENTS):
+            return cls._clean_dim6_student_action(f"围绕{summary}，把相关条件一步步接到结论上")
+        return "把已有条件一步步接起来，并在最后检查结论是否符合题意"
+
+    @classmethod
+    def _dim6_student_action_from_facts(cls, details: dict[str, Any]) -> str:
+        structures = set(cls._dim6_structure_types(details))
+        chain_span = str(details.get("chain_span") or "").strip()
+        hidden_dependency = str(details.get("hidden_dependency") or "").strip().lower()
+        reversibility = str(details.get("reversibility") or "").strip().lower()
+        constraint_coupling = str(details.get("constraint_coupling") or "").strip().lower()
+        global_consistency_required = details.get("global_consistency_required")
+        state_transition_count = str(details.get("state_transition_count") or "").strip()
+        case_count_band = str(details.get("case_count_band") or "").strip()
+        backtrack_depth = str(details.get("backtrack_depth") or "").strip()
+        consistency_constraint_count = str(details.get("consistency_constraint_count") or "").strip()
+        phase_count_band = str(details.get("phase_count_band") or "").strip()
+        periodic_cycle_dependency = details.get("periodic_cycle_dependency")
+        optimization_requirement = str(details.get("optimization_requirement") or "").strip().lower()
+
+        has_multiple_conditions = (
+            constraint_coupling in {"coupled", "nested"}
+            or global_consistency_required == 1
+            or consistency_constraint_count in {"2-3", "4+"}
+            or hidden_dependency in {"cross_condition", "global"}
+        )
+
+        if structures & {"periodic_sequence_position", "cyclic_schedule_chain"} or periodic_cycle_dependency == 1:
+            return "找准循环节和目标位置，再把余数对应回具体状态"
+        if "optimization_comparison" in structures or optimization_requirement in {"bounded_choice", "global_minmax"}:
+            return "先列出可行方案，再按同一个标准比较，并检查限制条件是否都满足"
+        if "bounded_case_enumeration" in structures or case_count_band in {"2", "3-5", "6+"}:
+            return "把可能情况分完整，逐一代回条件检查，避免漏掉或重复"
+        if (
+            "reverse_process_chain" in structures
+            or reversibility in {"backward", "bidirectional"}
+            or backtrack_depth in {"1", "2", "3+"}
+        ):
+            if has_multiple_conditions:
+                return "从结果往前还原每一步，再把还原出的状态代回多个条件检查"
+            return "从结果往前还原每一步，再检查是否符合原条件"
+        if (
+            structures & {"global_constraint_system", "shared_variable_coupling"}
+            or has_multiple_conditions
+        ):
+            return "同时盯住多个条件，先缩小范围，再确认每个条件都成立"
+        if (
+            structures
+            & {
+                "queue_growth_chain",
+                "multi_stage_state_change",
+                "percentage_base_shift_chain",
+                "travel_meeting_chasing_chain",
+            }
+            or state_transition_count in {"2", "3+"}
+            or phase_count_band in {"3-4", "5+"}
+        ):
+            return "按阶段记录变化，把上一阶段的结果接到下一阶段条件中"
+        if "work_rate_chain" in structures or chain_span in {"3-4", "5+"} or hidden_dependency in {"cross_condition", "global"}:
+            return "把前一步得到的结果接到下一步条件里，连续推出中间结论"
+        if chain_span == "2" or hidden_dependency == "local":
+            return "把前一步结果接到下一步条件中，再做一次检查"
+        return "直接看清条件和问题之间的对应关系"
+
+    @classmethod
+    def _clean_dim6_student_action(cls, value: object) -> str:
+        text = " ".join(str(value or "").split()).strip().rstrip("。；;，,")
+        if not text or any(fragment in text for fragment in cls.DIM6_FORBIDDEN_DISPLAY_FRAGMENTS):
+            return "把已有条件一步步接起来，并在最后检查结论是否符合题意"
+
+        prefixes = (
+            "学生需要",
+            "题目需要",
+            "需要",
+            "要",
+            "难点在于",
+            "这题难在",
+            "本题难在",
+        )
+        changed = True
+        while changed:
+            changed = False
+            for prefix in prefixes:
+                if text.startswith(prefix):
+                    text = text[len(prefix) :].strip(" ，,；;。")
+                    changed = True
+        return text.rstrip("。；;，,") or "把已有条件一步步接起来，并在最后检查结论是否符合题意"
 
     @classmethod
     def _dim6_specific_reasoning_evidence(

@@ -31,7 +31,7 @@ describe('PDFUploadPage progress copy', () => {
         },
         2,
       ),
-    ).toBe('前方已有试卷正在分析，当前正在排队...');
+    ).toBe('正在等待分析资源空闲...');
   });
 
   it('keeps the generic pending copy when no queue stage is available', () => {

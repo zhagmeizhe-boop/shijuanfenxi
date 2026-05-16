@@ -4,7 +4,7 @@ dim6 applicability gating.
 dim6 evaluates logic-chain burden only.
 It is tri-state:
 - applicable
-- review
+- needs_second_review
 - not_applicable
 """
 
@@ -14,6 +14,7 @@ import re
 from typing import Any, Dict, Iterable, List
 
 DIM6_STATUS_APPLICABLE = "applicable"
+DIM6_STATUS_NEEDS_SECOND_REVIEW = "needs_second_review"
 DIM6_STATUS_REVIEW = "review"
 DIM6_STATUS_NOT_APPLICABLE = "not_applicable"
 DIM6_REVIEW_CONFIDENCE_THRESHOLD = 0.55
@@ -424,7 +425,7 @@ def evaluate_dim6_applicability(
 
     if warnings:
         return {
-            "status": DIM6_STATUS_REVIEW,
+            "status": DIM6_STATUS_NEEDS_SECOND_REVIEW,
             "reason": "dim6 逻辑事实缺失、冲突或题块完整性不足，当前题目转入人工复核。",
             "warnings": list(dict.fromkeys(item for item in warnings if item)),
         }
