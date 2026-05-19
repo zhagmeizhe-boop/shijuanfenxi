@@ -478,6 +478,115 @@ describe('DimensionScoreCards', () => {
     expect(screen.queryByText(/因此计为/)).not.toBeInTheDocument();
   });
 
+  it('prefers dim5 knowledge display name when present', () => {
+    const dimensions: DimensionScore[] = [
+      {
+        code: 'dim5',
+        name: '知识广度',
+        score: 2.0,
+        level: 1,
+        level_label: '基础',
+        evidence: '旧概览。',
+        counted_questions: [
+          {
+            question_no: '2',
+            question_display_label: '2',
+            summary: '除法估算',
+            score: 2.0,
+            level_code: 'L1',
+            difficulty_label: '简单（2.0）',
+            knowledge_source_text: '校内三年级',
+            knowledge_point_text: '除法估算',
+            knowledge_display_name: '校内三年级：除法估算',
+            score_reason: '难点在于要把被除数先看成接近的整十整百数，再完成估算。',
+            reason: '旧文案。',
+          },
+        ],
+      },
+    ];
+
+    render(<DimensionScoreCards dimensions={dimensions} />);
+
+    expect(
+      screen.getAllByText(
+        '简单（2.0）：本题属于校内三年级：除法估算；难点在于要把被除数先看成接近的整十整百数，再完成估算。'
+      ).length
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText(/校内三年级的除法估算/)).not.toBeInTheDocument();
+  });
+
+  it('normalizes dim5 unknown olympiad grade and prefers item-specific difficulty text', () => {
+    const dimensions: DimensionScore[] = [
+      {
+        code: 'dim5',
+        name: '知识广度',
+        score: 9.5,
+        level: 5,
+        level_label: '困难',
+        evidence: '旧概览。',
+        counted_questions: [
+          {
+            question_no: '5',
+            question_display_label: '--5',
+            summary: '博弈策略',
+            score: 9.5,
+            level_code: 'L5',
+            difficulty_label: '困难（9.5）',
+            knowledge_point_text: '博弈策略与必胜策略',
+            knowledge_display_name: '奥数年级未确认：博弈策略与必胜策略',
+            dim5_key_difficulty_explanation:
+              '难点在于不能只看当前一步能不能走，要从最终胜负倒推必胜和必败局面。',
+            score_reason: '难点在于游戏；获胜。',
+            reason: '旧文案。',
+          },
+        ],
+      },
+    ];
+
+    render(<DimensionScoreCards dimensions={dimensions} />);
+
+    expect(
+      screen.getAllByText(
+        '困难（9.5）：本题属于奥数知识：博弈策略与必胜策略；难点在于不能只看当前一步能不能走，要从最终胜负倒推必胜和必败局面。'
+      ).length
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText('5').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/奥数年级未确认/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/游戏；获胜/)).not.toBeInTheDocument();
+  });
+
+  it('rewrites terse historical dim5 reasons when no item-specific difficulty exists', () => {
+    const dimensions: DimensionScore[] = [
+      {
+        code: 'dim5',
+        name: '知识广度',
+        score: 8.0,
+        level: 4,
+        level_label: '较难',
+        evidence: '旧概览。',
+        counted_questions: [
+          {
+            question_no: '6',
+            question_display_label: '6',
+            summary: '工程问题',
+            score: 8.0,
+            level_code: 'L4',
+            difficulty_label: '较难（8.0）',
+            knowledge_display_name: '奥数五年级：工程问题',
+            knowledge_point_text: '工程问题',
+            score_reason: '难点在于工程。',
+            reason: '旧文案。',
+          },
+        ],
+      },
+    ];
+
+    render(<DimensionScoreCards dimensions={dimensions} />);
+
+    expect(screen.queryByText(/难点在于工程。/)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/完成量、剩余量和工作效率/).length).toBeGreaterThan(0);
+  });
+
   it('explains dim4 score as modeling solution complexity', () => {
     const dimensions: DimensionScore[] = [
       {

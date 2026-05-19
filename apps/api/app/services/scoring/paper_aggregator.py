@@ -2093,16 +2093,25 @@ class PaperAggregator:
         normalized_level = level_code or cls._dim5_level_for_question(question)
         knowledge_point = cls._dim5_knowledge_point_text(question, details)
         knowledge_source = cls._dim5_knowledge_source_text(details)
+        knowledge_display_name = cls._dim5_knowledge_display_name(details, knowledge_point)
+        score_reason = cls._dim5_score_reason(
+            question,
+            details,
+            normalized_level,
+            knowledge_point,
+            knowledge_source,
+        )
         return {
             "knowledge_source_text": knowledge_source,
             "knowledge_point_text": knowledge_point,
-            "score_reason": cls._dim5_score_reason(
-                question,
-                details,
-                normalized_level,
-                knowledge_point,
-                knowledge_source,
-            ),
+            "knowledge_track": cls._clean_dim5_text(details.get("knowledge_track")),
+            "knowledge_track_label": cls._clean_dim5_text(details.get("knowledge_track_label")),
+            "knowledge_grade": cls._clean_dim5_text(details.get("knowledge_grade")),
+            "knowledge_grade_label": cls._clean_dim5_text(details.get("knowledge_grade_label")),
+            "knowledge_semester": cls._clean_dim5_text(details.get("knowledge_semester")),
+            "knowledge_display_name": knowledge_display_name,
+            "dim5_key_difficulty_explanation": score_reason,
+            "score_reason": score_reason,
         }
 
     @classmethod
@@ -2112,9 +2121,12 @@ class PaperAggregator:
         difficulty = cls._dim1_difficulty_label(level_code)
         knowledge_source = fields["knowledge_source_text"]
         knowledge_point = fields["knowledge_point_text"]
+        knowledge_display_name = fields.get("knowledge_display_name", "")
         score_reason = fields["score_reason"]
 
-        if knowledge_source and knowledge_point:
+        if knowledge_display_name:
+            target = f"本题属于{knowledge_display_name}"
+        elif knowledge_source and knowledge_point:
             target = f"本题属于{knowledge_source}的{knowledge_point}"
         elif knowledge_source:
             target = f"本题属于{knowledge_source}知识范围"
@@ -2126,6 +2138,13 @@ class PaperAggregator:
 
     @classmethod
     def _dim5_knowledge_source_text(cls, details: dict[str, Any]) -> str:
+        track_label = cls._clean_dim5_text(details.get("knowledge_track_label"))
+        grade_label = cls._clean_dim5_text(details.get("knowledge_grade_label"))
+        if track_label and track_label != "未确认":
+            if grade_label and grade_label != "年级未确认":
+                return f"{track_label}{grade_label}"
+            return track_label
+
         grounded_confidence = cls._dim5_grounded_confidence(details)
         grounded_source = cls._clean_dim5_text(details.get("grounded_knowledge_source_text"))
         if grounded_confidence >= 0.70:
@@ -2172,6 +2191,49 @@ class PaperAggregator:
             return f"{grade_label}奥数" if grade_label else "奥数"
 
         return ""
+
+    @classmethod
+    def _dim5_knowledge_display_name(cls, details: dict[str, Any], knowledge_point: str) -> str:
+        display_name = cls._clean_dim5_text(details.get("knowledge_display_name"))
+        if display_name:
+            return cls._normalize_dim5_knowledge_display_name(
+                display_name,
+                cls._clean_dim5_text(details.get("knowledge_track_label")),
+                cls._clean_dim5_text(details.get("knowledge_grade_label")),
+                cls._clean_dim5_text(details.get("knowledge_point_name")) or knowledge_point,
+            )
+
+        track_label = cls._clean_dim5_text(details.get("knowledge_track_label"))
+        grade_label = cls._clean_dim5_text(details.get("knowledge_grade_label"))
+        point = cls._clean_dim5_text(details.get("knowledge_point_name")) or knowledge_point
+        if not point or not track_label or track_label == "未确认":
+            return ""
+        if grade_label and grade_label != "年级未确认":
+            return f"{track_label}{grade_label}：{point}"
+        return cls._dim5_unknown_grade_display_name(track_label, point)
+
+    @classmethod
+    def _normalize_dim5_knowledge_display_name(
+        cls,
+        display_name: str,
+        track_label: str,
+        grade_label: str,
+        point: str,
+    ) -> str:
+        text = cls._clean_dim5_text(display_name)
+        if "年级未确认" not in text:
+            return text
+        if grade_label and grade_label != "年级未确认":
+            return f"{track_label}{grade_label}：{point}" if track_label and point else text
+        return cls._dim5_unknown_grade_display_name(track_label, point) or text
+
+    @staticmethod
+    def _dim5_unknown_grade_display_name(track_label: str, point: str) -> str:
+        if not point:
+            return ""
+        if track_label in {"校内", "奥数", "初中前置"}:
+            return f"{track_label}知识：{point}"
+        return f"{track_label}：{point}" if track_label else point
 
     @classmethod
     def _dim5_grounded_confidence(cls, details: dict[str, Any]) -> float:
@@ -2230,6 +2292,10 @@ class PaperAggregator:
         question: QuestionDimensionScore,
         details: dict[str, Any],
     ) -> str:
+        graph_point = cls._clean_dim5_text(details.get("knowledge_point_name"))
+        if cls._is_specific_dim5_knowledge_text(graph_point):
+            return graph_point
+
         grounded_point = cls._clean_dim5_text(details.get("grounded_canonical_knowledge_point"))
         if (
             cls._dim5_grounded_confidence(details) >= 0.55
@@ -2262,6 +2328,22 @@ class PaperAggregator:
         knowledge_point: str,
         knowledge_source: str,
     ) -> str:
+        explicit_difficulty = cls._dim5_note_from_evidence(
+            details.get("dim5_key_difficulty_explanation")
+            or details.get("key_difficulty_explanation")
+            or ""
+        )
+        if explicit_difficulty:
+            return explicit_difficulty
+
+        structure_difficulty = cls._dim5_structure_specific_score_reason(
+            question,
+            details,
+            knowledge_point,
+        )
+        if structure_difficulty:
+            return structure_difficulty
+
         if (
             cls._dim5_grounded_confidence(details) >= 0.55
             and not cls._dim5_grounding_has_blocking_risk(details)
@@ -2339,6 +2421,98 @@ class PaperAggregator:
         if level_code == "L4":
             return "难点在于要先看出题目隐藏的模型关系，再选择对应的方法处理。"
         return ""
+
+    @classmethod
+    def _dim5_structure_specific_score_reason(
+        cls,
+        question: QuestionDimensionScore,
+        details: dict[str, Any],
+        knowledge_point: str,
+    ) -> str:
+        fact_evidence = cls._dim5_structure_fact_evidence(details)
+        fact_keys = set(fact_evidence)
+        point = cls._clean_dim5_text(knowledge_point)
+        evidence_blob = cls._clean_dim5_text(
+            " ".join(
+                [
+                    question.question_summary or "",
+                    question.dim_reasons.get("dim5", ""),
+                    str(details.get("level_evidence") or ""),
+                    str(details.get("evidence_summary") or ""),
+                    str(details.get("grounded_evidence") or ""),
+                    " ".join(fact_evidence.values()),
+                    point,
+                ]
+            )
+        )
+
+        def has(*keys: str) -> bool:
+            return any(key in fact_keys for key in keys)
+
+        def mentions(*terms: str) -> bool:
+            return any(term and term in evidence_blob for term in terms)
+
+        if (has("fraction_series") and has("telescoping_pattern")) or (
+            mentions("裂项", "相消", "长链消去") and mentions("...", "…", "分式求和")
+        ):
+            return "难点在于要看出每一项分母是连续相接的乘积，可以拆成前后相消的差，而不是把长串分数逐项硬算。"
+
+        if (
+            has("circle_circumference_context")
+            and has("circumference_increment")
+            and has("radius_increment_goal")
+        ) or mentions("圆周长变化与半径增量", "圆环的宽"):
+            return "难点在于铁丝增加的是圆的周长，不是半径；要用周长变化量反推半径增加量，而且结果与原来圆的半径大小无关。"
+
+        if has("solid_geometry", "gaosi_solid_geometry") and has("view_projection"):
+            return "难点在于要把立体图形从题目指定方向重新投影到平面上，分清哪些点线会重合、哪些位置会被遮挡。"
+
+        if has("game_rule") and has("winning_strategy"):
+            return "难点在于不能只看当前一步能不能走，要从最终胜负倒推必胜和必败局面，再设计让对手落入不利状态的策略。"
+
+        if has("work_rate_task", "gaosi_work_rate") or "工程" in point:
+            return "难点在于要把完成量、剩余量和工作效率都统一到同一个总工程量下，再用不同阶段之间的变化建立关系。"
+
+        if has("pigeonhole", "guarantee_at_least") or "抽屉" in point:
+            return "难点在于要先确定按什么标准分盒子，再从最不利情况出发说明为什么一定会出现题目要求的结果。"
+
+        if has("gaosi_concentration_profit", "concentration_task", "profit_discount"):
+            return "难点在于题目中的浓度、售价或利润关系会随操作变化，需要先分清变化前后的基准量，再列出对应关系。"
+
+        if has("motion_task", "gaosi_travel"):
+            return "难点在于要把速度、时间和路程放到同一条运动过程中比较，分清相遇、追及或阶段变化对应的是哪一段路程。"
+
+        if has("ratio_relation", "gaosi_ratio"):
+            return "难点在于要先找准比例关系中的整体和部分，再把题目给出的已知量换到同一个比例基准下计算。"
+
+        if has("area_relation_model", "gaosi_cut_paste", "gaosi_lattice"):
+            return "难点在于要先看出图形中可以割补、等积或建立面积关系的部分，再把隐藏关系转成可计算的数量关系。"
+
+        if has("counting_choice", "counting_target", "gaosi_permutation_combination", "gaosi_counting_principle"):
+            return "难点在于要把选择过程按步骤或类别拆清楚，保证每一类不重复、不遗漏后再计数。"
+
+        if has("number_theory_factor_multiple", "divisibility_rule", "gaosi_remainder", "gaosi_divisibility"):
+            return "难点在于要用整除、余数、倍数或数位条件不断缩小可能范围，再逐步排除不满足条件的数。"
+
+        if has("reverse_process", "half_recurrence") or mentions("倒推", "还原"):
+            return "难点在于要从最后状态倒着还原每一步变化，分清每次变化前后的数量关系。"
+
+        return ""
+
+    @classmethod
+    def _dim5_structure_fact_evidence(cls, details: dict[str, Any]) -> dict[str, str]:
+        raw_facts = details.get("dim5_structure_facts")
+        if not isinstance(raw_facts, list):
+            return {}
+        facts: dict[str, str] = {}
+        for item in raw_facts:
+            if not isinstance(item, dict):
+                continue
+            key = cls._clean_dim5_text(item.get("fact_key"))
+            if not key or key in facts:
+                continue
+            facts[key] = cls._clean_dim5_text(item.get("evidence")) or key
+        return facts
 
     @classmethod
     def _dim5_note_from_evidence(cls, value: object) -> str:
@@ -3442,20 +3616,26 @@ class PaperAggregator:
 
     @staticmethod
     def _build_question_display_label(question: QuestionDimensionScore) -> str:
-        explicit_display_label = str(question.question_display_label or "").strip()
+        explicit_display_label = PaperAggregator._clean_question_label_segment(
+            question.question_display_label
+        )
         if explicit_display_label:
             return explicit_display_label
 
-        section_index_raw = str(question.section_index_raw or "").strip()
-        question_no = str(question.question_no or "").strip()
+        section_index_raw = PaperAggregator._clean_question_label_segment(question.section_index_raw)
+        question_no = PaperAggregator._clean_question_label_segment(question.question_no)
         if section_index_raw and question_no:
             return f"{section_index_raw}-{question_no}"
 
-        question_label_raw = str(question.question_label_raw or "").strip()
+        question_label_raw = PaperAggregator._clean_question_label_segment(question.question_label_raw)
         if question_label_raw:
             return question_label_raw
 
         return question_no or str(question.question_id or "").strip()
+
+    @staticmethod
+    def _clean_question_label_segment(value: object) -> str:
+        return str(value or "").strip().strip("。．.、，,：:；;()（） ")
 
     def _calculate_level(self, score: float) -> tuple[int, str]:
         for threshold, level, label in self.LEVEL_THRESHOLDS:

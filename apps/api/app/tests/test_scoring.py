@@ -6467,6 +6467,35 @@ class TestPaperAggregator:
         assert counted_question["knowledge_source_text"] == "五六年级奥数"
         assert "奥数" in counted_question["reason"]
 
+    def test_dim5_counted_question_normalizes_unknown_olympiad_display_and_uses_specific_reason(self, aggregator):
+        question = self._dim5_question(1, "beyond")
+        question.dim_scores["dim5"] = 9.5
+        question.dim_details["dim5"].update(
+            {
+                "knowledge_level": "L5",
+                "knowledge_point_name": "博弈策略与必胜策略",
+                "canonical_knowledge_point": "博弈策略与必胜策略",
+                "canonical_knowledge_domain": "logic_strategy_construction",
+                "knowledge_track": "olympiad",
+                "knowledge_track_label": "奥数",
+                "knowledge_grade": "unknown",
+                "knowledge_grade_label": "年级未确认",
+                "knowledge_display_name": "奥数年级未确认：博弈策略与必胜策略",
+                "dim5_structure_facts": [
+                    {"fact_key": "game_rule", "evidence": "轮流移动棋子"},
+                    {"fact_key": "winning_strategy", "evidence": "制胜策略"},
+                ],
+            }
+        )
+
+        result = aggregator.aggregate([question], "dim5")
+        counted_question = result.counted_questions[0]
+
+        assert counted_question["knowledge_display_name"] == "奥数知识：博弈策略与必胜策略"
+        assert "年级未确认" not in counted_question["reason"]
+        assert "最终胜负" in counted_question["score_reason"]
+        assert "必胜" in counted_question["score_reason"]
+
     def test_dim5_counted_question_replaces_audit_evidence_with_counting_difficulty(self, aggregator):
         question = self._dim5_question(1, "high_gaosi")
         question.dim_scores["dim5"] = 8.0

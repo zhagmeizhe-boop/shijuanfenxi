@@ -61,7 +61,7 @@ type ApiErrorPayload = { detail?: string } | string | undefined;
 
 const ANALYZE_REQUEST_TIMEOUT_MS = 15000;
 const POLL_INTERVAL_MS = 5000;
-const MAX_POLL_ATTEMPTS = 120;
+const MAX_POLL_ATTEMPTS = 240;
 const MAX_TOTAL_UPLOAD_SIZE = 50 * 1024 * 1024;
 const MAX_SINGLE_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_IMAGE_COUNT = 20;

@@ -23,6 +23,13 @@ export interface CountedQuestion {
   difficulty_label?: string;
   knowledge_source_text?: string;
   knowledge_point_text?: string;
+  knowledge_track?: string;
+  knowledge_track_label?: string;
+  knowledge_grade?: string;
+  knowledge_grade_label?: string;
+  knowledge_semester?: string;
+  knowledge_display_name?: string;
+  dim5_key_difficulty_explanation?: string;
   practice_level_text?: string;
   score_reason?: string;
   reason: string;

@@ -1,0 +1,2865 @@
+[
+  {
+    "term": "以内数的认识",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "以内计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "两位乘两位",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "钟表初步",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "排队问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "应用题",
+    "frequency": 1,
+    "reason": "generic_or_empty_school_term",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "等量代换",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "简单的经济问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "归一与归总",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "比例应用题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "正反比例的概念与应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "浓度问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "经济问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "行程三要素",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识平面图形",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "立体图形的认识",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "线与角的认识",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "多角度观察",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "借助工具比较",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "图形变换",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识长度",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "立方体展开图",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "三视图",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "角的认识",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "角的计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "垂直与平行",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "圆与扇形初步",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "分类与统计",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "统计",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "整除特征",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "质数与合数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "最大公因数和最小公倍数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "图形规律初步",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "位置与方向",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识奇与偶",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "时间问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "三年级(上册)",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识时间单位“秒”",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "时间单位的换算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "简单计算经过时间",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "与经过时间有关的应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "简单计算结束时间",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "简单计算开始时间",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "根据时间表解决问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识毫米",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识分米",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "计算分段后的长度",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "千米的认识",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "时间与路程的应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识吨",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "过桥问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "列表法解决租车问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "运用等量代换法解决物体质量问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "用消元法解决含有相同量的实际问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "画线段图法解决和差问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "还原法解决复杂问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "倍的认识",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "倍数应用题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "集合",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "运用集合思想解决问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "多人之间的集合问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "有完全不重合的集合问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "集合",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识东、南、西、北",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识东北、东南、西北、西南",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "简单的路线",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "推理解决多个物体位置问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识年、月、日",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "简单的日期计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识平年和闰年",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "跨月的时间计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "计算星期几",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "跨年的时间计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "时计时法",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "求经过时间",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "求结束时刻",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "求开始时刻",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "有间隔的时间问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "时间表问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "时差",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "跨天的时间计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "看错钟面的错中求解",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "时间上的错中求解",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "稍复杂的排列问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "稍复杂的组合问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "反选问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "搭配",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "亿以内数的计数单位和数位顺序表",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "亿以内数的读法",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "亿以内数的写法",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "亿以内数的大小比较",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "整万数的改写",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "根据四舍五入法解决最值问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "运用计数单位解决多位数计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识自然数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "十进制计数法",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "亿以上数的读法和写法",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识算盘",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识计算器",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识线段、直线、射线",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "数射线、线段",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识角",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "用量角器量度数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "角的分类",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "画角",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "基础角度计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "钟表上的角度计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "折纸中的角度计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用角的相等关系进行角度计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "三位数乘两位数的应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "求积个位上的数字问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "积的变化规律",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "积的变化规律的实际应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "总价问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "根据总价公式解决复杂问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "路程问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "基本相遇问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "基本追及问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "追及问题中的速度差",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "火车过桥问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "火车完全在桥(体验专用)",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "火车与火车的相遇和追及(体验专用)",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "火车与人的相遇和追及(体验专用)",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "相交、平行与垂直",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "平行线的画法",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "垂线的画法",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "点到直线的距离",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "数图形中的平行线或垂线",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "求交点数量",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识平行四边形",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识梯形",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "四边形之间的关系",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "图形的分割与拼合",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "数平行四边形和梯形的个数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "沏茶问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "合理安排顺序",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "数量为双数的烙饼问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "数量为单数的烙饼问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "过河问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "合理调运及布线",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "对策论",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "策略问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "第二节 对策问题(以弱胜强)",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "从不同的位置观察同一几何体",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "从同一方向观察不同的几何体",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "还原几何体",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识三角形各部分及特点",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "两点之间线段最短",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "用小棒摆图形",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "组合法围三角形问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "三角形按角分类",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "三角形按边分类",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "三角形画法",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "三角形高的画法",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "三角形的三边的关系",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "数三角形的个数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "三角形内角和大小",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "三角形内角和应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "三角形的内角和",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "等边三角形内角和",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "直角三角形内角和",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "等腰三角形内角和",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用三角形内角和计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "四边形内角和",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "四边形内角和的应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "有角平分线的情况，利用三角形内角和计算三角形角度",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "剪掉一个角，求某些角的度数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "列表法解鸡兔同笼",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "假设法解“头和腿和”鸡兔同笼",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "假设法解“头和腿和”鸡兔同笼的变式",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "有隐藏条件的“头和腿和”鸡兔同笼",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用“头与腿”的数量关系求“头和”的鸡兔同笼",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "假设法解“头和腿差”鸡兔同笼",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "假设法解“头和腿差”鸡兔同笼的变式",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "分组法解鸡兔同笼",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "多个对象的鸡兔同笼",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "复杂鸡兔同笼问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "在具体情境中用数对表示位置",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "方格纸上用数对确定位置",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "数对的综合应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "两端都植树",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "两端都不植树",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "一端植，一端不植",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "“植树问题”规律解决生活问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "“植树问题”规律解决爬楼梯问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "封闭曲线植树问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "实心方阵",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "实心方阵求层与层之间的关系",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "实心方阵层数问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "空心方阵总数量问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "空心方阵求单层数量问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "空心方阵增加层问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "方阵问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "由两个方向的形状图，有限定条件的还原几何体",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "根据三视图，还原几何体",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "因数和倍数的意义",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "根据已知条件找到对应数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "5的倍数特征",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "9的倍数特征",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "根据倍数特征组数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "同时是2、5的倍数的数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "同时是2、5、3的倍数的数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "25的倍数特征",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "125的倍数特征",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用尾数及数字求和特征，需要分解的填空",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "同时被多个特殊数整除的填空",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "奇偶位差法",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "质数和合数的意义",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "奇数和偶数的意义",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "两数和差的奇偶性",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "已知两质数之和的应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "数列的奇偶性",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "两数之积的奇偶性",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "复杂式子的奇偶性判断",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用奇偶数知识解决往返问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用奇偶数知识解决开关灯问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用奇偶数知识解决翻杯子问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "找次品",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "找次品的最优策略",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "根据称量次数判断总量",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "判断次品的轻重",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "找次品",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "用方向和距离描述某个点位置",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "根据方向和距离确定某点位置",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "用方向和距离描述简单的路线图",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "比的意义",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "比的基本性质",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "分率与比的相互转化",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "根据数量关系求比并化简",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用中间量求比",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "三数连比",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "按比分配",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "抓住部分量不变解决比的相关问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "抓住和(差)不变解决比的相关问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "圆的认识",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用圆的对称性解决相关问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "扇形的认识",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "扇形与圆的关系",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "扇形(环)的计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "用数形结合的思想探索规律",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "用数形结合法解决稍复杂的计算问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "数与形",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识温度",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "温度的计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "认识正、负数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "正、负数在生活中的应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "“±”的含义及应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "用直线上的点表示正、负数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "用正、负数解决问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "比例的意义",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "比例的基本性质",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "解比例",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "比例的基本性质的简单应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用四个数组成比例",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "比例中某项有变化",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "根据“等积式”改写成“比例式”",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用比例解决问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "正比例意义",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "判断两种量是否成正比例",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "正比例关系的图象",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "反比例意义",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "判断两种量是否成反比例",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "反比例关系的图象",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "正比例、反比例的混合判断",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "比例尺的意义及求比例尺",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "根据比例尺求距离",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "比例尺转化问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "运用比例尺解决行程问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "图形的放大和缩小",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "正比例关系的应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "反比例关系的应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "用反比例解决复杂问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "用比例抓不变量解决行程问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "基础齿轮问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "变速自行车的齿轮问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "最基本的鸽巢原理",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用基本鸽巢原理求物体总数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用基本鸽巢原理求鸽巢数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "稍复杂的鸽巢原理",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用稍复杂鸽巢原理求物体总数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用稍复杂鸽巢原理求鸽巢数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "利用鸽巢原理解决问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "扑克牌中的鸽巢问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "需要配对的鸽巢问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "鸽巢问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "鸽巢问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "reference_standard_data.json"
+  },
+  {
+    "term": "位置",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "平面图形的拼组",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "用七巧板拼指定图形",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "线段的认识与测量",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "角的初步认识",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "厘米和米的认识",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "观察物体",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "千米的认识",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "认识分米",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "认识毫米",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "四边形",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "推理解决多个物体位置问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "认识东、南、西、北",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "利用角的相等关系进行角度计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "基础角度计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "折纸中的角度计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "数射线、线段",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "点到直线的距离",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "用量角器量度数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "画角",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "角的分类",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "认识线段、直线、射线",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "认识角",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "钟表上的角度计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "公顷和平方千米的应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "认识平方千米",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "四边形之间的关系",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "数图形中的平行线或垂线",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "数平行四边形和梯形的个数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "相交、平行与垂直",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "认识平行四边形",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "认识梯形",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "图形的分割与拼合",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "三角形内角和大小",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "三角形内角和应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "三角形按角分类",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "三角形按边分类",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "三角形画法",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "三角形的三边的关系",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "三角形的内角和",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "三角形高的画法",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "两点之间线段最短",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "利用三角形内角和计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "剪掉一个角，求某些角的度数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "四边形内角和",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "四边形内角和的应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "数三角形的个数",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "有角平分线的情况，利用三角形内角和计算三角形角度",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "直角三角形内角和",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "等腰三角形内角和",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "等边三角形内角和",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "组合法围三角形问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "认识三角形各部分及特点",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "还原几何体",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "从不同的位置观察同一几何体",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "从同一方向观察不同的几何体",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "用小棒摆图形",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "同(等)底等高在三角形中的复杂应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "同(等)底等高在三角形中的应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "同(等)底等高在平行四边形中的应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "平行四边形中的一半模型",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "在具体情境中用数对表示位置",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "方格纸上用数对确定位置",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "由两个方向的形状图，有限定条件的还原几何体",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "根据三视图，还原几何体",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "利用圆的对称性解决相关问题",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "圆的认识",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "扇形与圆的关系",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "扇形的认识",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "扇形(环)的计算",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "方中圆与圆中方",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "方圆套中套",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "方圆模型的复杂应用",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "根据方向和距离确定某点位置",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "用方向和距离描述某个点位置",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "用方向和距离描述简单的路线图",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "图形的放大和缩小",
+    "frequency": 1,
+    "reason": "missing_structural_rule",
+    "source_file": "dim2_geometry_knowledge_base.json"
+  },
+  {
+    "term": "应用题",
+    "frequency": 837,
+    "reason": "generic_or_broad_label"
+  },
+  {
+    "term": "计算",
+    "frequency": 590,
+    "reason": "generic_or_broad_label"
+  },
+  {
+    "term": "几何",
+    "frequency": 477,
+    "reason": "generic_or_broad_label"
+  },
+  {
+    "term": "矛盾法",
+    "frequency": 289,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "游戏策略",
+    "frequency": 282,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "数论",
+    "frequency": 281,
+    "reason": "generic_or_broad_label"
+  },
+  {
+    "term": "计数",
+    "frequency": 204,
+    "reason": "generic_or_broad_label"
+  },
+  {
+    "term": "数字谜综合问题",
+    "frequency": 138,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "计数与组合",
+    "frequency": 99,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "计算问题",
+    "frequency": 79,
+    "reason": "generic_or_broad_label"
+  },
+  {
+    "term": "几何问题",
+    "frequency": 77,
+    "reason": "generic_or_broad_label"
+  },
+  {
+    "term": "第三章 圆柱与圆锥",
+    "frequency": 66,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第三章 长方体和正方体",
+    "frequency": 64,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第四章 分数的意义和性质",
+    "frequency": 40,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "几何问题第9讲",
+    "frequency": 39,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "几何问题第1讲",
+    "frequency": 35,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "计算问题第9讲",
+    "frequency": 34,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "第三章 运算定律",
+    "frequency": 32,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "计算问题第8讲",
+    "frequency": 30,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "第四章 小数的意义和性质",
+    "frequency": 30,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第1讲",
+    "frequency": 29,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第五章 三角形",
+    "frequency": 28,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第二章 除数是一位数的除法",
+    "frequency": 27,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第三章 分数除法",
+    "frequency": 27,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第四章 比例",
+    "frequency": 27,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第四章 两位数乘两位数",
+    "frequency": 26,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第六章 多边形的面积",
+    "frequency": 26,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第3讲",
+    "frequency": 23,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "几何问题第4讲",
+    "frequency": 23,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "第三章 小数除法",
+    "frequency": 23,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第二章 因数与倍数",
+    "frequency": 23,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "计算问题第1讲",
+    "frequency": 22,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "计数问题第1讲",
+    "frequency": 22,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "应用题第8讲",
+    "frequency": 22,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第16讲",
+    "frequency": 22,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "几何问题第7讲",
+    "frequency": 22,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "第一章 四则运算",
+    "frequency": 22,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第六章 小数的加法和减法",
+    "frequency": 22,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第五章 简易方程",
+    "frequency": 22,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第五章 圆",
+    "frequency": 22,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第2讲",
+    "frequency": 21,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "计数问题第7讲",
+    "frequency": 21,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "几何问题第6讲",
+    "frequency": 21,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "应用题第19讲",
+    "frequency": 21,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "计数问题第10讲",
+    "frequency": 21,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "计数问题第2讲",
+    "frequency": 20,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "数论问题第1讲",
+    "frequency": 20,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "第五章 面积",
+    "frequency": 20,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第18讲",
+    "frequency": 19,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "几何问题第11讲",
+    "frequency": 19,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "第六章 多位数乘一位数",
+    "frequency": 19,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第六章 分数加减法",
+    "frequency": 19,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第20讲",
+    "frequency": 18,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "计算问题第2讲",
+    "frequency": 17,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "数论问题第3讲",
+    "frequency": 17,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "第四章 三位数乘两位数",
+    "frequency": 17,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第一章 小数乘法",
+    "frequency": 17,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第二章 百分数（二）",
+    "frequency": 17,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第4讲",
+    "frequency": 16,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "计算问题第4讲",
+    "frequency": 16,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "应用题第21讲",
+    "frequency": 16,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "计算问题第13讲",
+    "frequency": 16,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "计算问题第14讲",
+    "frequency": 16,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "几何问题第10讲",
+    "frequency": 16,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "应用题第26讲",
+    "frequency": 16,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第六章 年、月、日",
+    "frequency": 16,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第一章 大数的认识",
+    "frequency": 16,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "数字谜问题第2讲",
+    "frequency": 15,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "数字谜问题第3讲",
+    "frequency": 15,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "计算问题第6讲",
+    "frequency": 15,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "应用题第10讲",
+    "frequency": 15,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第14讲",
+    "frequency": 15,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "(组合问题第10讲)",
+    "frequency": 15,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "第六章 除数是两位数的除法",
+    "frequency": 15,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "数宇谜问题第5讲",
+    "frequency": 14,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "应用题第11讲",
+    "frequency": 14,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第12讲",
+    "frequency": 14,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "数论问题第2讲",
+    "frequency": 14,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "数论问题第4讲",
+    "frequency": 14,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "(应用题第24讲)",
+    "frequency": 14,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第6讲",
+    "frequency": 13,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "数字谜问题第4讲",
+    "frequency": 13,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "组合问题第4讲",
+    "frequency": 13,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "应用题第22讲",
+    "frequency": 13,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第23讲",
+    "frequency": 13,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "数论问题第6讲",
+    "frequency": 13,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "第四章 万以内的加法和减法（二）",
+    "frequency": 13,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第七章 数学广角-植树问题",
+    "frequency": 13,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "人教版6年级数学下册",
+    "frequency": 13,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "几何问题第2讲",
+    "frequency": 12,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "计算问题第7讲",
+    "frequency": 12,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "数论问题第5讲",
+    "frequency": 12,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "第三章 测量",
+    "frequency": 12,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第七章 小数的初步认识",
+    "frequency": 12,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第五章 平行四边形和梯形",
+    "frequency": 12,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第八章 平均数与条形统计图",
+    "frequency": 12,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "计算问题第3讲",
+    "frequency": 11,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "组合问题第2讲",
+    "frequency": 11,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "应用题第13讲",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第15讲",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "计数问题第4讲",
+    "frequency": 11,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "组合问题第5讲",
+    "frequency": 11,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "计算问题第12讲",
+    "frequency": 11,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "几何问题第8讲",
+    "frequency": 11,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "数字谜问题第10讲",
+    "frequency": 11,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "应用题第27讲",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第三章 角的度量",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第九章 数学广角——鸡兔同笼",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第一章 分数乘法",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第六章 百分数（一）",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第五章 数学广角",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "总复习",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "人教版2年级数学下册",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "人教版3年级数学上册",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "人教版3年级数学下册",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "人教版4年级数学下册",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "人教版5年级数学下册",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "人教版6年级数学上册",
+    "frequency": 11,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "计数问题第3讲",
+    "frequency": 10,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "几何问题第5讲",
+    "frequency": 10,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "数字谜问题第8讲",
+    "frequency": 10,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "计数问题第8讲",
+    "frequency": 10,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "组合问题第9讲",
+    "frequency": 10,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "第七章 长方形和正方形",
+    "frequency": 10,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第八章 分数的初步认识",
+    "frequency": 10,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第四章 比",
+    "frequency": 10,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "人教版1年级数学上册",
+    "frequency": 10,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "人教版2年级数学上册",
+    "frequency": 10,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "人教版4年级数学上册",
+    "frequency": 10,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "数字谜问题第1讲",
+    "frequency": 9,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "组合问题第1讲",
+    "frequency": 9,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "组合问题第3讲",
+    "frequency": 9,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "计数问题第6讲",
+    "frequency": 9,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "计算问题第10讲",
+    "frequency": 9,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "转化单位“1”",
+    "frequency": 9,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "教字谜问题第11讲",
+    "frequency": 9,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "组合问题第11讲",
+    "frequency": 9,
+    "reason": "needs_structure_split_before_approval"
+  }
+]

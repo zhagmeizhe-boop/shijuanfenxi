@@ -32,6 +32,10 @@ from app.services.parser.dim5_grounding import (
     GROUNDING_USE_CONFIDENCE_THRESHOLD,
     Dim5KnowledgeGroundingService,
 )
+from app.services.parser.dim5_knowledge_graph import (
+    Dim5KnowledgeGraphMatcher,
+    get_dim5_knowledge_graph_matcher,
+)
 from app.services.parser.dim5_retrieval import Dim5RetrievalService
 from app.services.parser.reference_standard import get_reference_standard
 from app.services.scoring.banded_dimension import BAND_SCORE_MAP, _normalize_band, _normalize_sublevel
@@ -647,6 +651,7 @@ class AIParser:
         self.reference_standard = get_reference_standard()
         self.dim5_retrieval = Dim5RetrievalService(self.reference_standard)
         self.dim5_grounding = Dim5KnowledgeGroundingService(self.reference_standard)
+        self.dim5_graph_matcher = get_dim5_knowledge_graph_matcher()
         logger.info("AIParser 初始化完成")
 
     def _create_default_client(self) -> MoonshotClient:
@@ -1176,6 +1181,29 @@ class AIParser:
             in (1, "1", True),
             "dim5_fallback_mode": str(feature.get("dim5_fallback_mode", "")).strip(),
             "dim5_upshift_reason": str(feature.get("dim5_upshift_reason", "")).strip(),
+            "knowledge_point_id": str(feature.get("knowledge_point_id", "")).strip(),
+            "knowledge_point_name": str(feature.get("knowledge_point_name", "")).strip(),
+            "knowledge_domain": str(feature.get("knowledge_domain", "")).strip(),
+            "knowledge_track": str(feature.get("knowledge_track", "")).strip(),
+            "knowledge_track_label": str(feature.get("knowledge_track_label", "")).strip(),
+            "knowledge_grade": str(feature.get("knowledge_grade", "")).strip(),
+            "knowledge_grade_label": str(feature.get("knowledge_grade_label", "")).strip(),
+            "knowledge_semester": str(feature.get("knowledge_semester", "")).strip(),
+            "knowledge_display_name": str(feature.get("knowledge_display_name", "")).strip(),
+            "dim5_key_difficulty_explanation": str(
+                feature.get("dim5_key_difficulty_explanation", "")
+            ).strip(),
+            "dim5_structure_facts": self._normalize_dict_list(
+                feature.get("dim5_structure_facts")
+            ),
+            "candidate_knowledge_points": self._normalize_dict_list(
+                feature.get("candidate_knowledge_points")
+            ),
+            "selected_candidate_id": str(feature.get("selected_candidate_id", "")).strip(),
+            "rejected_candidates": self._normalize_dict_list(feature.get("rejected_candidates")),
+            "confidence_status": str(feature.get("confidence_status", "")).strip(),
+            "failure_reason": str(feature.get("failure_reason", "")).strip(),
+            "graph_version": str(feature.get("graph_version", "")).strip(),
             "dim5_retrieval_context": self._normalize_optional_dict(
                 feature.get("dim5_retrieval_context")
             ),
@@ -2188,6 +2216,17 @@ class AIParser:
             if not merged_tags:
                 merged_tags = self._normalize_string_list(analysis_facts.get("core_knowledge_points"))
             normalized["knowledge_tags"] = list(dict.fromkeys(tag for tag in merged_tags if tag))
+
+        graph_status = str(normalized.get("confidence_status") or "").strip()
+        if graph_status == "confirmed":
+            return normalized
+        if graph_status in {"review_required", "ambiguous", "broad_category_only"}:
+            normalized["knowledge_level"] = ""
+            normalized["canonical_knowledge_point"] = ""
+            normalized["canonical_knowledge_domain"] = ""
+            normalized["primary_knowledge_point"] = ""
+            normalized["knowledge_point_source"] = ""
+            return normalized
 
         if normalized.get("dim5_excluded_reason") == "retry_failed":
             normalized["band"] = ""
@@ -3684,6 +3723,113 @@ class AIParser:
             merged[key] = grounding.get(key)
         return self._normalize_dim5_feature(merged)
 
+    def _get_dim5_graph_matcher(self) -> Dim5KnowledgeGraphMatcher:
+        service = getattr(self, "dim5_graph_matcher", None)
+        if isinstance(service, Dim5KnowledgeGraphMatcher):
+            return service
+        service = get_dim5_knowledge_graph_matcher()
+        self.dim5_graph_matcher = service
+        return service
+
+    def _apply_dim5_graph_grounding(
+        self,
+        dim5_feature: Dict[str, Any],
+        *,
+        question: ParsedQuestion,
+        analysis_facts: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        merged = dict(dim5_feature or {})
+        if str(merged.get("dim5_excluded_reason") or "").strip() == "retry_failed":
+            return self._normalize_dim5_feature(merged)
+        try:
+            graph_result = self._get_dim5_graph_matcher().match(
+                question_text=question.raw_text or "",
+                question_type=str(getattr(question.question_type, "value", question.question_type) or ""),
+                analysis_facts=analysis_facts,
+                dim5_feature=merged,
+            )
+        except Exception as exc:
+            logger.warning(
+                "dim5 knowledge graph match failed question=%s error=%s",
+                question.question_no,
+                exc,
+            )
+            merged["confidence_status"] = "review_required"
+            merged["failure_reason"] = f"graph_error:{str(exc)[:160]}"
+            merged["need_manual_review"] = 1
+            return self._normalize_dim5_feature(merged)
+
+        for key in (
+            "graph_version",
+            "dim5_structure_facts",
+            "candidate_knowledge_points",
+            "selected_candidate_id",
+            "rejected_candidates",
+            "confidence_status",
+            "failure_reason",
+            "knowledge_point_id",
+            "knowledge_point_name",
+            "knowledge_domain",
+            "knowledge_track",
+            "knowledge_track_label",
+            "knowledge_grade",
+            "knowledge_grade_label",
+            "knowledge_semester",
+            "knowledge_display_name",
+        ):
+            merged[key] = graph_result.get(key)
+
+        if graph_result.get("confidence_status") == "confirmed":
+            point_name = str(graph_result.get("knowledge_point_name") or "").strip()
+            domain = str(graph_result.get("knowledge_domain") or "").strip()
+            level = normalize_dim5_knowledge_level(graph_result.get("knowledge_level"))
+            confidence = self._normalize_confidence(graph_result.get("confidence"))
+            merged["knowledge_level"] = level
+            merged["canonical_knowledge_point"] = point_name
+            merged["canonical_knowledge_domain"] = domain
+            if not str(merged.get("primary_knowledge_point") or "").strip():
+                merged["primary_knowledge_point"] = point_name
+            merged["knowledge_point_source"] = "dim5_knowledge_graph"
+            merged["level_source"] = "dim5_knowledge_graph"
+            merged["level_evidence"] = str(graph_result.get("evidence") or "").strip()
+            merged["canonical_match_source"] = "dim5_knowledge_graph"
+            merged["canonical_match_confidence"] = confidence
+            merged["grounded_selection_status"] = "selected"
+            merged["selected_knowledge_candidate_id"] = str(
+                graph_result.get("selected_candidate_id") or ""
+            ).strip()
+            merged["grounded_canonical_knowledge_point"] = point_name
+            merged["grounded_knowledge_domain"] = domain
+            merged["grounded_knowledge_source_text"] = str(
+                graph_result.get("knowledge_display_name")
+                or graph_result.get("knowledge_track_label")
+                or ""
+            ).strip()
+            merged["grounded_knowledge_level"] = level
+            merged["grounded_confidence"] = confidence
+            merged["grounded_evidence"] = str(graph_result.get("evidence") or "").strip()
+            merged["grounded_match_source"] = "dim5_knowledge_graph"
+            merged["grounded_risk_flags"] = []
+            merged["grounded_rejected_candidates"] = list(
+                graph_result.get("rejected_candidates") or []
+            )
+            merged["grounded_selector"] = "dim5_knowledge_graph"
+            for key in ("core_knowledge_units", "knowledge_tags"):
+                values = list(merged.get(key) or [])
+                if point_name:
+                    values.insert(0, point_name)
+                merged[key] = list(dict.fromkeys(item for item in values if item))
+        else:
+            if graph_result.get("confidence_status") in {
+                "review_required",
+                "ambiguous",
+                "broad_category_only",
+            }:
+                merged["knowledge_level"] = ""
+                merged["canonical_knowledge_point"] = ""
+                merged["canonical_knowledge_domain"] = ""
+        return self._normalize_dim5_feature(merged)
+
     @staticmethod
     def _dim5_grounding_high_enough(feature: Dict[str, Any]) -> bool:
         try:
@@ -4239,6 +4385,11 @@ class AIParser:
                 question=question,
                 analysis_facts=analysis_facts,
             )
+            normalized_features[feature_key] = self._apply_dim5_graph_grounding(
+                normalized_features[feature_key],
+                question=question,
+                analysis_facts=analysis_facts,
+            )
             normalized_features[feature_key] = self._finalize_dim5_feature(
                 normalized_features[feature_key],
                 analysis_facts=analysis_facts,
@@ -4268,6 +4419,11 @@ class AIParser:
             analysis_facts=analysis_facts,
         )
         normalized_features["dim5_knowledge"] = self._apply_dim5_grounding(
+            normalized_features["dim5_knowledge"],
+            question=question,
+            analysis_facts=analysis_facts,
+        )
+        normalized_features["dim5_knowledge"] = self._apply_dim5_graph_grounding(
             normalized_features["dim5_knowledge"],
             question=question,
             analysis_facts=analysis_facts,
@@ -4409,6 +4565,11 @@ class AIParser:
         )
         await self._ensure_dim5_grounding_with_llm(
             normalized_features,
+            question=question,
+            analysis_facts=analysis_facts,
+        )
+        normalized_features["dim5_knowledge"] = self._apply_dim5_graph_grounding(
+            normalized_features["dim5_knowledge"],
             question=question,
             analysis_facts=analysis_facts,
         )

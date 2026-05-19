@@ -236,11 +236,27 @@ function cleanDim5DisplayText(value: string | undefined): string {
     .replace(/\s+/g, ' ')
     .replace(/竞赛数学导引/g, '奥数')
     .replace(/高思导引/g, '奥数')
+    .replace(/奥数年级未确认[：:]\s*/g, '奥数知识：')
+    .replace(/校内年级未确认[：:]\s*/g, '校内知识：')
+    .replace(/初中前置年级未确认[：:]\s*/g, '初中前置知识：')
     .trim();
 }
 
 function trimTrailingPunctuation(text: string): string {
   return text.replace(/[。；;，,\s]+$/u, '').trim();
+}
+
+function normalizeCountedQuestionLabel(value: string | undefined): string {
+  let text = String(value || '').trim();
+  if (!text) {
+    return '';
+  }
+  text = text.replace(/（/g, '(').replace(/）/g, ')').trim();
+  const danglingDashMatch = text.match(/^[-－—]+\s*(.+)$/u);
+  if (danglingDashMatch) {
+    text = danglingDashMatch[1].trim();
+  }
+  return text.replace(/[\s.．、，,。:：；;]+$/u, '').trim();
 }
 
 function cleanDim4DisplayText(value: string | undefined): string {
@@ -330,13 +346,21 @@ function formatDim4CountedQuestionText(item: CountedQuestion, fallbackText: stri
 
 function formatDim5CountedQuestionText(item: CountedQuestion, fallbackText: string): string {
   const difficultyLabel = formatCountedQuestionDifficulty(item);
+  const displayName = cleanDim5DisplayText(item.knowledge_display_name);
   const source = cleanDim5DisplayText(item.knowledge_source_text);
   const point = cleanDim5DisplayText(item.knowledge_point_text);
-  const reason = trimTrailingPunctuation(cleanDim5DisplayText(item.score_reason));
+  const rawReason = trimTrailingPunctuation(
+    cleanDim5DisplayText(item.dim5_key_difficulty_explanation || item.score_reason),
+  );
+  const reason = item.dim5_key_difficulty_explanation
+    ? rawReason
+    : normalizeHistoricalDim5Reason(rawReason, displayName || point);
 
-  if (difficultyLabel && reason && (source || point)) {
+  if (difficultyLabel && reason && (displayName || source || point)) {
     let target: string;
-    if (source && point) {
+    if (displayName) {
+      target = `本题属于${displayName}`;
+    } else if (source && point) {
       target = `本题属于${source}的${point}`;
     } else if (source) {
       target = `本题属于${source}知识范围`;
@@ -347,6 +371,34 @@ function formatDim5CountedQuestionText(item: CountedQuestion, fallbackText: stri
   }
 
   return cleanDim5DisplayText(formatCountedQuestionAnalysis(fallbackText, item));
+}
+
+function normalizeHistoricalDim5Reason(reason: string, knowledgeText: string): string {
+  const normalizedReason = trimTrailingPunctuation(reason);
+  const knowledge = cleanDim5DisplayText(knowledgeText);
+  const isTerse =
+    !normalizedReason ||
+    normalizedReason.length <= 14 ||
+    (/^难点在于[^要，。]+(?:；[^要，。]+)+$/u.test(normalizedReason));
+  if (!isTerse) {
+    return normalizedReason;
+  }
+  if (knowledge.includes('博弈') || knowledge.includes('必胜')) {
+    return '难点在于不能只看当前一步能不能走，要从最终胜负倒推必胜和必败局面，再设计让对手落入不利状态的策略';
+  }
+  if (knowledge.includes('三视图') || knowledge.includes('立体图形')) {
+    return '难点在于要把立体图形从题目指定方向重新投影到平面上，分清哪些点线会重合、哪些位置会被遮挡';
+  }
+  if (knowledge.includes('工程')) {
+    return '难点在于要把完成量、剩余量和工作效率都统一到同一个总工程量下，再用不同阶段之间的变化建立关系';
+  }
+  if (knowledge.includes('裂项') || knowledge.includes('分数数列')) {
+    return '难点在于要看出每一项分母是连续相接的乘积，可以拆成前后相消的差，而不是把长串分数逐项硬算';
+  }
+  if (knowledge.includes('圆周长') || knowledge.includes('半径增量')) {
+    return '难点在于铁丝增加的是圆的周长，不是半径；要用周长变化量反推半径增加量，而且结果与原来圆的半径大小无关';
+  }
+  return normalizedReason;
 }
 
 function dim6StudentActionFromTask(task: string, evidence: string): string {
@@ -538,8 +590,9 @@ export function DimensionScoreCards({ dimensions }: DimensionScoreCardsProps) {
                 <span className="report-dimension-card__label">计入题目</span>
                 <ul className="report-counted-question-list">
                   {countedQuestions.map((item, index) => {
-                    const questionLabel =
+                    const rawQuestionLabel =
                       item.question_display_label || item.question_label_raw || item.question_no;
+                    const questionLabel = normalizeCountedQuestionLabel(rawQuestionLabel) || rawQuestionLabel;
                     const itemKey = `${dim.code}-${index}-${questionLabel}-${item.summary}`;
                     const compactSource = item.reason || item.summary || item.full_reason || '';
                     const fullSource = item.full_reason || item.reason || item.summary || '';

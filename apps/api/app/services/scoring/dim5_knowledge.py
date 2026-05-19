@@ -425,6 +425,52 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
     @classmethod
     def _score_by_knowledge_level(cls, features: Dict[str, Any]) -> DimensionScore:
         score_features = dict(features or {})
+        score_features["knowledge_display_name"] = cls._normalize_knowledge_display_name(
+            score_features
+        )
+        confidence_status = str(score_features.get("confidence_status") or "").strip()
+        if confidence_status and confidence_status != "confirmed":
+            details = {
+                "confidence_status": confidence_status,
+                "failure_reason": str(score_features.get("failure_reason") or "").strip(),
+                "graph_version": str(score_features.get("graph_version") or "").strip(),
+                "dim5_structure_facts": score_features.get("dim5_structure_facts") or [],
+                "candidate_knowledge_points": score_features.get("candidate_knowledge_points") or [],
+                "rejected_candidates": score_features.get("rejected_candidates") or [],
+                "selected_candidate_id": str(score_features.get("selected_candidate_id") or "").strip(),
+                "knowledge_track": str(score_features.get("knowledge_track") or "").strip(),
+                "knowledge_track_label": str(score_features.get("knowledge_track_label") or "").strip(),
+                "knowledge_grade": str(score_features.get("knowledge_grade") or "").strip(),
+                "knowledge_grade_label": str(score_features.get("knowledge_grade_label") or "").strip(),
+                "knowledge_semester": str(score_features.get("knowledge_semester") or "").strip(),
+                "knowledge_display_name": str(score_features.get("knowledge_display_name") or "").strip(),
+                "dim5_excluded_reason": "dim5_graph_not_confirmed",
+            }
+            return DimensionScore(
+                dimension_code=cls.DIMENSION_CODE,
+                score=0.0,
+                level=0,
+                level_label="N/A",
+                evidence="维度5知识图谱未确认具体知识点，当前题目需人工复核。",
+                applicable=False,
+                details={key: value for key, value in details.items() if value not in ("", None, [], {})},
+            )
+
+        if confidence_status == "confirmed":
+            graph_level = normalize_dim5_knowledge_level(score_features.get("knowledge_level"))
+            if not graph_level:
+                graph_level = normalize_dim5_knowledge_level(score_features.get("grounded_knowledge_level"))
+            if graph_level:
+                score_features["knowledge_level"] = graph_level
+            graph_point = str(score_features.get("knowledge_point_name") or "").strip()
+            graph_domain = str(score_features.get("knowledge_domain") or "").strip()
+            if graph_point:
+                score_features["canonical_knowledge_point"] = graph_point
+                score_features.setdefault("primary_knowledge_point", graph_point)
+            if graph_domain:
+                score_features["canonical_knowledge_domain"] = graph_domain
+            score_features.setdefault("level_source", "dim5_knowledge_graph")
+
         if not normalize_dim5_knowledge_level(score_features.get("knowledge_level")):
             score_features.update(
                 classify_dim5_knowledge_scope(
@@ -498,6 +544,23 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
             "canonical_direct_formula_guard",
             "dim5_fallback_mode",
             "dim5_upshift_reason",
+            "knowledge_point_id",
+            "knowledge_point_name",
+            "knowledge_domain",
+            "knowledge_track",
+            "knowledge_track_label",
+            "knowledge_grade",
+            "knowledge_grade_label",
+            "knowledge_semester",
+            "knowledge_display_name",
+            "dim5_key_difficulty_explanation",
+            "dim5_structure_facts",
+            "candidate_knowledge_points",
+            "selected_candidate_id",
+            "rejected_candidates",
+            "confidence_status",
+            "failure_reason",
+            "graph_version",
             "calibration",
             "core_knowledge_units",
             "knowledge_tags",
@@ -552,6 +615,26 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
             applicable=True,
             details=details,
         )
+
+    @staticmethod
+    def _normalize_knowledge_display_name(features: Dict[str, Any]) -> str:
+        display_name = str(features.get("knowledge_display_name") or "").strip()
+        if "年级未确认" not in display_name:
+            return display_name
+
+        track_label = str(features.get("knowledge_track_label") or "").strip()
+        grade_label = str(features.get("knowledge_grade_label") or "").strip()
+        point = str(
+            features.get("knowledge_point_name")
+            or features.get("canonical_knowledge_point")
+            or features.get("primary_knowledge_point")
+            or ""
+        ).strip()
+        if grade_label and grade_label != "年级未确认" and track_label and point:
+            return f"{track_label}{grade_label}：{point}"
+        if track_label in {"校内", "奥数", "初中前置"} and point:
+            return f"{track_label}知识：{point}"
+        return display_name
 
     def _calculate_score(self, features: Dict[str, Any]) -> DimensionScore:
         return self._score_by_knowledge_level(features)
