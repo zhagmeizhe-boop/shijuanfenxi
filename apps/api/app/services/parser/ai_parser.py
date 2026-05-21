@@ -3547,6 +3547,7 @@ class AIParser:
                 dim5.get("dim5_excluded_reason") != "retry_failed"
                 and cls._dim5_has_valid_band_and_sublevel(dim5)
             )
+            or cls._dim5_has_graph_review_signal(dim5)
         ):
             inferred.append("dim5")
 
@@ -3555,6 +3556,51 @@ class AIParser:
             inferred.append("dim6")
 
         return inferred
+
+    @staticmethod
+    def _dim5_has_graph_review_signal(feature: Dict[str, Any]) -> bool:
+        if str(feature.get("dim5_excluded_reason") or "").strip() == "retry_failed":
+            return False
+        facts = feature.get("dim5_structure_facts")
+        candidates = feature.get("candidate_knowledge_points")
+        if isinstance(candidates, list) and candidates:
+            return True
+        if not isinstance(facts, list):
+            return False
+        clear_fact_keys = {
+            "statistics_chart_context",
+            "statistics_percent_conversion",
+            "fraction_application",
+            "proportion_application",
+            "work_rate_task",
+            "motion_task",
+            "profit_discount",
+            "price_profit_relation",
+            "two_type_cost_total",
+            "gaosi_chicken_rabbit",
+            "gaosi_travel",
+            "gaosi_work_rate",
+            "gaosi_concentration_profit",
+            "gaosi_number_theory",
+            "gaosi_digit_puzzle",
+            "square_difference_odd",
+            "digit_swap_multiple",
+            "integer_solution_factorization",
+            "pigeonhole",
+            "guarantee_at_least",
+            "fold_cut_unfold",
+            "geometry_transform_puzzle",
+            "school_cube_net",
+            "area_relation_model",
+            "overlap_area",
+            "cylinder_surface_volume",
+            "periodic_grid",
+            "state_recurrence",
+            "line_plane_recurrence",
+            "transport_optimization",
+            "gaosi_probability",
+        }
+        return any(str(item.get("fact_key") or "") in clear_fact_keys for item in facts if isinstance(item, dict))
 
     @staticmethod
     def _load_image_as_data_url(image_path: str) -> Optional[str]:
@@ -4473,6 +4519,7 @@ class AIParser:
                         dim5.get("dim5_excluded_reason") == "retry_failed"
                         or not self._dim5_has_valid_band_and_sublevel(dim5)
                     )
+                    and not self._dim5_has_graph_review_signal(dim5)
                 ):
                     continue
             provided_dimensions.add(dim_code)
@@ -4727,21 +4774,85 @@ class AIParser:
             logger.error("题号 %s 解析失败: %s", question.question_no, exc)
             return self._build_failed_features(question, reason=f"LLM 调用失败: {exc}")
 
+    async def _parse_question_with_retries(
+        self,
+        question: ParsedQuestion,
+        *,
+        max_attempts: int,
+        retry_base_delay: float,
+    ) -> QuestionFeatures:
+        last_features: Optional[QuestionFeatures] = None
+        for attempt in range(1, max_attempts + 1):
+            attempt_started_at = time.monotonic()
+            logger.info(
+                "LLM question attempt started question=%s attempt=%s/%s",
+                question.question_no,
+                attempt,
+                max_attempts,
+            )
+            try:
+                features = await self.parse_question(question)
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                features = self._build_failed_features(
+                    question,
+                    reason=f"LLM request failed: {exc}",
+                    warning="LLM request failed",
+                )
+
+            last_features = features
+            if not self._is_failed_features(features):
+                logger.info(
+                    "LLM question attempt succeeded question=%s attempt=%s/%s elapsed=%.2fs",
+                    question.question_no,
+                    attempt,
+                    max_attempts,
+                    time.monotonic() - attempt_started_at,
+                )
+                return features
+
+            logger.warning(
+                "LLM question attempt failed question=%s attempt=%s/%s elapsed=%.2fs reason=%s",
+                question.question_no,
+                attempt,
+                max_attempts,
+                time.monotonic() - attempt_started_at,
+                getattr(features, "reasoning", ""),
+            )
+            if attempt >= max_attempts:
+                break
+
+            delay = retry_base_delay * (2 ** (attempt - 1))
+            if delay > 0:
+                await asyncio.sleep(delay)
+
+        return last_features or self._build_failed_features(
+            question,
+            reason="LLM request failed before producing features",
+            warning="LLM request failed",
+        )
+
     async def parse_paper(
         self,
         parsed_paper: ParsedPaper,
         concurrency: int = 5,
         progress_callback: Optional[Callable[[Dict[str, Any]], Awaitable[None] | None]] = None,
         question_timeout_seconds: float = QUESTION_PARSE_TIMEOUT_SECONDS,
+        question_max_attempts: int = 1,
+        retry_base_seconds: float = 0.0,
     ) -> List[QuestionFeatures]:
         questions = parsed_paper.questions
         total_questions = len(questions)
+        max_attempts = max(1, int(question_max_attempts or 1))
+        retry_base_delay = max(0.0, float(retry_base_seconds or 0.0))
         batch_started_at = time.monotonic()
         logger.info(
-            "Entering llm batch parse total=%s concurrency=%s timeout=%.1fs",
+            "Entering llm batch parse total=%s concurrency=%s timeout=%.1fs attempts=%s",
             total_questions,
             concurrency,
             question_timeout_seconds,
+            max_attempts,
         )
         logger.info("开始批量解析试卷，共 %s 题，最大并发 %s", len(questions), concurrency)
 
@@ -4783,7 +4894,11 @@ class AIParser:
 
                 try:
                     features = await asyncio.wait_for(
-                        self.parse_question(question),
+                        self._parse_question_with_retries(
+                            question,
+                            max_attempts=max_attempts,
+                            retry_base_delay=retry_base_delay,
+                        ),
                         timeout=question_timeout_seconds,
                     )
                 except asyncio.TimeoutError:

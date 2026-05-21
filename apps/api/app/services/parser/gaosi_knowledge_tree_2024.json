@@ -1,0 +1,1159 @@
+[
+  {
+    "grade": "3",
+    "tree_ref": "第2讲-01",
+    "title": "基本应用题",
+    "subtopics": [
+      "基本应用题综合题",
+      "乘除数量关系",
+      "归一问题",
+      "等量代换"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第2讲-01:基本应用题"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第19讲-08",
+    "title": "间隔与阵列",
+    "subtopics": [
+      "排队问题、方阵问题",
+      "特殊阵列",
+      "直线型植树问题",
+      "封闭型植树问题",
+      "特殊型植树问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第19讲-08:间隔与阵列"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第5讲-02",
+    "title": "和差倍问题一",
+    "subtopics": [
+      "和差倍问题综合题",
+      "基本的和差倍关系",
+      "和倍问题、差倍问题",
+      "和差问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第5讲-02:和差倍问题一"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第21讲-09",
+    "title": "盈亏问题二",
+    "subtopics": [
+      "盈亏问题综合题",
+      "简单盈亏问题",
+      "隐藏盈亏问题",
+      "条件转化问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第21讲-09:盈亏问题二"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第7讲-03",
+    "title": "周期问题",
+    "subtopics": [
+      "蜗牛爬井",
+      "求第几个、求个数",
+      "求和、隐藏周期",
+      "报数问题、日期问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第7讲-03:周期问题"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第8讲-04",
+    "title": "鸡兔同笼问题一",
+    "subtopics": [
+      "鸡兔同笼综合题一",
+      "基础题型",
+      "假设法",
+      "分组法"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第8讲-04:鸡兔同笼问题一"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第15讲-06",
+    "title": "和差倍问题二",
+    "subtopics": [
+      "和差问题、和倍问题",
+      "差倍问题",
+      "基本和差倍关系",
+      "简单和差倍综合问题",
+      "复杂和差倍综合问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第15讲-06:和差倍问题二"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第11讲-05",
+    "title": "盈亏问题一",
+    "subtopics": [
+      "人数不同，每人数量相同",
+      "人数相同，每人数量不同",
+      "不同变相同"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第11讲-05:盈亏问题一"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第17讲-07",
+    "title": "鸡兔同笼问题二",
+    "subtopics": [
+      "假设法",
+      "分组法",
+      "打包法",
+      "鸡兔同笼综合题二"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第17讲-07:鸡兔同笼问题二"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第18讲-14",
+    "title": "行程问题二",
+    "subtopics": [
+      "火车问题",
+      "多人相遇与追及",
+      "行程综合题二"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第18讲-14:行程问题二"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第5讲-10",
+    "title": "行程问题一",
+    "subtopics": [
+      "画图比较法",
+      "行程综合",
+      "行程三要素",
+      "基本相遇问题",
+      "基本追及问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第5讲-10:行程问题一"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第19讲-15",
+    "title": "行程问题三",
+    "subtopics": [
+      "间隔发车",
+      "行程综合题三",
+      "基本行程问题",
+      "倍数问题",
+      "多次往返行程"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第19讲-15:行程问题三"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第14讲-13",
+    "title": "平均数问题",
+    "subtopics": [
+      "总和/平均数的变化",
+      "平均数",
+      "移多补少图求平均数",
+      "基准数求平均数",
+      "生活中的平均数"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第14讲-13:平均数问题"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第8讲-11",
+    "title": "和差倍问题三",
+    "subtopics": [
+      "变倍问题、设数法",
+      "综合问题",
+      "隐藏和与隐藏差问题",
+      "分组比较法、分组求和法",
+      "倍数分组法"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第8讲-11:和差倍问题三"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第9讲-12",
+    "title": "还原问题与年龄问题",
+    "subtopics": [
+      "年龄相关的和差问题",
+      "过去现在将来图",
+      "综合问题",
+      "单个对象的还原问题",
+      "多个对象的还原问题",
+      "年龄相关的变倍问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第9讲-12:还原问题与年龄问题"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第5讲-16",
+    "title": "行程问题四",
+    "subtopics": [
+      "流水行船",
+      "环形问题",
+      "行程综合题四"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第5讲-16:行程问题四"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第20讲-21",
+    "title": "行程问题五",
+    "subtopics": [
+      "环形路线",
+      "分类讨论解行程问题",
+      "周期规律解行程问题",
+      "行程综合题五",
+      "平均速度、正反比解行程问题",
+      "列方程解行程问题",
+      "柳卡图解行程问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第20讲-21:行程问题五"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第11讲-17",
+    "title": "和差倍分问题",
+    "subtopics": [
+      "设份数统一单位“1”",
+      "不变量问题",
+      "综合问题",
+      "求部分量用乘法",
+      "求单位1用除法",
+      "分率关系"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第11讲-17:和差倍分问题"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第12讲-18",
+    "title": "应用题拓展",
+    "subtopics": [
+      "分类讨论",
+      "比例应用题",
+      "不确定性问题",
+      "范围分析"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第12讲-18:应用题拓展"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第17讲-19",
+    "title": "工程问题",
+    "subtopics": [
+      "水箱问题",
+      "基本工程问题",
+      "合作问题、比例问题",
+      "周期问题、水管问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第17讲-19:工程问题"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第18讲-20",
+    "title": "牛吃草问题与钟表问题",
+    "subtopics": [
+      "钟表问题之对调/对称",
+      "钟表问题之快慢钟比例问题",
+      "牛吃草问题之长/枯草问题",
+      "牛吃草变形问题",
+      "钟表问题之重合/垂直/特殊位置"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第18讲-20:牛吃草问题与钟表问题"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第3讲-22",
+    "title": "比例解应用题",
+    "subtopics": [
+      "比例应用题综合题",
+      "基本比例问题、不变量问题",
+      "列表法、复合比",
+      "正反比例"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第3讲-22:比例解应用题"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第4讲-23",
+    "title": "方程解应用题",
+    "subtopics": [
+      "解方程",
+      "列方程解应用题",
+      "复杂代数分析"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第4讲-23:方程解应用题"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第5讲-24",
+    "title": "浓度问题与经济问题",
+    "subtopics": [
+      "浓度问题",
+      "经济问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第5讲-24:浓度问题与经济问题"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第14讲-26",
+    "title": "行程问题六",
+    "subtopics": [
+      "比例行程",
+      "接送与接力",
+      "变时与变速",
+      "多人行程问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第14讲-26:行程问题六"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第17讲-27",
+    "title": "应用题综合一",
+    "subtopics": [
+      "基本应用题",
+      "工程问题、行程问题",
+      "比例应用题",
+      "经济与浓度问题",
+      "分类讨论、寻找规律"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第17讲-27:应用题综合一"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第18讲-28",
+    "title": "应用题综合二",
+    "subtopics": [
+      "基础应用题",
+      "浓度问题、行程问题",
+      "统筹规划、范围分析",
+      "分类讨论",
+      "应用题综合题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第18讲-28:应用题综合二"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第3讲-01",
+    "title": "枚举法一",
+    "subtopics": [
+      "枚举法综合题",
+      "基础计数、数形图",
+      "分人、分堆",
+      "大炮发射法"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第3讲-01:枚举法一"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第14讲-02",
+    "title": "枚举法二",
+    "subtopics": [
+      "数的拆分",
+      "数字构造",
+      "数形图"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第14讲-02:枚举法二"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第4讲-06",
+    "title": "包含与排除",
+    "subtopics": [
+      "包含与排除综合题",
+      "两个对象的容斥原理",
+      "三个对象的容斥原理",
+      "最值问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第4讲-06:包含与排除"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第6讲-07",
+    "title": "几何计数",
+    "subtopics": [
+      "数平行四边形",
+      "数不规则图形",
+      "数线段、数三角形",
+      "数正方形、数菱形",
+      "数长方形、数梯形"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第6讲-07:几何计数"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第22讲-08",
+    "title": "计数综合二",
+    "subtopics": [
+      "数表相关计数",
+      "其它计数",
+      "数论相关计数",
+      "多位数相关计数",
+      "数字谜相关计数"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第22讲-08:计数综合二"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第13讲-10",
+    "title": "计数综合四",
+    "subtopics": [
+      "几何计数",
+      "公式计算",
+      "标数法",
+      "旋转计数"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第13讲-10:计数综合四"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第23讲-11",
+    "title": "概率初步",
+    "subtopics": [
+      "统计、古典概型",
+      "条件概率",
+      "标数法",
+      "概率综合"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第23讲-11:概率初步"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第12讲-09",
+    "title": "计数综合三",
+    "subtopics": [
+      "上楼梯问题、平铺问题",
+      "图形分平面、基础传球",
+      "相邻数字问题、环形染色",
+      "多位数问题",
+      "复杂递推"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第12讲-09:计数综合三"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第11讲-03",
+    "title": "加法原理与乘法原理",
+    "subtopics": [
+      "路线问题、染色问题",
+      "选座问题、棋子问题",
+      "标数问题",
+      "加法/乘法原理"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第11讲-03:加法原理与乘法原理"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第22讲-04",
+    "title": "计数综合一",
+    "subtopics": [
+      "页码问题",
+      "特殊要求的挑选",
+      "排队问题、数字计数",
+      "综合问题",
+      "基础计数方法"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第22讲-04:计数综合一"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第21讲-05",
+    "title": "排列组合",
+    "subtopics": [
+      "组合的巧算",
+      "A和C的区分",
+      "分类与分步",
+      "排列组合"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第21讲-05:排列组合"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第6讲-01",
+    "title": "简单加减法竖式",
+    "subtopics": [
+      "综合问题",
+      "加法竖式、减法竖式",
+      "加减混合、数字和问题",
+      "字母/符号/汉字竖式"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第6讲-01:简单加减法竖式"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第16讲-02",
+    "title": "简单乘除法竖式",
+    "subtopics": [
+      "除法竖式二",
+      "乘法竖式一",
+      "乘法竖式二",
+      "除法竖式一"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第16讲-02:简单乘除法竖式"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第20讲-03",
+    "title": "算符与数字",
+    "subtopics": [
+      "填算符",
+      "最值型",
+      "数字构造"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第20讲-03:算符与数字"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第10讲-09",
+    "title": "数字谜综合一",
+    "subtopics": [
+      "横式谜与竖式谜",
+      "数字与计算问题",
+      "数论型数字谜一",
+      "数论型数字谜二"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第10讲-09:数字谜综合一"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第21讲-10",
+    "title": "数字问题",
+    "subtopics": [
+      "进位分析之进一少九",
+      "数字问题综合题",
+      "数字谜",
+      "位值原理",
+      "整除问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第21讲-10:数字问题"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第16讲-11",
+    "title": "数字谜综合二",
+    "subtopics": [
+      "数的拆分",
+      "计算与数字谜",
+      "数表与数阵图",
+      "数字谜综合题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第16讲-11:数字谜综合二"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第16讲-07",
+    "title": "横式问题",
+    "subtopics": [
+      "横式化竖式之乘除法竖式",
+      "对称横式",
+      "横式综合之特殊数/位置分析",
+      "横式综合之最值分析",
+      "横式化竖式之加法竖式"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第16讲-07:横式问题"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第20讲-08",
+    "title": "幻方与数阵图扩展",
+    "subtopics": [
+      "数阵图之重数分析",
+      "幻和已知",
+      "特殊幻方",
+      "三阶幻方性质应用",
+      "数阵图之比较法/特殊位置/数分析"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第20讲-08:幻方与数阵图扩展"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第2讲-04",
+    "title": "数阵图初步",
+    "subtopics": [
+      "配对法、重数分析法",
+      "特殊位置/数法",
+      "数阵图综合题",
+      "作差法、比较法"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第2讲-04:数阵图初步"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第3讲-05",
+    "title": "竖式问题",
+    "subtopics": [
+      "乘法竖式",
+      "除法竖式",
+      "竖式综合题",
+      "加法竖式、减法竖式"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第3讲-05:竖式问题"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第15讲-06",
+    "title": "复杂竖式",
+    "subtopics": [
+      "乘法竖式",
+      "除法竖式",
+      "加法竖式"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第15讲-06:复杂竖式"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第4讲-03",
+    "title": "几何图形剪拼",
+    "subtopics": [
+      "构造图形",
+      "简单分割",
+      "拼剪正方形",
+      "拼剪不规则图形"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第4讲-03:几何图形剪拼"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第14讲-06",
+    "title": "直线形计算二",
+    "subtopics": [
+      "割补法",
+      "等高模型、等积变形",
+      "一半模型",
+      "基本公式"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第14讲-06:直线形计算二"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第19讲-08",
+    "title": "直线形计算三",
+    "subtopics": [
+      "风筝模型、勾股定理",
+      "差不变",
+      "直线形计算综合题",
+      "鸟头模型",
+      "蝴蝶模型与沙漏模型",
+      "等高模型进阶"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第19讲-08:直线形计算三"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第15讲-07",
+    "title": "圆与扇形",
+    "subtopics": [
+      "滚动与旋转",
+      "圆与扇形基本公式",
+      "割补法、比例法",
+      "差不变"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第15讲-07:圆与扇形"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第9讲-09",
+    "title": "立体几何",
+    "subtopics": [
+      "水中浸物",
+      "立体几何综合题",
+      "基本公式应用",
+      "三视图法求表面积",
+      "切拼问题、展开图"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第9讲-09:立体几何"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第10讲-10",
+    "title": "几何综合一",
+    "subtopics": [
+      "燕尾模型、综合问题",
+      "角度计算、长度计算",
+      "割补法、等高",
+      "金字塔与沙漏"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第10讲-10:几何综合一"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第11讲-11",
+    "title": "几何综合二",
+    "subtopics": [
+      "长方体与正方体",
+      "设而不求、勾股定理",
+      "几何模型",
+      "图形变换"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第11讲-11:几何综合二"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第17讲-05",
+    "title": "格点与割补",
+    "subtopics": [
+      "无格点",
+      "有格点",
+      "格点与割补综合题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第17讲-05:格点与割补"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第22讲-02",
+    "title": "长度与角度的计算",
+    "subtopics": [
+      "长度计算之平移法",
+      "长度计算之标向法",
+      "长度计算之公式法",
+      "角度计算之三角形相关",
+      "角度计算之多边形相关"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第22讲-02:长度与角度的计算"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第10讲-01",
+    "title": "几何图形认识",
+    "subtopics": [
+      "几何图形计数",
+      "三角形的三边关系",
+      "几何图形的认知",
+      "多边形内角和公式",
+      "几何图形的剪拼",
+      "正方体相对面问题",
+      "染色问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第10讲-01:几何图形认识"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第7讲-04",
+    "title": "直线形计算一",
+    "subtopics": [
+      "平行四边形公式",
+      "三角形面积公式",
+      "长方形和正方形公式",
+      "梯形面积公式",
+      "已知面积反求边",
+      "综合问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第7讲-04:直线形计算一"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第1讲-13",
+    "title": "分数数列计算",
+    "subtopics": [
+      "分数数列综合题",
+      "分数裂差",
+      "分数裂和",
+      "约分"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第1讲-13:分数数列计算"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第8讲-25",
+    "title": "不定方程",
+    "subtopics": [
+      "不定方程综合题",
+      "解不定方程",
+      "二元不定方程应用题",
+      "多元不定方程解应用题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第8讲-25:不定方程"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第2讲-14",
+    "title": "计算综合",
+    "subtopics": [
+      "巧算方法、定义新运算",
+      "四则混合运算",
+      "解方程与反求",
+      "特殊分数计算",
+      "小数点后数字计算",
+      "计算综合题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第2讲-14:计算综合"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第1讲-09",
+    "title": "分数计算与比较大小",
+    "subtopics": [
+      "分数计算综合题",
+      "分数基本计算",
+      "分数巧算",
+      "分数比较大小"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第1讲-09:分数计算与比较大小"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第8讲-10",
+    "title": "分数与循环小数",
+    "subtopics": [
+      "循环小数的性质",
+      "混合运算",
+      "分数化小数",
+      "小数化分数",
+      "分数与循环小数综合题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第8讲-10:分数与循环小数"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第9讲-11",
+    "title": "比较与估算",
+    "subtopics": [
+      "四舍五入估算",
+      "估算综合",
+      "分数比较大小",
+      "分数小数比较大小",
+      "放缩法估算"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第9讲-11:比较与估算"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第13讲-12",
+    "title": "计算综合一",
+    "subtopics": [
+      "数码问题、归纳与递推",
+      "分数综合",
+      "等比数列、整体约分",
+      "定义新运算",
+      "数列、数表规律"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第13讲-12:计算综合一"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第4讲-02",
+    "title": "找规律",
+    "subtopics": [
+      "综合规律",
+      "数列",
+      "数表",
+      "图形"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第4讲-02:找规律"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第9讲-03",
+    "title": "等差数列",
+    "subtopics": [
+      "画图法求等差数列",
+      "公式法求等差数列",
+      "综合问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第9讲-03:等差数列"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第13讲-04",
+    "title": "四则运算二",
+    "subtopics": [
+      "乘法速算",
+      "凑整一",
+      "凑整二"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第13讲-04:四则运算二"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第18讲-05",
+    "title": "四则运算三",
+    "subtopics": [
+      "基础题型",
+      "提取类型",
+      "综合题型"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第18讲-05:四则运算三"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第1讲-01",
+    "title": "四则运算一",
+    "subtopics": [
+      "添去括号凑整",
+      "拆分凑整、分组法",
+      "简单凑整法",
+      "数位交换凑整",
+      "四则运算综合题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第1讲-01:四则运算一"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第1讲-06",
+    "title": "整数计算综合",
+    "subtopics": [
+      "等差数列",
+      "分组法",
+      "凑整、提取公因数",
+      "定义新运算",
+      "整数计算综合题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第1讲-06:整数计算综合"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第10讲-07",
+    "title": "数列与数表",
+    "subtopics": [
+      "双重数列",
+      "数表、数组",
+      "单重数列",
+      "数表框数求和问题",
+      "综合问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第10讲-07:数列与数表"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第13讲-08",
+    "title": "多位数与小数",
+    "subtopics": [
+      "小数巧算之提取公因数",
+      "多位数巧算之数字和问题",
+      "小数巧算之基本计算",
+      "多位数乘法、多位数除法",
+      "多位数加减法"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第13讲-08:多位数与小数"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第2讲-01",
+    "title": "整除",
+    "subtopics": [
+      "末位判断、分解判断",
+      "数字和、数字差",
+      "截断求和、截断求差",
+      "整除综合题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第2讲-01:整除"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第15讲-05",
+    "title": "数论综合一",
+    "subtopics": [
+      "整除",
+      "因数与倍数",
+      "余数问题",
+      "数论综合题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第15讲-05:数论综合一"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第20讲-07",
+    "title": "数论综合二",
+    "subtopics": [
+      "质数与合数",
+      "分解质因数",
+      "因数与倍数",
+      "余数问题",
+      "完全平方数"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第20讲-07:数论综合二"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第21讲-08",
+    "title": "数论综合三",
+    "subtopics": [
+      "整除",
+      "因倍质合",
+      "余数问题",
+      "完全平方数"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第21讲-08:数论综合三"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第19讲-06",
+    "title": "进位制与取整符号",
+    "subtopics": [
+      "进制问题一",
+      "进制问题二",
+      "取整与取小"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第19讲-06:进位制与取整符号"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第16讲-04",
+    "title": "余数",
+    "subtopics": [
+      "被除数、除数、商与余数间的关系",
+      "求余数、求被除数",
+      "求除数",
+      "周期类问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第16讲-04:余数"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第7讲-03",
+    "title": "约数与倍数",
+    "subtopics": [
+      "因数与倍数",
+      "分解质因数",
+      "最大公因数与最小公倍数",
+      "约数与倍数综合题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第7讲-03:约数与倍数"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第3讲-02",
+    "title": "质数与合数",
+    "subtopics": [
+      "100以内质数、分解质因数",
+      "质数的奇偶性分析",
+      "乘积末尾连续0的个数",
+      "枚举配对求因数个数",
+      "质数与合数综合题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第3讲-02:质数与合数"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第23讲-02",
+    "title": "智巧趣题二",
+    "subtopics": [
+      "火柴棒游戏",
+      "一笔画问题",
+      "空瓶换水问题",
+      "过河问题、天平称重",
+      "智巧趣题综合题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第23讲-02:智巧趣题二"
+  },
+  {
+    "grade": "3",
+    "tree_ref": "第12讲-01",
+    "title": "智巧趣题一",
+    "subtopics": [
+      "一笔画",
+      "移动火柴棒",
+      "生活趣题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:3年级:第12讲-01:智巧趣题一"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第6讲-03",
+    "title": "抽屉原理一",
+    "subtopics": [
+      "抽屉原理",
+      "最不利原则",
+      "综合问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第6讲-03:抽屉原理一"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第12讲-04",
+    "title": "统筹与对策",
+    "subtopics": [
+      "统筹规划一",
+      "统筹规划二",
+      "必胜策略之周期性",
+      "必胜策略之对称性"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第12讲-04:统筹与对策"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第23讲-05",
+    "title": "最值问题一",
+    "subtopics": [
+      "枚举法",
+      "和同近积大",
+      "算式最值、数字问题",
+      "综合问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第23讲-05:最值问题一"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第6讲-09",
+    "title": "逻辑推理二",
+    "subtopics": [
+      "总分与胜负场",
+      "连线对阵图",
+      "列表分析",
+      "逻辑推理综合题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第6讲-09:逻辑推理二"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第22讲-11",
+    "title": "构造论证二",
+    "subtopics": [
+      "数字论证",
+      "图形论证",
+      "棋盘染色"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第22讲-11:构造论证二"
+  },
+  {
+    "grade": "6",
+    "tree_ref": "第7讲-10",
+    "title": "最值问题二",
+    "subtopics": [
+      "计算中的最值",
+      "最值原理之组数拆数",
+      "数论中的最值",
+      "几何中的最值",
+      "综合问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:6年级:第7讲-10:最值问题二"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第23讲-07",
+    "title": "构造论证一",
+    "subtopics": [
+      "数字论证之计算枚举",
+      "数字论证之奇偶性分析",
+      "数字论证之最值/倍数分析",
+      "操作问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第23讲-07:构造论证一"
+  },
+  {
+    "grade": "4",
+    "tree_ref": "第24讲-06",
+    "title": "逻辑推理一",
+    "subtopics": [
+      "真假问题",
+      "假设法",
+      "列表法",
+      "综合问题"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:4年级:第24讲-06:逻辑推理一"
+  },
+  {
+    "grade": "5",
+    "tree_ref": "第24讲-08",
+    "title": "抽屉原理二",
+    "subtopics": [
+      "构造抽屉之几何构造",
+      "抽屉原理综合题",
+      "抽屉原理基础",
+      "构造抽屉之和差倍构造",
+      "构造抽屉之数论构造"
+    ],
+    "source_ref": "gaosi_knowledge_tree:2024知识树.pdf:5年级:第24讲-08:抽屉原理二"
+  }
+]

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  getNextStalledPollAttempts,
   getProcessingDetail,
   getProcessingMessage,
+  getStatusActivityKey,
   sanitizeProgressMessage,
 } from '@/pages/PDFUploadPage';
 
@@ -101,5 +103,34 @@ describe('PDFUploadPage progress copy', () => {
       }),
     ).toBe('已完成 5/20 道，最近完成第10题');
     expect(sanitizeProgressMessage('LLM request failed')).toBe('');
+  });
+
+  it('tracks stalled polling by backend activity instead of total elapsed polls', () => {
+    const firstPayload = {
+      parse_status: 'parsing' as const,
+      last_stage: 'ocr_parse',
+      progress_current: 1,
+      progress_total: 3,
+      progress_message: '最近完成第 1 页',
+      updated_at: '2026-05-19T10:00:00',
+    };
+    const firstKey = getStatusActivityKey(firstPayload);
+
+    expect(getNextStalledPollAttempts(firstPayload, '', 20)).toEqual({
+      activityKey: firstKey,
+      stalledAttempts: 0,
+    });
+
+    expect(getNextStalledPollAttempts(firstPayload, firstKey, 3)).toEqual({
+      activityKey: firstKey,
+      stalledAttempts: 4,
+    });
+
+    const progressedPayload = {
+      ...firstPayload,
+      progress_current: 2,
+      updated_at: '2026-05-19T10:02:00',
+    };
+    expect(getNextStalledPollAttempts(progressedPayload, firstKey, 120).stalledAttempts).toBe(0);
   });
 });

@@ -14,7 +14,7 @@ import mimetypes
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, Tuple
 
 from PIL import Image, ImageOps
 
@@ -108,6 +108,11 @@ class VisionLLMProvider(BaseOCRProvider):
         self.api_key = self.config.get("api_key")
         self.concurrency = max(1, int(self.config.get("concurrency") or 2))
         self.page_timeout = float(self.config.get("page_timeout") or 90.0)
+        self.max_attempts = max(
+            1,
+            int(self.config.get("max_attempts") or self.config.get("max_retries") or 3),
+        )
+        self.retry_base_seconds = max(0.0, float(self.config.get("retry_base_seconds") or 1.5))
         self.render_dpi = max(72, int(self.config.get("render_dpi") or 180))
         self.max_tokens = max(1000, int(self.config.get("max_tokens") or 12000))
         self.max_image_side = max(1000, int(self.config.get("max_image_side") or 2400))
@@ -188,7 +193,10 @@ class VisionLLMProvider(BaseOCRProvider):
         if not page_images:
             raise RuntimeError("未能从上传文件生成页面图片")
 
-        page_payloads = await self._parse_page_images(page_images)
+        page_payloads = await self._parse_page_images(
+            page_images,
+            progress_callback=kwargs.get("progress_callback"),
+        )
         questions, audits, report_warnings = self._build_structured_result(page_images, page_payloads)
         if not questions:
             raise RuntimeError("视觉大模型未识别到任何题目")
@@ -384,16 +392,119 @@ class VisionLLMProvider(BaseOCRProvider):
             return 0.0
         return dispersion(row_counts) / column_score
 
-    async def _parse_page_images(self, page_images: Sequence[PageImage]) -> List[Dict[str, Any]]:
+    async def _parse_page_images(
+        self,
+        page_images: Sequence[PageImage],
+        progress_callback: Optional[Callable[[Dict[str, Any]], Awaitable[None] | None]] = None,
+    ) -> List[Dict[str, Any]]:
         semaphore = asyncio.Semaphore(self.concurrency)
+        progress_lock = asyncio.Lock()
+        completed_count = 0
+        total_pages = len(page_images)
 
-        async def parse_one(page_image: PageImage) -> Dict[str, Any]:
+        async def publish_progress(
+            page_image: PageImage,
+            *,
+            success: bool,
+            elapsed_seconds: float,
+            error: str = "",
+        ) -> None:
+            nonlocal completed_count
+
+            async with progress_lock:
+                completed_count += 1
+                payload = {
+                    "completed": completed_count,
+                    "total": total_pages,
+                    "page_no": page_image.page_no,
+                    "success": success,
+                    "elapsed_seconds": elapsed_seconds,
+                    "error": error[:240],
+                }
+
+            if not progress_callback:
+                return
+
+            try:
+                maybe_result = progress_callback(payload)
+                if asyncio.iscoroutine(maybe_result):
+                    await maybe_result
+            except Exception as exc:
+                logger.warning(
+                    "Failed to publish vision OCR progress page=%s: %s",
+                    page_image.page_no,
+                    exc,
+                )
+
+        async def parse_one(page_image: PageImage) -> Dict[str, Any] | Exception:
+            started_at = asyncio.get_running_loop().time()
             async with semaphore:
-                return await self._parse_single_page(page_image)
+                try:
+                    payload = await self._parse_single_page(page_image)
+                except Exception as exc:
+                    elapsed = asyncio.get_running_loop().time() - started_at
+                    await publish_progress(
+                        page_image,
+                        success=False,
+                        elapsed_seconds=elapsed,
+                        error=str(exc),
+                    )
+                    return exc
 
-        return list(await asyncio.gather(*(parse_one(page_image) for page_image in page_images)))
+            elapsed = asyncio.get_running_loop().time() - started_at
+            await publish_progress(page_image, success=True, elapsed_seconds=elapsed)
+            return payload
+
+        results = list(await asyncio.gather(*(parse_one(page_image) for page_image in page_images)))
+        failures: List[str] = []
+        page_payloads: List[Dict[str, Any]] = []
+        for page_image, result in zip(page_images, results):
+            if isinstance(result, Exception):
+                failures.append(f"page={page_image.page_no}: {result}")
+                continue
+            page_payloads.append(result)
+
+        if failures:
+            raise RuntimeError("Vision LLM page parse failed after retries: " + "; ".join(failures))
+
+        return page_payloads
 
     async def _parse_single_page(self, page_image: PageImage) -> Dict[str, Any]:
+        last_error: Optional[Exception] = None
+        for attempt in range(1, self.max_attempts + 1):
+            started_at = asyncio.get_running_loop().time()
+            try:
+                payload = await self._parse_single_page_once(page_image)
+                logger.info(
+                    "Vision LLM page parsed page=%s attempt=%s/%s elapsed=%.2fs",
+                    page_image.page_no,
+                    attempt,
+                    self.max_attempts,
+                    asyncio.get_running_loop().time() - started_at,
+                )
+                return payload
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                last_error = exc
+                elapsed = asyncio.get_running_loop().time() - started_at
+                logger.warning(
+                    "Vision LLM page parse failed page=%s attempt=%s/%s elapsed=%.2fs error=%s",
+                    page_image.page_no,
+                    attempt,
+                    self.max_attempts,
+                    elapsed,
+                    exc,
+                )
+                if attempt >= self.max_attempts:
+                    break
+                await asyncio.sleep(self.retry_base_seconds * (2 ** (attempt - 1)))
+
+        raise RuntimeError(
+            f"Vision LLM page parse failed page={page_image.page_no} attempts={self.max_attempts}: {last_error}"
+        ) from last_error
+
+    async def _parse_single_page_once(self, page_image: PageImage) -> Dict[str, Any]:
         messages = self._build_page_messages(page_image)
         client = self._get_llm_client()
 

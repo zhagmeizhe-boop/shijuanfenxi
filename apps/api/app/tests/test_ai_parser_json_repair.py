@@ -4,7 +4,7 @@ import httpx
 import pytest
 
 from app.services.llm.moonshot_client import MoonshotClient
-from app.services.ocr.base import ParsedQuestion, QuestionType
+from app.services.ocr.base import ParsedPaper, ParsedQuestion, ParseStatus, QuestionType
 from app.services.parser.ai_parser import (
     AIParser,
     JSON_REPAIR_STATUS_FAILED,
@@ -119,7 +119,10 @@ class FakeLLM:
         if self.error:
             raise self.error
         if self.responses:
-            return self.responses.pop(0)
+            response = self.responses.pop(0)
+            if isinstance(response, Exception):
+                raise response
+            return response
         raise AssertionError("No fake response configured")
 
 
@@ -137,6 +140,58 @@ def make_question(question_no="3"):
         raw_text="统计古诗中“春”字出现次数占全诗总字数的百分比。",
         page_no=1,
     )
+
+
+def test_parse_question_with_retries_retries_failed_attempt_once():
+    fake_llm = FakeLLM(responses=[RuntimeError("temporary timeout"), valid_payload()])
+    parser = make_parser(fake_llm)
+
+    features = asyncio.run(
+        parser._parse_question_with_retries(
+            make_question(),
+            max_attempts=2,
+            retry_base_delay=0,
+        )
+    )
+
+    assert features.parse_failed is False
+    assert len(fake_llm.calls) == 2
+
+
+def test_parse_paper_progress_counts_after_final_retry_only():
+    fake_llm = FakeLLM(responses=[RuntimeError("temporary timeout"), valid_payload()])
+    parser = make_parser(fake_llm)
+    progress = []
+    paper = ParsedPaper(
+        paper_name="retry paper",
+        total_question_count=1,
+        total_score=0,
+        page_count=1,
+        parse_status=ParseStatus.PARSE_SUCCESS,
+        parse_confidence=1.0,
+        need_manual_review=False,
+        questions=[make_question()],
+        file_type="image",
+        source_file_url="paper.jpg",
+    )
+
+    features = asyncio.run(
+        parser.parse_paper(
+            paper,
+            concurrency=1,
+            progress_callback=lambda payload: progress.append(payload),
+            question_timeout_seconds=30,
+            question_max_attempts=2,
+            retry_base_seconds=0,
+        )
+    )
+
+    assert len(features) == 1
+    assert features[0].parse_failed is False
+    assert len(progress) == 1
+    assert progress[0]["completed"] == 1
+    assert progress[0]["success"] is True
+    assert len(fake_llm.calls) == 2
 
 
 def valid_payload(question_summary="统计古诗中字出现次数占比"):

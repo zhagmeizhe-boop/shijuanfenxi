@@ -19,7 +19,10 @@ class FakeVisionClient:
         self.calls.append({"messages": messages, "response_format": response_format})
         if not self.responses:
             raise AssertionError("Unexpected Vision LLM call")
-        return self.responses.pop(0)
+        response = self.responses.pop(0)
+        if isinstance(response, Exception):
+            raise response
+        return response
 
 
 def _make_provider(fake_client: FakeVisionClient) -> VisionLLMProvider:
@@ -226,6 +229,93 @@ def test_vision_llm_provider_accepts_markdown_fenced_json(tmp_path):
 
     assert parsed.total_question_count == 1
     assert parsed.questions[0].question_no == "1"
+
+
+def test_vision_llm_provider_retries_page_timeout(tmp_path):
+    image_path = _make_image(tmp_path)
+    response = {
+        "page_no": 1,
+        "questions": [
+            {
+                "question_no": "1",
+                "question_type": "application",
+                "raw_text": "retry success",
+                "score": 4,
+                "bbox": {"left": 40, "top": 80, "width": 700, "height": 180},
+                "confidence": 0.9,
+            }
+        ],
+    }
+    fake_client = FakeVisionClient([asyncio.TimeoutError("slow gateway"), json.dumps(response, ensure_ascii=False)])
+    provider = VisionLLMProvider(
+        {
+            "llm_client": fake_client,
+            "api_key": "existing-key",
+            "base_url": "https://llm.example/v1",
+            "model": "vision-model",
+            "concurrency": 1,
+            "page_timeout": 10,
+            "max_attempts": 2,
+            "retry_base_seconds": 0,
+            "render_dpi": 120,
+        }
+    )
+
+    parsed = asyncio.run(provider.parse(str(image_path), paper_name="retry paper"))
+
+    assert parsed.total_question_count == 1
+    assert len(fake_client.calls) == 2
+
+
+def test_vision_llm_provider_waits_for_all_pages_before_reporting_failures(tmp_path):
+    page_1_path = _make_named_image(tmp_path, "page_1.jpg")
+    page_2_path = _make_named_image(tmp_path, "page_2.jpg")
+    fake_client = FakeVisionClient(
+        [
+            RuntimeError("page one failed"),
+            json.dumps(
+                {
+                    "page_no": 2,
+                    "questions": [
+                        {
+                            "question_no": "2",
+                            "question_type": "application",
+                            "raw_text": "page two still ran",
+                            "score": 5,
+                            "bbox": {"left": 40, "top": 80, "width": 700, "height": 180},
+                            "confidence": 0.9,
+                        }
+                    ],
+                },
+                ensure_ascii=False,
+            ),
+        ]
+    )
+    provider = VisionLLMProvider(
+        {
+            "llm_client": fake_client,
+            "api_key": "existing-key",
+            "base_url": "https://llm.example/v1",
+            "model": "vision-model",
+            "concurrency": 1,
+            "page_timeout": 10,
+            "max_attempts": 1,
+            "retry_base_seconds": 0,
+            "render_dpi": 120,
+        }
+    )
+
+    with pytest.raises(RuntimeError, match="page=1"):
+        asyncio.run(
+            provider._parse_page_images(
+                [
+                    PageImage(page_no=1, path=str(page_1_path), width=900, height=1200),
+                    PageImage(page_no=2, path=str(page_2_path), width=900, height=1200),
+                ]
+            )
+        )
+
+    assert len(fake_client.calls) == 2
 
 
 def test_vision_llm_provider_repairs_trailing_commas_and_inner_quotes(tmp_path):
@@ -766,8 +856,9 @@ def test_vision_llm_provider_reports_page_when_repair_still_invalid(tmp_path):
     image_path = _make_image(tmp_path)
     fake_client = FakeVisionClient(["这不是 JSON", "仍然不是 JSON"])
     provider = _make_provider(fake_client)
+    provider.max_attempts = 1
 
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(RuntimeError) as exc_info:
         asyncio.run(provider.parse(str(image_path), paper_name="失败测试卷"))
 
     message = str(exc_info.value)

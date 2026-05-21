@@ -1,12 +1,12 @@
 [
   {
-    "term": "以内数的认识",
+    "term": "100以内数的认识",
     "frequency": 1,
     "reason": "missing_structural_rule",
     "source_file": "reference_standard_data.json"
   },
   {
-    "term": "以内计算",
+    "term": "20以内计算",
     "frequency": 1,
     "reason": "missing_structural_rule",
     "source_file": "reference_standard_data.json"
@@ -33,12 +33,6 @@
     "term": "应用题",
     "frequency": 1,
     "reason": "generic_or_empty_school_term",
-    "source_file": "reference_standard_data.json"
-  },
-  {
-    "term": "等量代换",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
     "source_file": "reference_standard_data.json"
   },
   {
@@ -121,12 +115,6 @@
   },
   {
     "term": "认识长度",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
-    "term": "立方体展开图",
     "frequency": 1,
     "reason": "missing_structural_rule",
     "source_file": "reference_standard_data.json"
@@ -312,12 +300,6 @@
     "source_file": "reference_standard_data.json"
   },
   {
-    "term": "运用等量代换法解决物体质量问题",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
     "term": "用消元法解决含有相同量的实际问题",
     "frequency": 1,
     "reason": "missing_structural_rule",
@@ -438,7 +420,7 @@
     "source_file": "reference_standard_data.json"
   },
   {
-    "term": "时计时法",
+    "term": "24时计时法",
     "frequency": 1,
     "reason": "missing_structural_rule",
     "source_file": "reference_standard_data.json"
@@ -1134,12 +1116,6 @@
     "source_file": "reference_standard_data.json"
   },
   {
-    "term": "空心方阵总数量问题",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
     "term": "空心方阵求单层数量问题",
     "frequency": 1,
     "reason": "missing_structural_rule",
@@ -1656,12 +1632,6 @@
     "source_file": "reference_standard_data.json"
   },
   {
-    "term": "利用基本鸽巢原理求物体总数",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
     "term": "利用基本鸽巢原理求鸽巢数",
     "frequency": 1,
     "reason": "missing_structural_rule",
@@ -1669,12 +1639,6 @@
   },
   {
     "term": "稍复杂的鸽巢原理",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
-    "term": "利用稍复杂鸽巢原理求物体总数",
     "frequency": 1,
     "reason": "missing_structural_rule",
     "source_file": "reference_standard_data.json"
@@ -2201,11 +2165,6 @@
     "term": "游戏策略",
     "frequency": 282,
     "reason": "needs_manual_structure_rules"
-  },
-  {
-    "term": "数论",
-    "frequency": 281,
-    "reason": "generic_or_broad_label"
   },
   {
     "term": "计数",
@@ -2860,6 +2819,41 @@
   {
     "term": "组合问题第11讲",
     "frequency": 9,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "第八章 数学广角",
+    "frequency": 9,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "人教版1年级数学下册",
+    "frequency": 9,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "人教版5年级数学上册",
+    "frequency": 9,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "几何问题第3讲",
+    "frequency": 8,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "基本加乘原理",
+    "frequency": 8,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "质数与合数的概念",
+    "frequency": 8,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "计算问题第11讲",
+    "frequency": 8,
     "reason": "needs_structure_split_before_approval"
   }
 ]

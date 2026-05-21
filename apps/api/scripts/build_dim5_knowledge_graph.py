@@ -33,6 +33,7 @@ REFERENCE_FILES = (
     "reference_standard_gaosi_pdf_data.json",
     "reference_standard_school_pdf_data.json",
 )
+GAOSI_KNOWLEDGE_TREE_FILE = "gaosi_knowledge_tree_2024.json"
 
 GENERIC_TERMS = {
     "计算问题",
@@ -94,12 +95,15 @@ SCHOOL_FACT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("school_zero_operation", ("0的运算", "有关0", "中间有0", "末尾有0")),
     ("school_mixed_operation", ("混合运算", "四则运算", "运算顺序", "脱式", "递等式")),
     ("school_parentheses_order", ("括号", "小括号", "中括号", "先算")),
+    ("school_24_point_mixed_operation", ("24点", "结果等于24", "结果为24")),
     ("school_operation_law", ("结合律", "交换律", "分配律", "运算定律", "简便运算")),
     ("school_addition_subtraction", ("加法", "减法", "加减", "加、减")),
     ("school_multiplication", ("乘法", "乘以", "多位数乘", "两位数乘")),
     ("school_fraction", ("分数", "几分之", "真分数", "假分数", "带分数", "通分", "约分")),
+    ("school_reciprocal_concept", ("倒数", "互为倒数", "乘积为1")),
     ("school_decimal", ("小数", "小数点", "十分位", "百分位")),
     ("school_equation", ("方程", "未知数", "解方程")),
+    ("school_symbol_equation_substitution", ("代表一个数", "各代表", "等量代换", "代入消元", "△", "□")),
     ("school_division_representation", ("计算方法", "点阵图", "算盘图", "数的分解", "分解计算", "多种方法")),
     ("school_comparison", ("比较大小", "填上", "大于", "小于", "等于")),
     ("school_multiplicative_relation", ("倍数关系", "几倍", "扩大到", "缩小到")),
@@ -112,10 +116,16 @@ SCHOOL_FACT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("school_perimeter", ("周长", "围一圈", "边长之和")),
     ("school_square_tiling_perimeter", ("小正方形", "拼成", "拼接", "共边", "周长最小", "周长最大")),
     ("school_rectangle_property", ("围成一个长方形", "围成长方形", "表示点", "点的位置", "长方形的性质")),
+    ("school_cube_net", ("正方体展开图", "正方体的展开图", "展开图", "折叠", "对面", "相邻面")),
     ("school_area", ("面积", "平方厘米", "平方米", "平方分米")),
     ("school_volume", ("体积", "容积", "立方厘米", "立方米", "长方体", "正方体", "圆柱", "圆锥")),
-    ("school_statistics", ("统计图", "统计表", "平均数", "条形统计图", "折线统计图")),
+    ("school_statistics", ("统计图", "统计表", "平均数", "条形统计图", "折线统计图", "扇形统计图")),
+    ("statistics_chart_context", ("统计图", "统计表", "条形统计图", "折线统计图", "扇形统计图", "圆心角")),
+    ("statistics_percent_conversion", ("百分比", "百分数", "占比", "圆心角", "人数换算")),
     ("school_probability", ("可能性", "一定", "不可能", "随机")),
+    ("school_prime_factorization", ("分解质因数", "质因数分解", "质因数")),
+    ("fraction_application", ("分数应用题", "几分之", "还剩", "总数")),
+    ("proportion_application", ("比例分配", "按比例", "之比", "比是")),
 )
 GAOSI_BROAD_TOPICS = {
     "计算问题",
@@ -153,7 +163,7 @@ GAOSI_FACT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("gaosi_basic_application", ("基本应用题", "应用题拓展", "应用题综合", "一共", "还剩", "多", "少")),
     ("gaosi_chicken_rabbit", ("鸡兔同笼", "鸡", "兔", "头", "脚", "腿")),
     ("gaosi_surplus_deficit", ("盈亏", "多", "少", "不够", "剩下")),
-    ("gaosi_reverse_age", ("还原", "倒推", "年龄", "今年", "岁")),
+    ("gaosi_reverse_age", ("还原", "倒推", "年龄", "岁")),
     ("gaosi_average", ("平均数", "平均")),
     ("gaosi_work_rate", ("工程", "合作", "单独", "共同完成", "工作效率", "总工程量", "剩余工程")),
     ("gaosi_grazing_clock", ("牛吃草", "钟表", "时针", "分针", "草")),
@@ -172,7 +182,53 @@ GAOSI_FACT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("gaosi_optimization", ("统筹", "对策", "最值", "最多", "最少", "最大", "最小", "最优")),
     ("gaosi_construction", ("构造", "论证", "证明", "存在", "任意")),
     ("gaosi_probability", ("概率", "可能性", "随机")),
+    ("two_type_cost_total", ("总价", "总费用", "停车费", "每辆", "每件", "两类对象")),
+    ("square_difference_odd", ("连续奇数", "平方差", "平方数差")),
+    ("digit_swap_multiple", ("数位交换", "交换数字", "交换数位", "成倍数")),
+    ("repeated_digit_number", ("重复数字", "各位数字相同")),
+    ("integer_solution_factorization", ("整数解", "约数枚举", "因数分解", "不定方程")),
+    ("fold_cut_unfold", ("折叠展开", "剪纸", "剪开", "展开后")),
+    ("geometry_transform_puzzle", ("俄罗斯方块", "平移旋转", "旋转平移", "图形变换")),
+    ("overlap_area", ("重叠面积", "重叠部分", "公共部分")),
+    ("area_ratio_relation", ("面积比", "面积之比", "等高", "共边")),
+    ("tangram_area", ("七巧板", "七巧板面积")),
+    ("zhao_shuang_diagram", ("赵爽弦图", "弦图")),
+    ("reuleaux_triangle", ("勒洛三角形", "弓形")),
+    ("cylinder_surface_volume", ("圆柱侧面展开", "圆柱", "表面积", "体积")),
+    ("periodic_grid", ("周期格子", "周期", "方格", "数表")),
+    ("state_recurrence", ("传数游戏", "状态转移", "递推", "还原问题")),
+    ("line_plane_recurrence", ("直线分平面", "分成最多")),
+    ("transport_optimization", ("运输费用", "运费", "费用最小", "运输最优")),
 )
+GAOSI_KNOWLEDGE_TREE_TITLE_ALIASES = {
+    "几何图形认识": "几何图形的认知",
+    "抽屉原理一": "抽屉原理",
+    "计算综合": "计算综合二",
+}
+GAOSI_TREE_GENERIC_SUBTOPICS = {
+    "综合问题",
+    "综合题",
+    "基础题型",
+    "基础应用题",
+    "基本公式",
+    "公式应用",
+    "基本公式应用",
+    "其它计数",
+    "综合",
+    "基础",
+    "基本",
+    "公式",
+    "展开图",
+    "综合题型",
+    "数字",
+    "计算",
+    "面积",
+    "求面积",
+    "面积计算",
+    "圆",
+    "三角形",
+    "倍数",
+}
 CURATED_SCHOOL_TOPICS: tuple[Dict[str, Any], ...] = (
     {
         "knowledge_point_id": "dim5.school.3.integer_division",
@@ -339,6 +395,1010 @@ CURATED_SCHOOL_TOPICS: tuple[Dict[str, Any], ...] = (
         "required_fact_groups": [["school_axisymmetry"]],
         "source_refs": ["school_reference:dim2_geometry_knowledge_base.json:轴对称图形"],
     },
+    {
+        "knowledge_point_id": "dim5.school.6.0db25e6f601c",
+        "name": "倒数",
+        "domain": "number_operation",
+        "level": "L2",
+        "grade": "6",
+        "semester": "上册",
+        "aliases": ["倒数的认识", "互为倒数", "乘积为1", "一个数的倒数"],
+        "required_fact_groups": [["school_reciprocal_concept"]],
+        "source_refs": ["school_reference:reference_standard_data.json:六年级上册:倒数"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.5.dc1d0c416fbb",
+        "name": "正方体展开图",
+        "domain": "geometry_spatial",
+        "level": "L2",
+        "grade": "5",
+        "semester": "下册",
+        "aliases": ["正方体的展开图", "立体图形展开图", "折叠成正方体", "不是正方体展开图", "正方形的展开图"],
+        "required_fact_groups": [["school_cube_net"]],
+        "source_refs": ["school_reference:reference_standard_data.json:五年级下册:长方体和正方体:正方体展开图"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.4.36e8a8c30422",
+        "name": "24点游戏与四则混合运算",
+        "domain": "number_operation",
+        "level": "L2",
+        "grade": "4",
+        "semester": "下册",
+        "aliases": ["24点游戏", "结果等于24", "结果为24", "四则混合运算", "括号"],
+        "required_fact_groups": [["school_24_point_mixed_operation"]],
+        "source_refs": ["school_reference:reference_standard_data.json:四年级下册:四则运算:24点游戏"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.5.symbol_equation_substitution",
+        "name": "等量代换与简易方程",
+        "domain": "number_operation",
+        "level": "L2",
+        "grade": "5",
+        "semester": "上册",
+        "aliases": ["等量代换", "简易方程", "代入消元", "符号代表数", "△和□代表数"],
+        "required_fact_groups": [["school_symbol_equation_substitution"]],
+        "source_refs": ["school_reference:reference_standard_data.json:五年级上册:简易方程:等量关系"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.5.prime_factorization",
+        "name": "质因数分解",
+        "domain": "number_theory",
+        "level": "L2",
+        "grade": "5",
+        "semester": "下册",
+        "aliases": ["分解质因数", "质因数", "短除法", "所有质因数"],
+        "required_fact_groups": [["school_prime_factorization"]],
+        "source_refs": ["school_reference:reference_standard_data.json:五年级下册:因数与倍数:质因数分解"],
+    },
+)
+
+
+CURATED_BASE_TOPICS: tuple[Dict[str, Any], ...] = (
+    {
+        "knowledge_point_id": "dim5.counting_combinatorics.palindrome_counting",
+        "name": "回文数的分类计数",
+        "domain": "counting_combinatorics",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：回文数的分类计数",
+        "aliases": ["回文数", "数位对称", "分类计数", "按位数分类"],
+        "required_fact_groups": [["palindrome_number_counting"]],
+        "exclude_fact_keys": ["gaosi_digit_puzzle", "gaosi_permutation_combination"],
+        "confusable_with": ["数字谜", "组合计数"],
+        "positive_examples": ["统计1到2015范围内正着读反着读一样的回文数个数。"],
+        "near_miss_examples": ["只判断一个数是不是回文数，不需要分类计数。"],
+        "negative_examples": ["普通数字谜、竖式填数或没有数位对称统计目标的题。"],
+        "source_refs": ["curated:placement_exam_5:q10"],
+    },
+    {
+        "knowledge_point_id": "dim5.quantity_application.variable_speed_round_trip",
+        "name": "变速往返行程问题",
+        "domain": "quantity_application",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：变速往返行程问题",
+        "aliases": ["上坡下坡行程", "往返行程", "变速行程", "上坡", "下坡", "平路"],
+        "required_fact_groups": [["variable_speed_round_trip"], ["motion_task"], ["speed_distance_time"]],
+        "exclude_fact_keys": ["work_rate_task", "concentration_task"],
+        "confusable_with": ["普通行程问题"],
+        "positive_examples": ["去程有上坡、下坡和平路，返程上坡下坡角色互换，求返程时间。"],
+        "near_miss_examples": ["只有单一路段速度、时间、路程关系的普通行程题。"],
+        "negative_examples": ["工程效率题、浓度变化题或不涉及往返变速结构的应用题。"],
+        "source_refs": ["curated:placement_exam_5:q20"],
+    },
+    {
+        "knowledge_point_id": "dim5.quantity_application.reverse_surplus_payment_process",
+        "name": "还原与盈亏问题",
+        "domain": "quantity_application",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "4",
+        "knowledge_grade_label": "四年级",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数四年级：还原与盈亏问题",
+        "aliases": ["收支变化倒推", "奖励与收费", "钱袋变化", "还剩", "最初有多少"],
+        "required_fact_groups": [["reverse_surplus_payment_process"]],
+        "exclude_fact_keys": ["work_rate_task", "motion_task"],
+        "confusable_with": ["普通方程应用", "年龄问题"],
+        "positive_examples": ["先每天奖励银币，后来每天交费，已知还剩数量，倒推最初钱数。"],
+        "near_miss_examples": ["只列一个普通方程，没有过程收支变化。"],
+        "negative_examples": ["普通年龄差问题、单纯分数应用题或没有收支变化的方程题。"],
+        "source_refs": ["curated:placement_exam_5:q23"],
+    },
+    {
+        "knowledge_point_id": "dim5.number_theory.place_value_principle",
+        "name": "位值原理",
+        "domain": "number_theory",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "5",
+        "knowledge_grade_label": "五年级",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数五年级：位值原理",
+        "aliases": ["位值原理", "位值原理综合", "数位交换", "百位十位个位", "多位数表示"],
+        "required_fact_groups": [["gaosi_place_value_principle"]],
+        "exclude_fact_keys": ["digit_swap_multiple"],
+        "confusable_with": ["数字性质中9的倍数判定", "数字谜"],
+        "positive_examples": ["三位数交换百位和十位后变小，利用位值表示数值差。"],
+        "near_miss_examples": ["只根据数字和判断3或9的倍数。"],
+        "negative_examples": ["普通竖式填数、单纯整除判断或没有数位交换关系的题。"],
+        "source_refs": ["reference_standard_data.json:高思导引:5年级:位值原理综合", "curated:placement_exam_6:q18"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.4.equilateral_triangle_perimeter_transform",
+        "name": "等边三角形周长转化",
+        "domain": "geometry_spatial",
+        "level": "L2",
+        "quality_status": "approved",
+        "knowledge_track": "school",
+        "knowledge_track_label": "校内",
+        "knowledge_grade": "4",
+        "knowledge_grade_label": "四年级",
+        "knowledge_semester": "下册",
+        "knowledge_display_name": "校内四年级：等边三角形周长转化",
+        "aliases": ["正三角形周长转化", "等边三角形求周长或边长", "正三角形", "等边三角形", "中点边长转化"],
+        "required_fact_groups": [["equilateral_triangle_perimeter_transform"], ["school_perimeter"], ["midline_or_midpoint"]],
+        "exclude_fact_keys": ["geometry_area"],
+        "confusable_with": ["多边形内角和计算", "等边三角形求周长或边长"],
+        "positive_examples": ["多个正三角形共用边和中点关系，求组合多边形周长。"],
+        "near_miss_examples": ["只问等边三角形单个边长乘3的直接计算。"],
+        "negative_examples": ["求多边形内角和、角度或普通面积的题。"],
+        "source_refs": ["school_reference:reference_standard_data.json:四年级下册:三角形:等边三角形求周长或边长", "curated:placement_exam_6:q20"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.swallowtail_area_model",
+        "name": "燕尾模型",
+        "domain": "geometry_spatial",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "5",
+        "knowledge_grade_label": "五年级",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数五年级：燕尾模型",
+        "aliases": ["燕尾模型", "风筝与燕尾", "燕尾面积模型", "面积比模型"],
+        "required_fact_groups": [["swallowtail_area_model"], ["geometry_area"], ["area_relation_model"], ["geometry_triangle"]],
+        "exclude_fact_keys": ["basic_formula"],
+        "confusable_with": ["三角形面积", "面积比模型", "基础几何公式应用"],
+        "positive_examples": ["正方形中构造等腰三角形，求由顶点连线形成的三角形面积。"],
+        "near_miss_examples": ["直接用底乘高除以2计算的普通三角形面积。"],
+        "negative_examples": ["没有共点、共边或面积关系转换的直接公式题。"],
+        "source_refs": ["reference_standard_data.json:高思导引:5年级:燕尾模型", "curated:placement_exam_6:q23"],
+    },
+    {
+        "knowledge_point_id": "dim5.quantity_application.travel_equation_application",
+        "name": "行程方程应用",
+        "domain": "quantity_application",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：行程方程应用",
+        "aliases": ["行程方程应用", "速度增加提前到达", "同一路程行程方程", "速度时间路程方程"],
+        "required_fact_groups": [["travel_equation_same_distance"], ["motion_task"], ["speed_distance_time"]],
+        "exclude_fact_keys": ["variable_speed_round_trip", "work_rate_task"],
+        "confusable_with": ["行程问题一", "变速往返行程问题"],
+        "positive_examples": ["同一路程下速度增加会提前到达，利用速度、时间、路程关系列方程。"],
+        "near_miss_examples": ["去程返程上坡下坡速度互换的变速往返行程。"],
+        "negative_examples": ["工程效率题、浓度题或没有速度时间路程关系的应用题。"],
+        "source_refs": ["curated:placement_exam_6:q24"],
+    },
+    {
+        "knowledge_point_id": "dim5.counting_combinatorics.graph_relation_network_counting",
+        "name": "图论基础与关系网络计数",
+        "domain": "counting_combinatorics",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：图论基础与关系网络计数",
+        "aliases": ["图论基础", "关系网络计数", "点边关系", "认识关系", "二层关系计数", "集合去重计数"],
+        "required_fact_groups": [["graph_relation_network_counting"], ["counting_target"]],
+        "exclude_fact_keys": [],
+        "confusable_with": ["整数除法", "普通计数"],
+        "positive_examples": ["用点和边表示同学认识关系，统计直接认识和间接认识的人并去重。"],
+        "near_miss_examples": ["只数一共有多少个点或边，不涉及二层关系。"],
+        "negative_examples": ["普通除法平均分或没有关系网络结构的计数题。"],
+        "source_refs": ["curated:placement_exam_6:q27"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.6.statistics_chart_comprehensive",
+        "name": "统计图综合",
+        "domain": "statistics_probability",
+        "level": "L2",
+        "quality_status": "approved",
+        "knowledge_track": "school",
+        "knowledge_track_label": "校内",
+        "knowledge_grade": "6",
+        "knowledge_grade_label": "六年级",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "校内六年级：统计图综合",
+        "aliases": ["统计图综合", "条形统计图", "扇形统计图", "百分比人数换算", "圆心角与比例"],
+        "required_fact_groups": [["school_statistics"], ["statistics_chart_context"]],
+        "exclude_fact_keys": ["geometry_area"],
+        "confusable_with": ["圆与扇形", "平均数"],
+        "positive_examples": ["条形统计图与扇形统计图同时给出人数、百分比或圆心角，要求换算总人数或局部人数。"],
+        "near_miss_examples": ["只根据圆或扇形图形求几何面积，不涉及统计图数据。"],
+        "negative_examples": ["普通圆与扇形面积、周长计算，或只出现平均数而没有统计图读图任务。"],
+        "source_refs": ["curated:placement_exam_batch_7_11_14:statistics_chart"],
+    },
+    {
+        "knowledge_point_id": "dim5.quantity_application.two_type_total_price",
+        "name": "两类对象总量总价问题",
+        "domain": "quantity_application",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：两类对象总量总价问题",
+        "aliases": ["鸡兔同笼变式", "总量总价", "两类对象", "停车费问题", "方程组应用"],
+        "required_fact_groups": [["two_type_cost_total"], ["gaosi_chicken_rabbit"]],
+        "exclude_fact_keys": ["school_division"],
+        "confusable_with": ["整数除法", "平均分应用", "普通单价数量总价"],
+        "positive_examples": ["两类车辆共若干辆、总停车费已知、每类单价不同，求两类车辆数量。"],
+        "near_miss_examples": ["已知单价和数量直接求总价的单步乘法或除法。"],
+        "negative_examples": ["只有元/辆这类单位写法，没有两类对象和总量总价约束。"],
+        "source_refs": ["curated:placement_exam_7:q19", "curated:placement_exam_batch_11_14:equation_applications"],
+    },
+    {
+        "knowledge_point_id": "dim5.number_theory.square_difference_odd",
+        "name": "连续奇数平方差与整除",
+        "domain": "number_theory",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：连续奇数平方差与整除",
+        "aliases": ["连续奇数平方差", "平方数差", "整除性判断", "新定义数论"],
+        "required_fact_groups": [["square_difference_odd"]],
+        "exclude_fact_keys": ["school_comparison"],
+        "confusable_with": ["数的大小比较", "简单规律与数列"],
+        "positive_examples": ["定义一种数，需要利用连续奇数平方差或平方数差的整除性质判断。"],
+        "near_miss_examples": ["只比较两个数大小或只填不等号。"],
+        "negative_examples": ["没有平方差、连续奇数或整除约束的普通数感题。"],
+        "source_refs": ["curated:placement_exam_7:q3", "curated:placement_exam_batch_12_13:number_theory"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.fold_cut_unfold",
+        "name": "折叠展开与剪纸问题",
+        "domain": "geometry_spatial",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：折叠展开与剪纸问题",
+        "aliases": ["折叠展开", "剪纸问题", "折后展开", "翻折剪开"],
+        "required_fact_groups": [["fold_cut_unfold"]],
+        "exclude_fact_keys": ["school_cube_net"],
+        "confusable_with": ["正方体展开图", "轴对称图形"],
+        "positive_examples": ["纸片折叠或对折后剪开，要求判断展开后的图形或痕迹。"],
+        "near_miss_examples": ["只判断正方体六个面的相邻或相对关系。"],
+        "negative_examples": ["没有折叠、剪开和展开过程的普通平面图形题。"],
+        "source_refs": ["curated:placement_exam_7:q7", "curated:placement_exam_13:q5"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.transform_puzzle",
+        "name": "旋转平移拼图问题",
+        "domain": "geometry_spatial",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：旋转平移拼图问题",
+        "aliases": ["旋转平移", "俄罗斯方块拼图", "图形变换拼图", "平移旋转"],
+        "required_fact_groups": [["geometry_transform_puzzle"]],
+        "exclude_fact_keys": [],
+        "confusable_with": ["平移和旋转", "排列组合"],
+        "positive_examples": ["通过旋转、平移或翻转俄罗斯方块形图形，判断能否拼成指定图形。"],
+        "near_miss_examples": ["只识别生活中的平移或旋转现象。"],
+        "negative_examples": ["没有实际图形拼合约束的普通变换识别题。"],
+        "source_refs": ["curated:placement_exam_14:q1_2"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.overlap_area",
+        "name": "重叠面积与容斥面积",
+        "domain": "geometry_spatial",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：重叠面积与容斥面积",
+        "aliases": ["重叠面积", "重叠部分", "公共部分", "容斥面积"],
+        "required_fact_groups": [["overlap_area"], ["geometry_area"]],
+        "exclude_fact_keys": [],
+        "confusable_with": ["基础几何公式应用", "三角形面积"],
+        "positive_examples": ["两个正方形或多个图形覆盖后，利用重叠部分和总面积关系求面积。"],
+        "near_miss_examples": ["直接套用长方形或正方形面积公式。"],
+        "negative_examples": ["没有重叠、覆盖或公共部分关系的面积题。"],
+        "source_refs": ["curated:placement_exam_14:q10", "curated:placement_exam_13:q10"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.cylinder_surface_volume",
+        "name": "圆柱侧面展开与体积守恒",
+        "domain": "geometry_spatial",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：圆柱侧面展开与体积守恒",
+        "aliases": ["圆柱侧面展开", "圆柱展开图", "圆柱体积守恒", "最大底面积"],
+        "required_fact_groups": [["cylinder_surface_volume"]],
+        "exclude_fact_keys": ["school_cube_net"],
+        "confusable_with": ["认识圆柱的展开图", "圆柱的体积"],
+        "positive_examples": ["圆柱侧面展开或重新围成圆柱，比较底面积、表面积或体积关系。"],
+        "near_miss_examples": ["直接用圆柱体积公式求单个圆柱体积。"],
+        "negative_examples": ["没有展开、围成或守恒关系的普通立体几何题。"],
+        "source_refs": ["curated:placement_exam_14:q1_4"],
+    },
+    {
+        "knowledge_point_id": "dim5.number_theory.digit_swap_multiple",
+        "name": "数位交换成倍数数字谜",
+        "domain": "number_theory",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：数位交换成倍数数字谜",
+        "aliases": ["数位交换", "交换数字后成倍数", "位值制", "数字谜"],
+        "required_fact_groups": [["digit_swap_multiple"]],
+        "exclude_fact_keys": ["school_comparison"],
+        "confusable_with": ["整数除法", "数字谜综合"],
+        "positive_examples": ["六位数交换某两个数字后变成原数的若干倍，利用位值制列式求数。"],
+        "near_miss_examples": ["只交换两位数后比较大小。"],
+        "negative_examples": ["没有数位交换和倍数关系的普通数字题。"],
+        "source_refs": ["curated:placement_exam_12:q16"],
+    },
+    {
+        "knowledge_point_id": "dim5.pattern_sequence.periodic_grid",
+        "name": "周期格子与数表规律",
+        "domain": "pattern_sequence",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：周期格子与数表规律",
+        "aliases": ["周期格子", "数表周期", "方格周期", "周期规律"],
+        "required_fact_groups": [["periodic_grid"]],
+        "exclude_fact_keys": [],
+        "confusable_with": ["包含与排除", "简单规律与数列"],
+        "positive_examples": ["方格或数表中的数字、颜色按周期重复，求指定位置的状态。"],
+        "near_miss_examples": ["只做普通等差数列求项。"],
+        "negative_examples": ["没有周期重复和位置索引的普通找规律题。"],
+        "source_refs": ["curated:placement_exam_13:q20"],
+    },
+    {
+        "knowledge_point_id": "dim5.pattern_sequence.state_recurrence",
+        "name": "传数游戏与状态递推",
+        "domain": "pattern_sequence",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：传数游戏与状态递推",
+        "aliases": ["传数游戏", "状态转移", "递推还原", "状态递推"],
+        "required_fact_groups": [["state_recurrence"]],
+        "exclude_fact_keys": [],
+        "confusable_with": ["还原问题", "周期规律"],
+        "positive_examples": ["按规则多轮传数或变换状态，要求倒推初始状态或递推最终状态。"],
+        "near_miss_examples": ["只有一次普通倒推，没有状态重复变换。"],
+        "negative_examples": ["普通数列或没有状态变换规则的应用题。"],
+        "source_refs": ["curated:placement_exam_13:q33"],
+    },
+    {
+        "knowledge_point_id": "dim5.pattern_sequence.line_plane_recurrence",
+        "name": "直线分平面递推",
+        "domain": "pattern_sequence",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：直线分平面递推",
+        "aliases": ["直线分平面", "直线最多", "平面分成多少部分", "分成最多部分", "递推规律"],
+        "required_fact_groups": [["line_plane_recurrence"]],
+        "exclude_fact_keys": [],
+        "confusable_with": ["最值问题", "简单规律与数列"],
+        "positive_examples": ["n条直线最多把平面分成多少部分，需要建立递推关系。"],
+        "near_miss_examples": ["只比较最大最小数值但没有递推结构。"],
+        "negative_examples": ["普通几何作图或没有直线分割平面的题。"],
+        "source_refs": ["curated:placement_exam_13:q19"],
+    },
+    {
+        "knowledge_point_id": "dim5.logic_strategy.transport_optimization",
+        "name": "运输费用统筹优化",
+        "domain": "logic_strategy_construction",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：运输费用统筹优化",
+        "aliases": ["运输费用最小", "运输优化", "方案最优", "运费最小", "统筹优化"],
+        "required_fact_groups": [["transport_optimization"]],
+        "exclude_fact_keys": [],
+        "confusable_with": ["排列组合", "统筹与对策"],
+        "positive_examples": ["多种车辆或路线运输货物，比较费用并安排使总费用最小。"],
+        "near_miss_examples": ["只问有几种安排方案，不涉及最小费用或最优目标。"],
+        "negative_examples": ["普通排列组合、座位安排或没有费用目标的方案计数。"],
+        "source_refs": ["curated:placement_exam_13:q34"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.cube_section_cut",
+        "name": "正方体截面与立体切割",
+        "domain": "geometry_spatial",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：正方体截面与立体切割",
+        "aliases": ["正方体截面", "立体切割", "一刀切掉", "切面", "截面形状", "截面是几边形"],
+        "required_fact_groups": [["solid_geometry"], ["view_projection"]],
+        "exclude_fact_keys": ["school_cube_net"],
+        "confusable_with": ["认识立体图形", "立体几何", "正方体展开图"],
+        "positive_examples": ["一个正方体一刀切掉一块，判断露出的截面在一个平面上是什么边形。"],
+        "near_miss_examples": ["只认识正方体、长方体等立体图形名称，不涉及切割截面。"],
+        "negative_examples": ["正方体展开图相对面判断、普通立体图形认知或圆柱体积计算。"],
+        "source_refs": ["curated:placement_exam_1:q9"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.cube_net_opposite_faces",
+        "name": "正方体展开图相对面判断",
+        "domain": "geometry_spatial",
+        "level": "L2",
+        "quality_status": "approved",
+        "knowledge_track": "school",
+        "knowledge_track_label": "校内",
+        "knowledge_grade": "5",
+        "knowledge_grade_label": "五年级",
+        "knowledge_semester": "下册",
+        "knowledge_display_name": "校内五年级：正方体展开图相对面判断",
+        "aliases": ["正方体相对面", "展开图相对面", "相邻面判断", "折成正方体", "对面的字", "六个面", "哪些是相对面"],
+        "required_fact_groups": [["school_cube_net"], ["solid_geometry"]],
+        "exclude_fact_keys": ["fold_cut_unfold"],
+        "confusable_with": ["认识立体图形", "折叠展开与剪纸问题"],
+        "positive_examples": ["根据正方体展开图判断写有文字的六个面中哪些互为相对面。"],
+        "near_miss_examples": ["只判断一个平面图形是不是轴对称图形。"],
+        "negative_examples": ["纸片对折剪开后的展开图，或普通正方体体积、表面积计算。"],
+        "source_refs": ["curated:placement_exam_6:q8", "curated:placement_exam_9:q21"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.unit_cube_surface_area",
+        "name": "小正方体拼搭表面积",
+        "domain": "geometry_spatial",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "school",
+        "knowledge_track_label": "校内",
+        "knowledge_grade": "5",
+        "knowledge_grade_label": "五年级",
+        "knowledge_semester": "下册",
+        "knowledge_display_name": "校内五年级：小正方体拼搭表面积",
+        "aliases": ["小正方体拼成", "小正方体拼搭", "露在外面", "外表面积", "总表面积", "积木表面积", "拼成立体图形的表面积"],
+        "required_fact_groups": [["solid_geometry"], ["geometry_area"]],
+        "exclude_fact_keys": ["cylinder_surface_volume", "gaosi_permutation_combination"],
+        "confusable_with": ["排列组合", "立体几何", "圆柱切分后，求表面积"],
+        "positive_examples": ["若干个棱长相同的小正方体拼成一个立体图形，求露在外面的总面积。"],
+        "near_miss_examples": ["只数有多少个小正方体，不求外表面积。"],
+        "negative_examples": ["普通排列组合、圆柱表面积计算或单个长方体表面积公式题。"],
+        "source_refs": ["curated:placement_exam_3:q18", "curated:placement_exam_9:q8"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.cylinder_roll_unfold_length",
+        "name": "圆柱卷纸侧面展开与层数",
+        "domain": "geometry_spatial",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：圆柱卷纸侧面展开与层数",
+        "aliases": ["卷纸展开长度", "圆柱彩纸展开", "圆柱形彩纸", "卷纸厚度", "纸张厚度", "纸卷展开", "纸卷完全展开", "展开后长度", "圆柱侧面展开长度"],
+        "required_fact_groups": [["cylinder_surface_volume"], ["gaosi_solid_geometry"]],
+        "exclude_fact_keys": ["school_cube_net"],
+        "confusable_with": ["长度与角度的计算", "圆柱侧面展开与体积守恒"],
+        "positive_examples": ["圆柱形彩纸有高度、底面直径和纸张厚度，求彩纸展开后的长度。"],
+        "near_miss_examples": ["只根据圆柱底面周长求一圈侧面展开图长。"],
+        "negative_examples": ["普通线段长度角度计算或没有卷纸层数、厚度关系的圆柱题。"],
+        "source_refs": ["curated:placement_exam_9:q10"],
+    },
+    {
+        "knowledge_point_id": "dim5.pattern_sequence.calendar_week_cycle",
+        "name": "日历星期周期",
+        "domain": "pattern_sequence",
+        "level": "L2",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "3",
+        "knowledge_grade_label": "三年级",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数三年级：日历星期周期",
+        "aliases": ["星期几", "日历周期", "日期问题", "经过多少天是星期几", "年月日周期", "星期分布"],
+        "required_fact_groups": [["sequence_pattern"]],
+        "exclude_fact_keys": ["gaosi_reverse_age"],
+        "confusable_with": ["还原问题与年龄问题", "周期问题"],
+        "positive_examples": ["已知某年某月某日是星期五，求经过若干天后是星期几。"],
+        "near_miss_examples": ["只问年龄变化或今年几岁，不涉及星期和日期循环。"],
+        "negative_examples": ["年龄还原题、普通时间单位换算或没有7天循环的应用题。"],
+        "source_refs": ["curated:placement_exam_2:q3", "curated:placement_exam_5:q24"],
+    },
+    {
+        "knowledge_point_id": "dim5.pattern_sequence.work_rest_cycle",
+        "name": "工作休息周期",
+        "domain": "pattern_sequence",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：工作休息周期",
+        "aliases": ["工作几天休息几天", "工作4天休息1天", "共同休息", "轮班周期", "休息日周期"],
+        "required_fact_groups": [["sequence_pattern"]],
+        "exclude_fact_keys": ["work_rate_task"],
+        "confusable_with": ["工程问题", "日期周期"],
+        "positive_examples": ["爸爸工作4天休息1天、妈妈工作2天休息1天，根据日历求共同休息日期。"],
+        "near_miss_examples": ["工程合作中甲乙轮流工作求完成时间。"],
+        "negative_examples": ["普通工程效率题或没有重复工作休息节奏的日期题。"],
+        "source_refs": ["curated:placement_exam_4:q7"],
+    },
+    {
+        "knowledge_point_id": "dim5.pattern_sequence.staircase_recurrence",
+        "name": "爬楼梯递推",
+        "domain": "pattern_sequence",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：爬楼梯递推",
+        "aliases": ["爬楼梯", "一级或两级台阶", "跨一级或两级", "台阶走法", "斐波那契走法"],
+        "required_fact_groups": [["state_recurrence"], ["counting_target"]],
+        "exclude_fact_keys": ["school_division", "graph_relation_network_counting"],
+        "confusable_with": ["普通组合计数", "排列组合"],
+        "positive_examples": ["每次只能上一级或两级台阶，求到第5级或第10级台阶有多少种走法。"],
+        "near_miss_examples": ["只问爬了几层楼或每层楼高度的普通乘除题。"],
+        "negative_examples": ["普通排列组合或没有相邻状态递推关系的计数题。"],
+        "source_refs": ["curated:placement_exam_2:q8"],
+    },
+    {
+        "knowledge_point_id": "dim5.pattern_sequence.doubling_notification",
+        "name": "电话通知倍增递推",
+        "domain": "pattern_sequence",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：电话通知倍增递推",
+        "aliases": ["电话通知", "倍增通知", "每分钟倍增", "每分钟通知一人", "通知所有人", "紧急通知", "通知所有队员"],
+        "required_fact_groups": [["school_multiplicative_relation"], ["extremum_goal"]],
+        "exclude_fact_keys": ["gaosi_divisibility", "gaosi_number_theory"],
+        "confusable_with": ["统筹与对策", "整除", "最值问题"],
+        "positive_examples": ["老师用打电话方式每分钟倍增通知队员，设计最短方案并求10分钟最多通知人数。"],
+        "near_miss_examples": ["普通电话费用计费题。"],
+        "negative_examples": ["单纯整除判断、普通最值问题或没有传播倍增过程的安排题。"],
+        "source_refs": ["curated:placement_exam_9:q24"],
+    },
+    {
+        "knowledge_point_id": "dim5.pattern_sequence.square_number_sequence_position",
+        "name": "平方数序列定位",
+        "domain": "pattern_sequence",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：平方数序列定位",
+        "aliases": ["完全平方数列", "完全平方数", "非平方数列", "非平方数", "完全平方数和非平方数", "平方数定位", "第99个数", "平方数与非平方数"],
+        "required_fact_groups": [["sequence_pattern"], ["period_position"]],
+        "exclude_fact_keys": ["school_comparison"],
+        "confusable_with": ["简单规律与数列", "周期规律"],
+        "positive_examples": ["完全平方数和非平方数按规则混排，求数列中第99个数。"],
+        "near_miss_examples": ["只判断一个数是不是完全平方数。"],
+        "negative_examples": ["普通等差数列、周期排列或没有平方数定位目标的题。"],
+        "source_refs": ["curated:placement_exam_3:q15"],
+    },
+    {
+        "knowledge_point_id": "dim5.pattern_sequence.equation_pattern_generalization",
+        "name": "等式规律与公式递推",
+        "domain": "pattern_sequence",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：等式规律与公式递推",
+        "aliases": ["观察等式", "第n个等式", "写出第n个算式", "等式规律", "公式递推"],
+        "required_fact_groups": [["sequence_pattern"], ["calculation_numeric_expression"]],
+        "exclude_fact_keys": ["school_division"],
+        "confusable_with": ["四则混合运算", "简单规律与数列"],
+        "positive_examples": ["观察一组含分数的等式，写出第6个等式和第n个等式并说明。"],
+        "near_miss_examples": ["只计算一个给定算式的结果。"],
+        "negative_examples": ["普通四则混合运算或没有归纳第n项的计算题。"],
+        "source_refs": ["curated:placement_exam_8:q18"],
+    },
+    {
+        "knowledge_point_id": "dim5.logic_strategy.handshake_round_robin",
+        "name": "握手问题与比赛轮次",
+        "domain": "counting_combinatorics",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：握手问题与比赛轮次",
+        "aliases": ["握手问题", "每两人下一局", "循环赛", "比赛轮次", "已下局数", "度数关系"],
+        "required_fact_groups": [["graph_relation_network_counting"], ["gaosi_logic"]],
+        "exclude_fact_keys": ["school_addition_subtraction", "school_division"],
+        "confusable_with": ["普通加减法", "图论基础与关系网络计数"],
+        "positive_examples": ["六人下棋每两人下一局，已知若干人已下局数，求某人下了几局。"],
+        "near_miss_examples": ["只按总人数平均分组，不涉及两两关系。"],
+        "negative_examples": ["普通加减法应用题或没有两两配对关系的计数题。"],
+        "source_refs": ["curated:placement_exam_2:q11", "curated:placement_exam_3:q10"],
+    },
+    {
+        "knowledge_point_id": "dim5.logic_strategy.truth_rank_logic",
+        "name": "真假话与名次推理",
+        "domain": "logic_strategy_construction",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：真假话与名次推理",
+        "aliases": ["真假话", "真话假话", "只有一句真话", "名次推理", "我不是第一", "得了前三名", "排名推理"],
+        "required_fact_groups": [["gaosi_logic"]],
+        "exclude_fact_keys": ["school_comparison"],
+        "confusable_with": ["普通比较大小", "逻辑推理"],
+        "positive_examples": ["三人取得前三名，每人说一句关于自己名次的话，根据真假关系推理名次。"],
+        "near_miss_examples": ["只比较三个数的大小顺序。"],
+        "negative_examples": ["普通名数比较或没有真假陈述约束的排序题。"],
+        "source_refs": ["curated:placement_exam_3:q20"],
+    },
+    {
+        "knowledge_point_id": "dim5.logic_strategy.balance_scale_search",
+        "name": "天平称重找异常物",
+        "domain": "logic_strategy_construction",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：天平称重找异常物",
+        "aliases": ["天平称重", "较重的一瓶", "较轻的一瓶", "找出盐水", "保证找出", "异常瓶"],
+        "required_fact_groups": [["gaosi_logic"], ["guarantee_at_least"], ["extremum_goal"]],
+        "exclude_fact_keys": [],
+        "confusable_with": ["浓度问题", "抽屉原理"],
+        "positive_examples": ["若干瓶矿泉水中有一瓶盐水较重或较轻，问至少用天平称几次能保证找出。"],
+        "near_miss_examples": ["盐水加水稀释后求浓度。"],
+        "negative_examples": ["普通浓度变化题或没有天平称重过程的最不利原则题。"],
+        "source_refs": ["curated:placement_exam_5:q21"],
+    },
+    {
+        "knowledge_point_id": "dim5.logic_strategy.chessboard_queen_control",
+        "name": "棋盘控制与皇后覆盖",
+        "domain": "logic_strategy_construction",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：棋盘控制与皇后覆盖",
+        "aliases": ["棋盘控制", "皇后覆盖", "国际象棋皇后", "控制行列斜线", "黑白棋盘"],
+        "required_fact_groups": [["gaosi_logic"]],
+        "exclude_fact_keys": ["school_volume"],
+        "confusable_with": ["智巧趣题", "棋盘染色"],
+        "positive_examples": ["在黑白棋盘上放置皇后，使每个小方格都被行、列或斜线控制。"],
+        "near_miss_examples": ["只根据棋盘颜色做奇偶染色论证。"],
+        "negative_examples": ["普通平面图形识别或没有棋盘控制规则的计数题。"],
+        "source_refs": ["curated:placement_exam_6:q28"],
+    },
+    {
+        "knowledge_point_id": "dim5.quantity_application.full_reduction_optimization",
+        "name": "满减凑单与优惠拆单",
+        "domain": "quantity_application",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "school",
+        "knowledge_track_label": "校内",
+        "knowledge_grade": "6",
+        "knowledge_grade_label": "六年级",
+        "knowledge_semester": "下册",
+        "knowledge_display_name": "校内六年级：满减凑单与优惠拆单",
+        "aliases": ["满减", "满30减12", "满30元减12", "满60减30", "优惠拆单", "凑单", "如何凑单", "总费用最低"],
+        "required_fact_groups": [["counting_choice"], ["price_profit_relation"]],
+        "exclude_fact_keys": [],
+        "confusable_with": ["排列组合", "普通单价数量总价"],
+        "positive_examples": ["多个菜品有满减优惠，选择下单方式使总费用最低。"],
+        "near_miss_examples": ["只按单价乘数量直接求总价。"],
+        "negative_examples": ["普通组合计数或没有价格优惠目标的选择题。"],
+        "source_refs": ["curated:placement_exam_1:q8"],
+    },
+    {
+        "knowledge_point_id": "dim5.quantity_application.tiered_piecewise_pricing",
+        "name": "阶梯计费与分段收费",
+        "domain": "quantity_application",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "school",
+        "knowledge_track_label": "校内",
+        "knowledge_grade": "6",
+        "knowledge_grade_label": "六年级",
+        "knowledge_semester": "下册",
+        "knowledge_display_name": "校内六年级：阶梯计费与分段收费",
+        "aliases": ["阶梯水价", "分档水量", "阶梯计费", "分段收费", "累计用水", "按档计费"],
+        "required_fact_groups": [["price_profit_relation"], ["school_volume"]],
+        "exclude_fact_keys": ["gaosi_solid_geometry"],
+        "confusable_with": ["体积", "长方体与正方体", "圆柱圆锥"],
+        "positive_examples": ["根据阶梯水价表和累计用水量，按不同档位计算应缴水费。"],
+        "near_miss_examples": ["只根据长方体水池长宽高求容积。"],
+        "negative_examples": ["普通体积单位换算或没有分段单价的立方米题。"],
+        "source_refs": ["curated:placement_exam_5:q12"],
+    },
+    {
+        "knowledge_point_id": "dim5.quantity_application.taxi_piecewise_fare",
+        "name": "出租车分段计价",
+        "domain": "quantity_application",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "school",
+        "knowledge_track_label": "校内",
+        "knowledge_grade": "6",
+        "knowledge_grade_label": "六年级",
+        "knowledge_semester": "下册",
+        "knowledge_display_name": "校内六年级：出租车分段计价",
+        "aliases": ["出租车计价", "起步价", "空驶费", "分段加价", "每公里加价", "中途换车"],
+        "required_fact_groups": [["price_profit_relation"]],
+        "exclude_fact_keys": ["school_volume"],
+        "confusable_with": ["行程问题", "普通单价数量总价"],
+        "positive_examples": ["出租车有起步价、超过若干公里后分段加价和空驶费，比较不同乘车方案费用。"],
+        "near_miss_examples": ["只根据速度和时间求路程。"],
+        "negative_examples": ["普通行程追及题或没有分段费用规则的价格题。"],
+        "source_refs": ["curated:placement_exam_9:q23"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.midpoint_equal_area",
+        "name": "中点面积与等底等高",
+        "domain": "geometry_spatial",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：中点面积与等底等高",
+        "aliases": ["中点面积", "等底等高", "中线平分面积", "三角形面积关系", "阴影部分面积", "AM=BM", "CN=AN"],
+        "required_fact_groups": [["midline_or_midpoint"], ["geometry_area"]],
+        "exclude_fact_keys": ["basic_formula"],
+        "confusable_with": ["三角形面积", "面积比模型"],
+        "positive_examples": ["三角形中给出中点和线段关系，利用等底等高或中线平分面积求阴影面积。"],
+        "near_miss_examples": ["直接给底和高套三角形面积公式。"],
+        "negative_examples": ["没有中点、中线或等底等高关系的基础面积题。"],
+        "source_refs": ["curated:placement_exam_2:q6"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.inscribed_square_circle_area",
+        "name": "圆内接正方形面积",
+        "domain": "geometry_spatial",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：圆内接正方形面积",
+        "aliases": ["圆内最大正方形", "圆内接正方形", "正方形在圆内", "圆中取最大正方形", "阴影面积"],
+        "required_fact_groups": [["gaosi_circle_sector"], ["geometry_area"], ["extremum_goal"]],
+        "exclude_fact_keys": ["statistics_chart_context"],
+        "confusable_with": ["圆与扇形", "最值问题"],
+        "positive_examples": ["圆中取最大正方形，已知圆半径或直径，求阴影面积。"],
+        "near_miss_examples": ["普通扇形面积或圆心角统计图读数。"],
+        "negative_examples": ["只计算普通圆面积、扇形面积或不含内接正方形的最值题。"],
+        "source_refs": ["curated:placement_exam_3:q23"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.curvilinear_arch_area",
+        "name": "曲边图形面积与弓形面积",
+        "domain": "geometry_spatial",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：曲边图形面积与弓形面积",
+        "aliases": ["弧形面积", "弓形面积", "曲边图形面积", "圆弧围成", "四分之一圆弧", "弧围成区域"],
+        "required_fact_groups": [["gaosi_circle_sector"], ["geometry_area"]],
+        "exclude_fact_keys": ["statistics_chart_context"],
+        "confusable_with": ["圆与扇形", "基础几何公式应用"],
+        "positive_examples": ["多个圆弧围成曲边区域，利用扇形和三角形面积关系求面积。"],
+        "near_miss_examples": ["只根据圆心角和半径直接求单个扇形面积。"],
+        "negative_examples": ["统计图中的扇形或没有曲边区域分解的圆面积题。"],
+        "source_refs": ["curated:placement_exam_6:q16"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.pythagorean_area_relation",
+        "name": "勾股面积关系",
+        "domain": "geometry_spatial",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：勾股面积关系",
+        "aliases": ["勾股面积", "斜边上的正方形", "三个正方形面积", "直角三角形三边面积", "直角三角形三边上正方形", "三边上分别作正方形", "弦图面积"],
+        "required_fact_groups": [["geometry_area"], ["geometry_triangle"], ["area_relation_model"]],
+        "exclude_fact_keys": ["swallowtail_area_model"],
+        "confusable_with": ["三角形面积", "赵爽弦图"],
+        "positive_examples": ["三个正方形分别建在直角三角形三边上，利用面积关系求中间三角形面积。"],
+        "near_miss_examples": ["直接用底乘高除以2求三角形面积。"],
+        "negative_examples": ["普通三角形面积公式题或没有勾股面积关系的正方形面积题。"],
+        "source_refs": ["curated:placement_exam_6:q19"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.circle_rectangle_overlap_area",
+        "name": "方圆重叠面积",
+        "domain": "geometry_spatial",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：方圆重叠面积",
+        "aliases": ["扇形和长方形重叠", "方圆重叠", "圆与长方形重叠", "重叠阴影面积", "公共部分面积"],
+        "required_fact_groups": [["overlap_area"], ["gaosi_circle_sector"], ["geometry_area"]],
+        "exclude_fact_keys": ["statistics_chart_context"],
+        "confusable_with": ["圆与扇形", "重叠面积与容斥面积"],
+        "positive_examples": ["扇形和长方形重叠，已知长方形边长和圆的半径关系，求阴影面积。"],
+        "near_miss_examples": ["两个正方形重叠求公共部分面积。"],
+        "negative_examples": ["普通圆或扇形面积计算，或没有方圆重叠结构的面积题。"],
+        "source_refs": ["curated:placement_exam_10:q9"],
+    },
+    {
+        "knowledge_point_id": "dim5.number_theory.congruence_remainder_system",
+        "name": "同余与余数问题",
+        "domain": "number_theory",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：同余与余数问题",
+        "aliases": ["同余问题", "余数问题", "被7除余2", "被5除余3", "被8除余3", "被9除余1", "除余", "中国剩余"],
+        "required_fact_groups": [["gaosi_remainder"], ["period_position"]],
+        "exclude_fact_keys": ["school_comparison"],
+        "confusable_with": ["数的大小比较", "整除"],
+        "positive_examples": ["小于200的自然数，被7除余2、被8除余3、被9除余1，求这个数。"],
+        "near_miss_examples": ["只做一个除法算式求余数。"],
+        "negative_examples": ["普通大小比较或没有多个除数余数条件的整除题。"],
+        "source_refs": ["curated:placement_exam_4:q3"],
+    },
+    {
+        "knowledge_point_id": "dim5.number_theory.place_value_digit_equation",
+        "name": "位值制数字谜",
+        "domain": "number_theory",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：位值制数字谜",
+        "aliases": ["位值制数字谜", "abc表示三位数", "abc表示一个三位数", "全体两位数的和", "数位方程", "由数字组成的数"],
+        "required_fact_groups": [["gaosi_place_value_principle"]],
+        "exclude_fact_keys": ["school_comparison", "digit_swap_multiple", "divisibility_rule"],
+        "confusable_with": ["位值原理", "整除"],
+        "positive_examples": ["abc表示一个三位数，等于由a、b、c组成的全体两位数的和，求满足条件的三位数。"],
+        "near_miss_examples": ["只交换两位数字后比较大小。"],
+        "negative_examples": ["普通数字大小比较或没有位值表达式约束的数论题。"],
+        "source_refs": ["curated:placement_exam_4:q8"],
+    },
+    {
+        "knowledge_point_id": "dim5.number_theory.vertical_arithmetic_puzzle",
+        "name": "竖式数字谜",
+        "domain": "number_theory",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：竖式数字谜",
+        "aliases": ["竖式数字谜", "残缺乘法竖式", "方框填数字", "使算式成立", "不是2的数字"],
+        "required_fact_groups": [["gaosi_vertical_puzzle"]],
+        "exclude_fact_keys": ["school_vertical_division"],
+        "confusable_with": ["有趣的乘法", "乘法竖式及应用"],
+        "positive_examples": ["残缺的乘法竖式中，在方框填入不是2的数字，使乘法竖式成立。"],
+        "near_miss_examples": ["普通乘法竖式计算，不需要推理未知数字。"],
+        "negative_examples": ["没有未知数字约束的笔算乘法或普通数字谜。"],
+        "source_refs": ["curated:placement_exam_2:q9"],
+    },
 )
 
 
@@ -370,7 +1430,8 @@ def collect_candidate_terms(entries: Iterable[Dict[str, Any]]) -> Counter[str]:
 def clean_school_term(value: Any) -> str:
     text = " ".join(str(value or "").replace("※", "").split()).strip()
     text = re.sub(r"^第[一二三四五六七八九十]+章\s*", "", text)
-    text = re.sub(r"^\d+\s*", "", text)
+    text = re.sub(r"^\d+[、.．]\s*", "", text)
+    text = re.sub(r"^\d+\s+", "", text)
     text = text.replace("（", "(").replace("）", ")")
     text = re.sub(r"\((一|二|三|四|五|六|七|八|九|十)\)", "", text)
     text = text.strip(" -_/、，,。；;:")
@@ -488,10 +1549,13 @@ def school_fact_groups(point_name: str, aliases: Sequence[str], category: str) -
     add_group("school_average_division")
     add_group("school_mixed_operation")
     add_group("school_parentheses_order")
+    add_group("school_24_point_mixed_operation")
     add_group("school_operation_law")
     add_group("school_fraction")
+    add_group("school_reciprocal_concept")
     add_group("school_decimal")
     add_group("school_equation")
+    add_group("school_symbol_equation_substitution")
     add_group("school_comparison")
     add_group("school_division_representation")
     add_group("school_multiplicative_relation")
@@ -505,10 +1569,12 @@ def school_fact_groups(point_name: str, aliases: Sequence[str], category: str) -
         add_group("school_rectangle_square", "school_square_tiling_perimeter")
         add_group("school_irregular_perimeter")
     add_group("school_rectangle_property")
+    add_group("school_cube_net")
     add_group("school_area")
     add_group("school_volume")
     add_group("school_statistics")
     add_group("school_probability")
+    add_group("school_prime_factorization")
 
     if not groups:
         groups.append([matched[0]])
@@ -555,6 +1621,90 @@ def curated_school_topic_nodes() -> List[Dict[str, Any]]:
     return nodes
 
 
+def curated_base_topic_nodes(existing_nodes: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    curated_by_id = {
+        str(item.get("knowledge_point_id") or "").strip(): dict(item)
+        for item in CURATED_BASE_TOPICS
+        if str(item.get("knowledge_point_id") or "").strip()
+    }
+    seen_ids: set[str] = set()
+    nodes: List[Dict[str, Any]] = []
+    for node in existing_nodes:
+        node_id = str(node.get("knowledge_point_id") or "").strip()
+        if node_id in curated_by_id:
+            nodes.append(_apply_exam_1_10_boundary_metadata(dict(curated_by_id[node_id])))
+        else:
+            nodes.append(_apply_exam_1_10_boundary_metadata(dict(node)))
+        if node_id:
+            seen_ids.add(node_id)
+    for node_id, item in curated_by_id.items():
+        if node_id not in seen_ids:
+            nodes.append(_apply_exam_1_10_boundary_metadata(dict(item)))
+    return nodes
+
+
+def _append_unique_texts(value: Any, additions: Sequence[str]) -> List[str]:
+    result = [str(item).strip() for item in value or [] if str(item).strip()]
+    for item in additions:
+        text = str(item).strip()
+        if text and text not in result:
+            result.append(text)
+    return result
+
+
+def _apply_exam_1_10_boundary_metadata(node: Dict[str, Any]) -> Dict[str, Any]:
+    name = str(node.get("name") or "")
+    excludes: List[str] = [str(item).strip() for item in node.get("exclude_fact_keys") or [] if str(item).strip()]
+    negative_examples: List[str] = [
+        str(item).strip() for item in node.get("negative_examples") or [] if str(item).strip()
+    ]
+    confusable_with: List[str] = [str(item).strip() for item in node.get("confusable_with") or [] if str(item).strip()]
+
+    def add_excludes(*keys: str) -> None:
+        excludes.extend(key for key in keys if key)
+
+    def add_negative(*examples: str) -> None:
+        negative_examples.extend(example for example in examples if example)
+
+    def add_confusable(*items: str) -> None:
+        confusable_with.extend(item for item in items if item)
+
+    if "浓度" in name:
+        add_excludes("guarantee_at_least")
+        add_negative("天平称重找异常盐水瓶属于称重策略，不属于浓度变化。")
+        add_confusable("天平称重找异常物")
+    if any(term in name for term in ("体积", "容积", "立体几何", "长方体与正方体", "圆柱圆锥")):
+        add_excludes("price_profit_relation")
+        add_negative("阶梯水价中的立方米是计费单位，不属于体积或立体几何。")
+        add_confusable("阶梯计费与分段收费")
+    if name == "排列组合":
+        add_excludes("solid_geometry", "geometry_area")
+        add_negative("小正方体拼搭表面积属于立体几何面积，不属于排列组合。")
+        add_confusable("小正方体拼搭表面积")
+    if "长度与角度" in name:
+        add_excludes("cylinder_surface_volume")
+        add_negative("圆柱卷纸展开长度属于圆柱侧面展开与层数关系，不属于普通长度与角度计算。")
+        add_confusable("圆柱卷纸侧面展开与层数")
+    if "还原问题" in name or "年龄问题" in name:
+        add_excludes("sequence_pattern")
+        add_negative("日期星期周期中的“今年/经过”不是年龄还原。")
+        add_confusable("日历星期周期")
+    if "圆与扇形" in name:
+        add_excludes("statistics_chart_context")
+        add_negative("统计图中的圆心角是读图比例信息，不属于几何圆与扇形面积。")
+        add_negative("圆坐标读图不是普通圆与扇形面积计算。")
+        add_confusable("统计图综合", "圆坐标读图")
+    if name == "认识立体图形":
+        add_excludes("school_cube_net")
+        add_negative("正方体展开图相对面判断不应停留在认识立体图形。")
+        add_confusable("正方体展开图相对面判断")
+
+    node["exclude_fact_keys"] = list(dict.fromkeys(excludes))
+    node["negative_examples"] = list(dict.fromkeys(negative_examples))
+    node["confusable_with"] = list(dict.fromkeys(confusable_with))
+    return node
+
+
 def school_source_ref(entry: Dict[str, Any], source_file: str) -> str:
     grade_hint = clean_school_term(entry.get("grade_hint") or entry.get("grade") or "")
     category = clean_school_term(entry.get("category") or "")
@@ -580,6 +1730,16 @@ def school_node_from_entry(entry: Dict[str, Any], source_file: str) -> tuple[Dic
         return None, {"term": point_name, "reason": "missing_structural_rule", "source_file": source_file}
 
     grade_label = GRADE_LABELS.get(grade, "年级未确认")
+    exclude_fact_keys: List[str] = []
+    if any(term in point_name for term in ("平均", "除法", "分配")):
+        exclude_fact_keys.append("pigeonhole")
+    if any(term in point_name for term in ("体积", "容积", "长方体", "正方体", "圆柱", "圆锥")):
+        exclude_fact_keys.append("price_profit_relation")
+    if any(term in point_name for term in ("体积", "容积", "圆柱", "圆锥", "认识立体图形")):
+        exclude_fact_keys.append("school_cube_net")
+    if any(term in point_name for term in ("乘法", "竖式", "笔算")):
+        exclude_fact_keys.append("gaosi_vertical_puzzle")
+
     node = {
         "knowledge_point_id": school_node_id(grade, point_name, category),
         "name": point_name,
@@ -594,7 +1754,7 @@ def school_node_from_entry(entry: Dict[str, Any], source_file: str) -> tuple[Dic
         "knowledge_display_name": school_display_name(grade, point_name),
         "aliases": aliases,
         "required_fact_groups": required_groups,
-        "exclude_fact_keys": ["pigeonhole"] if any(term in point_name for term in ("平均", "除法", "分配")) else [],
+        "exclude_fact_keys": list(dict.fromkeys(exclude_fact_keys)),
         "confusable_with": [],
         "positive_examples": [f"{school_display_name(grade, point_name)}需要题面出现对应结构证据"],
         "near_miss_examples": [f"只出现“{point_name}”相近文字但没有题面结构证据"],
@@ -707,7 +1867,11 @@ def gaosi_level_for_topic(grade: str, topic: str) -> str:
     return ""
 
 
-def gaosi_aliases(entries: Sequence[Dict[str, Any]], topic: str) -> List[str]:
+def gaosi_aliases(
+    entries: Sequence[Dict[str, Any]],
+    topic: str,
+    tree_entries: Sequence[Dict[str, Any]] = (),
+) -> List[str]:
     aliases: List[str] = [topic, gaosi_topic_base(topic)]
     for entry in entries:
         for key in ("lecture_title", "topic_category", "category", "title"):
@@ -719,8 +1883,9 @@ def gaosi_aliases(entries: Sequence[Dict[str, Any]], topic: str) -> List[str]:
     if base and base != topic:
         aliases.append(base)
     aliases.extend(gaosi_split_aliases(topic))
+    aliases.extend(gaosi_tree_aliases(tree_entries))
     aliases = [item for item in aliases if item and item not in GAOSI_BROAD_TOPICS and len(item) > 1]
-    return list(dict.fromkeys(aliases))[:20]
+    return list(dict.fromkeys(aliases))[:40]
 
 
 def gaosi_split_aliases(topic: str) -> List[str]:
@@ -751,6 +1916,76 @@ def gaosi_split_aliases(topic: str) -> List[str]:
     return list(dict.fromkeys(alias for alias in aliases if alias and alias != text))
 
 
+def gaosi_knowledge_tree_topic(entry: Dict[str, Any]) -> str:
+    title = normalize_gaosi_topic(entry.get("title"))
+    return GAOSI_KNOWLEDGE_TREE_TITLE_ALIASES.get(title, title)
+
+
+def load_gaosi_knowledge_tree(reference_dir: Path) -> List[Dict[str, Any]]:
+    path = reference_dir / GAOSI_KNOWLEDGE_TREE_FILE
+    if not path.exists():
+        return []
+    return as_entries(load_json(path))
+
+
+def gaosi_knowledge_tree_by_topic(reference_dir: Path) -> Dict[tuple[str, str], List[Dict[str, Any]]]:
+    grouped: Dict[tuple[str, str], List[Dict[str, Any]]] = {}
+    for entry in load_gaosi_knowledge_tree(reference_dir):
+        grade = normalize_school_grade(entry.get("grade"))
+        topic = gaosi_knowledge_tree_topic(entry)
+        if grade and topic:
+            grouped.setdefault((grade, topic), []).append(entry)
+    return grouped
+
+
+def gaosi_tree_aliases(entries: Sequence[Dict[str, Any]]) -> List[str]:
+    aliases: List[str] = []
+    for entry in entries:
+        raw_title = normalize_gaosi_topic(entry.get("title"))
+        canonical_title = gaosi_knowledge_tree_topic(entry)
+        if raw_title and raw_title != canonical_title:
+            aliases.append(raw_title)
+        for subtopic in entry.get("subtopics") or []:
+            aliases.extend(gaosi_tree_subtopic_aliases(subtopic))
+    return list(dict.fromkeys(alias for alias in aliases if gaosi_tree_alias_allowed(alias)))
+
+
+def gaosi_tree_subtopic_aliases(value: Any) -> List[str]:
+    text = normalize_gaosi_topic(value)
+    if not text:
+        return []
+    aliases: List[str] = [text]
+    aliases.extend(part.strip() for part in re.split(r"[、/]|与", text) if part.strip())
+    aliases.append(re.sub(r"(综合题[一二三四五六]?|综合题|应用题|问题[一二三四五六]?|计算)$", "", text))
+    if "柳卡图" in text:
+        aliases.append("柳卡图")
+    if "一笔画" in text:
+        aliases.append("一笔画")
+    if "最不利原则" in text:
+        aliases.append("最不利原则")
+    if "棋盘染色" in text:
+        aliases.append("棋盘染色")
+    if "分解质因数" in text:
+        aliases.append("分解质因数")
+    for model in ("蝴蝶模型", "沙漏模型", "燕尾模型", "鸟头模型", "风筝模型"):
+        if model in text:
+            aliases.append(model)
+    return [alias for alias in dict.fromkeys(aliases) if gaosi_tree_alias_allowed(alias)]
+
+
+def gaosi_tree_alias_allowed(value: str) -> bool:
+    text = normalize_gaosi_topic(value)
+    if not text or len(text) <= 1:
+        return False
+    if text in GENERIC_TERMS or text in GAOSI_BROAD_TOPICS or text in GAOSI_TREE_GENERIC_SUBTOPICS:
+        return False
+    if re.fullmatch(r"[A-Za-z]", text):
+        return False
+    if text in {"公式计算", "基础计数方法"}:
+        return False
+    return True
+
+
 def _gaosi_topic_has(topic: str, *fragments: str) -> bool:
     return any(fragment in topic for fragment in fragments)
 
@@ -768,6 +2003,17 @@ def gaosi_fact_groups(topic: str, aliases: Sequence[str], examples: Sequence[str
         return [["gaosi_geometry_synthesis"]]
     if _gaosi_topic_has(text, "应用题综合"):
         return [["gaosi_application_synthesis"]]
+
+    if _gaosi_topic_has(text, "连续奇数", "平方差", "平方数差"):
+        return [["square_difference_odd"]]
+    if _gaosi_topic_has(text, "数位交换", "交换数字", "交换数位"):
+        return [["digit_swap_multiple"]]
+    if _gaosi_topic_has(text, "重复数字", "各位数字相同"):
+        return [["repeated_digit_number"]]
+    if _gaosi_topic_has(text, "整数解", "约数枚举"):
+        return [["integer_solution_factorization"]]
+    if _gaosi_topic_has(text, "运输费用", "运费", "运输最优"):
+        return [["transport_optimization"]]
 
     if _gaosi_topic_has(text, "抽屉"):
         return [["pigeonhole"], ["guarantee_at_least"]]
@@ -824,6 +2070,22 @@ def gaosi_fact_groups(topic: str, aliases: Sequence[str], examples: Sequence[str
 
     if _gaosi_topic_has(text, "格点") and _gaosi_topic_has(text, "割补"):
         return [["gaosi_lattice"], ["gaosi_cut_paste"]]
+    if _gaosi_topic_has(text, "折叠展开", "剪纸", "剪开"):
+        return [["fold_cut_unfold"]]
+    if _gaosi_topic_has(text, "俄罗斯方块", "图形变换", "平移旋转", "旋转平移"):
+        return [["geometry_transform_puzzle"]]
+    if _gaosi_topic_has(text, "重叠面积", "重叠部分", "公共部分"):
+        return [["overlap_area"], ["geometry_area"]]
+    if _gaosi_topic_has(text, "面积比", "面积之比", "等高", "共边"):
+        return [["area_ratio_relation"], ["geometry_area"]]
+    if _gaosi_topic_has(text, "七巧板"):
+        return [["tangram_area"], ["geometry_area"]]
+    if _gaosi_topic_has(text, "赵爽弦图", "弦图"):
+        return [["zhao_shuang_diagram"], ["geometry_area"]]
+    if _gaosi_topic_has(text, "勒洛三角形", "弓形"):
+        return [["reuleaux_triangle"], ["gaosi_circle_sector"]]
+    if _gaosi_topic_has(text, "圆柱侧面展开", "圆柱"):
+        return [["cylinder_surface_volume"]]
     if _gaosi_topic_has(text, "剪拼", "割补"):
         return [["gaosi_cut_paste"]]
     if _gaosi_topic_has(text, "圆", "扇形"):
@@ -835,6 +2097,12 @@ def gaosi_fact_groups(topic: str, aliases: Sequence[str], examples: Sequence[str
 
     if _gaosi_topic_has(text, "分数数列"):
         return [["gaosi_sequence"], ["gaosi_arithmetic"]]
+    if _gaosi_topic_has(text, "周期格子"):
+        return [["periodic_grid"]]
+    if _gaosi_topic_has(text, "传数游戏", "状态转移", "递推"):
+        return [["state_recurrence"]]
+    if _gaosi_topic_has(text, "直线分平面"):
+        return [["line_plane_recurrence"]]
     if _gaosi_topic_has(text, "周期", "规律", "数列", "数表", "等差"):
         return [["gaosi_sequence"]]
     if _gaosi_topic_has(text, "间隔", "阵列"):
@@ -857,25 +2125,47 @@ def _gaosi_topic_exclude_fact_keys(topic: str) -> List[str]:
     if "抽屉" in topic:
         excludes.append("school_average_division")
     if "排列组合" in topic:
-        excludes.extend(["school_square_tiling_perimeter", "school_perimeter"])
+        excludes.extend(["school_square_tiling_perimeter", "school_perimeter", "solid_geometry", "geometry_area"])
     if "工程" in topic:
         excludes.extend(["school_average_division", "school_unit_division_context", "school_division"])
+    if "浓度" in topic:
+        excludes.append("guarantee_at_least")
+    if "立体几何" in topic:
+        excludes.append("price_profit_relation")
+    if "长度与角度" in topic:
+        excludes.append("cylinder_surface_volume")
+    if any(term in topic for term in ("几何图形的认知", "直线形计算")):
+        excludes.append("cylinder_surface_volume")
+    if "还原问题" in topic or "年龄问题" in topic:
+        excludes.append("sequence_pattern")
+    if "圆与扇形" in topic:
+        excludes.append("statistics_chart_context")
     return list(dict.fromkeys(excludes))
 
 
-def gaosi_source_refs(grade: str, topic: str, entries: Sequence[Dict[str, Any]]) -> List[str]:
+def gaosi_source_refs(
+    grade: str,
+    topic: str,
+    entries: Sequence[Dict[str, Any]],
+    tree_entries: Sequence[Dict[str, Any]] = (),
+) -> List[str]:
     refs: List[str] = []
     for entry in entries[:6]:
         section = str(entry.get("section_label") or entry.get("section_level") or "").strip()
         qno = str(entry.get("question_no") or "").strip()
         page = str(entry.get("page_no") or "").strip()
         refs.append(f"gaosi_question:{grade}年级:{topic}:{section}:p{page}:q{qno}")
-    return refs or [f"gaosi_topic:{grade}年级:{topic}"]
+    for entry in tree_entries:
+        source_ref = str(entry.get("source_ref") or "").strip()
+        if source_ref:
+            refs.append(source_ref)
+    return list(dict.fromkeys(refs)) or [f"gaosi_topic:{grade}年级:{topic}"]
 
 
 def build_gaosi_nodes(reference_dir: Path, existing_nodes: Sequence[Dict[str, Any]]) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     path = reference_dir / "reference_standard_gaosi_question_data.json"
     entries = as_entries(load_json(path))
+    tree_by_topic = gaosi_knowledge_tree_by_topic(reference_dir)
     grouped: Dict[tuple[str, str], List[Dict[str, Any]]] = {}
     for entry in entries:
         grade = normalize_school_grade(entry.get("grade") or entry.get("grade_hint"))
@@ -908,8 +2198,10 @@ def build_gaosi_nodes(reference_dir: Path, existing_nodes: Sequence[Dict[str, An
             for entry in topic_entries
             if str(entry.get("question_text") or "").strip()
         ][:8]
-        aliases = gaosi_aliases(topic_entries, topic)
-        required_groups = gaosi_fact_groups(topic, aliases, examples)
+        tree_entries = tree_by_topic.get((grade, topic), [])
+        base_aliases = gaosi_aliases(topic_entries, topic)
+        required_groups = gaosi_fact_groups(topic, base_aliases, examples)
+        aliases = gaosi_aliases(topic_entries, topic, tree_entries)
         if not required_groups:
             review.append({"term": topic, "reason": "missing_gaosi_structural_rule", "source_file": path.name})
             continue
@@ -939,7 +2231,7 @@ def build_gaosi_nodes(reference_dir: Path, existing_nodes: Sequence[Dict[str, An
                 "positive_examples": examples[:3] or [f"{gaosi_display_name(grade, topic)}需要题面出现对应结构证据"],
                 "near_miss_examples": [f"只出现“{topic}”相近文字但没有对应高思专题结构"],
                 "negative_examples": ["宽泛分类标签、校内基础题或缺少结构证据的题目"],
-                "source_refs": gaosi_source_refs(grade, topic, topic_entries),
+                "source_refs": gaosi_source_refs(grade, topic, topic_entries, tree_entries),
             }
         )
     return nodes, review
@@ -1050,6 +2342,7 @@ def main() -> int:
         and not str(node.get("knowledge_point_id") or "").startswith(f"{SCHOOL_NODE_PREFIX}.")
         and not str(node.get("knowledge_point_id") or "").startswith(f"{GAOSI_NODE_PREFIX}.")
     ]
+    base_nodes = curated_base_topic_nodes(base_nodes)
     school_nodes, school_review_queue = build_school_nodes(args.reference_dir, base_nodes)
     gaosi_nodes, gaosi_review_queue = build_gaosi_nodes(args.reference_dir, [*base_nodes, *school_nodes])
     payload = {

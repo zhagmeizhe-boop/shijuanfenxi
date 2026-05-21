@@ -164,10 +164,65 @@ def _dimension_declared_or_inferred(dim_code: str, features, feature_dict: dict)
     if dim_code == "dim4":
         return feature_dict.get("strategy_role") == "core"
     if dim_code == "dim5":
-        return bool(feature_dict.get("band") and feature_dict.get("sublevel"))
+        return bool(
+            (feature_dict.get("band") and feature_dict.get("sublevel"))
+            or feature_dict.get("knowledge_level")
+            or _dim5_has_graph_review_signal(feature_dict)
+        )
     if dim_code == "dim6":
         return feature_dict.get("reasoning_role") == "core"
     return False
+
+
+def _dim5_has_graph_review_signal(feature_dict: dict) -> bool:
+    if not isinstance(feature_dict, dict):
+        return False
+    if str(feature_dict.get("dim5_excluded_reason") or "").strip() == "retry_failed":
+        return False
+    candidates = feature_dict.get("candidate_knowledge_points")
+    if isinstance(candidates, list) and candidates:
+        return True
+    facts = feature_dict.get("dim5_structure_facts")
+    if not isinstance(facts, list):
+        return False
+    clear_fact_keys = {
+        "statistics_chart_context",
+        "statistics_percent_conversion",
+        "fraction_application",
+        "proportion_application",
+        "work_rate_task",
+        "motion_task",
+        "profit_discount",
+        "price_profit_relation",
+        "two_type_cost_total",
+        "gaosi_chicken_rabbit",
+        "gaosi_travel",
+        "gaosi_work_rate",
+        "gaosi_concentration_profit",
+        "gaosi_number_theory",
+        "gaosi_digit_puzzle",
+        "square_difference_odd",
+        "digit_swap_multiple",
+        "integer_solution_factorization",
+        "pigeonhole",
+        "guarantee_at_least",
+        "fold_cut_unfold",
+        "geometry_transform_puzzle",
+        "school_cube_net",
+        "area_relation_model",
+        "overlap_area",
+        "cylinder_surface_volume",
+        "periodic_grid",
+        "state_recurrence",
+        "line_plane_recurrence",
+        "transport_optimization",
+        "gaosi_probability",
+    }
+    return any(
+        str(item.get("fact_key") or "") in clear_fact_keys
+        for item in facts
+        if isinstance(item, dict)
+    )
 
 
 _TRUE_PARSE_DAMAGE_MARKERS = ("残缺", "缺损", "截断", "识别失败", "公式增强识别失败")
@@ -571,10 +626,32 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
             paper = await db.get(Paper, paper_id)
             paper_name = paper.paper_name if paper else f"试卷_{paper_id}"
 
+        async def _persist_ocr_progress(progress: dict[str, Any]) -> None:
+            page_no = str(progress.get("page_no", "")).strip() or "?"
+            completed = int(progress.get("completed", 0) or 0)
+            total = int(progress.get("total", 0) or 0)
+            success = bool(progress.get("success", False))
+            status_suffix = "" if success else "\uff08\u5931\u8d25\uff09"
+            logger.info(
+                "Vision OCR progress paper=%s completed=%s/%s page=%s success=%s",
+                paper_id,
+                completed,
+                total,
+                page_no,
+                success,
+            )
+            await _update_paper_state(
+                paper_id,
+                progress_current=completed,
+                progress_total=total,
+                progress_message="\u6700\u8fd1\u5b8c\u6210\u7b2c %s \u9875%s" % (page_no, status_suffix),
+            )
+
         parsed_paper = await ocr_provider.parse(
             file_path=file_path,
             paper_name=paper_name,
             paper_id=paper_id,
+            progress_callback=_persist_ocr_progress,
         )
 
         await _update_paper_state(
@@ -653,7 +730,7 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
             model=settings.CLAUDE_MODEL,
             base_url=settings.LLM_BASE_URL,
             max_tokens=settings.QUESTION_LLM_MAX_TOKENS,
-            timeout=settings.QUESTION_LLM_TIMEOUT_SECONDS,
+            timeout=settings.QUESTION_LLM_REQUEST_TIMEOUT_SECONDS,
             llm_pool="question",
         )
         async def _persist_llm_progress(progress: dict[str, Any]) -> None:
@@ -683,6 +760,8 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
             concurrency=max(1, int(settings.QUESTION_LLM_CONCURRENCY or 1)),
             progress_callback=_persist_llm_progress,
             question_timeout_seconds=settings.QUESTION_LLM_TIMEOUT_SECONDS,
+            question_max_attempts=settings.QUESTION_LLM_MAX_ATTEMPTS,
+            retry_base_seconds=settings.QUESTION_LLM_RETRY_BASE_SECONDS,
         )
         if len(question_features) != len(question_records):
             raise RuntimeError(

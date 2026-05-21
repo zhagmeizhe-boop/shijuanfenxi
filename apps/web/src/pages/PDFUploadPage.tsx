@@ -51,6 +51,7 @@ export interface PaperStatusPayload {
   progress_current?: number | null;
   progress_total?: number | null;
   progress_message?: string | null;
+  updated_at?: string | null;
 }
 
 interface AnalyzeResponsePayload {
@@ -61,7 +62,7 @@ type ApiErrorPayload = { detail?: string } | string | undefined;
 
 const ANALYZE_REQUEST_TIMEOUT_MS = 15000;
 const POLL_INTERVAL_MS = 5000;
-const MAX_POLL_ATTEMPTS = 240;
+const MAX_STALLED_POLL_ATTEMPTS = 240;
 const MAX_TOTAL_UPLOAD_SIZE = 50 * 1024 * 1024;
 const MAX_SINGLE_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_IMAGE_COUNT = 20;
@@ -201,6 +202,29 @@ export function getProcessingDetail(payload: PaperStatusPayload): string | undef
   return `已完成 ${completed}/${llmTotal} 道`;
 }
 
+export function getStatusActivityKey(payload: PaperStatusPayload): string {
+  return [
+    payload.parse_status,
+    payload.last_stage || '',
+    payload.progress_current ?? '',
+    payload.progress_total ?? '',
+    payload.progress_message || '',
+    payload.updated_at || '',
+  ].join('|');
+}
+
+export function getNextStalledPollAttempts(
+  payload: PaperStatusPayload,
+  lastActivityKey: string,
+  stalledAttempts: number,
+): { activityKey: string; stalledAttempts: number } {
+  const activityKey = getStatusActivityKey(payload);
+  return {
+    activityKey,
+    stalledAttempts: activityKey === lastActivityKey ? stalledAttempts + 1 : 0,
+  };
+}
+
 function getFileExtension(file: File): string {
   const match = file.name.toLowerCase().match(/\.[^.]+$/);
   return match ? match[0] : '';
@@ -314,19 +338,12 @@ export function PDFUploadPage() {
   );
 
   const pollPaperStatus = useCallback(
-    (paperId: string, attempt = 0) => {
-      if (attempt >= MAX_POLL_ATTEMPTS) {
-        setUploadStatus({
-          status: 'error',
-          message: '分析超时，请检查后端日志或稍后重新上传。',
-        });
-        return;
-      }
-
+    (paperId: string, attempt = 0, stalledAttempts = 0, lastActivityKey = '') => {
       pollTimerRef.current = setTimeout(async () => {
         try {
           const response = await axios.get<PaperStatusPayload>(`/api/v1/papers/${paperId}/status`);
           const payload = response.data;
+          const nextStallState = getNextStalledPollAttempts(payload, lastActivityKey, stalledAttempts);
 
           if (payload.parse_status === 'parse_success') {
             setUploadStatus({
@@ -349,13 +366,27 @@ export function PDFUploadPage() {
             return;
           }
 
+          if (nextStallState.stalledAttempts >= MAX_STALLED_POLL_ATTEMPTS) {
+            clearPollTimer();
+            setUploadStatus({
+              status: 'error',
+              message: '\u5206\u6790\u72b6\u6001\u957f\u65f6\u95f4\u672a\u66f4\u65b0\uff0c\u8bf7\u68c0\u67e5\u540e\u7aef\u65e5\u5fd7\u6216\u7a0d\u540e\u91cd\u8bd5\u3002',
+            });
+            return;
+          }
+
           setUploadStatus({
             status: 'processing',
             message: getProcessingMessage(payload, attempt),
             progress: getProcessingProgress(payload, attempt),
             detail: getProcessingDetail(payload),
           });
-          pollPaperStatus(paperId, attempt + 1);
+          pollPaperStatus(
+            paperId,
+            attempt + 1,
+            nextStallState.stalledAttempts,
+            nextStallState.activityKey,
+          );
         } catch (error: unknown) {
           const detail = extractAxiosDetail(error);
 

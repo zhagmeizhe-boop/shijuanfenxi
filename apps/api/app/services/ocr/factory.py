@@ -115,6 +115,8 @@ def get_ocr_provider_config(provider_name: Optional[str] = None) -> Dict[str, An
             "model": settings.VISION_LLM_MODEL or settings.CLAUDE_MODEL,
             "concurrency": settings.VISION_LLM_CONCURRENCY,
             "page_timeout": settings.VISION_LLM_PAGE_TIMEOUT,
+            "max_attempts": settings.VISION_LLM_MAX_ATTEMPTS,
+            "retry_base_seconds": settings.VISION_LLM_RETRY_BASE_SECONDS,
             "render_dpi": settings.VISION_LLM_RENDER_DPI,
             "max_tokens": settings.VISION_LLM_MAX_TOKENS,
         }

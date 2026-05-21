@@ -70,6 +70,8 @@ def test_get_ocr_provider_config_builds_vision_payload(monkeypatch):
     monkeypatch.setattr(settings, "VISION_LLM_MODEL", "vision-model")
     monkeypatch.setattr(settings, "VISION_LLM_CONCURRENCY", 3)
     monkeypatch.setattr(settings, "VISION_LLM_PAGE_TIMEOUT", 75.0)
+    monkeypatch.setattr(settings, "VISION_LLM_MAX_ATTEMPTS", 2)
+    monkeypatch.setattr(settings, "VISION_LLM_RETRY_BASE_SECONDS", 0.25)
     monkeypatch.setattr(settings, "VISION_LLM_RENDER_DPI", 160)
     monkeypatch.setattr(settings, "VISION_LLM_MAX_TOKENS", 12000)
 
@@ -80,6 +82,8 @@ def test_get_ocr_provider_config_builds_vision_payload(monkeypatch):
     assert config["model"] == "vision-model"
     assert config["concurrency"] == 3
     assert config["page_timeout"] == 75.0
+    assert config["max_attempts"] == 2
+    assert config["retry_base_seconds"] == 0.25
     assert config["render_dpi"] == 160
     assert config["max_tokens"] == 12000
 
