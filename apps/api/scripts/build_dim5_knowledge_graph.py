@@ -24,6 +24,8 @@ if str(ROOT) not in sys.path:
 from app.services.parser.dim5_knowledge_graph import (  # noqa: E402
     DIM5_GRAPH_PATH,
     Dim5KnowledgeGraph,
+    build_dim5_rule_localization_report,
+    localize_dim5_graph_payload,
 )
 
 
@@ -54,6 +56,9 @@ SCHOOL_NODE_PREFIX = "dim5.school"
 GAOSI_NODE_PREFIX = "dim5.gaosi"
 SCHOOL_REVIEW_LIMIT = 500
 DIM2_GEOMETRY_KB = ROOT / "config" / "scoring" / "dim2_geometry_knowledge_base.json"
+RETIRED_BASE_NODE_IDS = {
+    "dim5.pattern_sequence.number_table_position",
+}
 SCHOOL_GENERIC_TERMS = GENERIC_TERMS | {
     "应用题",
     "计算",
@@ -90,6 +95,7 @@ SCHOOL_FACT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("school_division_estimation", ("除法估算", "估算", "约等于", "近似")),
     ("school_vertical_division", ("竖式", "笔算", "验算")),
     ("school_quotient_digit", ("商的位数", "商是几位数", "商是两位数", "商是三位数", "商中间", "商末尾")),
+    ("division_quotient_digit_zero", ("商是三位数", "商的最高位", "商末尾有0", "商末尾有 0", "□里最小填", "□里最大填")),
     ("school_one_digit_divisor", ("除数是一位数", "除以一位数", "一位数除")),
     ("school_division", ("除法", "除数", "被除数", "商", "余数", "除以", "平均分")),
     ("school_zero_operation", ("0的运算", "有关0", "中间有0", "末尾有0")),
@@ -107,24 +113,35 @@ SCHOOL_FACT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("school_division_representation", ("计算方法", "点阵图", "算盘图", "数的分解", "分解计算", "多种方法")),
     ("school_comparison", ("比较大小", "填上", "大于", "小于", "等于")),
     ("school_multiplicative_relation", ("倍数关系", "几倍", "扩大到", "缩小到")),
+    ("perimeter_scale_relation", ("周长扩大", "边长扩大", "周长缩小", "边长缩小", "周长倍数")),
     ("school_translation", ("平移", "火箭升空", "电梯", "升降", "直线运动")),
     ("school_rotation", ("旋转", "荡秋千", "风车", "转动", "钟摆", "车轮", "开关门")),
     ("school_geometry_motion", ("运动现象", "图形的运动", "物体运动", "平移", "旋转", "火箭升空", "荡秋千")),
     ("school_axisymmetry", ("轴对称", "对称轴", "对称图形")),
     ("school_irregular_perimeter", ("不规则图形", "平移法", "多边形", "组合图形")),
+    ("folded_perimeter_change", ("对折", "折叠后的周长", "周长减少", "再对折")),
+    ("polygon_perimeter", ("五边形", "阶梯形", "多边形周长", "边长分别")),
+    ("rectangle_tiling_min_perimeter", ("贴在一起", "做成长方形", "四周贴装饰条", "装饰条最少")),
     ("school_rectangle_square", ("长方形", "正方形", "长和宽", "边长")),
     ("school_perimeter", ("周长", "围一圈", "边长之和")),
     ("school_square_tiling_perimeter", ("小正方形", "拼成", "拼接", "共边", "周长最小", "周长最大")),
     ("school_rectangle_property", ("围成一个长方形", "围成长方形", "表示点", "点的位置", "长方形的性质")),
+    ("triangle_angle_classification", ("三角形三个角", "度数的比", "角的比", "锐角三角形", "直角三角形", "钝角三角形")),
     ("school_cube_net", ("正方体展开图", "正方体的展开图", "展开图", "折叠", "对面", "相邻面")),
     ("school_area", ("面积", "平方厘米", "平方米", "平方分米")),
     ("school_volume", ("体积", "容积", "立方厘米", "立方米", "长方体", "正方体", "圆柱", "圆锥")),
+    ("cylinder_cone_volume_height_ratio", ("底面积相等", "体积比", "高的比", "圆柱和圆锥高的比")),
+    ("cylinder_cone_volume_ratio", ("高相同", "底面半径之比", "圆柱与圆锥", "体积比")),
+    ("composite_area_split_relation", ("长方形被", "分成两个长方形", "宽的比", "阴影三角形面积", "原长方形面积")),
+    ("rectangle_area_fraction_percent_change", ("长增加", "宽减少", "面积是原来的", "分数和百分数的综合应用")),
+    ("cylinder_surface_volume_composite", ("圆柱表面积与体积", "表面积与体积综合", "装饰部分", "酒水高度")),
     ("school_statistics", ("统计图", "统计表", "平均数", "条形统计图", "折线统计图", "扇形统计图")),
     ("statistics_chart_context", ("统计图", "统计表", "条形统计图", "折线统计图", "扇形统计图", "圆心角")),
     ("statistics_percent_conversion", ("百分比", "百分数", "占比", "圆心角", "人数换算")),
     ("school_probability", ("可能性", "一定", "不可能", "随机")),
     ("school_prime_factorization", ("分解质因数", "质因数分解", "质因数")),
     ("fraction_application", ("分数应用题", "几分之", "还剩", "总数")),
+    ("fraction_whole_part_relation", ("整体与部分", "其中", "分数应用题", "不经常", "经常")),
     ("proportion_application", ("比例分配", "按比例", "之比", "比是")),
 )
 GAOSI_BROAD_TOPICS = {
@@ -148,6 +165,10 @@ GAOSI_HIGH_LEVEL_TOPIC_FRAGMENTS = (
 )
 GAOSI_FACT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("gaosi_arithmetic", ("四则", "计算", "简便", "算式", "运算", "比较与估算", "分数计算", "循环小数")),
+    ("defined_operation_rule", ("定义新运算", "新定义运算", "规定一种运算", "一种运算")),
+    ("defined_operation_symbol", ("※", "△", "☆", "◇", "新运算符号")),
+    ("defined_operation_target", ("应填", "求出", "代入", "反求")),
+    ("consecutive_product_definition", ("连续三数乘积", "连续整数乘积")),
     ("gaosi_vertical_puzzle", ("竖式", "横式", "数字谜", "算符", "填数", "□", "空格")),
     ("gaosi_digit_puzzle", ("数字谜", "数字问题", "数位", "个位", "十位", "百位", "数字和")),
     ("gaosi_enumeration", ("枚举", "列举", "情况", "多少种", "几种", "方案", "共有多少")),
@@ -166,19 +187,29 @@ GAOSI_FACT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("gaosi_reverse_age", ("还原", "倒推", "年龄", "岁")),
     ("gaosi_average", ("平均数", "平均")),
     ("gaosi_work_rate", ("工程", "合作", "单独", "共同完成", "工作效率", "总工程量", "剩余工程")),
+    ("work_progress_ratio", ("已完成", "未完成", "剩余工程", "完成量比例")),
     ("gaosi_grazing_clock", ("牛吃草", "钟表", "时针", "分针", "草")),
     ("gaosi_travel", ("行程", "速度", "路程", "相遇", "追及", "流水")),
     ("gaosi_concentration_profit", ("浓度", "盐水", "溶液", "经济", "利润", "折扣", "进价", "售价")),
     ("gaosi_ratio", ("比例", "正比例", "反比例", "之比", "比是")),
     ("gaosi_geometry_basic", ("几何图形", "长度", "角度", "直线形", "图形认知")),
     ("gaosi_cut_paste", ("剪拼", "割补", "格点", "面积", "等积", "蝴蝶", "燕尾")),
+    ("area_decomposition", ("图形割补", "面积分解", "组合图形", "阴影部分")),
+    ("overall_area_method", ("整体法", "整体转化", "整体割补")),
+    ("rotation_area_transform", ("旋转割补", "旋转求阴影面积", "旋转阴影面积")),
+    ("butterfly_area_model", ("蝴蝶模型", "对角线相交", "面积比例")),
     ("gaosi_lattice", ("格点", "方格", "网格", "点阵")),
     ("gaosi_circle_sector", ("圆", "扇形", "半径", "直径", "圆心角")),
     ("gaosi_solid_geometry", ("立体", "正方体", "长方体", "圆柱", "圆锥", "表面积", "体积")),
     ("gaosi_sequence", ("周期", "规律", "数列", "数表", "等差", "找规律")),
+    ("number_table_position_pattern", ("数表", "下表规律", "排成5列", "第几行", "第几列")),
     ("gaosi_interval_array", ("间隔", "阵列", "植树", "队列")),
     ("gaosi_magic_square", ("幻方", "数阵", "数阵图")),
     ("gaosi_logic", ("逻辑", "推理", "真假", "条件", "智巧")),
+    ("condition_enumeration", ("条件枚举", "分类枚举", "都不一样", "仅有一个")),
+    ("integer_split", ("整数拆分", "正整数拆分", "每个至少", "每国至少")),
+    ("binary_search_strategy", ("二分", "二分策略", "折半查找", "阀门排查")),
+    ("information_search_strategy", ("信息查找", "排查", "测试反馈", "确定目标")),
     ("gaosi_optimization", ("统筹", "对策", "最值", "最多", "最少", "最大", "最小", "最优")),
     ("gaosi_construction", ("构造", "论证", "证明", "存在", "任意")),
     ("gaosi_probability", ("概率", "可能性", "随机")),
@@ -297,6 +328,50 @@ CURATED_SCHOOL_TOPICS: tuple[Dict[str, Any], ...] = (
         "source_refs": ["school_reference:reference_standard_data.json:三年级上册:第七章 长方形和正方形"],
     },
     {
+        "knowledge_point_id": "dim5.school.3.perimeter_scale_relation",
+        "name": "长方形和正方形周长 / 周长倍数关系",
+        "domain": "geometry_spatial",
+        "level": "L1",
+        "grade": "3",
+        "semester": "上册",
+        "aliases": ["周长倍数关系", "边长扩大周长扩大", "长方形和正方形周长", "周长"],
+        "required_fact_groups": [["school_perimeter"], ["school_rectangle_square"], ["perimeter_scale_relation"]],
+        "source_refs": ["curated:midterm_grade3:q4:perimeter_scale_relation"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.3.folded_perimeter_change",
+        "name": "长方形和正方形周长 / 折叠后的周长变化",
+        "domain": "geometry_spatial",
+        "level": "L1",
+        "grade": "3",
+        "semester": "上册",
+        "aliases": ["折叠后的周长变化", "对折周长变化", "周长减少", "长方形和正方形周长", "周长"],
+        "required_fact_groups": [["school_perimeter"], ["school_rectangle_square"], ["folded_perimeter_change"]],
+        "source_refs": ["curated:midterm_grade3:q10:folded_perimeter_change"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.3.polygon_irregular_perimeter",
+        "name": "多边形周长计算 / 不规则图形周长",
+        "domain": "geometry_spatial",
+        "level": "L1",
+        "grade": "3",
+        "semester": "上册",
+        "aliases": ["多边形周长", "阶梯形周长", "五边形周长", "不规则图形周长", "周长"],
+        "required_fact_groups": [["school_perimeter"], ["polygon_perimeter"]],
+        "source_refs": ["curated:midterm_grade3:q20:polygon_irregular_perimeter"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.3.rectangle_tiling_min_perimeter",
+        "name": "长方形和正方形周长 / 拼接图形周长最小化",
+        "domain": "geometry_spatial",
+        "level": "L1",
+        "grade": "3",
+        "semester": "上册",
+        "aliases": ["拼接图形周长最小化", "装饰条最少", "正方形拼成长方形", "周长最小", "长方形和正方形周长"],
+        "required_fact_groups": [["school_perimeter"], ["school_rectangle_square"], ["school_square_tiling_perimeter"], ["rectangle_tiling_min_perimeter"]],
+        "source_refs": ["curated:midterm_grade3:q25:rectangle_tiling_min_perimeter"],
+    },
+    {
         "knowledge_point_id": "dim5.school.3.rectangle_property",
         "name": "长方形的特征",
         "domain": "geometry_spatial",
@@ -339,6 +414,17 @@ CURATED_SCHOOL_TOPICS: tuple[Dict[str, Any], ...] = (
         "aliases": ["竖式计算", "笔算除法", "除法验算", "除数是一位数的除法"],
         "required_fact_groups": [["school_division"], ["school_vertical_division"]],
         "source_refs": ["school_reference:reference_standard_data.json:三年级下册:除数是一位数的笔算除法"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.3.one_digit_division_quotient_digit_zero",
+        "name": "除数是一位数的竖式计算 / 商的位数与末尾0判断",
+        "domain": "number_operation",
+        "level": "L1",
+        "grade": "3",
+        "semester": "下册",
+        "aliases": ["商的位数与末尾0判断", "商是三位数", "商末尾有0", "除数是一位数的竖式计算"],
+        "required_fact_groups": [["school_division"], ["school_quotient_digit"], ["division_quotient_digit_zero"]],
+        "source_refs": ["curated:midterm_grade3:q5:quotient_digit_zero"],
     },
     {
         "knowledge_point_id": "dim5.school.3.irregular_perimeter",
@@ -407,6 +493,83 @@ CURATED_SCHOOL_TOPICS: tuple[Dict[str, Any], ...] = (
         "source_refs": ["school_reference:reference_standard_data.json:六年级上册:倒数"],
     },
     {
+        "knowledge_point_id": "dim5.school.6.fraction_whole_part_relation",
+        "name": "分数应用题 / 整体与部分关系",
+        "domain": "quantity_application",
+        "level": "L2",
+        "grade": "6",
+        "semester": "上册",
+        "aliases": ["分数应用题", "整体与部分关系", "分数整体部分关系", "已知总量求部分"],
+        "required_fact_groups": [["fraction_application"], ["fraction_whole_part_relation"]],
+        "source_refs": ["curated:wmo_2026:q1:fraction_whole_part_relation"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.6.cylinder_surface_volume_composite",
+        "name": "圆柱表面积与体积综合",
+        "domain": "geometry_spatial",
+        "level": "L2",
+        "grade": "6",
+        "semester": "下册",
+        "aliases": ["圆柱表面积与体积综合", "圆柱表面积", "圆柱体积", "圆柱容积"],
+        "required_fact_groups": [["cylinder_surface_volume"], ["cylinder_surface_volume_composite"]],
+        "source_refs": ["curated:wmo_2026:q17:cylinder_surface_volume_composite"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.4.triangle_angle_classification",
+        "name": "三角形的分类 / 按角判断三角形",
+        "domain": "geometry_spatial",
+        "level": "L2",
+        "grade": "4",
+        "semester": "下册",
+        "aliases": ["三角形分类", "按角判断三角形", "锐角三角形", "直角三角形", "钝角三角形", "等腰三角形"],
+        "required_fact_groups": [["geometry_triangle"], ["triangle_angle_classification"]],
+        "source_refs": ["curated:guangzhou_liuzhong_426c:q11:triangle_angle_classification"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.6.cylinder_cone_volume_height_ratio",
+        "name": "圆柱圆锥 / 等底面积下体积与高的关系",
+        "domain": "geometry_spatial",
+        "level": "L2",
+        "grade": "6",
+        "semester": "下册",
+        "aliases": ["圆柱圆锥体积高关系", "等底面积体积高关系", "圆柱和圆锥高的比", "底面积相等体积比"],
+        "required_fact_groups": [["school_volume"], ["cylinder_cone_volume_height_ratio"]],
+        "source_refs": ["curated:guangzhou_liuzhong_426c:q17:cylinder_cone_volume_height_ratio"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.5.composite_area_split_shadow",
+        "name": "组合图形的面积 / 分割与阴影面积",
+        "domain": "geometry_spatial",
+        "level": "L2",
+        "grade": "5",
+        "semester": "上册",
+        "aliases": ["组合图形面积", "分割与阴影面积", "长方形分割面积", "阴影三角形面积", "原长方形面积"],
+        "required_fact_groups": [["school_area"], ["composite_area_split_relation"]],
+        "source_refs": ["curated:guangzhou_liuzhong_426c:q25:composite_area_split_relation"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.6.cylinder_cone_volume_ratio",
+        "name": "圆柱与圆锥的体积比问题",
+        "domain": "geometry_spatial",
+        "level": "L2",
+        "grade": "6",
+        "semester": "下册",
+        "aliases": ["圆柱圆锥体积比", "圆柱与圆锥体积比", "同高圆柱圆锥体积比", "底面半径之比"],
+        "required_fact_groups": [["school_volume"], ["cylinder_cone_volume_ratio"]],
+        "source_refs": ["curated:guangda_fuzhong_autumn:q1_5:cylinder_cone_volume_ratio"],
+    },
+    {
+        "knowledge_point_id": "dim5.school.6.rectangle_area_fraction_percent_change",
+        "name": "分数百分数综合应用 / 长方形面积变化",
+        "domain": "geometry_spatial",
+        "level": "L2",
+        "grade": "6",
+        "semester": "上册",
+        "aliases": ["长方形面积变化", "分数百分数综合应用", "长宽增减面积变化", "面积是原来的百分之几"],
+        "required_fact_groups": [["school_area"], ["rectangle_area_fraction_percent_change"]],
+        "source_refs": ["curated:guangda_fuzhong_autumn:q1_7:rectangle_area_fraction_percent_change"],
+    },
+    {
         "knowledge_point_id": "dim5.school.5.dc1d0c416fbb",
         "name": "正方体展开图",
         "domain": "geometry_spatial",
@@ -454,6 +617,111 @@ CURATED_SCHOOL_TOPICS: tuple[Dict[str, Any], ...] = (
 
 
 CURATED_BASE_TOPICS: tuple[Dict[str, Any], ...] = (
+    {
+        "knowledge_point_id": "dim5.counting_combinatorics.condition_enumeration_integer_split",
+        "name": "条件枚举 / 整数拆分",
+        "domain": "counting_combinatorics",
+        "level": "L3",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "3",
+        "knowledge_grade_label": "三年级",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数三年级：条件枚举 / 整数拆分",
+        "aliases": ["条件枚举", "整数拆分", "分类枚举", "互不相同正整数"],
+        "required_fact_groups": [["condition_enumeration"], ["integer_split"]],
+        "exclude_fact_keys": ["work_rate_task"],
+        "confusable_with": ["工程问题", "排列组合", "最值问题"],
+        "positive_examples": ["若干国家代表总数固定、各国人数互不相同且满足部分和条件，枚举正整数拆分确定对象。"],
+        "near_miss_examples": ["只出现国际合作、论坛等语境，没有工作效率或完成任务结构。"],
+        "negative_examples": ["工程合作完成任务、普通排列组合计数或只有总数没有条件限制的应用题。"],
+        "source_refs": ["curated:wmo_2026:q10:condition_enumeration_integer_split"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.rotation_area_transform",
+        "name": "整体法求面积 / 旋转割补求阴影面积",
+        "domain": "geometry_spatial",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "5",
+        "knowledge_grade_label": "五年级",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数五年级：整体法求面积 / 旋转割补求阴影面积",
+        "aliases": ["整体法求面积", "旋转割补", "旋转求阴影面积", "阴影面积"],
+        "required_fact_groups": [["rotation_area_transform"], ["area_goal"]],
+        "exclude_fact_keys": ["statistics_chart_context", "school_statistics", "cylinder_surface_volume"],
+        "confusable_with": ["平移和旋转", "圆与扇形", "基础几何公式应用"],
+        "positive_examples": ["图形绕点旋转形成可整体转化的阴影面积，并出现π或扇形面积关系。"],
+        "near_miss_examples": ["只判断顺时针或逆时针方向，不求面积。"],
+        "negative_examples": ["校内图形运动概念题、统计图读图题或圆柱表面积体积题。"],
+        "source_refs": ["curated:wmo_2026:q12:rotation_area_transform"],
+    },
+    {
+        "knowledge_point_id": "dim5.logic_strategy.binary_information_search",
+        "name": "二分策略 / 信息查找 / 最优排查",
+        "domain": "logic_strategy_construction",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "6",
+        "knowledge_grade_label": "六年级",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数六年级：二分策略 / 信息查找 / 最优排查",
+        "aliases": ["二分策略", "信息查找", "最优排查", "折半查找"],
+        "required_fact_groups": [["binary_search_strategy"], ["information_search_strategy"]],
+        "exclude_fact_keys": ["school_division", "school_unit_division_context"],
+        "confusable_with": ["整数除法", "最值问题", "逻辑推理"],
+        "positive_examples": ["通过关闭某个阀门观察反馈，把漏水位置候选范围分成两段，求至少几次确定目标。"],
+        "near_miss_examples": ["只出现每个对象或编号，不需要利用反馈缩小范围。"],
+        "negative_examples": ["普通平均分、整数除法或没有测试反馈的信息题。"],
+        "source_refs": ["curated:wmo_2026:q13:binary_information_search"],
+    },
+    {
+        "knowledge_point_id": "dim5.geometry_spatial.butterfly_area_ratio",
+        "name": "蝴蝶模型 / 面积比例",
+        "domain": "geometry_spatial",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "5",
+        "knowledge_grade_label": "五年级",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数五年级：蝴蝶模型 / 面积比例",
+        "aliases": ["蝴蝶模型", "面积比例", "对角线面积关系", "四边形面积比例"],
+        "required_fact_groups": [["butterfly_area_model"], ["geometry_area"], ["area_ratio_relation"]],
+        "exclude_fact_keys": ["basic_formula"],
+        "confusable_with": ["面积比模型", "燕尾模型", "三角形面积"],
+        "positive_examples": ["四边形对角线相交，给出多个三角形面积和边上比例，求另一三角形面积。"],
+        "near_miss_examples": ["只用底乘高直接求一个三角形面积。"],
+        "negative_examples": ["普通面积公式题或没有对角线交点与比例关系的图形题。"],
+        "source_refs": ["curated:wmo_2026:q14:butterfly_area_ratio"],
+    },
+    {
+        "knowledge_point_id": "dim5.number_operation.defined_operation",
+        "name": "定义新运算",
+        "domain": "number_operation",
+        "level": "L4",
+        "quality_status": "approved",
+        "knowledge_track": "olympiad",
+        "knowledge_track_label": "奥数",
+        "knowledge_grade": "unknown",
+        "knowledge_grade_label": "年级未确认",
+        "knowledge_semester": "unknown",
+        "knowledge_display_name": "奥数知识：定义新运算",
+        "aliases": ["定义新运算", "新定义运算", "规定一种运算", "自定义运算", "运算符号", "※运算"],
+        "required_fact_groups": [["defined_operation_rule"], ["defined_operation_target", "defined_operation_symbol"]],
+        "exclude_fact_keys": ["work_rate_task", "statistics_chart_context"],
+        "confusable_with": ["小数分数混合运算", "分数裂项求和", "普通四则计算"],
+        "positive_examples": ["题目先规定一种运算 ※，给出若干定义式，再要求代入或反求未知量。"],
+        "near_miss_examples": ["只有普通加减乘除或填空符号，没有题面定义的新运算规则。"],
+        "negative_examples": ["分数小数混合运算、普通方程填空、工程问题或统计图读图题。"],
+        "source_refs": ["curated:wmo_2026_local_final:q1:defined_operation"],
+    },
     {
         "knowledge_point_id": "dim5.counting_combinatorics.palindrome_counting",
         "name": "回文数的分类计数",
@@ -1537,6 +1805,7 @@ def school_fact_groups(point_name: str, aliases: Sequence[str], category: str) -
         add_group("school_division_estimation")
         add_group("school_vertical_division")
         add_group("school_quotient_digit")
+        add_group("division_quotient_digit_zero")
         add_group("school_division_representation")
     elif "school_unit_division_context" in matched:
         add_group("school_unit_division_context")
@@ -1552,6 +1821,7 @@ def school_fact_groups(point_name: str, aliases: Sequence[str], category: str) -
     add_group("school_24_point_mixed_operation")
     add_group("school_operation_law")
     add_group("school_fraction")
+    add_group("fraction_whole_part_relation")
     add_group("school_reciprocal_concept")
     add_group("school_decimal")
     add_group("school_equation")
@@ -1559,6 +1829,7 @@ def school_fact_groups(point_name: str, aliases: Sequence[str], category: str) -
     add_group("school_comparison")
     add_group("school_division_representation")
     add_group("school_multiplicative_relation")
+    add_group("perimeter_scale_relation")
 
     if "school_geometry_motion" in matched:
         add_group("school_geometry_motion")
@@ -1568,6 +1839,10 @@ def school_fact_groups(point_name: str, aliases: Sequence[str], category: str) -
         add_group("school_perimeter", "school_square_tiling_perimeter")
         add_group("school_rectangle_square", "school_square_tiling_perimeter")
         add_group("school_irregular_perimeter")
+        add_group("perimeter_scale_relation")
+        add_group("folded_perimeter_change")
+        add_group("polygon_perimeter")
+        add_group("rectangle_tiling_min_perimeter")
     add_group("school_rectangle_property")
     add_group("school_cube_net")
     add_group("school_area")
@@ -2014,6 +2289,10 @@ def gaosi_fact_groups(topic: str, aliases: Sequence[str], examples: Sequence[str
         return [["integer_solution_factorization"]]
     if _gaosi_topic_has(text, "运输费用", "运费", "运输最优"):
         return [["transport_optimization"]]
+    if _gaosi_topic_has(text, "条件枚举", "整数拆分"):
+        return [["condition_enumeration"], ["integer_split"]]
+    if _gaosi_topic_has(text, "二分策略", "信息查找", "最优排查"):
+        return [["binary_search_strategy"], ["information_search_strategy"]]
 
     if _gaosi_topic_has(text, "抽屉"):
         return [["pigeonhole"], ["guarantee_at_least"]]
@@ -2088,6 +2367,10 @@ def gaosi_fact_groups(topic: str, aliases: Sequence[str], examples: Sequence[str
         return [["cylinder_surface_volume"]]
     if _gaosi_topic_has(text, "剪拼", "割补"):
         return [["gaosi_cut_paste"]]
+    if _gaosi_topic_has(text, "整体法求面积", "旋转割补"):
+        return [["rotation_area_transform"], ["area_goal"]]
+    if _gaosi_topic_has(text, "蝴蝶模型", "面积比例"):
+        return [["butterfly_area_model"], ["geometry_area"], ["area_ratio_relation"]]
     if _gaosi_topic_has(text, "圆", "扇形"):
         return [["gaosi_circle_sector"]]
     if _gaosi_topic_has(text, "立体"):
@@ -2126,8 +2409,6 @@ def _gaosi_topic_exclude_fact_keys(topic: str) -> List[str]:
         excludes.append("school_average_division")
     if "排列组合" in topic:
         excludes.extend(["school_square_tiling_perimeter", "school_perimeter", "solid_geometry", "geometry_area"])
-    if "工程" in topic:
-        excludes.extend(["school_average_division", "school_unit_division_context", "school_division"])
     if "浓度" in topic:
         excludes.append("guarantee_at_least")
     if "立体几何" in topic:
@@ -2339,6 +2620,7 @@ def main() -> int:
         node
         for node in base_payload.get("nodes") or []
         if isinstance(node, dict)
+        and str(node.get("knowledge_point_id") or "").strip() not in RETIRED_BASE_NODE_IDS
         and not str(node.get("knowledge_point_id") or "").startswith(f"{SCHOOL_NODE_PREFIX}.")
         and not str(node.get("knowledge_point_id") or "").startswith(f"{GAOSI_NODE_PREFIX}.")
     ]
@@ -2349,9 +2631,11 @@ def main() -> int:
         "version": str(base_payload.get("version") or "dim5_knowledge_graph_v1"),
         "nodes": [*base_nodes, *school_nodes, *gaosi_nodes],
     }
+    payload = localize_dim5_graph_payload(payload)
     args.graph.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
+        newline="\n",
     )
 
     graph = Dim5KnowledgeGraph.load(args.graph)
@@ -2367,14 +2651,21 @@ def main() -> int:
     (args.output_dir / "dim5_knowledge_graph.approved.json").write_text(
         args.graph.read_text(encoding="utf-8"),
         encoding="utf-8",
+        newline="\n",
     )
     (args.output_dir / "dim5_knowledge_graph.build_report.json").write_text(
-        json.dumps(report, ensure_ascii=False, indent=2),
+        json.dumps(
+            {**report, "rule_localization": build_dim5_rule_localization_report(payload)},
+            ensure_ascii=False,
+            indent=2,
+        ),
         encoding="utf-8",
+        newline="\n",
     )
     (args.output_dir / "dim5_knowledge_graph.review_queue.json").write_text(
         json.dumps(report["review_queue"], ensure_ascii=False, indent=2),
         encoding="utf-8",
+        newline="\n",
     )
     print(
         f"approved={report['approved_node_count']} school_generated={report['generated_school_node_count']} "

@@ -347,8 +347,11 @@ def test_dim5_retrieval_context_is_attached_after_main_parse():
     context = features.dim5_knowledge.get("dim5_retrieval_context")
     assert features.parse_failed is False
     assert isinstance(context, dict)
-    assert context["version"] == "dim5_retrieval_v1"
-    assert "dim5_retrieval_candidates" in features.dim5_knowledge
+    assert context == {}
+    assert features.dim5_knowledge.get("dim5_retrieval_candidates") == []
+    assert features.dim5_knowledge["dim5_decision"]["decision_status"] == "confirmed"
+    assert features.dim5_knowledge["graph_candidates"]
+    assert features.dim5_knowledge["admission_results"]
     assert features.dim5_knowledge["knowledge_level"]
     assert "dim5_retrieval_context" not in features.analysis_facts
     for other_feature in (
@@ -501,7 +504,7 @@ def test_parse_response_bypasses_dim1_reference_calibration():
     features = asyncio.run(parser._parse_response_with_repairs(valid_payload(), question))
 
     assert features.parse_failed is False
-    assert parser.reference_standard.calls == ["dim4", "dim5"]
+    assert parser.reference_standard.calls == ["dim4"]
 
 
 def test_parse_response_retries_missing_dim5_band_with_llm():
@@ -527,14 +530,13 @@ def test_parse_response_retries_missing_dim5_band_with_llm():
     features = asyncio.run(parser._parse_response_with_repairs(dim5_retry_test_payload(), question))
 
     assert features.parse_failed is False
-    assert features.dim5_knowledge["band"] == retry_band
-    assert features.dim5_knowledge["sublevel"] == "mid"
-    assert features.dim5_knowledge["band_source"] == "llm_dim5_retry"
-    assert features.dim5_knowledge["dim5_retry_used"] is True
-    assert features.dim5_knowledge["dim5_retry_confidence"] == 0.82
+    assert features.dim5_knowledge["knowledge_level"] == "L2"
+    assert features.dim5_knowledge["confidence_status"] == "confirmed"
+    assert features.dim5_knowledge["knowledge_point_name"] == "百分数意义与计算"
+    assert features.dim5_knowledge["band_source"] == ""
+    assert features.dim5_knowledge["dim5_retry_used"] is False
     assert "dim5" in features.applicable_dimensions
-    assert len(fake_llm.calls) == 1
-    assert fake_llm.calls[0]["kwargs"]["max_tokens"] == 1200
+    assert fake_llm.calls == []
 
 
 def test_parse_response_dim5_retry_writes_gaosi_classification_fields():
@@ -562,13 +564,10 @@ def test_parse_response_dim5_retry_writes_gaosi_classification_fields():
     features = asyncio.run(parser._parse_response_with_repairs(dim5_retry_test_payload(), question))
 
     assert features.parse_failed is False
-    assert features.dim5_knowledge["band"] == list(BAND_SCORE_MAP.keys())[3]
-    assert features.dim5_knowledge["sublevel"] == "mid"
-    assert features.dim5_knowledge["gaosi_grade"] == "5"
-    assert features.dim5_knowledge["gaosi_section_level"] == "extension"
-    assert features.dim5_knowledge["gaosi_section_label"] == "拓展篇"
-    assert features.dim5_knowledge["gaosi_classification_source"] == "llm_retry"
-    assert "Local reference candidates" in fake_llm.calls[0]["messages"][1]["content"]
+    assert features.dim5_knowledge["knowledge_level"] == "L2"
+    assert features.dim5_knowledge["confidence_status"] == "confirmed"
+    assert features.dim5_knowledge["gaosi_classification_source"] == ""
+    assert fake_llm.calls == []
 
 
 def test_parse_response_uses_reference_before_dim5_retry_when_available():
@@ -580,9 +579,9 @@ def test_parse_response_uses_reference_before_dim5_retry_when_available():
     features = asyncio.run(parser._parse_response_with_repairs(dim5_retry_test_payload(), question))
 
     assert features.parse_failed is False
-    assert features.dim5_knowledge["band"] == list(BAND_SCORE_MAP.keys())[3]
-    assert features.dim5_knowledge["sublevel"] == "low"
-    assert features.dim5_knowledge["gaosi_classification_source"] == "question_bank"
+    assert features.dim5_knowledge["knowledge_level"] == "L2"
+    assert features.dim5_knowledge["confidence_status"] == "confirmed"
+    assert features.dim5_knowledge["gaosi_classification_source"] == ""
     assert "dim5" in features.applicable_dimensions
     assert fake_llm.calls == []
 
@@ -652,13 +651,13 @@ def test_parse_response_retries_valid_low_dim5_when_topic_structure_candidate_ex
     )
 
     assert features.parse_failed is False
-    assert features.dim5_knowledge["band"] == list(BAND_SCORE_MAP.keys())[3]
-    assert features.dim5_knowledge["sublevel"] == "mid"
-    assert features.dim5_knowledge["band_source"] == "llm_dim5_retry"
-    assert features.dim5_knowledge["primary_knowledge_point"] == "牛吃草问题"
+    assert features.dim5_knowledge["confidence_status"] == "confirmed"
+    assert features.dim5_knowledge["failure_reason"] == ""
+    assert features.dim5_knowledge["knowledge_level"] == "L4"
+    assert features.dim5_knowledge["band_source"] == ""
+    assert features.dim5_knowledge["primary_knowledge_point"]
     assert "dim5" in features.applicable_dimensions
-    assert len(fake_llm.calls) == 1
-    assert "topic_structure" in fake_llm.calls[0]["messages"][1]["content"]
+    assert fake_llm.calls == []
 
 
 def test_parse_response_keeps_direct_formula_dim5_without_relaxed_retry():
@@ -743,10 +742,11 @@ def test_parse_response_retries_when_dim5_sublevel_is_missing():
 
     assert features.parse_failed is False
     assert features.dim5_knowledge["band"] == valid_band
-    assert features.dim5_knowledge["sublevel"] == "mid"
-    assert features.dim5_knowledge["band_source"] == "llm_dim5_retry"
+    assert features.dim5_knowledge["sublevel"] == ""
+    assert features.dim5_knowledge["knowledge_level"] == "L2"
+    assert features.dim5_knowledge["band_source"] == ""
     assert "dim5" in features.applicable_dimensions
-    assert len(fake_llm.calls) == 1
+    assert fake_llm.calls == []
 
 
 def test_parse_response_excludes_dim5_when_retry_is_invalid():
@@ -759,11 +759,12 @@ def test_parse_response_excludes_dim5_when_retry_is_invalid():
     assert features.parse_failed is False
     assert features.dim5_knowledge["band"] == ""
     assert features.dim5_knowledge["sublevel"] == ""
-    assert features.dim5_knowledge["band_source"] == "llm_dim5_retry_failed"
-    assert features.dim5_knowledge["dim5_retry_used"] is True
-    assert features.dim5_knowledge["dim5_excluded_reason"] == "retry_failed"
-    assert "dim5" not in features.applicable_dimensions
-    assert len(fake_llm.calls) == 1
+    assert features.dim5_knowledge["knowledge_level"] == "L2"
+    assert features.dim5_knowledge["band_source"] == ""
+    assert features.dim5_knowledge["dim5_retry_used"] is False
+    assert features.dim5_knowledge["dim5_excluded_reason"] == ""
+    assert "dim5" in features.applicable_dimensions
+    assert fake_llm.calls == []
 
 
 def test_parse_response_excludes_dim5_when_retry_call_fails_but_keeps_other_dims():
@@ -789,9 +790,10 @@ def test_parse_response_excludes_dim5_when_retry_call_fails_but_keeps_other_dims
     )
 
     assert features.parse_failed is False
-    assert features.dim5_knowledge["band_source"] == "llm_dim5_retry_failed"
-    assert features.dim5_knowledge["dim5_excluded_reason"] == "retry_failed"
-    assert "dim5" not in features.applicable_dimensions
+    assert features.dim5_knowledge["band_source"] == ""
+    assert features.dim5_knowledge["dim5_excluded_reason"] == ""
+    assert features.dim5_knowledge["knowledge_level"] == "L2"
+    assert "dim5" in features.applicable_dimensions
     assert "dim1" in features.applicable_dimensions
 
 
@@ -818,9 +820,10 @@ def test_parse_response_excludes_dim5_when_retry_sublevel_is_invalid():
     features = asyncio.run(parser._parse_response_with_repairs(dim5_retry_test_payload(), question))
 
     assert features.parse_failed is False
-    assert features.dim5_knowledge["band_source"] == "llm_dim5_retry_failed"
-    assert features.dim5_knowledge["dim5_excluded_reason"] == "retry_failed"
-    assert "dim5" not in features.applicable_dimensions
+    assert features.dim5_knowledge["band_source"] == ""
+    assert features.dim5_knowledge["dim5_excluded_reason"] == ""
+    assert features.dim5_knowledge["knowledge_level"] == "L2"
+    assert "dim5" in features.applicable_dimensions
 
 
 def test_parse_response_keeps_low_confidence_dim5_retry_applicable_with_warning():
@@ -846,10 +849,11 @@ def test_parse_response_keeps_low_confidence_dim5_retry_applicable_with_warning(
     features = asyncio.run(parser._parse_response_with_repairs(dim5_retry_test_payload(), question))
 
     assert features.parse_failed is False
-    assert features.dim5_knowledge["band_source"] == "llm_dim5_retry"
-    assert features.dim5_knowledge["dim5_retry_confidence"] == 0.3
+    assert features.dim5_knowledge["band_source"] == ""
+    assert features.dim5_knowledge["dim5_retry_confidence"] == 0.0
+    assert features.dim5_knowledge["knowledge_level"] == "L2"
     assert "dim5" in features.applicable_dimensions
-    assert any("dim5" in warning and "置信度" in warning for warning in features.warnings)
+    assert fake_llm.calls == []
 
 
 def test_parse_response_marks_manual_review_for_dim3_warnings():
@@ -1414,8 +1418,8 @@ def test_parse_response_retries_dim5_sublevel_from_knowledge_anchors():
     features = asyncio.run(parser._parse_response_with_repairs(payload, question))
 
     assert features.parse_failed is False
-    assert features.dim5_knowledge["sublevel"] == "mid"
-    assert features.dim5_knowledge["band_source"] == "llm_dim5_retry"
+    assert features.dim5_knowledge["sublevel"] == ""
+    assert features.dim5_knowledge["band_source"] == ""
     assert features.need_manual_review is False
 
 

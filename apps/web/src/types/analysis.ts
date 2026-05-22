@@ -81,6 +81,7 @@ export interface DifficultyPosition {
   level: number;
   label: string;
   overall_score: number;
+  position_summary?: string;
   target_students: string;
   description: string;
   parent_summary?: string[];

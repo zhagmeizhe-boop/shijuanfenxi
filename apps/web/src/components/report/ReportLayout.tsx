@@ -6,8 +6,8 @@ import { PDFExportButton } from '@/components/report/PDFExportButton';
 import { SixDimensionsRadar } from '@/components/report/SixDimensionsRadar';
 import {
   formatScore,
-  getDifficultyTargetStudents,
   getDifficultyLabel,
+  getDifficultyPositionSummary,
 } from '@/components/report/reportMeta';
 import './ReportTheme.css';
 
@@ -33,9 +33,11 @@ export function ReportLayout({ reportData, exportId, onBack }: ReportLayoutProps
     reportData.difficulty_position.level,
     reportData.difficulty_position.label,
   );
-  const targetStudents = getDifficultyTargetStudents(
+  const positionSummary = getDifficultyPositionSummary(
     reportData.difficulty_position.level,
-    reportData.difficulty_position.target_students,
+    reportData.difficulty_position.position_summary ||
+      reportData.difficulty_position.description ||
+      reportData.difficulty_position.target_students,
   );
   const pdfExportId = exportId || reportData.paper_id || reportData.report_id;
 
@@ -70,12 +72,12 @@ export function ReportLayout({ reportData, exportId, onBack }: ReportLayoutProps
               <strong>{overallLevel}</strong>
             </div>
             <div className="report-overview-item">
-              <span>综合分</span>
+              <span>试卷难度综合分</span>
               <strong>{formatScore(reportData.difficulty_position.overall_score)} / 10</strong>
             </div>
             <div className="report-overview-item">
-              <span>目标学生</span>
-              <strong>{targetStudents}</strong>
+              <span>试卷定位</span>
+              <strong>{positionSummary}</strong>
             </div>
           </div>
         </header>

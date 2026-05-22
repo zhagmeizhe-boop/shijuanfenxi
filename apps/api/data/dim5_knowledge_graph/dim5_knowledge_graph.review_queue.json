@@ -942,12 +942,6 @@
     "source_file": "reference_standard_data.json"
   },
   {
-    "term": "直角三角形内角和",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
     "term": "等腰三角形内角和",
     "frequency": 1,
     "reason": "missing_structural_rule",
@@ -1968,12 +1962,6 @@
     "source_file": "dim2_geometry_knowledge_base.json"
   },
   {
-    "term": "直角三角形内角和",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "dim2_geometry_knowledge_base.json"
-  },
-  {
     "term": "等腰三角形内角和",
     "frequency": 1,
     "reason": "missing_structural_rule",
@@ -2853,6 +2841,16 @@
   },
   {
     "term": "计算问题第11讲",
+    "frequency": 8,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "应用题第17讲",
+    "frequency": 8,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "组合问题第8讲",
     "frequency": 8,
     "reason": "needs_structure_split_before_approval"
   }

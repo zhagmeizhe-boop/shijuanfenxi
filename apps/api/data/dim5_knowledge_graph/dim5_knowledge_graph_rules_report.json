@@ -1,0 +1,3009 @@
+{
+  "node_count": 913,
+  "required_structures_coverage": 913,
+  "fact_extraction_hints_coverage": 913,
+  "negative_hints_coverage": 913,
+  "chinese_rule_coverage": 913,
+  "english_template_residue_count": 0,
+  "english_template_nodes": [],
+  "low_quality_rule_count": 0,
+  "low_quality_rule_nodes": [],
+  "high_risk_rule_summary": [
+    {
+      "knowledge_point_id": "dim5.number_theory.factor_multiple_prime",
+      "name": "因数倍数与质合数",
+      "required_structures": [
+        [
+          "number_theory_factor_multiple"
+        ],
+        [
+          "integer_constraint"
+        ]
+      ],
+      "supporting_structures": [
+        "divisibility_rule",
+        "gaosi_divisibility"
+      ],
+      "exclude_structures": [
+        "calculation_numeric_expression",
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "乘法分配律与简便计算",
+        "数字性质中9的倍数判定",
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「因数倍数与质合数」的结构证据。必须命中这些结构组：第1组 number_theory_factor_multiple（因数、倍数、约数、公倍数、公因数等数论结构）；第2组 integer_constraint（整数、自然数、正整数或整除条件限制）。别名线索只作为辅助，不可单独准入：因数、倍数、质数、合数、约数、整除。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「因数倍数与质合数」：calculation_numeric_expression（明确的数值算式、计算式或运算表达式）；decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「因数倍数与质合数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「因数倍数与质合数」：纯小数分数四则运算；小数简便计算中出现相似数字片段",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.quantity_application.grazing",
+      "name": "牛吃草模型",
+      "required_structures": [
+        [
+          "resource_growth",
+          "growth_consumption"
+        ],
+        [
+          "resource_consumption"
+        ],
+        [
+          "resource_time_or_initial"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_grazing_clock"
+      ],
+      "exclude_structures": [
+        "motion_task",
+        "geometry_rotation",
+        "statistics_chart_context",
+        "clock_face",
+        "clock_hands_relation"
+      ],
+      "confusable_with": [
+        "工程效率问题",
+        "比例整体关系",
+        "钟表问题",
+        "比例应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「牛吃草模型」的结构证据。必须命中这些结构组：第1组 resource_growth（草量、人流、水量等资源随时间增长或流入） / growth_consumption（同一问题中同时存在增长和消耗过程）；第2组 resource_consumption（牛吃草、检票、抽水等资源被消耗或流出）；第3组 resource_time_or_initial（出现原有量、每天、几天、吃完、时间或初始量条件）。别名线索只作为辅助，不可单独准入：牛吃草、增长消耗、排队检票、水池进出水、原有草量。每个结构标签都要能回溯到题干原文或图片证据。",
+        "牛吃草准入必须同时识别 resource_growth（增长/生长/流入）、resource_consumption（消耗/吃完/流出）和 resource_time_or_initial（时间/每天/原有量）。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「牛吃草模型」：motion_task（行程、相遇、追及、流水、同向/相向运动等行程问题结构）；geometry_rotation（图形绕点或绕中心旋转、转动、旋转后位置变化）；statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）；clock_face（真实钟面、表盘或时钟刻度结构）；clock_hands_relation（时针、分针之间的追及、重合、夹角或位置关系）",
+        "不要只凭关键词、章节名、别名或来源标签确认「牛吃草模型」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「牛吃草模型」：没有资源自然增长的工作效率问题；普通工程合作完成任务",
+        "只有“牛吃草”标题或单独出现牛、草、吃等词，不确认牛吃草；必须有增长 + 消耗 + 时间/原有量三类结构。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.quantity_application.profit_discount",
+      "name": "利润折扣问题",
+      "required_structures": [
+        [
+          "profit_discount"
+        ],
+        [
+          "price_profit_relation"
+        ],
+        [
+          "profit_discount",
+          "price_profit_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "percent_calculation"
+      ],
+      "exclude_structures": [
+        "concentration_task",
+        "statistics_chart_context"
+      ],
+      "confusable_with": [
+        "浓度问题",
+        "比例百分数应用",
+        "百分数意义与计算",
+        "比例应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「利润折扣问题」的结构证据。必须命中这些结构组：第1组 profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；第2组 price_profit_relation（价格、成本、售价、利润、利润率之间的数量关系）；第3组 profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构） / price_profit_relation（价格、成本、售价、利润、利润率之间的数量关系）。别名线索只作为辅助，不可单独准入：利润、折扣、进价、售价、标价、获利。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「利润折扣问题」：concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）；statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）",
+        "不要只凭关键词、章节名、别名或来源标签确认「利润折扣问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「利润折扣问题」：统计占比的普通百分数题；盐水浓度百分比变化",
+        "只有百分号或比例词但没有进价、售价、标价、利润、折扣等商业关系时，不确认利润折扣。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.quantity_application.ratio_whole_relation",
+      "name": "比例整体关系",
+      "required_structures": [
+        [
+          "ratio_relation"
+        ],
+        [
+          "whole_part_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "proportion_application",
+        "percent_calculation"
+      ],
+      "exclude_structures": [
+        "concentration_task",
+        "profit_discount"
+      ],
+      "confusable_with": [
+        "浓度问题",
+        "利润折扣问题",
+        "百分数意义与计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「比例整体关系」的结构证据。必须命中这些结构组：第1组 ratio_relation（比、比例、按比例分配、几比几等数量关系）；第2组 whole_part_relation（整体与部分、总量与分量之间的关系）。别名线索只作为辅助，不可单独准入：比例整体关系、部分与整体、比是、之比、总量。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「比例整体关系」：concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）；profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）",
+        "不要只凭关键词、章节名、别名或来源标签确认「比例整体关系」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「比例整体关系」：只有一个普通百分数计算；盐水浓度百分比、商品利润率",
+        "只有冒号、百分号或“比”字但没有两个或多个数量之间的比例关系时，不确认比例应用。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.pattern_sequence.period_sequence",
+      "name": "周期规律",
+      "required_structures": [
+        [
+          "sequence_pattern"
+        ],
+        [
+          "period_position"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "fraction_series",
+        "number_theory_factor_multiple"
+      ],
+      "confusable_with": [
+        "分数裂项求和",
+        "因数倍数与质合数",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「周期规律」的结构证据。必须命中这些结构组：第1组 sequence_pattern（周期、循环、数列、图形排列、按规律变化等结构）；第2组 period_position（用周期或余数定位第 n 项、某一天、某个位置）。别名线索只作为辅助，不可单独准入：周期问题、循环规律、按规律排列、第n项、余数定位。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「周期规律」：fraction_series（长链分数、分式数列或分数求和结构）；number_theory_factor_multiple（因数、倍数、约数、公倍数、公因数等数论结构）",
+        "不要只凭关键词、章节名、别名或来源标签确认「周期规律」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「周期规律」：纯整除判定；长链分式求和",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.number_theory.digit_divisibility",
+      "name": "数字性质中9的倍数判定",
+      "required_structures": [
+        [
+          "digit_property"
+        ],
+        [
+          "divisibility_rule"
+        ]
+      ],
+      "supporting_structures": [
+        "integer_constraint",
+        "gaosi_divisibility",
+        "number_theory_factor_multiple"
+      ],
+      "exclude_structures": [
+        "reverse_surplus",
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "还原与盈亏问题",
+        "因数倍数与质合数",
+        "数字谜",
+        "乘法分配律与简便计算",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「数字性质中9的倍数判定」的结构证据。必须命中这些结构组：第1组 digit_property（数位、个位、十位、百位、数字和或数位交换性质）；第2组 divisibility_rule（利用末位、数字和、拆分、倍数特征判断整除）。别名线索只作为辅助，不可单独准入：数字和、9的倍数、数位和、删去数字、整除性质。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「数字性质中9的倍数判定」：reverse_surplus（程序内部结构标签，需要从题干或图片中找到可回溯证据）；decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「数字性质中9的倍数判定」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「数字性质中9的倍数判定」：没有数位和或整除规则的盈亏题；普通倒推还原题",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.number_theory.square_difference_odd",
+      "name": "连续奇数平方差与整除",
+      "required_structures": [
+        [
+          "square_difference_odd"
+        ]
+      ],
+      "supporting_structures": [
+        "integer_constraint",
+        "divisibility_rule",
+        "gaosi_divisibility",
+        "number_theory_factor_multiple"
+      ],
+      "exclude_structures": [
+        "school_comparison",
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数的大小比较",
+        "简单规律与数列",
+        "数字谜",
+        "乘法分配律与简便计算",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「连续奇数平方差与整除」的结构证据。必须命中这些结构组：第1组 square_difference_odd（程序内部结构标签，需要从题干或图片中找到可回溯证据）。别名线索只作为辅助，不可单独准入：连续奇数平方差、平方数差、整除性判断、新定义数论。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「连续奇数平方差与整除」：school_comparison（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「连续奇数平方差与整除」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「连续奇数平方差与整除」：没有平方差、连续奇数或整除约束的普通数感题。；只比较两个数大小或只填不等号。",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.number_theory.digit_swap_multiple",
+      "name": "数位交换成倍数数字谜",
+      "required_structures": [
+        [
+          "digit_swap_multiple"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "school_comparison",
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "整数除法",
+        "数字谜综合",
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「数位交换成倍数数字谜」的结构证据。必须命中这些结构组：第1组 digit_swap_multiple（数位、整数、整除、因数倍数或数论性质）。别名线索只作为辅助，不可单独准入：数位交换、交换数字后成倍数、位值制、数字谜。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「数位交换成倍数数字谜」：school_comparison（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「数位交换成倍数数字谜」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「数位交换成倍数数字谜」：没有数位交换和倍数关系的普通数字题。；只交换两位数后比较大小。",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.pattern_sequence.periodic_grid",
+      "name": "周期格子与数表规律",
+      "required_structures": [
+        [
+          "periodic_grid"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "包含与排除",
+        "简单规律与数列",
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「周期格子与数表规律」的结构证据。必须命中这些结构组：第1组 periodic_grid（周期、数列、图形或等式规律结构）。别名线索只作为辅助，不可单独准入：周期格子、数表周期、方格周期、周期规律。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「周期格子与数表规律」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「周期格子与数表规律」：没有周期重复和位置索引的普通找规律题。；只做普通等差数列求项。",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.pattern_sequence.equation_pattern_generalization",
+      "name": "等式规律与公式递推",
+      "required_structures": [
+        [
+          "sequence_pattern"
+        ],
+        [
+          "calculation_numeric_expression"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "school_division"
+      ],
+      "confusable_with": [
+        "四则混合运算",
+        "简单规律与数列",
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「等式规律与公式递推」的结构证据。必须命中这些结构组：第1组 sequence_pattern（周期、循环、数列、图形排列、按规律变化等结构）；第2组 calculation_numeric_expression（明确的数值算式、计算式或运算表达式）。别名线索只作为辅助，不可单独准入：观察等式、第n个等式、写出第n个算式、等式规律、公式递推。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「等式规律与公式递推」：school_division（除法、被除数、除数、商、余数或平均分计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「等式规律与公式递推」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「等式规律与公式递推」：普通四则混合运算或没有归纳第n项的计算题。；只计算一个给定算式的结果。",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.statistics_chart_comprehensive",
+      "name": "统计图综合",
+      "required_structures": [
+        [
+          "school_statistics"
+        ],
+        [
+          "statistics_chart_context"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "geometry_area"
+      ],
+      "confusable_with": [
+        "圆与扇形",
+        "平均数",
+        "百分数意义与计算",
+        "利润折扣问题",
+        "浓度问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「统计图综合」的结构证据。必须命中这些结构组：第1组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；第2组 statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）。别名线索只作为辅助，不可单独准入：统计图综合、条形统计图、扇形统计图、百分比人数换算、圆心角与比例。每个结构标签都要能回溯到题干原文或图片证据。",
+        "扇形统计图/统计图综合准入必须命中 statistics_chart_context（统计图或统计表读图场景），并优先识别百分比、人数、圆心角或占比换算。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「统计图综合」：geometry_area（几何面积计算、面积关系、阴影面积或割补面积）",
+        "不要只凭关键词、章节名、别名或来源标签确认「统计图综合」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「统计图综合」：普通圆与扇形面积、周长计算，或只出现平均数而没有统计图读图任务。；只根据圆或扇形图形求几何面积，不涉及统计图数据。",
+        "如果题目目标是几何阴影面积、弧长或圆与扇形公式计算，而不是统计图读图，不确认统计图知识点。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.3.average_division",
+      "name": "平均分应用",
+      "required_structures": [
+        [
+          "school_average_division"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "平均分应用",
+        "统计图综合"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「平均分应用」的结构证据。必须命中这些结构组：第1组 school_average_division（平均分、每份一样多、按人数或组数平均分配）。别名线索只作为辅助，不可单独准入：平均分、平均问题、普通除法应用、除法中求平均问题。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「平均分应用」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「平均分应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「平均分应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“平均分应用”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.prime_factorization",
+      "name": "质因数分解",
+      "required_structures": [
+        [
+          "school_prime_factorization"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "pigeonhole",
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「质因数分解」的结构证据。必须命中这些结构组：第1组 school_prime_factorization（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分解质因数、质因数、短除法、所有质因数。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「质因数分解」：pigeonhole（抽屉原理、最不利情况、保证至少相同）；decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「质因数分解」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「质因数分解」：宽泛章节名、来源标签或没有结构证据的题目；只出现“质因数分解”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.3.12f9bf9c7493",
+      "name": "平均数问题初步",
+      "required_structures": [
+        [
+          "school_average_division"
+        ],
+        [
+          "school_statistics"
+        ],
+        [
+          "school_average_division",
+          "gaosi_average"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "统计图综合",
+        "工程效率问题",
+        "平均分应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「平均数问题初步」的结构证据。必须命中这些结构组：第1组 school_average_division（平均分、每份一样多、按人数或组数平均分配）；第2组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；第3组 school_average_division（平均分、每份一样多、按人数或组数平均分配） / gaosi_average（平均数、总数除以份数、平均量反推或基准数法）。别名线索只作为辅助，不可单独准入：平均数问题初步、三阶、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「平均数问题初步」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「平均数问题初步」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「平均数问题初步」：宽泛章节名、来源标签或没有结构证据的题目；只出现“平均数问题初步”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.3.c645edd9302a",
+      "name": "添加或减少数量，满足倍数关系",
+      "required_structures": [
+        [
+          "school_multiplicative_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「添加或减少数量，满足倍数关系」的结构证据。必须命中这些结构组：第1组 school_multiplicative_relation（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：倍的认识、添加或减少数量满足倍数关系、添加或减少数量、满足倍数关系、三年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「添加或减少数量，满足倍数关系」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「添加或减少数量，满足倍数关系」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「添加或减少数量，满足倍数关系」：宽泛章节名、来源标签或没有结构证据的题目；只出现“添加或减少数量，满足倍数关系”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.3.ae50cd45028d",
+      "name": "求给后的倍数关系",
+      "required_structures": [
+        [
+          "school_multiplicative_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「求给后的倍数关系」的结构证据。必须命中这些结构组：第1组 school_multiplicative_relation（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：倍的认识、求给后的倍数关系、三年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「求给后的倍数关系」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「求给后的倍数关系」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「求给后的倍数关系」：宽泛章节名、来源标签或没有结构证据的题目；只出现“求给后的倍数关系”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.3.6fa7783ff816",
+      "name": "找倍数关系的规律求数量",
+      "required_structures": [
+        [
+          "school_multiplicative_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算",
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「找倍数关系的规律求数量」的结构证据。必须命中这些结构组：第1组 school_multiplicative_relation（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：倍的认识、找倍数关系的规律求数量、三年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「找倍数关系的规律求数量」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「找倍数关系的规律求数量」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「找倍数关系的规律求数量」：宽泛章节名、来源标签或没有结构证据的题目；只出现“找倍数关系的规律求数量”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.3.0e625f6dc00e",
+      "name": "画辅助线解决图形平均分问题",
+      "required_structures": [
+        [
+          "school_division"
+        ],
+        [
+          "school_average_division"
+        ],
+        [
+          "school_fraction"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "平均分应用",
+        "统计图综合"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「画辅助线解决图形平均分问题」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）；第2组 school_average_division（平均分、每份一样多、按人数或组数平均分配）；第3组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的初步认识、画辅助线解决图形平均分问题、三年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「画辅助线解决图形平均分问题」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「画辅助线解决图形平均分问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「画辅助线解决图形平均分问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“画辅助线解决图形平均分问题”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.3.556fe7fc8308",
+      "name": "除数是一位数的除法中求平均问题",
+      "required_structures": [
+        [
+          "school_division"
+        ],
+        [
+          "school_average_division"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "平均分应用",
+        "统计图综合"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「除数是一位数的除法中求平均问题」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）；第2组 school_average_division（平均分、每份一样多、按人数或组数平均分配）。别名线索只作为辅助，不可单独准入：除数是一位数的除法、笔算除法、除数是一位数的除法中求平均问题、三年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「除数是一位数的除法中求平均问题」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「除数是一位数的除法中求平均问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「除数是一位数的除法中求平均问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“除数是一位数的除法中求平均问题”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.3.30da32eaca4c",
+      "name": "两个对象整倍数的和倍问题",
+      "required_structures": [
+        [
+          "school_division"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「两个对象整倍数的和倍问题」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）。别名线索只作为辅助，不可单独准入：除数是一位数的除法、笔算除法、两个对象整倍数的和倍问题、三年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「两个对象整倍数的和倍问题」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「两个对象整倍数的和倍问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「两个对象整倍数的和倍问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“两个对象整倍数的和倍问题”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.3.022a4772a4bf",
+      "name": "三个对象单位量统一的整倍数和倍问题",
+      "required_structures": [
+        [
+          "school_division"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「三个对象单位量统一的整倍数和倍问题」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）。别名线索只作为辅助，不可单独准入：除数是一位数的除法、创新1、笔算除法、三个对象单位量统一的整倍数和倍问题、三年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「三个对象单位量统一的整倍数和倍问题」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「三个对象单位量统一的整倍数和倍问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「三个对象单位量统一的整倍数和倍问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“三个对象单位量统一的整倍数和倍问题”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.3.4fc40f7ab741",
+      "name": "三个对象的链式整倍数和倍问题",
+      "required_structures": [
+        [
+          "school_division"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「三个对象的链式整倍数和倍问题」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）。别名线索只作为辅助，不可单独准入：除数是一位数的除法、创新1、笔算除法、三个对象的链式整倍数和倍问题、三年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「三个对象的链式整倍数和倍问题」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「三个对象的链式整倍数和倍问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「三个对象的链式整倍数和倍问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“三个对象的链式整倍数和倍问题”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.3.663c71e26532",
+      "name": "有倍数关系的两位数乘两位数应用",
+      "required_structures": [
+        [
+          "school_multiplication"
+        ],
+        [
+          "school_multiplicative_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「有倍数关系的两位数乘两位数应用」的结构证据。必须命中这些结构组：第1组 school_multiplication（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_multiplicative_relation（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：两位数乘两位数、笔算乘法、有倍数关系的两位数乘两位数应用、三年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「有倍数关系的两位数乘两位数应用」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「有倍数关系的两位数乘两位数应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「有倍数关系的两位数乘两位数应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“有倍数关系的两位数乘两位数应用”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.3.eda7b3931399",
+      "name": "边有倍数变化对面积的影响",
+      "required_structures": [
+        [
+          "school_cube_net"
+        ],
+        [
+          "school_area"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「边有倍数变化对面积的影响」的结构证据。必须命中这些结构组：第1组 school_cube_net（正方体展开图、折叠成正方体、相对面或相邻面判断）；第2组 school_area（校内面积知识，如面积单位、面积公式、图形面积）。别名线索只作为辅助，不可单独准入：面积、面积计算、边有倍数变化对面积的影响、三年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「边有倍数变化对面积的影响」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「边有倍数变化对面积的影响」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「边有倍数变化对面积的影响」：宽泛章节名、来源标签或没有结构证据的题目；只出现“边有倍数变化对面积的影响”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.3.9d84ec800e70",
+      "name": "长和宽有倍数关系，求面积",
+      "required_structures": [
+        [
+          "school_multiplicative_relation"
+        ],
+        [
+          "school_area"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「长和宽有倍数关系，求面积」的结构证据。必须命中这些结构组：第1组 school_multiplicative_relation（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_area（校内面积知识，如面积单位、面积公式、图形面积）。别名线索只作为辅助，不可单独准入：面积、面积计算、长和宽有倍数关系求面积、长和宽有倍数关系、求面积、三年级下册。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「长和宽有倍数关系，求面积」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「长和宽有倍数关系，求面积」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「长和宽有倍数关系，求面积」：宽泛章节名、来源标签或没有结构证据的题目；只出现“长和宽有倍数关系，求面积”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.de69f3562ead",
+      "name": "商的变化规律",
+      "required_structures": [
+        [
+          "school_division"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「商的变化规律」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）。别名线索只作为辅助，不可单独准入：除数是两位数的除法、第二节 笔算除法、商的变化规律、四年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「商的变化规律」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「商的变化规律」：宽泛章节名、来源标签或没有结构证据的题目；只出现“商的变化规律”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.b2341683ef70",
+      "name": "商不变的规律",
+      "required_structures": [
+        [
+          "school_division"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「商不变的规律」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）。别名线索只作为辅助，不可单独准入：除数是两位数的除法、第二节 笔算除法、商不变的规律、四年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「商不变的规律」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「商不变的规律」：宽泛章节名、来源标签或没有结构证据的题目；只出现“商不变的规律”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.564e10623967",
+      "name": "运用商不变的规律简算",
+      "required_structures": [
+        [
+          "school_division"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「运用商不变的规律简算」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）。别名线索只作为辅助，不可单独准入：除数是两位数的除法、第二节 笔算除法、运用商不变的规律简算、四年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「运用商不变的规律简算」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「运用商不变的规律简算」：宽泛章节名、来源标签或没有结构证据的题目；只出现“运用商不变的规律简算”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.f4b1f616eac2",
+      "name": "简单的规律型定义新运算",
+      "required_structures": [
+        [
+          "school_mixed_operation"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「简单的规律型定义新运算」的结构证据。必须命中这些结构组：第1组 school_mixed_operation（四则混合运算、运算顺序或脱式计算）。别名线索只作为辅助，不可单独准入：四则运算、四则运算的顺序、简单的规律型定义新运算、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「简单的规律型定义新运算」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「简单的规律型定义新运算」：宽泛章节名、来源标签或没有结构证据的题目；只出现“简单的规律型定义新运算”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.fbbc34298d22",
+      "name": "正求规律型定义新运算",
+      "required_structures": [
+        [
+          "school_mixed_operation"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「正求规律型定义新运算」的结构证据。必须命中这些结构组：第1组 school_mixed_operation（四则混合运算、运算顺序或脱式计算）。别名线索只作为辅助，不可单独准入：四则运算、四则运算的顺序、正求规律型定义新运算、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「正求规律型定义新运算」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「正求规律型定义新运算」：宽泛章节名、来源标签或没有结构证据的题目；只出现“正求规律型定义新运算”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.02e7f23bdf21",
+      "name": "提取公因数",
+      "required_structures": [
+        [
+          "school_multiplication"
+        ],
+        [
+          "school_operation_law"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「提取公因数」的结构证据。必须命中这些结构组：第1组 school_multiplication（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_operation_law（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：运算定律、乘法运算定律、提取公因数、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「提取公因数」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「提取公因数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「提取公因数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“提取公因数”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.01280499c278",
+      "name": "找出隐藏的数，再提取公因数",
+      "required_structures": [
+        [
+          "school_multiplication"
+        ],
+        [
+          "school_operation_law"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「找出隐藏的数，再提取公因数」的结构证据。必须命中这些结构组：第1组 school_multiplication（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_operation_law（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：运算定律、乘法运算定律、找出隐藏的数再提取公因数、找出隐藏的数、再提取公因数、四年级下册。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「找出隐藏的数，再提取公因数」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「找出隐藏的数，再提取公因数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「找出隐藏的数，再提取公因数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“找出隐藏的数，再提取公因数”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.69249b41d704",
+      "name": "利用提取公因数生活实际问题",
+      "required_structures": [
+        [
+          "school_multiplication"
+        ],
+        [
+          "school_operation_law"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「利用提取公因数生活实际问题」的结构证据。必须命中这些结构组：第1组 school_multiplication（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_operation_law（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：运算定律、乘法运算定律、利用提取公因数生活实际问题、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「利用提取公因数生活实际问题」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「利用提取公因数生活实际问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「利用提取公因数生活实际问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“利用提取公因数生活实际问题”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.4be50e6922d3",
+      "name": "【解锁】提取公因数在除法中的应用",
+      "required_structures": [
+        [
+          "school_division"
+        ],
+        [
+          "school_operation_law"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "pigeonhole",
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「【解锁】提取公因数在除法中的应用」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）；第2组 school_operation_law（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：运算定律、乘法运算定律、解锁提取公因数在除法中的应用、解锁、提取公因数在除法中的应用、四年级下册。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「【解锁】提取公因数在除法中的应用」：pigeonhole（抽屉原理、最不利情况、保证至少相同）；decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「【解锁】提取公因数在除法中的应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「【解锁】提取公因数在除法中的应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“【解锁】提取公因数在除法中的应用”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.cba455af302d",
+      "name": "利用倍数关系构造公因数",
+      "required_structures": [
+        [
+          "school_multiplication"
+        ],
+        [
+          "school_operation_law"
+        ],
+        [
+          "school_multiplicative_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「利用倍数关系构造公因数」的结构证据。必须命中这些结构组：第1组 school_multiplication（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_operation_law（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第3组 school_multiplicative_relation（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：运算定律、创新2、乘法运算定律、利用倍数关系构造公因数、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「利用倍数关系构造公因数」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「利用倍数关系构造公因数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「利用倍数关系构造公因数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“利用倍数关系构造公因数”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.6cc067c0b44e",
+      "name": "利用加减关系构造公因数",
+      "required_structures": [
+        [
+          "school_multiplication"
+        ],
+        [
+          "school_operation_law"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「利用加减关系构造公因数」的结构证据。必须命中这些结构组：第1组 school_multiplication（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_operation_law（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：运算定律、乘法运算定律、利用加减关系构造公因数、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「利用加减关系构造公因数」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「利用加减关系构造公因数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「利用加减关系构造公因数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“利用加减关系构造公因数”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.adc83288e570",
+      "name": "【解锁】利用倍数关系构造公因数-复杂",
+      "required_structures": [
+        [
+          "school_multiplication"
+        ],
+        [
+          "school_operation_law"
+        ],
+        [
+          "school_multiplicative_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「【解锁】利用倍数关系构造公因数-复杂」的结构证据。必须命中这些结构组：第1组 school_multiplication（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_operation_law（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第3组 school_multiplicative_relation（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：运算定律、乘法运算定律、解锁利用倍数关系构造公因数-复杂、解锁、利用倍数关系构造公因数-复杂、四年级下册。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「【解锁】利用倍数关系构造公因数-复杂」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「【解锁】利用倍数关系构造公因数-复杂」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「【解锁】利用倍数关系构造公因数-复杂」：宽泛章节名、来源标签或没有结构证据的题目；只出现“【解锁】利用倍数关系构造公因数-复杂”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.825b25643be6",
+      "name": "小数点移动的变化规律判断",
+      "required_structures": [
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「小数点移动的变化规律判断」的结构证据。必须命中这些结构组：第1组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数的意义和性质、小数点移动引起小数大小的变化、小数点移动的变化规律判断、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「小数点移动的变化规律判断」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「小数点移动的变化规律判断」：宽泛章节名、来源标签或没有结构证据的题目；只出现“小数点移动的变化规律判断”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.1fd27ced8167",
+      "name": "用小数点变化规律求结果",
+      "required_structures": [
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「用小数点变化规律求结果」的结构证据。必须命中这些结构组：第1组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数的意义和性质、小数点移动引起小数大小的变化、用小数点变化规律求结果、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「用小数点变化规律求结果」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「用小数点变化规律求结果」：宽泛章节名、来源标签或没有结构证据的题目；只出现“用小数点变化规律求结果”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.ca9f150ffc10",
+      "name": "用小数点变化规律求原数",
+      "required_structures": [
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「用小数点变化规律求原数」的结构证据。必须命中这些结构组：第1组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数的意义和性质、小数点移动引起小数大小的变化、用小数点变化规律求原数、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「用小数点变化规律求原数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「用小数点变化规律求原数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“用小数点变化规律求原数”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.a8ed6e682b60",
+      "name": "根据积的变化规律解决小数点移动问题",
+      "required_structures": [
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「根据积的变化规律解决小数点移动问题」的结构证据。必须命中这些结构组：第1组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数的意义和性质、小数点移动引起小数大小的变化、根据积的变化规律解决小数点移动问题、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「根据积的变化规律解决小数点移动问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「根据积的变化规律解决小数点移动问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“根据积的变化规律解决小数点移动问题”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.1d23a7b2ca36",
+      "name": "根据商的变化规律解决小数点移动问题",
+      "required_structures": [
+        [
+          "school_division"
+        ],
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「根据商的变化规律解决小数点移动问题」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）；第2组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数的意义和性质、小数点移动引起小数大小的变化、根据商的变化规律解决小数点移动问题、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「根据商的变化规律解决小数点移动问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「根据商的变化规律解决小数点移动问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“根据商的变化规律解决小数点移动问题”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.8f9c602acec9",
+      "name": "有倍数关系的角度计算",
+      "required_structures": [
+        [
+          "school_multiplicative_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「有倍数关系的角度计算」的结构证据。必须命中这些结构组：第1组 school_multiplicative_relation（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：三角形、三角形的内角和、有倍数关系的角度计算、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「有倍数关系的角度计算」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「有倍数关系的角度计算」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「有倍数关系的角度计算」：宽泛章节名、来源标签或没有结构证据的题目；只出现“有倍数关系的角度计算”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.e852580057ff",
+      "name": "小数加减法和小数点移动的变化规律结合",
+      "required_structures": [
+        [
+          "school_addition_subtraction"
+        ],
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「小数加减法和小数点移动的变化规律结合」的结构证据。必须命中这些结构组：第1组 school_addition_subtraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数的加法和减法、小数加减混合、小数加减法和小数点移动的变化规律结合、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「小数加减法和小数点移动的变化规律结合」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「小数加减法和小数点移动的变化规律结合」：宽泛章节名、来源标签或没有结构证据的题目；只出现“小数加减法和小数点移动的变化规律结合”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.bdf126f8c7ce",
+      "name": "认识平均数",
+      "required_structures": [
+        [
+          "school_average_division"
+        ],
+        [
+          "school_statistics"
+        ],
+        [
+          "school_average_division",
+          "gaosi_average"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "统计图综合",
+        "工程效率问题",
+        "平均分应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「认识平均数」的结构证据。必须命中这些结构组：第1组 school_average_division（平均分、每份一样多、按人数或组数平均分配）；第2组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；第3组 school_average_division（平均分、每份一样多、按人数或组数平均分配） / gaosi_average（平均数、总数除以份数、平均量反推或基准数法）。别名线索只作为辅助，不可单独准入：平均数与条形统计图、平均数、认识平均数、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「认识平均数」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「认识平均数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「认识平均数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“认识平均数”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.46087e62582c",
+      "name": "实际问题中求平均数",
+      "required_structures": [
+        [
+          "school_average_division"
+        ],
+        [
+          "school_statistics"
+        ],
+        [
+          "school_average_division",
+          "gaosi_average"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "统计图综合",
+        "工程效率问题",
+        "平均分应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「实际问题中求平均数」的结构证据。必须命中这些结构组：第1组 school_average_division（平均分、每份一样多、按人数或组数平均分配）；第2组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；第3组 school_average_division（平均分、每份一样多、按人数或组数平均分配） / gaosi_average（平均数、总数除以份数、平均量反推或基准数法）。别名线索只作为辅助，不可单独准入：平均数与条形统计图、平均数、实际问题中求平均数、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「实际问题中求平均数」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「实际问题中求平均数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「实际问题中求平均数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“实际问题中求平均数”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.2203bb77606e",
+      "name": "极端数据对平均数产生的影响",
+      "required_structures": [
+        [
+          "school_average_division"
+        ],
+        [
+          "school_statistics"
+        ],
+        [
+          "school_average_division",
+          "gaosi_average"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "统计图综合",
+        "工程效率问题",
+        "平均分应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「极端数据对平均数产生的影响」的结构证据。必须命中这些结构组：第1组 school_average_division（平均分、每份一样多、按人数或组数平均分配）；第2组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；第3组 school_average_division（平均分、每份一样多、按人数或组数平均分配） / gaosi_average（平均数、总数除以份数、平均量反推或基准数法）。别名线索只作为辅助，不可单独准入：平均数与条形统计图、平均数、极端数据对平均数产生的影响、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「极端数据对平均数产生的影响」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「极端数据对平均数产生的影响」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「极端数据对平均数产生的影响」：宽泛章节名、来源标签或没有结构证据的题目；只出现“极端数据对平均数产生的影响”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.4b970db2aba4",
+      "name": "平均价格",
+      "required_structures": [
+        [
+          "school_average_division"
+        ],
+        [
+          "school_statistics"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "平均分应用",
+        "统计图综合"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「平均价格」的结构证据。必须命中这些结构组：第1组 school_average_division（平均分、每份一样多、按人数或组数平均分配）；第2组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）。别名线索只作为辅助，不可单独准入：平均数与条形统计图、平均数、平均价格、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「平均价格」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「平均价格」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「平均价格」：宽泛章节名、来源标签或没有结构证据的题目；只出现“平均价格”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.a68b3afeb85f",
+      "name": "利用平均数反求",
+      "required_structures": [
+        [
+          "school_average_division"
+        ],
+        [
+          "school_statistics"
+        ],
+        [
+          "school_average_division",
+          "gaosi_average"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "统计图综合",
+        "工程效率问题",
+        "平均分应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「利用平均数反求」的结构证据。必须命中这些结构组：第1组 school_average_division（平均分、每份一样多、按人数或组数平均分配）；第2组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；第3组 school_average_division（平均分、每份一样多、按人数或组数平均分配） / gaosi_average（平均数、总数除以份数、平均量反推或基准数法）。别名线索只作为辅助，不可单独准入：平均数与条形统计图、平均数、利用平均数反求、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「利用平均数反求」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「利用平均数反求」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「利用平均数反求」：宽泛章节名、来源标签或没有结构证据的题目；只出现“利用平均数反求”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.35764abc7cfc",
+      "name": "利用基准数法求平均数",
+      "required_structures": [
+        [
+          "school_average_division"
+        ],
+        [
+          "school_statistics"
+        ],
+        [
+          "school_average_division",
+          "gaosi_average"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "统计图综合",
+        "工程效率问题",
+        "平均分应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「利用基准数法求平均数」的结构证据。必须命中这些结构组：第1组 school_average_division（平均分、每份一样多、按人数或组数平均分配）；第2组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；第3组 school_average_division（平均分、每份一样多、按人数或组数平均分配） / gaosi_average（平均数、总数除以份数、平均量反推或基准数法）。别名线索只作为辅助，不可单独准入：平均数与条形统计图、平均数、利用基准数法求平均数、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「利用基准数法求平均数」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「利用基准数法求平均数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「利用基准数法求平均数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“利用基准数法求平均数”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.3f1f038caa0a",
+      "name": "利用平均数解决问题",
+      "required_structures": [
+        [
+          "school_average_division"
+        ],
+        [
+          "school_statistics"
+        ],
+        [
+          "school_average_division",
+          "gaosi_average"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "统计图综合",
+        "工程效率问题",
+        "平均分应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「利用平均数解决问题」的结构证据。必须命中这些结构组：第1组 school_average_division（平均分、每份一样多、按人数或组数平均分配）；第2组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；第3组 school_average_division（平均分、每份一样多、按人数或组数平均分配） / gaosi_average（平均数、总数除以份数、平均量反推或基准数法）。别名线索只作为辅助，不可单独准入：平均数与条形统计图、平均数、利用平均数解决问题、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「利用平均数解决问题」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「利用平均数解决问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「利用平均数解决问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“利用平均数解决问题”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.f05f7ef1db16",
+      "name": "个数不变的平均数问题",
+      "required_structures": [
+        [
+          "school_average_division"
+        ],
+        [
+          "school_statistics"
+        ],
+        [
+          "school_average_division",
+          "gaosi_average"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "统计图综合",
+        "工程效率问题",
+        "平均分应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「个数不变的平均数问题」的结构证据。必须命中这些结构组：第1组 school_average_division（平均分、每份一样多、按人数或组数平均分配）；第2组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；第3组 school_average_division（平均分、每份一样多、按人数或组数平均分配） / gaosi_average（平均数、总数除以份数、平均量反推或基准数法）。别名线索只作为辅助，不可单独准入：平均数与条形统计图、平均数、个数不变的平均数问题、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「个数不变的平均数问题」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「个数不变的平均数问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「个数不变的平均数问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“个数不变的平均数问题”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.acbc5ee37dd7",
+      "name": "用巧妙方法求平均数",
+      "required_structures": [
+        [
+          "school_average_division"
+        ],
+        [
+          "school_statistics"
+        ],
+        [
+          "school_average_division",
+          "gaosi_average"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "统计图综合",
+        "工程效率问题",
+        "平均分应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「用巧妙方法求平均数」的结构证据。必须命中这些结构组：第1组 school_average_division（平均分、每份一样多、按人数或组数平均分配）；第2组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；第3组 school_average_division（平均分、每份一样多、按人数或组数平均分配） / gaosi_average（平均数、总数除以份数、平均量反推或基准数法）。别名线索只作为辅助，不可单独准入：平均数与条形统计图、平均数、用巧妙方法求平均数、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「用巧妙方法求平均数」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「用巧妙方法求平均数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「用巧妙方法求平均数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“用巧妙方法求平均数”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.e703564bc784",
+      "name": "个数改变的平均数的问题",
+      "required_structures": [
+        [
+          "school_average_division"
+        ],
+        [
+          "school_statistics"
+        ],
+        [
+          "school_average_division",
+          "gaosi_average"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "统计图综合",
+        "工程效率问题",
+        "平均分应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「个数改变的平均数的问题」的结构证据。必须命中这些结构组：第1组 school_average_division（平均分、每份一样多、按人数或组数平均分配）；第2组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；第3组 school_average_division（平均分、每份一样多、按人数或组数平均分配） / gaosi_average（平均数、总数除以份数、平均量反推或基准数法）。别名线索只作为辅助，不可单独准入：平均数与条形统计图、平均数、个数改变的平均数的问题、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「个数改变的平均数的问题」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「个数改变的平均数的问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「个数改变的平均数的问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“个数改变的平均数的问题”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.37f5660c5003",
+      "name": "移多补少法求平均数",
+      "required_structures": [
+        [
+          "school_average_division"
+        ],
+        [
+          "school_statistics"
+        ],
+        [
+          "school_average_division",
+          "gaosi_average"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "统计图综合",
+        "工程效率问题",
+        "平均分应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「移多补少法求平均数」的结构证据。必须命中这些结构组：第1组 school_average_division（平均分、每份一样多、按人数或组数平均分配）；第2组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；第3组 school_average_division（平均分、每份一样多、按人数或组数平均分配） / gaosi_average（平均数、总数除以份数、平均量反推或基准数法）。别名线索只作为辅助，不可单独准入：平均数与条形统计图、平均数、移多补少法求平均数、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「移多补少法求平均数」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「移多补少法求平均数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「移多补少法求平均数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“移多补少法求平均数”相近文字但没有题面结构证据",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.fdd32cd06f26",
+      "name": "分组法解决有倍数关系的鸡兔同笼",
+      "required_structures": [
+        [
+          "school_multiplicative_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「分组法解决有倍数关系的鸡兔同笼」的结构证据。必须命中这些结构组：第1组 school_multiplicative_relation（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：数学广角——鸡兔同笼、复杂鸡兔同笼问题、分组法解决有倍数关系的鸡兔同笼、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「分组法解决有倍数关系的鸡兔同笼」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「分组法解决有倍数关系的鸡兔同笼」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「分组法解决有倍数关系的鸡兔同笼」：宽泛章节名、来源标签或没有结构证据的题目；只出现“分组法解决有倍数关系的鸡兔同笼”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.d6bc502412b9",
+      "name": "小数乘整数中积的变化规律",
+      "required_structures": [
+        [
+          "school_multiplication"
+        ],
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「小数乘整数中积的变化规律」的结构证据。必须命中这些结构组：第1组 school_multiplication（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数乘法、小数乘整数、小数乘整数中积的变化规律、五年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「小数乘整数中积的变化规律」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「小数乘整数中积的变化规律」：宽泛章节名、来源标签或没有结构证据的题目；只出现“小数乘整数中积的变化规律”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.fa5019e96465",
+      "name": "积与因数的大小关系",
+      "required_structures": [
+        [
+          "school_multiplication"
+        ],
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「积与因数的大小关系」的结构证据。必须命中这些结构组：第1组 school_multiplication（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数乘法、小数乘小数、积与因数的大小关系、五年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「积与因数的大小关系」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「积与因数的大小关系」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「积与因数的大小关系」：宽泛章节名、来源标签或没有结构证据的题目；只出现“积与因数的大小关系”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.5f45775abbd4",
+      "name": "小数乘小数中积的变化规律",
+      "required_structures": [
+        [
+          "school_multiplication"
+        ],
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「小数乘小数中积的变化规律」的结构证据。必须命中这些结构组：第1组 school_multiplication（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数乘法、小数乘小数、小数乘小数中积的变化规律、五年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「小数乘小数中积的变化规律」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「小数乘小数中积的变化规律」：宽泛章节名、来源标签或没有结构证据的题目；只出现“小数乘小数中积的变化规律”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.d0461c94b658",
+      "name": "积不变的规律在小数巧算中的应用",
+      "required_structures": [
+        [
+          "school_multiplication"
+        ],
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「积不变的规律在小数巧算中的应用」的结构证据。必须命中这些结构组：第1组 school_multiplication（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数乘法、整数乘法定律推广到小数、积不变的规律在小数巧算中的应用、五年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「积不变的规律在小数巧算中的应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「积不变的规律在小数巧算中的应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“积不变的规律在小数巧算中的应用”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.5243e4bbee0b",
+      "name": "利用倍数关系解决小数问题",
+      "required_structures": [
+        [
+          "school_division"
+        ],
+        [
+          "school_decimal"
+        ],
+        [
+          "school_multiplicative_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「利用倍数关系解决小数问题」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）；第2组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第3组 school_multiplicative_relation（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数除法、除数是整数的小数除法、利用倍数关系解决小数问题、五年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「利用倍数关系解决小数问题」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「利用倍数关系解决小数问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「利用倍数关系解决小数问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“利用倍数关系解决小数问题”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.f9ba33c7a095",
+      "name": "商的变化规律在小数计算中的应用",
+      "required_structures": [
+        [
+          "school_division"
+        ],
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「商的变化规律在小数计算中的应用」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）；第2组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数除法、一个数除以小数、商的变化规律在小数计算中的应用、五年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「商的变化规律在小数计算中的应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「商的变化规律在小数计算中的应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“商的变化规律在小数计算中的应用”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.490067febe18",
+      "name": "商的变化规律在小数计算中的复杂应用",
+      "required_structures": [
+        [
+          "school_division"
+        ],
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「商的变化规律在小数计算中的复杂应用」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）；第2组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数除法、一个数除以小数、商的变化规律在小数计算中的复杂应用、五年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「商的变化规律在小数计算中的复杂应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「商的变化规律在小数计算中的复杂应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“商的变化规律在小数计算中的复杂应用”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.bb0889b4cf27",
+      "name": "周期规律在循环小数中的应用",
+      "required_structures": [
+        [
+          "school_division"
+        ],
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「周期规律在循环小数中的应用」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）；第2组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数除法、循环小数、周期规律在循环小数中的应用、五年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「周期规律在循环小数中的应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「周期规律在循环小数中的应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“周期规律在循环小数中的应用”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.f6a20398e769",
+      "name": "探索计算中的其他规律",
+      "required_structures": [
+        [
+          "school_division"
+        ],
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「探索计算中的其他规律」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）；第2组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：小数除法、用计算器探索规律、探索计算中的其他规律、五年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「探索计算中的其他规律」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「探索计算中的其他规律」：宽泛章节名、来源标签或没有结构证据的题目；只出现“探索计算中的其他规律”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.2824c6d935cf",
+      "name": "倍数的可加(减)性",
+      "required_structures": [
+        [
+          "school_addition_subtraction"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「倍数的可加(减)性」的结构证据。必须命中这些结构组：第1组 school_addition_subtraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：因数与倍数、倍数的可加减性、倍数的可加、五年级下册、校内、倍数的可加(减)性。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「倍数的可加(减)性」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「倍数的可加(减)性」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「倍数的可加(减)性」：宽泛章节名、来源标签或没有结构证据的题目；只出现“倍数的可加(减)性”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.0744ba2fef01",
+      "name": "公因数和最大公因数的意义与求法",
+      "required_structures": [
+        [
+          "school_fraction"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「公因数和最大公因数的意义与求法」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、约分、公因数和最大公因数的意义与求法、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「公因数和最大公因数的意义与求法」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「公因数和最大公因数的意义与求法」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「公因数和最大公因数的意义与求法」：宽泛章节名、来源标签或没有结构证据的题目；只出现“公因数和最大公因数的意义与求法”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.5f82cb09c42c",
+      "name": "分解质因数法求最大公因数",
+      "required_structures": [
+        [
+          "school_fraction"
+        ],
+        [
+          "school_prime_factorization"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「分解质因数法求最大公因数」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_prime_factorization（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、约分、分解质因数法求最大公因数、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「分解质因数法求最大公因数」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「分解质因数法求最大公因数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「分解质因数法求最大公因数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“分解质因数法求最大公因数”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.21bc82135788",
+      "name": "两个数最大公因数的实际应用",
+      "required_structures": [
+        [
+          "school_fraction"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「两个数最大公因数的实际应用」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、约分、两个数最大公因数的实际应用、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「两个数最大公因数的实际应用」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「两个数最大公因数的实际应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「两个数最大公因数的实际应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“两个数最大公因数的实际应用”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.24f2f0f71680",
+      "name": "三个数的最大公因数及应用",
+      "required_structures": [
+        [
+          "school_fraction"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「三个数的最大公因数及应用」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、约分、三个数的最大公因数及应用、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「三个数的最大公因数及应用」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「三个数的最大公因数及应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「三个数的最大公因数及应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“三个数的最大公因数及应用”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.9c54d78a1694",
+      "name": "公倍数和最小公倍数的意义与求法",
+      "required_structures": [
+        [
+          "school_fraction"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「公倍数和最小公倍数的意义与求法」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、通分、公倍数和最小公倍数的意义与求法、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「公倍数和最小公倍数的意义与求法」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「公倍数和最小公倍数的意义与求法」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「公倍数和最小公倍数的意义与求法」：宽泛章节名、来源标签或没有结构证据的题目；只出现“公倍数和最小公倍数的意义与求法”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.82861ece90fa",
+      "name": "两个数最小公倍数的特殊情况",
+      "required_structures": [
+        [
+          "school_fraction"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「两个数最小公倍数的特殊情况」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、通分、两个数最小公倍数的特殊情况、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「两个数最小公倍数的特殊情况」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「两个数最小公倍数的特殊情况」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「两个数最小公倍数的特殊情况」：宽泛章节名、来源标签或没有结构证据的题目；只出现“两个数最小公倍数的特殊情况”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.a29f2cfe3c33",
+      "name": "分解质因数法求最小公倍数",
+      "required_structures": [
+        [
+          "school_fraction"
+        ],
+        [
+          "school_prime_factorization"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「分解质因数法求最小公倍数」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_prime_factorization（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、通分、分解质因数法求最小公倍数、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「分解质因数法求最小公倍数」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「分解质因数法求最小公倍数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「分解质因数法求最小公倍数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“分解质因数法求最小公倍数”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.3c1d2bfc9d82",
+      "name": "两个数最小公倍数的简单应用",
+      "required_structures": [
+        [
+          "school_fraction"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「两个数最小公倍数的简单应用」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、通分、两个数最小公倍数的简单应用、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「两个数最小公倍数的简单应用」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「两个数最小公倍数的简单应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「两个数最小公倍数的简单应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“两个数最小公倍数的简单应用”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.186df8aaabc7",
+      "name": "两个数最小公倍数的复杂应用",
+      "required_structures": [
+        [
+          "school_fraction"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「两个数最小公倍数的复杂应用」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、通分、两个数最小公倍数的复杂应用、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「两个数最小公倍数的复杂应用」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「两个数最小公倍数的复杂应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「两个数最小公倍数的复杂应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“两个数最小公倍数的复杂应用”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.340678379e81",
+      "name": "两个数公倍数的实际应用",
+      "required_structures": [
+        [
+          "school_fraction"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「两个数公倍数的实际应用」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、通分、两个数公倍数的实际应用、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「两个数公倍数的实际应用」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「两个数公倍数的实际应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「两个数公倍数的实际应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“两个数公倍数的实际应用”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.72872b3f45db",
+      "name": "三个数的最小公倍数",
+      "required_structures": [
+        [
+          "school_fraction"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「三个数的最小公倍数」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、通分、三个数的最小公倍数、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「三个数的最小公倍数」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「三个数的最小公倍数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「三个数的最小公倍数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“三个数的最小公倍数”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.7442b50965b0",
+      "name": "三个数公倍数的实际应用",
+      "required_structures": [
+        [
+          "school_fraction"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「三个数公倍数的实际应用」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、通分、三个数公倍数的实际应用、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「三个数公倍数的实际应用」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「三个数公倍数的实际应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「三个数公倍数的实际应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“三个数公倍数的实际应用”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.a78725d98f58",
+      "name": "分数能化为有限小数的规律",
+      "required_structures": [
+        [
+          "school_fraction"
+        ],
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「分数能化为有限小数的规律」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、分数与小数互化、分数能化为有限小数的规律、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「分数能化为有限小数的规律」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「分数能化为有限小数的规律」：宽泛章节名、来源标签或没有结构证据的题目；只出现“分数能化为有限小数的规律”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.7d6cbd4e4156",
+      "name": "分母是7的分数化为小数的规律",
+      "required_structures": [
+        [
+          "school_fraction"
+        ],
+        [
+          "school_decimal"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「分母是7的分数化为小数的规律」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 school_decimal（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数的意义和性质、分数与小数互化、分母是7的分数化为小数的规律、五年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「分母是7的分数化为小数的规律」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「分母是7的分数化为小数的规律」：宽泛章节名、来源标签或没有结构证据的题目；只出现“分母是7的分数化为小数的规律”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.e11a9b362280",
+      "name": "扇形统计图",
+      "required_structures": [
+        [
+          "school_statistics"
+        ],
+        [
+          "statistics_chart_context"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "confusable_with": [
+        "圆与扇形",
+        "平均数"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「扇形统计图」的结构证据。必须命中这些结构组：第1组 school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；第2组 statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）。别名线索只作为辅助，不可单独准入：扇形统计图、六年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。",
+        "扇形统计图/统计图综合准入必须命中 statistics_chart_context（统计图或统计表读图场景），并优先识别百分比、人数、圆心角或占比换算。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「扇形统计图」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「扇形统计图」：宽泛章节名、来源标签或没有结构证据的题目；只出现“扇形统计图”相近文字但没有题面结构证据",
+        "如果题目目标是几何阴影面积、弧长或圆与扇形公式计算，而不是统计图读图，不确认统计图知识点。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.3179cd0377cb",
+      "name": "基础折扣问题",
+      "required_structures": [
+        [
+          "school_fraction"
+        ],
+        [
+          "profit_discount",
+          "price_profit_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "percent_calculation"
+      ],
+      "exclude_structures": [
+        "concentration_task",
+        "statistics_chart_context"
+      ],
+      "confusable_with": [
+        "浓度问题",
+        "比例百分数应用",
+        "百分数意义与计算",
+        "比例应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「基础折扣问题」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构） / price_profit_relation（价格、成本、售价、利润、利润率之间的数量关系）。别名线索只作为辅助，不可单独准入：百分数、百分数二、折扣和成数、基础折扣问题、六年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「基础折扣问题」：concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）；statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）",
+        "不要只凭关键词、章节名、别名或来源标签确认「基础折扣问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「基础折扣问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“基础折扣问题”相近文字但没有题面结构证据",
+        "只有百分号或比例词但没有进价、售价、标价、利润、折扣等商业关系时，不确认利润折扣。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.abaadfde93f6",
+      "name": "与优惠价格相关的折扣问题",
+      "required_structures": [
+        [
+          "school_fraction"
+        ],
+        [
+          "profit_discount",
+          "price_profit_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "percent_calculation"
+      ],
+      "exclude_structures": [
+        "concentration_task",
+        "statistics_chart_context"
+      ],
+      "confusable_with": [
+        "浓度问题",
+        "比例百分数应用",
+        "百分数意义与计算",
+        "比例应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「与优惠价格相关的折扣问题」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构） / price_profit_relation（价格、成本、售价、利润、利润率之间的数量关系）。别名线索只作为辅助，不可单独准入：百分数、百分数二、折扣和成数、与优惠价格相关的折扣问题、六年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「与优惠价格相关的折扣问题」：concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）；statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）",
+        "不要只凭关键词、章节名、别名或来源标签确认「与优惠价格相关的折扣问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「与优惠价格相关的折扣问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“与优惠价格相关的折扣问题”相近文字但没有题面结构证据",
+        "只有百分号或比例词但没有进价、售价、标价、利润、折扣等商业关系时，不确认利润折扣。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.c7ff19acf849",
+      "name": "与定价相关的折扣问题",
+      "required_structures": [
+        [
+          "school_fraction"
+        ],
+        [
+          "profit_discount",
+          "price_profit_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "percent_calculation"
+      ],
+      "exclude_structures": [
+        "concentration_task",
+        "statistics_chart_context"
+      ],
+      "confusable_with": [
+        "浓度问题",
+        "比例百分数应用",
+        "百分数意义与计算",
+        "比例应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「与定价相关的折扣问题」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构） / price_profit_relation（价格、成本、售价、利润、利润率之间的数量关系）。别名线索只作为辅助，不可单独准入：百分数、百分数二、折扣和成数、与定价相关的折扣问题、六年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「与定价相关的折扣问题」：concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）；statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）",
+        "不要只凭关键词、章节名、别名或来源标签确认「与定价相关的折扣问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「与定价相关的折扣问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“与定价相关的折扣问题”相近文字但没有题面结构证据",
+        "只有百分号或比例词但没有进价、售价、标价、利润、折扣等商业关系时，不确认利润折扣。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.d0f140c7c68c",
+      "name": "折扣与商品售卖的结合",
+      "required_structures": [
+        [
+          "school_division"
+        ],
+        [
+          "school_fraction"
+        ],
+        [
+          "profit_discount",
+          "price_profit_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "percent_calculation"
+      ],
+      "exclude_structures": [
+        "concentration_task",
+        "statistics_chart_context"
+      ],
+      "confusable_with": [
+        "浓度问题",
+        "比例百分数应用",
+        "百分数意义与计算",
+        "比例应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「折扣与商品售卖的结合」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）；第2组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第3组 profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构） / price_profit_relation（价格、成本、售价、利润、利润率之间的数量关系）。别名线索只作为辅助，不可单独准入：百分数、百分数二、折扣和成数、折扣与商品售卖的结合、六年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「折扣与商品售卖的结合」：concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）；statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）",
+        "不要只凭关键词、章节名、别名或来源标签确认「折扣与商品售卖的结合」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「折扣与商品售卖的结合」：宽泛章节名、来源标签或没有结构证据的题目；只出现“折扣与商品售卖的结合”相近文字但没有题面结构证据",
+        "只有百分号或比例词但没有进价、售价、标价、利润、折扣等商业关系时，不确认利润折扣。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.86b980b817f7",
+      "name": "成数和折扣的结合",
+      "required_structures": [
+        [
+          "school_fraction"
+        ],
+        [
+          "profit_discount",
+          "price_profit_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "percent_calculation"
+      ],
+      "exclude_structures": [
+        "concentration_task",
+        "statistics_chart_context"
+      ],
+      "confusable_with": [
+        "浓度问题",
+        "比例百分数应用",
+        "百分数意义与计算",
+        "比例应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「成数和折扣的结合」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构） / price_profit_relation（价格、成本、售价、利润、利润率之间的数量关系）。别名线索只作为辅助，不可单独准入：百分数、百分数二、折扣和成数、成数和折扣的结合、六年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「成数和折扣的结合」：concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）；statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）",
+        "不要只凭关键词、章节名、别名或来源标签确认「成数和折扣的结合」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「成数和折扣的结合」：宽泛章节名、来源标签或没有结构证据的题目；只出现“成数和折扣的结合”相近文字但没有题面结构证据",
+        "只有百分号或比例词但没有进价、售价、标价、利润、折扣等商业关系时，不确认利润折扣。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.01d4173f636b",
+      "name": "折扣和税率的结合",
+      "required_structures": [
+        [
+          "school_fraction"
+        ],
+        [
+          "profit_discount",
+          "price_profit_relation"
+        ]
+      ],
+      "supporting_structures": [
+        "percent_calculation"
+      ],
+      "exclude_structures": [
+        "concentration_task",
+        "statistics_chart_context"
+      ],
+      "confusable_with": [
+        "浓度问题",
+        "比例百分数应用",
+        "百分数意义与计算",
+        "比例应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「折扣和税率的结合」的结构证据。必须命中这些结构组：第1组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）；第2组 profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构） / price_profit_relation（价格、成本、售价、利润、利润率之间的数量关系）。别名线索只作为辅助，不可单独准入：百分数、百分数二、税率和利率、折扣和税率的结合、六年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「折扣和税率的结合」：concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）；statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）",
+        "不要只凭关键词、章节名、别名或来源标签确认「折扣和税率的结合」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「折扣和税率的结合」：宽泛章节名、来源标签或没有结构证据的题目；只出现“折扣和税率的结合”相近文字但没有题面结构证据",
+        "只有百分号或比例词但没有进价、售价、标价、利润、折扣等商业关系时，不确认利润折扣。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.gaosi.3.08af4837f0bf",
+      "name": "找规律",
+      "required_structures": [
+        [
+          "gaosi_sequence"
+        ]
+      ],
+      "supporting_structures": [
+        "periodic_grid"
+      ],
+      "exclude_structures": [
+        "statistics_chart_context"
+      ],
+      "confusable_with": [
+        "周期问题",
+        "数列计算",
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「找规律」的结构证据。必须命中这些结构组：第1组 gaosi_sequence（高思规律、数列、数表、周期或找规律专题结构）。别名线索只作为辅助，不可单独准入：找规律、综合规律、数列、数表、图形。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「找规律」：statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）",
+        "不要只凭关键词、章节名、别名或来源标签确认「找规律」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「找规律」：宽泛分类标签、校内基础题或缺少结构证据的题目；只出现“找规律”相近文字但没有对应高思专题结构",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.gaosi.4.6e9f152fe768",
+      "name": "平均数问题",
+      "required_structures": [
+        [
+          "gaosi_average"
+        ],
+        [
+          "school_average_division",
+          "gaosi_average"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole",
+        "profit_discount",
+        "clock_face"
+      ],
+      "confusable_with": [
+        "统计图综合",
+        "工程效率问题",
+        "平均分应用"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「平均数问题」的结构证据。必须命中这些结构组：第1组 gaosi_average（平均数、总数除以份数、平均量反推或基准数法）；第2组 school_average_division（平均分、每份一样多、按人数或组数平均分配） / gaosi_average（平均数、总数除以份数、平均量反推或基准数法）。别名线索只作为辅助，不可单独准入：平均数问题、平均数、总和/平均数的变化、总和、平均数的变化、移多补少图求平均数。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「平均数问题」：pigeonhole（抽屉原理、最不利情况、保证至少相同）；profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；clock_face（真实钟面、表盘或时钟刻度结构）",
+        "不要只凭关键词、章节名、别名或来源标签确认「平均数问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「平均数问题」：宽泛分类标签、校内基础题或缺少结构证据的题目；只出现“平均数问题”相近文字但没有对应高思专题结构",
+        "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.gaosi.5.268236d5c977",
+      "name": "圆与扇形",
+      "required_structures": [
+        [
+          "geometry_circle",
+          "gaosi_circle_sector"
+        ],
+        [
+          "area_goal",
+          "geometry_area",
+          "school_area",
+          "arc_length_goal"
+        ]
+      ],
+      "supporting_structures": [
+        "geometry_rotation",
+        "rotation_direction",
+        "sector_area",
+        "area_relation_model",
+        "gaosi_cut_paste",
+        "area_decomposition"
+      ],
+      "exclude_structures": [
+        "statistics_chart_context",
+        "school_statistics",
+        "statistics_percent_conversion",
+        "school_volume",
+        "cylinder_surface_volume"
+      ],
+      "confusable_with": [
+        "扇形统计图",
+        "钟表问题",
+        "圆柱表面积/体积",
+        "统计图综合",
+        "百分数意义与计算",
+        "利润折扣问题",
+        "浓度问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「圆与扇形」的结构证据。必须命中这些结构组：第1组 geometry_circle（圆、半圆、扇形、半径、直径、圆心角、弧等圆形几何结构） / gaosi_circle_sector（奥数圆与扇形专题结构，包括扇形面积、弧长、圆心角和割补关系）；第2组 area_goal（题目目标是求面积、阴影面积或面积关系） / geometry_area（几何面积计算、面积关系、阴影面积或割补面积） / school_area（校内面积知识，如面积单位、面积公式、图形面积） / arc_length_goal（题目目标是求弧长、圆周长的一部分或弧相关长度）。别名线索只作为辅助，不可单独准入：圆与扇形、扇形、滚动与旋转、滚动、旋转、圆与扇形基本公式。每个结构标签都要能回溯到题干原文或图片证据。",
+        "圆与扇形准入时，应识别 geometry_circle（圆、半圆、扇形、半径、直径、圆心角、弧）以及 area_goal 或 arc_length_goal（求面积、阴影面积、弧长或周长关系）。",
+        "如果出现顺时针/逆时针，只能作为 rotation_direction 或 geometry_rotation 的证据，不能作为钟表结构。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「圆与扇形」：statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）；school_statistics（校内统计知识，如统计表、平均数、条形/折线/扇形统计图）；statistics_percent_conversion（统计图中百分比、占比、人数或圆心角之间的换算）；school_volume（体积、容积、立方单位或立体图形体积公式）；cylinder_surface_volume（圆柱侧面展开、圆柱表面积或体积守恒结构）",
+        "不要只凭关键词、章节名、别名或来源标签确认「圆与扇形」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「圆与扇形」：宽泛分类标签、校内基础题或缺少结构证据的题目；只出现“圆与扇形”相近文字但没有对应高思专题结构",
+        "如果题目是扇形统计图、百分比统计、读图换算或圆柱体积/表面积，不确认「圆与扇形」。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.gaosi.5.eedc0851e04c",
+      "name": "整除",
+      "required_structures": [
+        [
+          "gaosi_divisibility"
+        ]
+      ],
+      "supporting_structures": [
+        "integer_constraint",
+        "divisibility_rule",
+        "number_theory_factor_multiple"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation",
+        "profit_discount"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "乘法分配律与简便计算",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「整除」的结构证据。必须命中这些结构组：第1组 gaosi_divisibility（整除、约数、倍数、质数、合数、因数等奥数数论结构）。别名线索只作为辅助，不可单独准入：整除、数论问题、末位判断、分解判断、末位判断、分解判断、数字和、数字差。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「整除」：decimal_fraction_calculation（小数、分数或小数分数混合计算）；profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）",
+        "不要只凭关键词、章节名、别名或来源标签确认「整除」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「整除」：宽泛分类标签、校内基础题或缺少结构证据的题目；只出现“整除”相近文字但没有对应高思专题结构",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.gaosi.5.3d2bd8254119",
+      "name": "牛吃草问题与钟表问题",
+      "required_structures": [
+        [
+          "resource_growth",
+          "clock_face"
+        ],
+        [
+          "resource_consumption",
+          "clock_hands_relation"
+        ],
+        [
+          "resource_time_or_initial",
+          "time_angle_goal"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_grazing_clock",
+        "growth_consumption"
+      ],
+      "exclude_structures": [
+        "geometry_rotation",
+        "statistics_chart_context",
+        "profit_discount",
+        "concentration_task"
+      ],
+      "confusable_with": [
+        "圆与扇形",
+        "工程问题",
+        "牛吃草模型",
+        "工程效率问题",
+        "钟表问题",
+        "比例应用",
+        "几何旋转",
+        "百分数意义与计算",
+        "利润折扣问题",
+        "浓度问题"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「牛吃草问题与钟表问题」的结构证据。必须命中这些结构组：第1组 resource_growth（草量、人流、水量等资源随时间增长或流入） / clock_face（真实钟面、表盘或时钟刻度结构）；第2组 resource_consumption（牛吃草、检票、抽水等资源被消耗或流出） / clock_hands_relation（时针、分针之间的追及、重合、夹角或位置关系）；第3组 resource_time_or_initial（出现原有量、每天、几天、吃完、时间或初始量条件） / time_angle_goal（题目目标是求时刻、经过时间、钟表夹角或特殊位置）。别名线索只作为辅助，不可单独准入：牛吃草问题与钟表问题、牛吃草问题、牛吃草、钟表问题、钟表、钟表问题之对调/对称。每个结构标签都要能回溯到题干原文或图片证据。",
+        "牛吃草准入必须同时识别 resource_growth（增长/生长/流入）、resource_consumption（消耗/吃完/流出）和 resource_time_or_initial（时间/每天/原有量）。",
+        "钟表准入必须识别 clock_face（钟面/表盘）、clock_hands_relation（时针分针关系）和 time_angle_goal（时刻、夹角、重合、垂直等目标）。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「牛吃草问题与钟表问题」：geometry_rotation（图形绕点或绕中心旋转、转动、旋转后位置变化）；statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）；profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）",
+        "不要只凭关键词、章节名、别名或来源标签确认「牛吃草问题与钟表问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「牛吃草问题与钟表问题」：宽泛分类标签、校内基础题或缺少结构证据的题目；只出现“牛吃草问题与钟表问题”相近文字但没有对应高思专题结构",
+        "只有“牛吃草”标题或单独出现牛、草、吃等词，不确认牛吃草；必须有增长 + 消耗 + 时间/原有量三类结构。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.gaosi.5.4cb7733714b7",
+      "name": "约数与倍数",
+      "required_structures": [
+        [
+          "gaosi_divisibility"
+        ]
+      ],
+      "supporting_structures": [
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "decimal_fraction_calculation"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「约数与倍数」的结构证据。必须命中这些结构组：第1组 gaosi_divisibility（整除、约数、倍数、质数、合数、因数等奥数数论结构）。别名线索只作为辅助，不可单独准入：约数与倍数、数论问题、约数、倍数、因数与倍数、因数。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「约数与倍数」：decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「约数与倍数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「约数与倍数」：宽泛分类标签、校内基础题或缺少结构证据的题目；只出现“约数与倍数”相近文字但没有对应高思专题结构",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.gaosi.6.42a79956c668",
+      "name": "概率初步",
+      "required_structures": [
+        [
+          "gaosi_probability"
+        ]
+      ],
+      "supporting_structures": [
+        "school_probability",
+        "counting_target"
+      ],
+      "exclude_structures": [
+        "statistics_chart_context"
+      ],
+      "confusable_with": [
+        "排列组合",
+        "统计图综合"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「概率初步」的结构证据。必须命中这些结构组：第1组 gaosi_probability（概率、随机事件、等可能结果、古典概型等概率结构）。别名线索只作为辅助，不可单独准入：概率初步、概率、统计、古典概型、统计、古典概型、条件概率。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「概率初步」：statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）",
+        "不要只凭关键词、章节名、别名或来源标签确认「概率初步」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「概率初步」：宽泛分类标签、校内基础题或缺少结构证据的题目；只出现“概率初步”相近文字但没有对应高思专题结构",
+        "只有普通计数或方案数问题但没有随机事件、等可能结果、摸取/抽取等概率结构时，不确认概率。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.gaosi.6.bdf9e3efdffd",
+      "name": "比例解应用题",
+      "required_structures": [
+        [
+          "gaosi_ratio"
+        ]
+      ],
+      "supporting_structures": [
+        "proportion_application",
+        "percent_calculation",
+        "ratio_relation",
+        "whole_part_relation"
+      ],
+      "exclude_structures": [
+        "profit_discount",
+        "concentration_task"
+      ],
+      "confusable_with": [
+        "利润折扣问题",
+        "浓度问题",
+        "百分数意义与计算"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「比例解应用题」的结构证据。必须命中这些结构组：第1组 gaosi_ratio（高思奥数专题结构，需要题面出现对应专题模型而不只是章节名）。别名线索只作为辅助，不可单独准入：比例解应用题、比例应用题综合题、比例应用题、基本比例问题、不变量问题、基本比例问题、不变量问题。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「比例解应用题」：profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）",
+        "不要只凭关键词、章节名、别名或来源标签确认「比例解应用题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「比例解应用题」：宽泛分类标签、校内基础题或缺少结构证据的题目；只出现“比例解应用题”相近文字但没有对应高思专题结构",
+        "只有冒号、百分号或“比”字但没有两个或多个数量之间的比例关系时，不确认比例应用。"
+      ]
+    }
+  ]
+}

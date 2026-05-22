@@ -6,6 +6,7 @@ import { DifficultyPositioning } from '@/components/report/DifficultyPositioning
 import { SixDimensionsRadar } from '@/components/report/SixDimensionsRadar';
 import {
   getDifficultyLabel,
+  getDifficultyPositionSummary,
   REPORT_DIMENSIONS,
   REPORT_DIFFICULTY_META,
 } from '@/components/report/reportMeta';
@@ -78,11 +79,12 @@ describe('DifficultyPositioning', () => {
     level: 4,
     label: '选拔卷',
     overall_score: 7.8,
+    position_summary: '小升初分班考难度试卷，题目更绕、步骤更多，用来拉开学生差距。',
     target_students: '适合基础扎实、需要面向选拔场景提升综合稳定性的学生。',
     description: '面向选拔区分场景，重视复杂问题解决、策略迁移与稳定性。',
     parent_summary: [
-      '这张试卷难度偏高，已经不只是考会不会知识点，更看孩子综合解题是否稳定。',
-      '从题目结构看，较难题约占 33.3%。最明显的压力在读题理解和推理链条：孩子需要把题目里的对象、规则、过程和问法分清楚，也要一步一步往下推，并在关键条件上回查。',
+      '这张试卷难度偏高，这是小升初分班考难度的试卷，题目更绕、步骤更多，会明显考验孩子做难题的稳定性。',
+      '从题目结构看，较难题约占 33.3%。主要卡点在读懂题意和连续推理：孩子要先读懂题意，并把步骤完整推下去。',
     ],
     question_distribution: {
       basis: 'question_count',
@@ -124,8 +126,9 @@ describe('DifficultyPositioning', () => {
     render(<DifficultyPositioning data={mockDifficulty} />);
 
     expect(screen.getByText('家长速读')).toBeInTheDocument();
-    expect(screen.getByText('这张试卷难度偏高，已经不只是考会不会知识点，更看孩子综合解题是否稳定。')).toBeInTheDocument();
-    expect(screen.getByText(/最明显的压力在读题理解和推理链条/)).toBeInTheDocument();
+    expect(screen.getByText('这张试卷难度偏高，这是小升初分班考难度的试卷，题目更绕、步骤更多，会明显考验孩子做难题的稳定性。')).toBeInTheDocument();
+    expect(screen.getByText(/主要卡点在读懂题意和连续推理/)).toBeInTheDocument();
+    expect(screen.getByText('试卷难度综合分')).toBeInTheDocument();
     expect(screen.getByText('题目难度结构')).toBeInTheDocument();
     expect(screen.getByText('基础题')).toBeInTheDocument();
     expect(screen.getByText('中等题')).toBeInTheDocument();
@@ -145,7 +148,7 @@ describe('DifficultyPositioning', () => {
 
     expect(screen.getByText(/这张试卷整体定位为/)).toBeInTheDocument();
     expect(
-      screen.getByText('具体难点要结合各维度得分看，重点关注计算、几何、读题、解题组织、知识跨度和推理链条里分数偏高的部分。'),
+      screen.getByText('具体卡点要结合各维度得分看，重点关注计算准确率、看图找关系、读懂题意、整理条件、知识混合使用和连续推理里分数偏高的部分。'),
     ).toBeInTheDocument();
     expect(screen.queryByText(/六维评价明细/)).not.toBeInTheDocument();
   });
@@ -749,5 +752,12 @@ describe('report difficulty metadata', () => {
   it('normalizes historical report labels by known level', () => {
     expect(getDifficultyLabel(4, '拔高卷')).toBe('选拔卷');
     expect(getDifficultyLabel(99, '历史标签')).toBe('历史标签');
+  });
+
+  it('uses parent-friendly paper position summaries by known level', () => {
+    expect(getDifficultyPositionSummary(4, '旧定位')).toBe(
+      '小升初分班考难度试卷，题目更绕、步骤更多，用来拉开学生差距。',
+    );
+    expect(getDifficultyPositionSummary(99, '旧定位')).toBe('旧定位');
   });
 });

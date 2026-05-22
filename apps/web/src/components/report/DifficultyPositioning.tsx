@@ -4,7 +4,7 @@ import {
   getDifficultyDescription,
   getDifficultyLabel,
   getDifficultyMeta,
-  getDifficultyTargetStudents,
+  getDifficultyPositionSummary,
   REPORT_DIFFICULTY_META,
 } from '@/components/report/reportMeta';
 
@@ -67,13 +67,16 @@ export function DifficultyPositioning({ data }: DifficultyPositioningProps) {
   const config = getDifficultyMeta(data.level);
   const levelLabel = getDifficultyLabel(data.level, data.label);
   const description = getDifficultyDescription(data.level, data.description);
-  const targetStudents = getDifficultyTargetStudents(data.level, data.target_students);
+  const positionSummary = getDifficultyPositionSummary(
+    data.level,
+    data.position_summary || data.description || data.target_students,
+  );
   const parentSummary =
     Array.isArray(data.parent_summary) && data.parent_summary.length >= 2
       ? data.parent_summary.slice(0, 2)
       : [
-          `这张试卷整体定位为${levelLabel}，${targetStudents}`,
-          '具体难点要结合各维度得分看，重点关注计算、几何、读题、解题组织、知识跨度和推理链条里分数偏高的部分。',
+          `这张试卷整体定位为${levelLabel}，${positionSummary}`,
+          '具体卡点要结合各维度得分看，重点关注计算准确率、看图找关系、读懂题意、整理条件、知识混合使用和连续推理里分数偏高的部分。',
         ];
   const distribution = data.question_distribution;
   const distributionBuckets = getOrderedBuckets(distribution?.buckets || []);
@@ -103,7 +106,7 @@ export function DifficultyPositioning({ data }: DifficultyPositioningProps) {
             borderColor: config.border,
           }}
         >
-          <span className="report-score-panel__label">综合分</span>
+          <span className="report-score-panel__label">试卷难度综合分</span>
           <div className="report-score-panel__value">
             <strong style={{ color: config.color }}>{formatScore(data.overall_score)}</strong>
             <small>/ 10</small>

@@ -76,6 +76,7 @@ DIFFICULTY_META = {
         "surface": "#f1f7f2",
         "border": "#c9ddce",
         "description": "整体更强调基础概念与常规运算，适合夯实基本能力。",
+        "position_summary": "课内基础巩固型试卷，主要看孩子基础概念和常规计算是否过关。",
         "target_students": "适合基础薄弱、需要巩固基本概念的学生。",
     },
     2: {
@@ -84,6 +85,7 @@ DIFFICULTY_META = {
         "surface": "#eef5f8",
         "border": "#c7d9e0",
         "description": "注重知识覆盖、基本应用和稳定解题能力，适合从课内掌握走向稳步提升。",
+        "position_summary": "课内核心提升型试卷，主要看孩子能不能把学过的知识稳定用出来。",
         "target_students": "适合基础一般、希望从课内掌握走向稳定提升的学生。",
     },
     3: {
@@ -92,6 +94,7 @@ DIFFICULTY_META = {
         "surface": "#fbf6ea",
         "border": "#e6d9b4",
         "description": "强调综合运用、方法迁移和拔高训练，适合基础较好的学生。",
+        "position_summary": "校内期中期末考试难度试卷，题目有一定变化，适合检验孩子能否稳定拿到中高分。",
         "target_students": "适合基础较好、需要强化综合运用和拔高训练的学生。",
     },
     4: {
@@ -100,6 +103,7 @@ DIFFICULTY_META = {
         "surface": "#fbf2ee",
         "border": "#e6cfc1",
         "description": "面向选拔区分场景，重视复杂问题解决、策略迁移与稳定性。",
+        "position_summary": "小升初分班考难度试卷，题目更绕、步骤更多，用来拉开学生差距。",
         "target_students": "适合基础扎实、需要面向选拔场景提升综合稳定性的学生。",
     },
     5: {
@@ -108,6 +112,7 @@ DIFFICULTY_META = {
         "surface": "#f4f0f8",
         "border": "#d9d0e6",
         "description": "整体强度高，突出竞赛型思维、跨模块综合和高难度解题技巧。",
+        "position_summary": "奥数杯赛竞赛难度试卷，难度很高，适合挑战高难题和竞赛题。",
         "target_students": "适合成绩优秀、准备挑战竞赛或高强度选拔的学生。",
     },
 }
@@ -924,8 +929,9 @@ class PDFExportService:
         position: dict,
         difficulty_label: str,
         difficulty_description: str,
-        target_students: str,
+        position_summary: str,
     ) -> str:
+        del difficulty_description
         raw_summary = position.get("parent_summary") if isinstance(position, dict) else None
         if isinstance(raw_summary, list):
             summary_items = [str(item).strip() for item in raw_summary if str(item).strip()][:2]
@@ -934,8 +940,8 @@ class PDFExportService:
 
         if len(summary_items) < 2:
             summary_items = [
-                f"这张试卷整体定位为{difficulty_label}，{target_students}",
-                "具体难点要结合各维度得分看，重点关注计算、几何、读题、解题组织、知识跨度和推理链条里分数偏高的部分。",
+                f"这张试卷整体定位为{difficulty_label}，{position_summary}",
+                "具体卡点要结合各维度得分看，重点关注计算准确率、看图找关系、读懂题意、整理条件、知识混合使用和连续推理里分数偏高的部分。",
             ]
 
         paragraphs = "".join(
@@ -1077,18 +1083,21 @@ class PDFExportService:
         difficulty_description = escape(
             str(difficulty_description_value)
         )
-        target_students_value = (
-            difficulty_meta["target_students"]
+        position_summary_value = (
+            difficulty_meta["position_summary"]
             if has_known_difficulty_level
-            else position.get("target_students") or "未提供"
+            else position.get("position_summary")
+            or position.get("description")
+            or position.get("target_students")
+            or "未提供"
         )
-        target_students = escape(str(target_students_value))
+        position_summary = escape(str(position_summary_value))
         overall_score = self._format_score(position.get("overall_score"))
         parent_summary_html = self._build_parent_summary_html(
             position,
             str(difficulty_label_value),
             str(difficulty_description_value),
-            str(target_students_value),
+            str(position_summary_value),
         )
         question_distribution_html = self._build_question_distribution_html(
             position.get("question_distribution") if isinstance(position, dict) else None
@@ -1490,8 +1499,8 @@ class PDFExportService:
       </div>
       <div class="report-overview-strip">
         <div class="report-overview-item"><span>整卷等级</span><strong>{difficulty_label}</strong></div>
-        <div class="report-overview-item"><span>综合分</span><strong>{overall_score} / 10</strong></div>
-        <div class="report-overview-item"><span>目标学生</span><strong>{target_students}</strong></div>
+        <div class="report-overview-item"><span>试卷难度综合分</span><strong>{overall_score} / 10</strong></div>
+        <div class="report-overview-item"><span>试卷定位</span><strong>{position_summary}</strong></div>
       </div>
     </header>
 
@@ -1506,7 +1515,7 @@ class PDFExportService:
 
           <div class="report-difficulty-card__top">
             <div class="report-score-panel">
-              <span class="report-score-panel__label">综合分</span>
+              <span class="report-score-panel__label">试卷难度综合分</span>
               <div class="report-score-panel__value">
                 <strong>{overall_score}</strong>
                 <small>/ 10</small>

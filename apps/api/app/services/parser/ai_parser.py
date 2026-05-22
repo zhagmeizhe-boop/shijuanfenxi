@@ -33,6 +33,7 @@ from app.services.parser.dim5_grounding import (
     Dim5KnowledgeGroundingService,
 )
 from app.services.parser.dim5_knowledge_graph import (
+    Dim5FactProfileExtractor,
     Dim5KnowledgeGraphMatcher,
     get_dim5_knowledge_graph_matcher,
 )
@@ -1196,6 +1197,12 @@ class AIParser:
             "dim5_structure_facts": self._normalize_dict_list(
                 feature.get("dim5_structure_facts")
             ),
+            "dim5_fact_profile": self._normalize_optional_dict(
+                feature.get("dim5_fact_profile")
+            ),
+            "graph_candidates": self._normalize_dict_list(feature.get("graph_candidates")),
+            "admission_results": self._normalize_dict_list(feature.get("admission_results")),
+            "dim5_decision": self._normalize_optional_dict(feature.get("dim5_decision")),
             "candidate_knowledge_points": self._normalize_dict_list(
                 feature.get("candidate_knowledge_points")
             ),
@@ -3562,7 +3569,7 @@ class AIParser:
         if str(feature.get("dim5_excluded_reason") or "").strip() == "retry_failed":
             return False
         facts = feature.get("dim5_structure_facts")
-        candidates = feature.get("candidate_knowledge_points")
+        candidates = feature.get("candidate_knowledge_points") or feature.get("graph_candidates")
         if isinstance(candidates, list) and candidates:
             return True
         if not isinstance(facts, list):
@@ -3805,9 +3812,18 @@ class AIParser:
             merged["need_manual_review"] = 1
             return self._normalize_dim5_feature(merged)
 
+        decision = (
+            graph_result.get("dim5_decision")
+            if isinstance(graph_result.get("dim5_decision"), dict)
+            else {}
+        )
         for key in (
             "graph_version",
+            "dim5_fact_profile",
             "dim5_structure_facts",
+            "graph_candidates",
+            "admission_results",
+            "dim5_decision",
             "candidate_knowledge_points",
             "selected_candidate_id",
             "rejected_candidates",
@@ -3826,10 +3842,25 @@ class AIParser:
             merged[key] = graph_result.get(key)
 
         if graph_result.get("confidence_status") == "confirmed":
-            point_name = str(graph_result.get("knowledge_point_name") or "").strip()
-            domain = str(graph_result.get("knowledge_domain") or "").strip()
-            level = normalize_dim5_knowledge_level(graph_result.get("knowledge_level"))
-            confidence = self._normalize_confidence(graph_result.get("confidence"))
+            point_name = str(
+                decision.get("knowledge_point_name") or graph_result.get("knowledge_point_name") or ""
+            ).strip()
+            domain = str(
+                decision.get("knowledge_domain") or graph_result.get("knowledge_domain") or ""
+            ).strip()
+            level = normalize_dim5_knowledge_level(
+                decision.get("knowledge_level") or graph_result.get("knowledge_level")
+            )
+            confidence = self._normalize_confidence(
+                decision.get("confidence") or graph_result.get("confidence")
+            )
+            decision_evidence = decision.get("evidence")
+            if isinstance(decision_evidence, list):
+                level_evidence = "; ".join(
+                    str(item).strip() for item in decision_evidence if str(item).strip()
+                )
+            else:
+                level_evidence = str(decision_evidence or graph_result.get("evidence") or "").strip()
             merged["knowledge_level"] = level
             merged["canonical_knowledge_point"] = point_name
             merged["canonical_knowledge_domain"] = domain
@@ -3837,7 +3868,7 @@ class AIParser:
                 merged["primary_knowledge_point"] = point_name
             merged["knowledge_point_source"] = "dim5_knowledge_graph"
             merged["level_source"] = "dim5_knowledge_graph"
-            merged["level_evidence"] = str(graph_result.get("evidence") or "").strip()
+            merged["level_evidence"] = level_evidence
             merged["canonical_match_source"] = "dim5_knowledge_graph"
             merged["canonical_match_confidence"] = confidence
             merged["grounded_selection_status"] = "selected"
@@ -3853,7 +3884,7 @@ class AIParser:
             ).strip()
             merged["grounded_knowledge_level"] = level
             merged["grounded_confidence"] = confidence
-            merged["grounded_evidence"] = str(graph_result.get("evidence") or "").strip()
+            merged["grounded_evidence"] = level_evidence
             merged["grounded_match_source"] = "dim5_knowledge_graph"
             merged["grounded_risk_flags"] = []
             merged["grounded_rejected_candidates"] = list(
@@ -3874,6 +3905,7 @@ class AIParser:
                 merged["knowledge_level"] = ""
                 merged["canonical_knowledge_point"] = ""
                 merged["canonical_knowledge_domain"] = ""
+                merged["need_manual_review"] = 1
         return self._normalize_dim5_feature(merged)
 
     @staticmethod
@@ -4086,6 +4118,26 @@ class AIParser:
         merged["dim5_retrieval_context"] = context
         merged["dim5_retrieval_candidates"] = list(context.get("candidates") or [])
         return merged
+
+    def _apply_dim5_online_decision_chain(
+        self,
+        dim5_feature: Dict[str, Any],
+        *,
+        question: ParsedQuestion,
+        analysis_facts: Dict[str, Any],
+        question_summary: str = "",
+    ) -> Dict[str, Any]:
+        graph_feature = self._apply_dim5_graph_grounding(
+            dim5_feature,
+            question=question,
+            analysis_facts=analysis_facts,
+        )
+        return self._finalize_dim5_feature(
+            graph_feature,
+            analysis_facts=analysis_facts,
+            question_text=question.raw_text,
+            question_summary=question_summary,
+        )
 
     def _build_prompt(self, question: ParsedQuestion) -> Tuple[List[Dict[str, Any]], bool]:
         system_prompt = self._build_system_prompt()
@@ -4412,37 +4464,10 @@ class AIParser:
                 analysis_facts=analysis_facts,
             )
         calibration_audits["dim4"] = normalized_features["dim4_innovation"].get("calibration", {})
-        for dim_code, feature_key in (("dim5", "dim5_knowledge"),):
-            normalized_features[feature_key] = self.reference_standard.calibrate_feature(
-                dim_code,
-                normalized_features[feature_key],
-                question_text=question.raw_text,
-                question_summary=question_summary,
-                analysis_facts=analysis_facts,
-            )
-            normalized_features[feature_key] = self._attach_dim5_retrieval_context(
-                normalized_features[feature_key],
-                question=question,
-                question_summary=question_summary,
-                analysis_facts=analysis_facts,
-            )
-            normalized_features[feature_key] = self._apply_dim5_grounding(
-                normalized_features[feature_key],
-                question=question,
-                analysis_facts=analysis_facts,
-            )
-            normalized_features[feature_key] = self._apply_dim5_graph_grounding(
-                normalized_features[feature_key],
-                question=question,
-                analysis_facts=analysis_facts,
-            )
-            normalized_features[feature_key] = self._finalize_dim5_feature(
-                normalized_features[feature_key],
-                analysis_facts=analysis_facts,
-                question_text=question.raw_text,
-                question_summary=question_summary,
-            )
-            calibration_audits[dim_code] = normalized_features[feature_key].get("calibration", {})
+        calibration_audits["dim5"] = {
+            "action": "online_reference_skipped",
+            "reason": "dim5_final_decision_uses_local_graph_only",
+        }
         return calibration_audits
 
     def _build_question_features_from_data(
@@ -4458,26 +4483,10 @@ class AIParser:
         analysis_facts = self._normalize_analysis_facts(data.get("analysis_facts"))
         confidence = float(data.get("confidence", 0.0) or 0.0)
         question_summary = str(data.get("question_summary", "")).strip() or question.raw_text[:80]
-        normalized_features["dim5_knowledge"] = self._attach_dim5_retrieval_context(
-            normalized_features["dim5_knowledge"],
-            question=question,
-            question_summary=question_summary,
-            analysis_facts=analysis_facts,
-        )
-        normalized_features["dim5_knowledge"] = self._apply_dim5_grounding(
+        normalized_features["dim5_knowledge"] = self._apply_dim5_online_decision_chain(
             normalized_features["dim5_knowledge"],
             question=question,
             analysis_facts=analysis_facts,
-        )
-        normalized_features["dim5_knowledge"] = self._apply_dim5_graph_grounding(
-            normalized_features["dim5_knowledge"],
-            question=question,
-            analysis_facts=analysis_facts,
-        )
-        normalized_features["dim5_knowledge"] = self._finalize_dim5_feature(
-            normalized_features["dim5_knowledge"],
-            analysis_facts=analysis_facts,
-            question_text=question.raw_text,
             question_summary=question_summary,
         )
 
@@ -4575,27 +4584,6 @@ class AIParser:
         normalized_features = self._normalize_dimension_features(feature_map)
         analysis_facts = self._normalize_analysis_facts(data.get("analysis_facts"))
         question_summary = str(data.get("question_summary", "")).strip() or question.raw_text[:80]
-        dim5_retry_required = not self._dim5_has_valid_band_and_sublevel(
-            normalized_features["dim5_knowledge"]
-        )
-        dim5_reference_filled = False
-        if (
-            not self._dim5_has_valid_knowledge_level(normalized_features["dim5_knowledge"])
-            and not self._dim5_has_valid_band_and_sublevel(normalized_features["dim5_knowledge"])
-        ):
-            dim5_reference_filled = self._try_fill_dim5_from_reference(
-                normalized_features,
-                question=question,
-                question_summary=question_summary,
-                analysis_facts=analysis_facts,
-            )
-        await self._ensure_dim5_band_with_retry(
-            normalized_features,
-            question=question,
-            question_summary=question_summary,
-            analysis_facts=analysis_facts,
-            retry_required=dim5_retry_required and not dim5_reference_filled,
-        )
         applicable_dimensions = data.get("applicable_dimensions", [])
         if not isinstance(applicable_dimensions, list):
             applicable_dimensions = []
@@ -4604,21 +4592,6 @@ class AIParser:
             question=question,
             analysis_facts=analysis_facts,
             applicable_dimensions=applicable_dimensions,
-        )
-        normalized_features["dim5_knowledge"] = self._apply_dim5_grounding(
-            normalized_features["dim5_knowledge"],
-            question=question,
-            analysis_facts=analysis_facts,
-        )
-        await self._ensure_dim5_grounding_with_llm(
-            normalized_features,
-            question=question,
-            analysis_facts=analysis_facts,
-        )
-        normalized_features["dim5_knowledge"] = self._apply_dim5_graph_grounding(
-            normalized_features["dim5_knowledge"],
-            question=question,
-            analysis_facts=analysis_facts,
         )
         feature_map["dim4_innovation"] = normalized_features["dim4_innovation"]
         feature_map["dim5_knowledge"] = normalized_features["dim5_knowledge"]

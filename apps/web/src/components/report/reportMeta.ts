@@ -15,6 +15,7 @@ export interface ReportDifficultyMeta {
   surface: string;
   border: string;
   description: string;
+  positionSummary: string;
   targetStudents: string;
 }
 
@@ -76,6 +77,7 @@ export const REPORT_DIFFICULTY_META: Record<number, ReportDifficultyMeta> = {
     surface: '#f1f7f2',
     border: '#c9ddce',
     description: '整体更强调基础概念与常规运算，适合夯实基本能力。',
+    positionSummary: '课内基础巩固型试卷，主要看孩子基础概念和常规计算是否过关。',
     targetStudents: '适合基础薄弱、需要巩固基本概念的学生。',
   },
   2: {
@@ -84,6 +86,7 @@ export const REPORT_DIFFICULTY_META: Record<number, ReportDifficultyMeta> = {
     surface: '#eef5f8',
     border: '#c7d9e0',
     description: '注重知识覆盖、基本应用和稳定解题能力，适合从课内掌握走向稳步提升。',
+    positionSummary: '课内核心提升型试卷，主要看孩子能不能把学过的知识稳定用出来。',
     targetStudents: '适合基础一般、希望从课内掌握走向稳定提升的学生。',
   },
   3: {
@@ -92,6 +95,7 @@ export const REPORT_DIFFICULTY_META: Record<number, ReportDifficultyMeta> = {
     surface: '#fbf6ea',
     border: '#e6d9b4',
     description: '强调综合运用、方法迁移和拔高训练，适合基础较好的学生。',
+    positionSummary: '校内期中期末考试难度试卷，题目有一定变化，适合检验孩子能否稳定拿到中高分。',
     targetStudents: '适合基础较好、需要强化综合运用和拔高训练的学生。',
   },
   4: {
@@ -100,6 +104,7 @@ export const REPORT_DIFFICULTY_META: Record<number, ReportDifficultyMeta> = {
     surface: '#fbf2ee',
     border: '#e6cfc1',
     description: '面向选拔区分场景，重视复杂问题解决、策略迁移与稳定性。',
+    positionSummary: '小升初分班考难度试卷，题目更绕、步骤更多，用来拉开学生差距。',
     targetStudents: '适合基础扎实、需要面向选拔场景提升综合稳定性的学生。',
   },
   5: {
@@ -108,6 +113,7 @@ export const REPORT_DIFFICULTY_META: Record<number, ReportDifficultyMeta> = {
     surface: '#f4f0f8',
     border: '#d9d0e6',
     description: '整体强度高，突出竞赛型思维、跨模块综合和高难度解题技巧。',
+    positionSummary: '奥数杯赛竞赛难度试卷，难度很高，适合挑战高难题和竞赛题。',
     targetStudents: '适合成绩优秀、准备挑战竞赛或高强度选拔的学生。',
   },
 };
@@ -140,6 +146,10 @@ export function getDifficultyLabel(level: number, fallback?: string): string {
 
 export function getDifficultyDescription(level: number, fallback?: string): string {
   return REPORT_DIFFICULTY_META[level]?.description ?? fallback ?? getDifficultyMeta(level).description;
+}
+
+export function getDifficultyPositionSummary(level: number, fallback?: string): string {
+  return REPORT_DIFFICULTY_META[level]?.positionSummary ?? fallback ?? '未提供';
 }
 
 export function getDifficultyTargetStudents(level: number, fallback?: string): string {

@@ -179,7 +179,7 @@ def _dim5_has_graph_review_signal(feature_dict: dict) -> bool:
         return False
     if str(feature_dict.get("dim5_excluded_reason") or "").strip() == "retry_failed":
         return False
-    candidates = feature_dict.get("candidate_knowledge_points")
+    candidates = feature_dict.get("candidate_knowledge_points") or feature_dict.get("graph_candidates")
     if isinstance(candidates, list) and candidates:
         return True
     facts = feature_dict.get("dim5_structure_facts")

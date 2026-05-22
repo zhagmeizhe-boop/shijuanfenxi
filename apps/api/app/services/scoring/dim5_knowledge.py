@@ -428,13 +428,28 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
         score_features["knowledge_display_name"] = cls._normalize_knowledge_display_name(
             score_features
         )
+        dim5_decision = (
+            score_features.get("dim5_decision")
+            if isinstance(score_features.get("dim5_decision"), dict)
+            else {}
+        )
         confidence_status = str(score_features.get("confidence_status") or "").strip()
+        if not confidence_status and dim5_decision:
+            confidence_status = (
+                "confirmed"
+                if str(dim5_decision.get("decision_status") or "").strip() == "confirmed"
+                else "review_required"
+            )
         if confidence_status and confidence_status != "confirmed":
             details = {
                 "confidence_status": confidence_status,
                 "failure_reason": str(score_features.get("failure_reason") or "").strip(),
                 "graph_version": str(score_features.get("graph_version") or "").strip(),
+                "dim5_fact_profile": score_features.get("dim5_fact_profile") or {},
                 "dim5_structure_facts": score_features.get("dim5_structure_facts") or [],
+                "graph_candidates": score_features.get("graph_candidates") or [],
+                "admission_results": score_features.get("admission_results") or [],
+                "dim5_decision": dim5_decision,
                 "candidate_knowledge_points": score_features.get("candidate_knowledge_points") or [],
                 "rejected_candidates": score_features.get("rejected_candidates") or [],
                 "selected_candidate_id": str(score_features.get("selected_candidate_id") or "").strip(),
@@ -457,13 +472,31 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
             )
 
         if confidence_status == "confirmed":
-            graph_level = normalize_dim5_knowledge_level(score_features.get("knowledge_level"))
+            graph_level = normalize_dim5_knowledge_level(
+                dim5_decision.get("knowledge_level") or score_features.get("knowledge_level")
+            )
             if not graph_level:
                 graph_level = normalize_dim5_knowledge_level(score_features.get("grounded_knowledge_level"))
             if graph_level:
                 score_features["knowledge_level"] = graph_level
-            graph_point = str(score_features.get("knowledge_point_name") or "").strip()
-            graph_domain = str(score_features.get("knowledge_domain") or "").strip()
+            graph_point = str(
+                dim5_decision.get("knowledge_point_name")
+                or score_features.get("knowledge_point_name")
+                or ""
+            ).strip()
+            graph_domain = str(
+                dim5_decision.get("knowledge_domain")
+                or score_features.get("knowledge_domain")
+                or ""
+            ).strip()
+            if dim5_decision.get("evidence") and not score_features.get("level_evidence"):
+                evidence_items = dim5_decision.get("evidence")
+                if isinstance(evidence_items, list):
+                    score_features["level_evidence"] = "; ".join(
+                        str(item).strip() for item in evidence_items if str(item).strip()
+                    )
+                else:
+                    score_features["level_evidence"] = str(evidence_items or "").strip()
             if graph_point:
                 score_features["canonical_knowledge_point"] = graph_point
                 score_features.setdefault("primary_knowledge_point", graph_point)
@@ -554,7 +587,11 @@ class Dim5KnowledgeScorer(BaseDimensionScorer):
             "knowledge_semester",
             "knowledge_display_name",
             "dim5_key_difficulty_explanation",
+            "dim5_fact_profile",
             "dim5_structure_facts",
+            "graph_candidates",
+            "admission_results",
+            "dim5_decision",
             "candidate_knowledge_points",
             "selected_candidate_id",
             "rejected_candidates",

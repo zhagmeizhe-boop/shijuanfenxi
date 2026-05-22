@@ -5,10 +5,17 @@ from pathlib import Path
 from app.services.ocr.base import ParsedQuestion, QuestionType
 from app.services.parser.ai_parser import AIParser
 from app.services.parser.dim5_knowledge_graph import (
+    DIM5_GRAPH_PATH,
     Dim5KnowledgeGraph,
+    Dim5FactProfileExtractor,
     Dim5KnowledgeGraphMatcher,
+    build_dim5_rule_localization_report,
+    normalize_dim5_structure_key,
 )
 from app.services.scoring.dim5_knowledge import Dim5KnowledgeScorer
+
+
+EXPECTED_DIM5_GRAPH_NODE_COUNT = 930
 
 
 def _match(text: str, question_type: str = "application"):
@@ -50,6 +57,9 @@ def test_dim5_graph_schema_only_approves_structured_nodes():
     for node in graph.approved_nodes:
         assert node.name not in generic_terms
         assert node.required_fact_groups
+        assert node.required_structures
+        assert node.fact_extraction_hints
+        assert node.negative_hints
         assert node.level
         assert node.source_refs
         assert node.positive_examples
@@ -64,6 +74,64 @@ def test_dim5_graph_schema_only_approves_structured_nodes():
         assert node.knowledge_track_label == "奥数"
         assert node.knowledge_grade in {"3", "4", "5", "6"}
         assert node.knowledge_display_name.startswith(f"奥数{node.knowledge_grade_label}：")
+
+
+def test_dim5_graph_rules_are_chinese_localized_without_changing_structure_keys():
+    payload = json.loads(DIM5_GRAPH_PATH.read_text(encoding="utf-8"))
+    report = build_dim5_rule_localization_report(payload)
+
+    assert report["node_count"] == EXPECTED_DIM5_GRAPH_NODE_COUNT
+    assert report["required_structures_coverage"] == EXPECTED_DIM5_GRAPH_NODE_COUNT
+    assert report["fact_extraction_hints_coverage"] == EXPECTED_DIM5_GRAPH_NODE_COUNT
+    assert report["negative_hints_coverage"] == EXPECTED_DIM5_GRAPH_NODE_COUNT
+    assert report["chinese_rule_coverage"] == EXPECTED_DIM5_GRAPH_NODE_COUNT
+    assert report["english_template_residue_count"] == 0
+    assert report["low_quality_rule_count"] == 0
+
+    for node in payload["nodes"]:
+        for group in node["required_structures"]:
+            for key in group:
+                assert key == key.lower()
+                assert key.replace("_", "").isalnum()
+
+
+def test_dim5_high_risk_rules_have_chinese_boundaries():
+    payload = json.loads(DIM5_GRAPH_PATH.read_text(encoding="utf-8"))
+    by_name = {node["name"]: node for node in payload["nodes"]}
+
+    circle_text = " ".join(by_name["圆与扇形"]["fact_extraction_hints"] + by_name["圆与扇形"]["negative_hints"])
+    clock_text = " ".join(
+        by_name["牛吃草问题与钟表问题"]["fact_extraction_hints"]
+        + by_name["牛吃草问题与钟表问题"]["negative_hints"]
+    )
+    grazing_text = " ".join(by_name["牛吃草模型"]["fact_extraction_hints"] + by_name["牛吃草模型"]["negative_hints"])
+    pie_text = " ".join(by_name["扇形统计图"]["fact_extraction_hints"] + by_name["扇形统计图"]["negative_hints"])
+
+    assert "扇形统计图" in circle_text and "不确认" in circle_text
+    assert "顺时针/逆时针" in clock_text and "不能单独触发" in clock_text
+    assert "增长 + 消耗 + 时间/原有量" in grazing_text
+    assert "statistics_chart_context" in pie_text and "统计图" in pie_text
+
+
+def test_dim5_fact_profile_prompt_is_chinese_with_stable_english_keys():
+    messages = Dim5FactProfileExtractor._build_messages(
+        question_id="1",
+        raw_text="如图，半圆绕B点顺时针旋转30°，求阴影部分面积。",
+        question_type="application",
+        image_refs=[],
+        ocr_warnings=[],
+    )
+    prompt = messages[1]["content"]
+
+    assert "只能使用英文结构 key" in prompt
+    assert "geometry_circle: 圆" in prompt
+    assert "area_goal: 题目目标是求面积" in prompt
+    assert "顺时针/逆时针" in prompt
+    assert "不得输出 clock_face" in prompt
+    assert "Extract ONLY" not in prompt
+    assert normalize_dim5_structure_key("旋转方向") == "rotation_direction"
+    assert normalize_dim5_structure_key("圆形几何") == "geometry_circle"
+    assert normalize_dim5_structure_key("面积目标") == "area_goal"
 
 
 def test_dim5_graph_merges_2024_gaosi_knowledge_tree_subtopics():
@@ -117,6 +185,139 @@ def test_dim5_graph_distinguishes_work_rate_and_grazing():
     assert grazing["knowledge_point_name"] == "牛吃草问题与钟表问题"
     assert grazing["knowledge_display_name"] == "奥数五年级：牛吃草问题与钟表问题"
     assert grazing["knowledge_level"] == "L4"
+
+
+def test_dim5_graph_regresses_wmo_report_four_exposed_cases():
+    defined_operation = _match(
+        '我们规定一种运算"※"：※2=1×2×3，※3=2×3×4，※4=3×4×5，'
+        '如果 1/(※7) - 1/(※8) = ※88 ×□，那么□中应填（  ）。',
+        question_type="single_choice",
+    )
+    reverse = _match(
+        "一块冰，每小时失去其质量的一半，八小时后其质量为 9/64 千克，"
+        "那么这块冰一开始的质量是（  ）千克。",
+        question_type="single_choice",
+    )
+    work_progress = _match(
+        "一件工程做了若干天之后，已完成的部分是未完成部分的 1/7，"
+        "再做4天之后，发现已完成的部分是未完成部分的 1/6，"
+        "那么这件工程总共需（  ）天才能完成。",
+        question_type="single_choice",
+    )
+    circle_cut_paste = _match(
+        "下图正方形的边长为20厘米，图中阴影部分的面积是（  ）平方厘米。"
+        "（π取3.14）[几何图形：正方形内含四个扇形，中间形成阴影区域]",
+        question_type="single_choice",
+    )
+
+    assert defined_operation["confidence_status"] == "confirmed"
+    assert defined_operation["knowledge_point_name"] == "定义新运算"
+    assert {"defined_operation_rule", "defined_operation_target"} <= set(
+        defined_operation["dim5_fact_profile"]["structures"]
+    )
+    assert not (
+        _confirmed_candidate_names(defined_operation)
+        & {"妙用加减号", "等式加减法", "小数分数混合运算"}
+    )
+
+    assert reverse["confidence_status"] == "confirmed"
+    assert reverse["knowledge_point_name"] == "倍半递推与倒推还原"
+    assert {"half_recurrence", "reverse_process"} <= set(reverse["dim5_fact_profile"]["structures"])
+    assert "小数分数混合运算" not in _confirmed_candidate_names(reverse)
+
+    assert work_progress["confidence_status"] == "confirmed"
+    assert work_progress["knowledge_point_name"] == "工程问题"
+    assert {"work_rate_task", "work_progress_ratio"} <= set(work_progress["dim5_fact_profile"]["structures"])
+    assert "小数分数混合运算" not in _confirmed_candidate_names(work_progress)
+
+    assert circle_cut_paste["confidence_status"] == "confirmed"
+    assert circle_cut_paste["knowledge_point_name"] == "圆与扇形"
+    assert {"geometry_circle", "gaosi_circle_sector", "area_goal"} <= set(
+        circle_cut_paste["dim5_fact_profile"]["structures"]
+    )
+    assert {"area_decomposition", "gaosi_cut_paste"} & set(
+        circle_cut_paste["dim5_fact_profile"]["structures"]
+    )
+
+
+def test_dim5_graph_regresses_confirmed_plan_wmo_targets():
+    cases = [
+        (
+            "韩国、泰国、俄罗斯和新加坡共派了 15 名代表参加第三届"
+            '"一带一路"国际合作高峰论坛。各国派出的代表人数都不一样'
+            "（每国至少派 1 名）。泰国和新加坡共派出 6 名代表，"
+            "俄罗斯和新加坡共派出 7 名代表。仅有一个国家派出了 4 名代表。",
+            "奥数三年级：条件枚举 / 整数拆分",
+        ),
+        (
+            "如图，将三角形 ABD 绕 B 点顺时针旋转 90°，得到三角形 CBE。"
+            "已知 AB=10 厘米，BE=4 厘米，则图中阴影部分的面积是（  ）平方厘米。"
+            "（π 取 3.14）",
+            "奥数五年级：整体法求面积 / 旋转割补求阴影面积",
+        ),
+        (
+            "同一条街上的 16 户人家中，有一户的管道漏水。维修工人将关闭部分人家的阀门。"
+            "如果他们关闭 8 号和 9 号之间的阀门，而水表显示有水仍在使用，就知道漏水的地方"
+            "在 1 号和 8 号之间；若水表未显示有水在使用，则 9 号和 16 号之间漏水。"
+            "至少需要关闭几个阀门才能确定漏水的地方？",
+            "奥数六年级：二分策略 / 信息查找 / 最优排查",
+        ),
+        (
+            "经统计，某校六年级学生的家长中有 280 人使用微信和老师联系，其中不经常使用微信的是"
+            "经常使用微信的 2/3，则不经常使用微信的有（  ）人。",
+            "校内六年级：分数应用题 / 整体与部分关系",
+        ),
+        (
+            "如图，四边形 ABCD 的对角线 AC 与 BD 相交于 O，边 BC 上有一点 E，BE：EC=7：5。"
+            "三角形 ABO 的面积为 36，三角形 ADO 的面积为 18，三角形 CDO 的面积为 24。"
+            "则三角形 AED 的面积是（  ）。",
+            "奥数五年级：蝴蝶模型 / 面积比例",
+        ),
+        (
+            "思思采摘了一些葡萄，放入一个圆柱形木桶里酿葡萄酒。桶的底面外直径是 48cm，"
+            "内直径是 40cm，外高是 50cm，内高是 40cm。（π取3）给木桶的盖子和侧面进行装饰，"
+            "装饰部分的面积是多少平方厘米？酒水的高度是木桶内高度的4/5，求酒水体积。",
+            "校内六年级：圆柱表面积与体积综合",
+        ),
+    ]
+
+    for text, expected_display in cases:
+        result = _match(text)
+        assert result["confidence_status"] == "confirmed"
+        assert result["knowledge_display_name"] == expected_display
+
+
+def test_dim5_graph_regresses_grade3_midterm_confirmed_scope():
+    cases = [
+        (
+            "正方形边长扩大为原来的 3 倍，周长扩大为原来的______倍。",
+            "校内三年级：长方形和正方形周长 / 周长倍数关系",
+        ),
+        (
+            "□46÷5，要使商是三位数，□里最小填______；要使84□÷4 的商末尾有 0，□里最大填______。",
+            "校内三年级：除数是一位数的竖式计算 / 商的位数与末尾0判断",
+        ),
+        (
+            "将一张正方形纸上下对折，周长比原正方形的周长减少8厘米，原正方形的周长是_____厘米。"
+            "如果再对折1次，得到的新图形周长是_____厘米。",
+            "校内三年级：长方形和正方形周长 / 折叠后的周长变化",
+        ),
+        (
+            "计算下面图形的周长。（单位：厘米）（1）五边形，边长分别为5、5、5、5、5"
+            "（2）阶梯形，尺寸标注为3、12、3、12",
+            "校内三年级：多边形周长计算 / 不规则图形周长",
+        ),
+        (
+            "把 24 张边长为 2 分米的正方形卡片贴在一起，做成长方形展示板，要在展示板四周贴装饰条。"
+            "怎样设计能让贴的装饰条最少？",
+            "校内三年级：长方形和正方形周长 / 拼接图形周长最小化",
+        ),
+    ]
+
+    for text, expected_display in cases:
+        result = _match(text)
+        assert result["confidence_status"] == "confirmed"
+        assert result["knowledge_display_name"] == expected_display
 
 
 def test_dim5_graph_confirms_gaosi_knowledge_tree_subtopic_terms():
@@ -616,6 +817,122 @@ def test_dim5_graph_generic_triggers_do_not_confirm_by_themselves():
         assert result["confidence_status"] != "confirmed", text
 
 
+def test_dim5_new_chain_outputs_decision_artifacts_for_circle_rotation_area():
+    result = _match_many(
+        "如图，直径AB = 6的半圆，绕B点顺时针旋转30°，则图中阴影部分的面积是多少？",
+        max_candidates=12,
+    )
+
+    assert result["confidence_status"] == "confirmed"
+    assert result["selected_candidate_id"] == "dim5.gaosi.5.268236d5c977"
+    assert result["knowledge_point_name"] == "圆与扇形"
+    assert result["knowledge_level"] == "L4"
+    assert result["dim5_decision"]["decision_status"] == "confirmed"
+    assert result["dim5_decision"]["knowledge_point_id"] == result["selected_candidate_id"]
+    assert result["dim5_fact_profile"]["structures"]
+    assert "rotation_direction" in result["dim5_fact_profile"]["structures"]
+    assert "gaosi_grazing_clock" not in result["dim5_fact_profile"]["structures"]
+    assert result["graph_candidates"]
+    assert result["admission_results"]
+    assert all(
+        not (
+            candidate["knowledge_point_id"] == "dim5.gaosi.5.3d2bd8254119"
+            and candidate["candidate_status"] == "confirmed_candidate"
+        )
+        for candidate in result["graph_candidates"]
+    )
+
+
+def test_dim5_grazing_requires_growth_consumption_and_time_structure():
+    bare = _match("牛吃草")
+    full = _match(
+        "一片草地原有草量，每天匀速生长，若8头牛12天吃完，10头牛8天吃完，问几头牛6天吃完？"
+    )
+
+    assert bare["confidence_status"] != "confirmed"
+    assert bare["dim5_decision"]["decision_status"] == "review_required"
+    assert "gaosi_grazing_clock" not in bare["dim5_fact_profile"]["structures"]
+
+    assert full["confidence_status"] == "confirmed"
+    assert full["selected_candidate_id"] == "dim5.gaosi.5.3d2bd8254119"
+    assert {"resource_growth", "resource_consumption", "resource_time_or_initial", "gaosi_grazing_clock"} <= set(
+        full["dim5_fact_profile"]["structures"]
+    )
+
+
+def test_dim5_pie_chart_blocks_geometry_circle_sector_candidate():
+    result = _match_many(
+        "某校学生参加社团情况如扇形统计图，STEAM占30%，共有120人，求总人数。",
+        max_candidates=16,
+    )
+
+    assert result["confidence_status"] == "confirmed"
+    assert result["knowledge_domain"] == "statistics_probability"
+    assert any(
+        candidate["knowledge_point_id"] == "dim5.gaosi.5.268236d5c977"
+        and candidate["candidate_status"] == "blocked_candidate"
+        for candidate in result["graph_candidates"]
+    )
+
+
+def test_dim5_corrects_confirmed_report_specific_misclassifications():
+    cases = [
+        (
+            "一个三角形三个角的度数的比是 3：2：4，这个三角形是（  ）。 A.锐角三角形 B.直角三角形 C.钝角三角形 D.等腰三角形",
+            "校内四年级：三角形的分类 / 按角判断三角形",
+            "triangle_angle_classification",
+        ),
+        (
+            "一圆柱和一圆锥的底面积相等，圆柱和圆锥的体积比是 3：2，圆柱和圆锥高的比是（  ） A.1：2 B.2：1 C.1：3 D.2：3",
+            "校内六年级：圆柱圆锥 / 等底面积下体积与高的关系",
+            "cylinder_cone_volume_height_ratio",
+        ),
+        (
+            "如图，一长方形被一条直线分成两个长方形，这两个长方形的宽的比为 1：3，若阴影三角形面积为 3 平方厘米，则原长方形面积为（  ）平方厘米。 A.4 B.6 C.8 D.10",
+            "校内五年级：组合图形的面积 / 分割与阴影面积",
+            "composite_area_split_relation",
+        ),
+        (
+            "（圆柱和圆锥体的体积）高相同的圆柱与圆锥，底面半径之比为2:3，则它们的体积比是（）。",
+            "校内六年级：圆柱与圆锥的体积比问题",
+            "cylinder_cone_volume_ratio",
+        ),
+        (
+            "（找规律）将正整数依次按下表规律排成5列，根据表中的排列规律，数2016应排在第（）行，第（）列。",
+            "奥数四年级：数列与数表",
+            "number_table_position_pattern",
+        ),
+        (
+            "（分数和百分数的综合应用）一个长方形，若长增加1/4，宽减少1/5，那么新的长方形面积是原来的（）%",
+            "校内六年级：分数百分数综合应用 / 长方形面积变化",
+            "rectangle_area_fraction_percent_change",
+        ),
+    ]
+
+    for text, expected_display, expected_structure in cases:
+        result = _match_many(text, max_candidates=24)
+
+        assert result["confidence_status"] == "confirmed", text
+        assert result["knowledge_display_name"] == expected_display
+        assert expected_structure in result["dim5_fact_profile"]["structures"]
+
+
+def test_dim5_specific_guards_do_not_block_true_ratio_permutation_or_discount():
+    ratio = _match_many("甲、乙两数的比是3：5，甲数是24，求乙数是多少。", max_candidates=16)
+    permutation = _match_many("5名同学排队拍照，一共有多少种不同的排法？", max_candidates=16)
+    discount = _match_many("一件衣服标价140元，打七折出售还赚了28元。这件衣服的成本是多少元？", max_candidates=16)
+
+    assert ratio["confidence_status"] == "confirmed"
+    assert "比例" in ratio["knowledge_display_name"] or "比例" in ratio["knowledge_point_name"]
+
+    assert permutation["confidence_status"] == "confirmed"
+    assert permutation["knowledge_display_name"] == "奥数四年级：排列组合"
+
+    assert discount["confidence_status"] == "confirmed"
+    assert {"profit_discount", "price_profit_relation"} <= set(discount["dim5_fact_profile"]["structures"])
+    assert "rectangle_area_fraction_percent_change" not in discount["dim5_fact_profile"]["structures"]
+
+
 def test_dim5_graph_review_signal_keeps_unconfirmed_dim5_in_applicability_flow():
     assert AIParser._dim5_has_graph_review_signal(
         {
@@ -674,6 +991,10 @@ def test_dim5_graph_parser_application_does_not_pollute_analysis_facts():
     assert analysis_facts == before
     assert feature["confidence_status"] == "confirmed"
     assert feature["knowledge_point_name"] == "百分数意义与计算"
+    assert feature["dim5_decision"]["decision_status"] == "confirmed"
+    assert feature["dim5_fact_profile"]["structures"]
+    assert feature["graph_candidates"]
+    assert feature["admission_results"]
     assert "dim5_structure_facts" in feature
     assert "dim5_structure_facts" not in analysis_facts
 
@@ -708,6 +1029,17 @@ def test_dim5_scorer_accepts_confirmed_graph_result():
             "knowledge_grade_label": "年级未确认",
             "knowledge_display_name": "奥数年级未确认：牛吃草模型",
             "graph_version": "dim5_knowledge_graph_v1",
+            "dim5_fact_profile": {"structures": ["resource_growth", "resource_consumption"]},
+            "graph_candidates": [{"knowledge_point_id": "dim5.quantity_application.grazing"}],
+            "admission_results": [{"knowledge_point_id": "dim5.quantity_application.grazing", "admission_status": "passed"}],
+            "dim5_decision": {
+                "decision_status": "confirmed",
+                "knowledge_point_id": "dim5.quantity_application.grazing",
+                "knowledge_point_name": "牛吃草模型",
+                "knowledge_domain": "quantity_application",
+                "knowledge_level": "L4",
+                "evidence": ["原有草量", "每天匀速生长", "吃完"],
+            },
         }
     )
 
@@ -716,3 +1048,6 @@ def test_dim5_scorer_accepts_confirmed_graph_result():
     assert result.details["canonical_knowledge_point"] == "牛吃草模型"
     assert result.details["confidence_status"] == "confirmed"
     assert result.details["knowledge_display_name"] == "奥数知识：牛吃草模型"
+    assert result.details["dim5_decision"]["decision_status"] == "confirmed"
+    assert result.details["graph_candidates"]
+    assert "原有草量" in result.details["level_evidence"]

@@ -7791,6 +7791,22 @@ class TestDifficultyPositioning:
             5: "竞赛卷",
         }
 
+    def test_report_position_summaries_use_parent_friendly_wording(self):
+        service = ReportService()
+
+        summaries = {
+            level: service._get_position_summary(level)
+            for level in range(1, 6)
+        }
+
+        assert summaries == {
+            1: "课内基础巩固型试卷，主要看孩子基础概念和常规计算是否过关。",
+            2: "课内核心提升型试卷，主要看孩子能不能把学过的知识稳定用出来。",
+            3: "校内期中期末考试难度试卷，题目有一定变化，适合检验孩子能否稳定拿到中高分。",
+            4: "小升初分班考难度试卷，题目更绕、步骤更多，用来拉开学生差距。",
+            5: "奥数杯赛竞赛难度试卷，难度很高，适合挑战高难题和竞赛题。",
+        }
+
     def test_report_difficulty_thresholds_put_scores_above_7_in_competition(self):
         service = ReportService()
 

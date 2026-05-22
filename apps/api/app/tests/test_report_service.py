@@ -119,10 +119,13 @@ def test_report_payload_builds_parent_summary_and_question_distribution():
     )
 
     position = report["difficulty_position"]
-    assert position["parent_summary"][0] == "这张试卷难度很高，很多题会有明显区分度，需要孩子同时处理复杂条件、方法选择和连续推理。"
+    assert position["position_summary"] == "奥数杯赛竞赛难度试卷，难度很高，适合挑战高难题和竞赛题。"
+    assert position["target_students"] == "适合成绩优秀、准备挑战竞赛或高强度选拔的学生。"
+    assert position["parent_summary"][0] == "这张试卷难度很高，这是奥数杯赛竞赛难度的试卷，适合看孩子能不能挑战高难题和竞赛题。"
     assert "较难题约占 33.3%" in position["parent_summary"][1]
-    assert "最明显的压力在读题理解和推理链条" in position["parent_summary"][1]
-    assert "场景规则理解" not in position["parent_summary"][1]
+    assert "主要卡点在读懂题意和连续推理" in position["parent_summary"][1]
+    assert "孩子要先读懂题意，并把步骤完整推下去" in position["parent_summary"][1]
+    assert "知识跨度" not in position["parent_summary"][1]
 
     distribution = position["question_distribution"]
     assert distribution["basis"] == "question_count"
@@ -155,11 +158,10 @@ def test_parent_summary_changes_with_top_dimension_scores():
         },
     )
 
-    assert summary[0] == "这张试卷有一定挑战，基础题之外会有一些需要整理条件、转一步弯或综合运用的题。"
+    assert summary[0] == "这张试卷有一定难度，这是校内期中期末考试难度的试卷，题目有一定变化，适合检验孩子能否稳定拿到中高分。"
     assert "较难题约占 25.0%" in summary[1]
-    assert "主要难点在计算和几何" in summary[1]
-    assert "把多步算式算稳" in summary[1]
-    assert "先看懂图形关系" in summary[1]
+    assert "主要卡点在计算准确率和看图找关系" in summary[1]
+    assert "孩子要少算错，并看懂图形关系" in summary[1]
 
 
 def test_parent_summary_uses_low_pressure_wording_when_all_dimensions_below_six():
@@ -173,10 +175,10 @@ def test_parent_summary_uses_low_pressure_wording_when_all_dimensions_below_six(
         {"buckets": [{"key": "hard", "percentage": 8.3}]},
     )
 
-    assert summary[0] == "这张试卷整体难度适中，大部分题还是课内常规，但会要求孩子把学过的方法稳定用出来。"
+    assert summary[0] == "这张试卷难度适中，这是课内核心提升型试卷，主要看孩子能不能把学过的知识稳定用出来。"
     assert "较难题约占 8.3%" in summary[1]
-    assert "整体没有特别突出的单一难点" in summary[1]
-    assert "相对需要留意的是计算和读题理解" in summary[1]
+    assert "整体没有特别突出的卡点" in summary[1]
+    assert "重点看孩子能不能稳定完成基础题和中等题" in summary[1]
 
 
 def test_parent_summary_uses_distribution_fallback_when_missing_hard_bucket():
@@ -186,9 +188,9 @@ def test_parent_summary_uses_distribution_fallback_when_missing_hard_bucket():
         {"buckets": [{"key": "basic", "percentage": 100.0}]},
     )
 
-    assert summary[0] == "这张试卷整体比较基础，主要是课内概念、基础计算和常规题型。"
+    assert summary[0] == "这张试卷整体比较基础，这是课内基础巩固型试卷，主要看孩子基础概念和常规计算是否过关。"
     assert "暂时没有足够的题目难度结构数据" in summary[1]
-    assert "最明显的压力在推理链条" in summary[1]
+    assert "主要卡点在连续推理" in summary[1]
 
 
 def test_existing_parent_summary_snapshot_is_not_rewritten():
@@ -245,8 +247,8 @@ def _build_pdf_report_payload(dimension_details):
 def test_pdf_export_renders_parent_summary_and_question_distribution():
     payload = _build_pdf_report_payload([])
     payload["difficulty_position"]["parent_summary"] = [
-        "这张试卷难度偏高，已经不只是考会不会知识点，更看孩子综合解题是否稳定。",
-        "从题目结构看，较难题约占 33.3%。最明显的压力在读题理解和推理链条：孩子需要把题目里的对象、规则、过程和问法分清楚，也要一步一步往下推，并在关键条件上回查。",
+        "这张试卷难度偏高，这是小升初分班考难度的试卷，题目更绕、步骤更多，会明显考验孩子做难题的稳定性。",
+        "从题目结构看，较难题约占 33.3%。主要卡点在读懂题意和连续推理：孩子要先读懂题意，并把步骤完整推下去。",
     ]
     payload["difficulty_position"]["question_distribution"] = {
         "basis": "question_count",
@@ -285,8 +287,11 @@ def test_pdf_export_renders_parent_summary_and_question_distribution():
     html = PDFExportService()._generate_html(payload)
 
     assert "家长速读" in html
-    assert "最明显的压力在读题理解和推理链条" in html
+    assert "主要卡点在读懂题意和连续推理" in html
     assert "较难题约占 33.3%" in html
+    assert "试卷难度综合分" in html
+    assert "试卷定位" in html
+    assert "校内期中期末考试难度试卷" in html
     assert "题目难度结构" in html
     assert "基础题" in html
     assert "中等题" in html
@@ -303,11 +308,12 @@ def test_pdf_export_parent_summary_fallback_is_parent_friendly():
         {},
         "拔高卷",
         "",
-        "适合基础较好的学生。",
+        "校内期中期末考试难度试卷，题目有一定变化，适合检验孩子能否稳定拿到中高分。",
     )
 
     assert "这张试卷整体定位为拔高卷" in html
-    assert "重点关注计算、几何、读题、解题组织、知识跨度和推理链条" in html
+    assert "校内期中期末考试难度试卷" in html
+    assert "重点关注计算准确率、看图找关系、读懂题意、整理条件、知识混合使用和连续推理" in html
     assert "六维评价明细" not in html
 
 

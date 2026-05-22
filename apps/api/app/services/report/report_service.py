@@ -52,37 +52,45 @@ class ReportService:
     ]
 
     PARENT_DIFFICULTY_OPENERS = {
-        1: "这张试卷整体比较基础，主要是课内概念、基础计算和常规题型。",
-        2: "这张试卷整体难度适中，大部分题还是课内常规，但会要求孩子把学过的方法稳定用出来。",
-        3: "这张试卷有一定挑战，基础题之外会有一些需要整理条件、转一步弯或综合运用的题。",
-        4: "这张试卷难度偏高，已经不只是考会不会知识点，更看孩子综合解题是否稳定。",
-        5: "这张试卷难度很高，很多题会有明显区分度，需要孩子同时处理复杂条件、方法选择和连续推理。",
+        1: "这张试卷整体比较基础，这是课内基础巩固型试卷，主要看孩子基础概念和常规计算是否过关。",
+        2: "这张试卷难度适中，这是课内核心提升型试卷，主要看孩子能不能把学过的知识稳定用出来。",
+        3: "这张试卷有一定难度，这是校内期中期末考试难度的试卷，题目有一定变化，适合检验孩子能否稳定拿到中高分。",
+        4: "这张试卷难度偏高，这是小升初分班考难度的试卷，题目更绕、步骤更多，会明显考验孩子做难题的稳定性。",
+        5: "这张试卷难度很高，这是奥数杯赛竞赛难度的试卷，适合看孩子能不能挑战高难题和竞赛题。",
+    }
+
+    POSITION_SUMMARIES = {
+        1: "课内基础巩固型试卷，主要看孩子基础概念和常规计算是否过关。",
+        2: "课内核心提升型试卷，主要看孩子能不能把学过的知识稳定用出来。",
+        3: "校内期中期末考试难度试卷，题目有一定变化，适合检验孩子能否稳定拿到中高分。",
+        4: "小升初分班考难度试卷，题目更绕、步骤更多，用来拉开学生差距。",
+        5: "奥数杯赛竞赛难度试卷，难度很高，适合挑战高难题和竞赛题。",
     }
 
     PARENT_DIMENSION_DIFFICULTY_NOTES = {
         "dim1": {
-            "short": "计算",
-            "detail": "把多步算式算稳，减少化简、分步计算或准确率上的失误",
+            "short": "计算准确率",
+            "detail": "少算错",
         },
         "dim2": {
-            "short": "几何",
-            "detail": "先看懂图形关系，再判断面积、长度或空间关系",
+            "short": "看图找关系",
+            "detail": "看懂图形关系",
         },
         "dim3": {
-            "short": "读题理解",
-            "detail": "把题目里的对象、规则、过程和问法分清楚",
+            "short": "读懂题意",
+            "detail": "先读懂题意",
         },
         "dim4": {
-            "short": "解题组织",
-            "detail": "先整理条件，再建立数量关系或选择合适方法",
+            "short": "整理条件、找到做法",
+            "detail": "整理条件，找到合适做法",
         },
         "dim5": {
-            "short": "知识跨度",
-            "detail": "判断这题到底用课内知识、奥数模型还是更高年级知识",
+            "short": "知识混合使用",
+            "detail": "能看出该用什么知识",
         },
         "dim6": {
-            "short": "推理链条",
-            "detail": "一步一步往下推，并在关键条件上回查",
+            "short": "连续推理",
+            "detail": "把步骤完整推下去",
         },
     }
 
@@ -700,7 +708,9 @@ class ReportService:
             return ""
         if len(normalized) == 1:
             return normalized[0]
-        return f"{'，'.join(normalized[:-1])}，也要{normalized[-1]}"
+        if len(normalized) == 2:
+            return f"{normalized[0]}，并{normalized[1]}"
+        return f"{'，'.join(normalized[:-1])}，并{normalized[-1]}"
 
     @classmethod
     def _parent_summary_structure_intro(
@@ -751,28 +761,22 @@ class ReportService:
             key=lambda item: (-item[0], dimension_order.get(item[1], 999))
         )
         high_dimensions = [code for score, code in scored_dimensions if score >= 6.0]
-        top_dimensions = high_dimensions[:3] if high_dimensions else [code for _, code in scored_dimensions[:2]]
         structure_intro = cls._parent_summary_structure_intro(question_distribution)
 
-        if not top_dimensions:
+        if not scored_dimensions or not high_dimensions:
             return [
                 opening,
-                f"{structure_intro}主要难点还需要结合具体题目看，建议重点观察孩子读题、列关系和计算是否稳定。",
+                f"{structure_intro}整体没有特别突出的卡点，重点看孩子能不能稳定完成基础题和中等题。",
             ]
 
+        top_dimensions = high_dimensions[:3]
         short_topics = cls._join_parent_summary_phrases(
             [cls.PARENT_DIMENSION_DIFFICULTY_NOTES[code]["short"] for code in top_dimensions]
         )
         detail_topics = cls._join_parent_summary_requirements(
-            [cls.PARENT_DIMENSION_DIFFICULTY_NOTES[code]["detail"] for code in top_dimensions[:2]]
+            [cls.PARENT_DIMENSION_DIFFICULTY_NOTES[code]["detail"] for code in top_dimensions]
         )
-        top_score = scored_dimensions[0][0] if scored_dimensions else 0.0
-        if top_score >= 8.0:
-            second_sentence = f"{structure_intro}最明显的压力在{short_topics}：孩子需要{detail_topics}。"
-        elif top_score >= 6.0:
-            second_sentence = f"{structure_intro}主要难点在{short_topics}：孩子需要{detail_topics}。"
-        else:
-            second_sentence = f"{structure_intro}整体没有特别突出的单一难点，相对需要留意的是{short_topics}。"
+        second_sentence = f"{structure_intro}主要卡点在{short_topics}：孩子要{detail_topics}。"
         return [opening, second_sentence]
 
     @classmethod
@@ -798,6 +802,10 @@ class ReportService:
         if not isinstance(question_distribution, dict):
             question_distribution = cls._build_question_distribution(question_scores)
             position["question_distribution"] = question_distribution
+
+        position_summary = position.get("position_summary")
+        if not isinstance(position_summary, str) or not position_summary.strip():
+            position["position_summary"] = cls._get_position_summary(difficulty_level)
 
         parent_summary = position.get("parent_summary")
         if not (
@@ -895,6 +903,7 @@ class ReportService:
                 "level": difficulty_level,
                 "label": self._get_difficulty_label(difficulty_level),
                 "overall_score": round(overall_score, 1),
+                "position_summary": self._get_position_summary(difficulty_level),
                 "target_students": self._get_target_students(difficulty_level),
                 "description": self._get_difficulty_description(difficulty_level),
                 "parent_summary": parent_summary,
@@ -1137,11 +1146,12 @@ class ReportService:
                 "level": 4,
                 "label": "选拔卷",
                 "overall_score": 7.1,
+                "position_summary": "小升初分班考难度试卷，题目更绕、步骤更多，用来拉开学生差距。",
                 "target_students": "适合基础扎实、需要面向选拔场景提升综合稳定性的学生。",
                 "description": "面向选拔区分阶段，突出多步推进、策略迁移与复杂问题收束。",
                 "parent_summary": [
-                    "这张试卷整体难度偏高，属于选拔区分型试卷，适合基础扎实、希望检验综合解题稳定性的孩子。",
-                    "难点主要集中在场景规则理解、建模解题组织和多步推理上：孩子需要读懂题目规则、过程反馈或比较口径，再整理数量关系、连续推进解题步骤并回查条件。",
+                    "这张试卷难度偏高，这是小升初分班考难度的试卷，题目更绕、步骤更多，会明显考验孩子做难题的稳定性。",
+                    "从题目结构看，较难题约占 50.0%。主要卡点在计算准确率、知识混合使用和连续推理：孩子要少算错，能看出该用什么知识，并把步骤完整推下去。",
                 ],
                 "question_distribution": {
                     "basis": "question_count",
@@ -1321,6 +1331,11 @@ class ReportService:
             5: "竞赛卷",
         }
         return labels.get(level, "未知")
+
+    @classmethod
+    def _get_position_summary(cls, level: int) -> str:
+        """获取试卷定位简述"""
+        return cls.POSITION_SUMMARIES.get(level, "")
 
     def _get_target_students(self, level: int) -> str:
         """获取目标学生描述"""

@@ -47,6 +47,7 @@ describe('ReportPage', () => {
       level: 4,
       label: '拔高卷',
       overall_score: 7.0,
+      position_summary: '旧定位描述',
       target_students: '目标学生描述',
       description: '定位描述',
       dimension_distribution: [],
@@ -77,6 +78,9 @@ describe('ReportPage', () => {
 
     expect(screen.getByText('测试试卷')).toBeInTheDocument();
     expect(screen.getAllByText('选拔卷').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('试卷难度综合分').length).toBeGreaterThan(0);
+    expect(screen.getByText('试卷定位')).toBeInTheDocument();
+    expect(screen.getByText('小升初分班考难度试卷，题目更绕、步骤更多，用来拉开学生差距。')).toBeInTheDocument();
     expect(screen.getByTestId('radar-chart')).toBeInTheDocument();
     expect(screen.getByTestId('score-cards')).toBeInTheDocument();
   });
