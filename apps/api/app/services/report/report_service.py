@@ -909,12 +909,12 @@ class ReportService:
                 "parent_summary": parent_summary,
                 "question_distribution": question_distribution,
                 "dimension_distribution": [
-                    {"code": "dim1", "name": "数学运算", "percentage": 17, "color": "#3B82F6"},
-                    {"code": "dim2", "name": "几何直观", "percentage": 16, "color": "#8B5CF6"},
-                    {"code": "dim3", "name": "场景理解复杂度", "percentage": 17, "color": "#EC4899"},
-                    {"code": "dim4", "name": "建模解题复杂度", "percentage": 17, "color": "#10B981"},
-                    {"code": "dim5", "name": "知识广度", "percentage": 16, "color": "#F59E0B"},
-                    {"code": "dim6", "name": "逻辑链条", "percentage": 17, "color": "#EF4444"},
+                    {"code": "dim1", "name": "计算难度", "percentage": 17, "color": "#3B82F6"},
+                    {"code": "dim2", "name": "几何难度", "percentage": 16, "color": "#8B5CF6"},
+                    {"code": "dim3", "name": "读题难度", "percentage": 17, "color": "#EC4899"},
+                    {"code": "dim4", "name": "解题方法难度", "percentage": 17, "color": "#10B981"},
+                    {"code": "dim5", "name": "知识门槛难度", "percentage": 16, "color": "#F59E0B"},
+                    {"code": "dim6", "name": "解题链路难度", "percentage": 17, "color": "#EF4444"},
                 ],
             },
             "benchmark_comparisons": [],
@@ -1093,7 +1093,7 @@ class ReportService:
             "dimension_details": [
                 {
                     "code": "dim1",
-                    "name": "计算熟练度",
+                    "name": "计算难度",
                     "score": 7.5,
                     "level": 4,
                     "level_label": "较难",
@@ -1101,7 +1101,7 @@ class ReportService:
                 },
                 {
                     "code": "dim2",
-                    "name": "概念清晰度",
+                    "name": "几何难度",
                     "score": 6.0,
                     "level": 3,
                     "level_label": "中等",
@@ -1109,7 +1109,7 @@ class ReportService:
                 },
                 {
                     "code": "dim3",
-                    "name": "场景理解复杂度",
+                    "name": "读题难度",
                     "score": 8.0,
                     "level": 4,
                     "level_label": "较难",
@@ -1117,7 +1117,7 @@ class ReportService:
                 },
                 {
                     "code": "dim4",
-                    "name": "建模解题复杂度",
+                    "name": "解题方法难度",
                     "score": 7.0,
                     "level": 4,
                     "level_label": "较难",
@@ -1125,7 +1125,7 @@ class ReportService:
                 },
                 {
                     "code": "dim5",
-                    "name": "应用实践力",
+                    "name": "知识门槛难度",
                     "score": 5.5,
                     "level": 3,
                     "level_label": "中等",
@@ -1134,7 +1134,7 @@ class ReportService:
                 },
                 {
                     "code": "dim6",
-                    "name": "逻辑链条",
+                    "name": "解题链路难度",
                     "score": 8.5,
                     "level": 5,
                     "level_label": "困难",
@@ -1200,12 +1200,12 @@ class ReportService:
                     ],
                 },
                 "dimension_distribution": [
-                    {"code": "dim1", "name": "计算", "percentage": 18, "color": "#3B82F6"},
-                    {"code": "dim2", "name": "概念", "percentage": 16, "color": "#8B5CF6"},
-                    {"code": "dim3", "name": "场景理解复杂度", "percentage": 20, "color": "#EC4899"},
-                    {"code": "dim4", "name": "建模解题复杂度", "percentage": 14, "color": "#10B981"},
-                    {"code": "dim5", "name": "应用", "percentage": 16, "color": "#F59E0B"},
-                    {"code": "dim6", "name": "逻辑链条", "percentage": 16, "color": "#EF4444"},
+                    {"code": "dim1", "name": "计算难度", "percentage": 18, "color": "#3B82F6"},
+                    {"code": "dim2", "name": "几何难度", "percentage": 16, "color": "#8B5CF6"},
+                    {"code": "dim3", "name": "读题难度", "percentage": 20, "color": "#EC4899"},
+                    {"code": "dim4", "name": "解题方法难度", "percentage": 14, "color": "#10B981"},
+                    {"code": "dim5", "name": "知识门槛难度", "percentage": 16, "color": "#F59E0B"},
+                    {"code": "dim6", "name": "解题链路难度", "percentage": 16, "color": "#EF4444"},
                 ],
             },
 
@@ -1229,7 +1229,7 @@ class ReportService:
                     "question_no": "第1题",
                     "content": "计算：\\frac{3}{4} + \\frac{2}{5} - \\frac{1}{2}",
                     "dimension_code": "dim1",
-                    "dimension_name": "计算熟练度",
+                    "dimension_name": "计算难度",
                     "score": 7.5,
                     "level": 4,
                     "evidence": "分数运算，需要通分，复杂度中等",
@@ -1239,14 +1239,14 @@ class ReportService:
                     "question_no": "第3题",
                     "content": "甲、乙两数的比是3:5，它们的和是48，求这两个数。",
                     "dimension_code": "dim3",
-                    "dimension_name": "场景理解复杂度",
+                    "dimension_name": "读题难度",
                     "score": 8.0,
                     "level": 4,
                     "evidence": "需要读懂文字条件中对象与问题要求的对应关系",
                 },
             ],
 
-            "overall_summary": "本试卷整体难度较高，以拔高为主，注重考查学生的综合应用能力、建模解题组织能力与逻辑链条推进能力。计算部分以分数运算为主，几何部分涉及空间判断，场景理解部分强调规则、过程和比较口径的读懂。",
+            "overall_summary": "本试卷整体难度较高，以拔高为主，重点看知识门槛、解题方法组织和解题链路推进能力。计算部分以分数运算为主，几何部分涉及空间判断，读题部分强调规则、过程和比较口径的理解。",
             "recommendations": [
                 "建议学生重点复习分数运算和比例应用",
                 "加强场景规则理解、条件整理和建模解题训练",
@@ -1284,7 +1284,7 @@ class ReportService:
         if dim5_override is not None:
             aggregated["dim5"] = PaperDimensionSummary(
                 dimension_code="dim5",
-                dimension_name="知识点广度",
+                dimension_name="知识门槛难度",
                 paper_score=dim5_override.score,
                 level=dim5_override.level,
                 level_label=dim5_override.level_label,

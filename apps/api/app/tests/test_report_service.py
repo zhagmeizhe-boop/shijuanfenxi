@@ -347,6 +347,10 @@ def test_pdf_export_radar_renders_static_svg_for_not_covered_dimensions():
     assert 'data-testid="radar-data-area"' in html
     assert 'data-testid="radar-data-line"' in html
     assert 'stroke="#294766" stroke-width="3"' in html
+    assert "计算难度" in html
+    assert "几何难度" in html
+    assert "数学运算" not in html
+    assert "几何直观与空间想象" not in html
     assert "NaN" not in html
     assert "None" not in html
     assert "null" not in html
@@ -406,7 +410,7 @@ def test_pdf_export_dim1_evidence_explains_score_not_question_counts():
         )
     )
 
-    assert "计算维度，综合得分 8.6 分" in html
+    assert "计算难度，综合得分 8.6 分" in html
     assert "说明本卷计算难度较高" in html
     assert "共 6 道题计入数学运算评分" not in html
     assert "纯计算题和" not in html
@@ -429,7 +433,7 @@ def test_pdf_export_dim3_evidence_explains_scenario_comprehension_score():
         )
     )
 
-    assert "场景理解复杂度维度，综合得分 8.6 分" in html
+    assert "读题难度，综合得分 8.6 分" in html
     assert "学生读题理解题意上设置了明显难度" in html
     assert "场景相对复杂" in html
     assert "按题目等级加权" not in html
@@ -455,7 +459,7 @@ def test_pdf_export_dim6_evidence_explains_logic_chain_evaluation_point():
         )
     )
 
-    assert "逻辑推理综合得分 8.6 分" in html
+    assert "解题链路难度，综合得分 8.6 分" in html
     assert "这张试卷不少题解题链条较长" in html
     assert "连续推进 3-4 步" in html
     assert "逻辑链条维度，综合得分" not in html
@@ -481,8 +485,8 @@ def test_pdf_export_dim5_evidence_explains_knowledge_breadth_score():
         )
     )
 
-    assert "知识广度综合得分 8.6 分" in html
-    assert "说明本卷知识广度较高" in html
+    assert "知识门槛难度，综合得分 8.6 分" in html
+    assert "说明本卷知识门槛较高" in html
     assert "五六年级奥数典型方法或七年级基础前置知识" in html
     assert "按知识范围等级权重计算" not in html
 
@@ -504,7 +508,7 @@ def test_pdf_export_dim4_evidence_explains_modeling_solution_score():
         )
     )
 
-    assert "综合得分为 8.2 分" in html
+    assert "解题方法难度，综合得分 8.2 分" in html
     assert "在解题思路上有较明显难度" in html
     assert "先把条件之间的关系理清楚" in html
     assert "建模解题复杂度综合得分" not in html

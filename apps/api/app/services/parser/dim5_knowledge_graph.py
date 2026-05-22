@@ -122,6 +122,28 @@ STRONG_OLYMPIAD_FACT_KEYS = {
     "rectangle_tiling_min_perimeter",
     "fraction_whole_part_relation",
     "cylinder_surface_volume_composite",
+    "equal_area_sandglass",
+    "work_split_collaboration",
+    "staircase_recurrence",
+    "new_operation_conditional",
+    "travel_inverse_speed_time",
+    "trapezoid_auxiliary_area",
+    "geometric_series_area_sum",
+    "tree_diagram_queue_counting",
+    "cuboid_coloring",
+    "downstream_upstream_current",
+    "partial_submerged_water_rise",
+    "slicing_volume_method",
+    "floor_function_operation",
+    "cross_concentration_mix",
+    "hidden_distance_meeting",
+    "round_robin_counting",
+    "railway_ticket_counting",
+    "magic_square_relation",
+    "list_ratio_analysis",
+    "vertical_multiplication_digit_analysis",
+    "remainder_system_conditions",
+    "complex_circle_overlap_area",
 }
 GENERIC_CONFIRMATION_FACT_KEYS = {
     "school_comparison",
@@ -156,6 +178,54 @@ SPECIFIC_CONFIRMATION_FACT_KEYS = {
     "cylinder_cone_volume_ratio",
     "number_table_position_pattern",
     "rectangle_area_fraction_percent_change",
+    "signed_number_context",
+    "triangle_side_validity",
+    "number_fraction_percent_comparison",
+    "percent_rate_application",
+    "school_ratio_context_choice",
+    "graphic_sequence_pattern",
+    "submerged_volume_water_rise",
+    "repeated_percent_change",
+    "fraction_unit_one_relation",
+    "rotation_solid_volume",
+    "parallel_triangle_area_relation",
+    "probability_fair_game",
+    "fraction_ratio_distribution",
+    "cylinder_surface_area_practical",
+    "divisibility_digit_construction",
+    "fraction_remaining_after_cuts",
+    "cylinder_cone_composite_volume",
+    "circle_cut_rectangle_area",
+    "school_fraction_equation_ratio",
+    "school_circle_circumference_area_ring",
+    "school_composite_perimeter_area",
+    "fan_chart_application",
+    "equal_area_sandglass",
+    "work_split_collaboration",
+    "staircase_recurrence",
+    "new_operation_conditional",
+    "travel_inverse_speed_time",
+    "trapezoid_auxiliary_area",
+    "geometric_series_area_sum",
+    "parallel_line_area_comparison",
+    "tree_diagram_queue_counting",
+    "cuboid_coloring",
+    "downstream_upstream_current",
+    "partial_submerged_water_rise",
+    "slicing_volume_method",
+    "floor_function_operation",
+    "cross_concentration_mix",
+    "hidden_distance_meeting",
+    "round_robin_counting",
+    "school_cone_package_surface",
+    "railway_ticket_counting",
+    "magic_square_relation",
+    "school_fraction_mixed_calculation",
+    "school_clever_factor_calculation",
+    "list_ratio_analysis",
+    "vertical_multiplication_digit_analysis",
+    "remainder_system_conditions",
+    "complex_circle_overlap_area",
 }
 GENERIC_ALIAS_TERMS = {
     "等于",
@@ -282,6 +352,54 @@ DIM5_STRUCTURE_GLOSSARY: Dict[str, str] = {
     "area_ratio_relation": "面积比、共边等高、面积转化关系",
     "composite_area_split_relation": "长方形、平行四边形等图形分割后，利用阴影面积和宽/边比例求整体面积",
     "rectangle_area_fraction_percent_change": "长方形长和宽按分数比例增减后，求面积变为原来的百分之几",
+    "signed_number_context": "以平均值、基准值或0为参照，用正负数表示生活中的相反意义的量",
+    "triangle_side_validity": "根据三角形三边关系或小棒长度判断能否围成三角形",
+    "number_fraction_percent_comparison": "小数、分数、百分数、π等不同数形式之间的大小比较",
+    "percent_rate_application": "出勤率、合格率、出油率等常见百分率在实际语境中的判断和计算",
+    "school_ratio_context_choice": "根据生活情境判断两个量之间的比或比的意义",
+    "graphic_sequence_pattern": "用小棒、纽扣、棋子或图形按规律排列，并用字母或项数表达数量关系",
+    "submerged_volume_water_rise": "物体放入水中后通过浸没体积、水面上升和容器底面积建立体积关系",
+    "repeated_percent_change": "同一数量经过两次百分数增减或价格调整后比较总变化幅度",
+    "fraction_unit_one_relation": "已知比一个数多或少几分之几，反推单位1或选择单位1条件",
+    "rotation_solid_volume": "平面图形绕直线旋转一周形成旋转体，并比较或计算体积",
+    "parallel_triangle_area_relation": "平行四边形与等底等高三角形之间的面积倍半关系",
+    "probability_fair_game": "摸球、放回、得分规则等随机游戏中判断规则是否公平",
+    "fraction_ratio_distribution": "先按分数求剩余或总量，再按给定比进行分配",
+    "cylinder_surface_area_practical": "圆柱形水池、容器等实际场景中只计算底面和侧面等需要施工的表面积",
+    "divisibility_digit_construction": "从给定数字组成满足2、3、5倍数特征的多位数",
+    "fraction_remaining_after_cuts": "连续剪去、用去或取走总量及余量的分数后求剩余",
+    "cylinder_cone_composite_volume": "由圆柱和圆锥组合成的立体图形体积计算",
+    "circle_cut_rectangle_area": "把圆平均分割后拼成近似长方形，利用长方形关系求圆的周长或面积",
+    "school_fraction_equation_ratio": "校内解方程、解比例或含分数小数百分数的方程求解",
+    "school_circle_circumference_area_ring": "圆的周长、面积和环形面积在喷泉池、小路等实际场景中的综合应用",
+    "school_composite_perimeter_area": "校内组合图形、不规则图形或涂色部分的周长面积计算",
+    "fan_chart_application": "扇形统计图、统计表和百分比信息结合解决实际统计问题",
+    "equal_area_sandglass": "大小正方形或相似图形之间形成沙漏结构，用等高或比例求阴影面积",
+    "work_split_collaboration": "工程中多人分段合作、来回帮忙或两个任务同时完成的效率安排",
+    "staircase_recurrence": "每次走1级、2级或3级台阶，按递推关系统计走法数",
+    "new_operation_conditional": "新定义运算按奇偶、大小或条件分支给出不同规则",
+    "travel_inverse_speed_time": "同一路程下速度和时间成反比，结合速度比、时间和求行程量",
+    "trapezoid_auxiliary_area": "平行四边形、三等分点或辅助线构造梯形模型求阴影面积",
+    "geometric_series_area_sum": "图形面积按固定倍比递推，形成等比数列或等比求和",
+    "parallel_line_area_comparison": "夹在两条平行线之间的平行四边形、三角形、梯形面积比较",
+    "tree_diagram_queue_counting": "带位置限制的排队、放书或错位安排，适合树形图分类计数",
+    "cuboid_coloring": "长方体或正方体由小立方体组成并刷漆，按涂色面数计数",
+    "downstream_upstream_current": "顺水、逆水航行中由顺速、逆速关系求船速或水速",
+    "partial_submerged_water_rise": "物体不完全浸没或竖直放入水池时，用排水体积和水位变化分析",
+    "slicing_volume_method": "正方体切成小立方体后按切片、挖空或分层统计剩余体积",
+    "floor_function_operation": "整数部分、取整符号或特殊取整定义下的计算与推理",
+    "cross_concentration_mix": "两种浓度溶液混合后，用十字交叉或差量关系反求原重量",
+    "hidden_distance_meeting": "相遇问题中给出一半多若干等隐藏路程差，反求速度或路程",
+    "round_robin_counting": "单循环比赛或每两队比赛一次，用线段数或组合数统计场次",
+    "school_cone_package_surface": "圆锥体积与长方体包装纸板面积的校内立体几何综合",
+    "railway_ticket_counting": "新增车站后按有向往返车票统计新增票种数量",
+    "magic_square_relation": "三阶幻方或数阵中利用行列对角和相等的数量关系填数",
+    "school_fraction_mixed_calculation": "分数、小数、百分数四则混合运算或脱式计算",
+    "school_clever_factor_calculation": "提公因数、整体约分或拆分构造公因数的简便计算",
+    "list_ratio_analysis": "多个班级或对象的男女比、总人数比等多重比例信息用列表整理分析",
+    "vertical_multiplication_digit_analysis": "乘法竖式中数字被遮挡，依据位数和乘积结构推断结果",
+    "remainder_system_conditions": "一个整数同时满足多个除数余数条件，逐级筛选或同余定位",
+    "complex_circle_overlap_area": "多个圆、半圆或阴影区域两两相切、重叠时，用整体或割补求复杂面积",
     "state_recurrence": "状态递推、传数游戏、倒推或状态转移",
     "reverse_process": "倒推还原、从结果反推原始数量",
     "surplus_deficit": "盈亏、多出、不够、剩下等盈亏结构",
@@ -355,6 +473,54 @@ DIM5_STRUCTURE_KEY_ALIASES: Dict[str, str] = {
     "数表位置规律": "number_table_position_pattern",
     "长方形面积变化": "rectangle_area_fraction_percent_change",
     "组合图形分割面积": "composite_area_split_relation",
+    "正负数表示量": "signed_number_context",
+    "三角形三边关系": "triangle_side_validity",
+    "分小百比较大小": "number_fraction_percent_comparison",
+    "百分率应用": "percent_rate_application",
+    "情境中的比": "school_ratio_context_choice",
+    "图形规律": "graphic_sequence_pattern",
+    "浸没水面上升": "submerged_volume_water_rise",
+    "连续百分数变化": "repeated_percent_change",
+    "单位1": "fraction_unit_one_relation",
+    "旋转体体积": "rotation_solid_volume",
+    "等底等高面积关系": "parallel_triangle_area_relation",
+    "游戏公平性": "probability_fair_game",
+    "按比分配": "fraction_ratio_distribution",
+    "圆柱实际表面积": "cylinder_surface_area_practical",
+    "235倍数特征": "divisibility_digit_construction",
+    "连续分数剩余": "fraction_remaining_after_cuts",
+    "圆柱圆锥组合体积": "cylinder_cone_composite_volume",
+    "圆拼成长方形": "circle_cut_rectangle_area",
+    "解方程解比例": "school_fraction_equation_ratio",
+    "圆周长面积环形面积": "school_circle_circumference_area_ring",
+    "组合图形周长面积": "school_composite_perimeter_area",
+    "扇形统计图应用": "fan_chart_application",
+    "沙漏面积": "equal_area_sandglass",
+    "分段合作工程": "work_split_collaboration",
+    "爬楼梯递推": "staircase_recurrence",
+    "条件新定义运算": "new_operation_conditional",
+    "速度时间反比": "travel_inverse_speed_time",
+    "梯形辅助线面积": "trapezoid_auxiliary_area",
+    "等比面积数列": "geometric_series_area_sum",
+    "平行线间面积比较": "parallel_line_area_comparison",
+    "树形图排队": "tree_diagram_queue_counting",
+    "长方体染色": "cuboid_coloring",
+    "流水行船": "downstream_upstream_current",
+    "不完全浸没水面上升": "partial_submerged_water_rise",
+    "切片法体积": "slicing_volume_method",
+    "取整计算": "floor_function_operation",
+    "十字交叉浓度": "cross_concentration_mix",
+    "隐藏路程差": "hidden_distance_meeting",
+    "循环赛规律": "round_robin_counting",
+    "圆锥包装表面积": "school_cone_package_surface",
+    "车票计数": "railway_ticket_counting",
+    "三阶幻方": "magic_square_relation",
+    "分数四则混合运算": "school_fraction_mixed_calculation",
+    "提公因数巧算": "school_clever_factor_calculation",
+    "列表分析": "list_ratio_analysis",
+    "乘法竖式位数分析": "vertical_multiplication_digit_analysis",
+    "多条件余数": "remainder_system_conditions",
+    "复杂圆形重叠面积": "complex_circle_overlap_area",
 }
 
 
@@ -876,9 +1042,9 @@ class Dim5StructureExtractor:
             add("work_efficiency_relation", "quantity_relation", work_progress_evidence)
             add("work_progress_ratio", "quantity_relation", work_progress_evidence)
 
-        growth = add_terms("resource_growth", "process_change", ("生长", "增长", "增加", "流入", "新增", "排队", "长草", "每天都长"))
+        growth = add_terms("resource_growth", "process_change", ("生长", "增长", "增加", "流入", "新增", "排队", "长草", "每天都长", "长出青草", "匀速长出"))
         consumption = add_terms("resource_consumption", "process_change", ("吃", "消耗", "流出", "抽干", "吃完", "检票"))
-        resource_time_or_initial = add_terms("resource_time_or_initial", "quantity_relation", ("原有", "原有草量", "每天", "天", "时间", "吃完"))
+        resource_time_or_initial = add_terms("resource_time_or_initial", "quantity_relation", ("原有", "原有草量", "每天", "天", "周", "时间", "吃完"))
         if (growth and consumption) or add_terms("growth_consumption", "application_structure", ("牛吃草", "原有草量")):
             add("growth_consumption", "application_structure", _first_term(text, ("牛吃草", "原有", "增长", "生长", "消耗", "检票")) or text[:40])
         if (
@@ -1304,6 +1470,371 @@ class Dim5StructureExtractor:
         if winning_strategy_evidence:
             add("winning_strategy", "logic_strategy", winning_strategy_evidence)
 
+        xsc_fact_specs = (
+            (_signed_number_context_evidence(text), (("signed_number_context", "school_number_form"),)),
+            (_triangle_side_validity_evidence(text), (("geometry_triangle", "geometry"), ("triangle_side_validity", "school_geometry"))),
+            (
+                _number_fraction_percent_comparison_evidence(text),
+                (
+                    ("school_comparison", "school_operation"),
+                    ("number_fraction_percent_comparison", "school_number_form"),
+                ),
+            ),
+            (
+                _percent_rate_application_evidence(text),
+                (("percent_calculation", "ratio_percent"), ("percent_rate_application", "school_application")),
+            ),
+            (
+                _school_ratio_context_choice_evidence(text),
+                (("ratio_relation", "quantity_relation"), ("school_ratio_context_choice", "school_application")),
+            ),
+            (
+                _graphic_sequence_pattern_evidence(text),
+                (
+                    ("sequence_pattern", "pattern_sequence"),
+                    ("gaosi_sequence", "olympiad_pattern"),
+                    ("graphic_sequence_pattern", "pattern_sequence"),
+                ),
+            ),
+            (
+                _submerged_volume_water_rise_evidence(text),
+                (
+                    ("solid_geometry", "geometry"),
+                    ("school_volume", "school_geometry"),
+                    ("submerged_volume_water_rise", "geometry_structure"),
+                ),
+            ),
+            (
+                _repeated_percent_change_evidence(text),
+                (
+                    ("percent_calculation", "ratio_percent"),
+                    ("repeated_percent_change", "quantity_relation"),
+                ),
+            ),
+            (
+                _fraction_unit_one_relation_evidence(text),
+                (
+                    ("school_fraction", "school_number_form"),
+                    ("fraction_application", "quantity_relation"),
+                    ("fraction_unit_one_relation", "quantity_relation"),
+                ),
+            ),
+            (
+                _rotation_solid_volume_evidence(text),
+                (
+                    ("solid_geometry", "geometry"),
+                    ("school_volume", "school_geometry"),
+                    ("rotation_solid_volume", "geometry_structure"),
+                ),
+            ),
+            (
+                _parallel_triangle_area_relation_evidence(text),
+                (
+                    ("geometry_area", "geometry"),
+                    ("school_area", "school_geometry"),
+                    ("geometry_triangle", "geometry"),
+                    ("parallel_triangle_area_relation", "geometry_structure"),
+                ),
+            ),
+            (
+                _probability_fair_game_evidence(text),
+                (
+                    ("school_probability", "school_statistics"),
+                    ("gaosi_probability", "olympiad_counting"),
+                    ("probability_fair_game", "school_probability"),
+                ),
+            ),
+            (
+                _fraction_ratio_distribution_evidence(text),
+                (
+                    ("school_fraction", "school_number_form"),
+                    ("ratio_relation", "quantity_relation"),
+                    ("fraction_ratio_distribution", "quantity_relation"),
+                ),
+            ),
+            (
+                _cylinder_surface_area_practical_evidence(text),
+                (
+                    ("solid_geometry", "geometry"),
+                    ("school_area", "school_geometry"),
+                    ("school_volume", "school_geometry"),
+                    ("cylinder_surface_area_practical", "geometry_structure"),
+                ),
+            ),
+            (
+                _divisibility_digit_construction_evidence(text),
+                (
+                    ("number_theory_factor_multiple", "number_theory"),
+                    ("digit_property", "number_theory"),
+                    ("divisibility_digit_construction", "number_theory"),
+                ),
+            ),
+            (
+                _fraction_remaining_after_cuts_evidence(text),
+                (
+                    ("school_fraction", "school_number_form"),
+                    ("fraction_application", "quantity_relation"),
+                    ("fraction_remaining_after_cuts", "quantity_relation"),
+                ),
+            ),
+            (
+                _cylinder_cone_composite_volume_evidence(text),
+                (
+                    ("solid_geometry", "geometry"),
+                    ("school_volume", "school_geometry"),
+                    ("cylinder_cone_composite_volume", "geometry_structure"),
+                ),
+            ),
+            (
+                _circle_cut_rectangle_area_evidence(text),
+                (
+                    ("geometry_circle", "geometry"),
+                    ("school_area", "school_geometry"),
+                    ("circle_cut_rectangle_area", "geometry_structure"),
+                ),
+            ),
+            (
+                _school_fraction_equation_ratio_evidence(text),
+                (
+                    ("school_equation", "school_operation"),
+                    ("school_fraction_equation_ratio", "school_operation"),
+                ),
+            ),
+            (
+                _school_circle_circumference_area_ring_evidence(text),
+                (
+                    ("geometry_circle", "geometry"),
+                    ("school_area", "school_geometry"),
+                    ("school_circle_circumference_area_ring", "geometry_structure"),
+                ),
+            ),
+            (
+                _school_composite_perimeter_area_evidence(text),
+                (
+                    ("school_area", "school_geometry"),
+                    ("geometry_area", "geometry"),
+                    ("school_composite_perimeter_area", "geometry_structure"),
+                ),
+            ),
+            (
+                _fan_chart_application_evidence(text),
+                (
+                    ("school_statistics", "school_statistics"),
+                    ("statistics_chart_context", "school_statistics"),
+                    ("statistics_percent_conversion", "quantity_relation"),
+                    ("fan_chart_application", "school_statistics"),
+                ),
+            ),
+            (
+                _equal_area_sandglass_evidence(text),
+                (
+                    ("geometry_area", "geometry"),
+                    ("area_relation_model", "geometry_structure"),
+                    ("equal_area_sandglass", "geometry_structure"),
+                ),
+            ),
+            (
+                _work_split_collaboration_evidence(text),
+                (
+                    ("work_rate_task", "application_structure"),
+                    ("work_efficiency_relation", "quantity_relation"),
+                    ("work_split_collaboration", "application_structure"),
+                ),
+            ),
+            (
+                _staircase_recurrence_evidence(text),
+                (
+                    ("sequence_pattern", "pattern_sequence"),
+                    ("counting_target", "counting_goal"),
+                    ("state_recurrence", "pattern_sequence"),
+                    ("staircase_recurrence", "pattern_sequence"),
+                ),
+            ),
+            (
+                _new_operation_conditional_evidence(text),
+                (
+                    ("defined_operation_rule", "operation_structure"),
+                    ("defined_operation_symbol", "operation_structure"),
+                    ("new_operation_conditional", "operation_structure"),
+                ),
+            ),
+            (
+                _travel_inverse_speed_time_evidence(text),
+                (
+                    ("motion_task", "application_structure"),
+                    ("speed_distance_time", "quantity_relation"),
+                    ("travel_inverse_speed_time", "application_structure"),
+                ),
+            ),
+            (
+                _trapezoid_auxiliary_area_evidence(text),
+                (
+                    ("geometry_area", "geometry"),
+                    ("area_relation_model", "geometry_structure"),
+                    ("trapezoid_auxiliary_area", "geometry_structure"),
+                ),
+            ),
+            (
+                _geometric_series_area_sum_evidence(text),
+                (
+                    ("sequence_pattern", "pattern_sequence"),
+                    ("geometry_area", "geometry"),
+                    ("geometric_series_area_sum", "pattern_sequence"),
+                ),
+            ),
+            (
+                _parallel_line_area_comparison_evidence(text),
+                (
+                    ("geometry_area", "geometry"),
+                    ("parallel_line_area_comparison", "geometry_structure"),
+                ),
+            ),
+            (
+                _tree_diagram_queue_counting_evidence(text),
+                (
+                    ("counting_target", "counting_goal"),
+                    ("counting_choice", "counting_structure"),
+                    ("tree_diagram_queue_counting", "counting_structure"),
+                ),
+            ),
+            (
+                _cuboid_coloring_evidence(text),
+                (
+                    ("solid_geometry", "geometry"),
+                    ("cuboid_coloring", "geometry_structure"),
+                ),
+            ),
+            (
+                _downstream_upstream_current_evidence(text),
+                (
+                    ("motion_task", "application_structure"),
+                    ("speed_distance_time", "quantity_relation"),
+                    ("downstream_upstream_current", "application_structure"),
+                ),
+            ),
+            (
+                _partial_submerged_water_rise_evidence(text),
+                (
+                    ("solid_geometry", "geometry"),
+                    ("school_volume", "school_geometry"),
+                    ("partial_submerged_water_rise", "geometry_structure"),
+                ),
+            ),
+            (
+                _slicing_volume_method_evidence(text),
+                (
+                    ("solid_geometry", "geometry"),
+                    ("slicing_volume_method", "geometry_structure"),
+                ),
+            ),
+            (
+                _floor_function_operation_evidence(text),
+                (
+                    ("gaosi_arithmetic", "olympiad_operation"),
+                    ("floor_function_operation", "operation_structure"),
+                ),
+            ),
+            (
+                _cross_concentration_mix_evidence(text),
+                (
+                    ("concentration_task", "application_structure"),
+                    ("mixture_change", "process_change"),
+                    ("cross_concentration_mix", "application_structure"),
+                ),
+            ),
+            (
+                _hidden_distance_meeting_evidence(text),
+                (
+                    ("motion_task", "application_structure"),
+                    ("speed_distance_time", "quantity_relation"),
+                    ("hidden_distance_meeting", "application_structure"),
+                ),
+            ),
+            (
+                _round_robin_counting_evidence(text),
+                (
+                    ("counting_target", "counting_goal"),
+                    ("graph_relation_network_counting", "counting_structure"),
+                    ("round_robin_counting", "counting_structure"),
+                ),
+            ),
+            (
+                _school_cone_package_surface_evidence(text),
+                (
+                    ("solid_geometry", "geometry"),
+                    ("school_volume", "school_geometry"),
+                    ("school_area", "school_geometry"),
+                    ("school_cone_package_surface", "geometry_structure"),
+                ),
+            ),
+            (
+                _railway_ticket_counting_evidence(text),
+                (
+                    ("counting_target", "counting_goal"),
+                    ("counting_choice", "counting_structure"),
+                    ("railway_ticket_counting", "counting_structure"),
+                ),
+            ),
+            (
+                _magic_square_relation_evidence(text),
+                (
+                    ("gaosi_magic_square", "olympiad_pattern"),
+                    ("magic_square_relation", "pattern_sequence"),
+                ),
+            ),
+            (
+                _list_ratio_analysis_evidence(text),
+                (
+                    ("ratio_relation", "quantity_relation"),
+                    ("list_ratio_analysis", "quantity_relation"),
+                ),
+            ),
+            (
+                _vertical_multiplication_digit_analysis_evidence(text),
+                (
+                    ("gaosi_vertical_puzzle", "olympiad_operation"),
+                    ("vertical_multiplication_digit_analysis", "operation_structure"),
+                ),
+            ),
+            (
+                _remainder_system_conditions_evidence(text),
+                (
+                    ("gaosi_number_theory", "olympiad_number_theory"),
+                    ("gaosi_remainder", "olympiad_number_theory"),
+                    ("period_position", "pattern_sequence"),
+                    ("remainder_system_conditions", "number_theory"),
+                ),
+            ),
+            (
+                _complex_circle_overlap_area_evidence(text),
+                (
+                    ("geometry_area", "geometry"),
+                    ("area_goal", "goal"),
+                    ("geometry_circle", "geometry"),
+                    ("gaosi_circle_sector", "olympiad_geometry"),
+                    ("complex_circle_overlap_area", "geometry_structure"),
+                ),
+            ),
+            (
+                _school_fraction_mixed_calculation_evidence(text),
+                (
+                    ("school_mixed_operation", "school_operation"),
+                    ("school_fraction_mixed_calculation", "school_operation"),
+                ),
+            ),
+            (
+                _school_clever_factor_calculation_evidence(text),
+                (
+                    ("equivalent_factor", "operation_structure"),
+                    ("school_clever_factor_calculation", "school_operation"),
+                ),
+            ),
+        )
+        for evidence, specs in xsc_fact_specs:
+            if evidence:
+                for key, fact_type in specs:
+                    add(key, fact_type, evidence)
+
         if len(text) < 8:
             add("risk_short_question_text", "risk", text or "empty question")
 
@@ -1702,6 +2233,34 @@ class Dim5KnowledgeGraphMatcher:
                         "cylinder_cone_volume_ratio",
                         "number_table_position_pattern",
                         "rectangle_area_fraction_percent_change",
+                        "signed_number_context",
+                        "triangle_side_validity",
+                        "number_fraction_percent_comparison",
+                        "percent_rate_application",
+                        "school_ratio_context_choice",
+                        "graphic_sequence_pattern",
+                        "submerged_volume_water_rise",
+                        "rotation_solid_volume",
+                        "parallel_triangle_area_relation",
+                        "cylinder_cone_composite_volume",
+                        "circle_cut_rectangle_area",
+                        "fan_chart_application",
+                        "equal_area_sandglass",
+                        "work_split_collaboration",
+                        "staircase_recurrence",
+                        "new_operation_conditional",
+                        "travel_inverse_speed_time",
+                        "geometric_series_area_sum",
+                        "tree_diagram_queue_counting",
+                        "cuboid_coloring",
+                        "slicing_volume_method",
+                        "cross_concentration_mix",
+                        "round_robin_counting",
+                        "partial_submerged_water_rise",
+                        "list_ratio_analysis",
+                        "vertical_multiplication_digit_analysis",
+                        "remainder_system_conditions",
+                        "complex_circle_overlap_area",
                     )
                     if key in all_matched_signal_keys
                 )
@@ -2985,8 +3544,382 @@ def _number_table_position_pattern_evidence(text: str) -> str:
     return ""
 
 
+def _signed_number_context_evidence(text: str) -> str:
+    has_reference = any(term in text for term in ("平均", "基准", "海平面", "标准", "0摄氏度", "零上", "零下"))
+    has_record = any(term in text for term in ("记作", "表示", "高于", "低于", "多", "少"))
+    has_context = any(term in text for term in ("体重", "温度", "海拔", "收入", "支出", "水位", "千克"))
+    if has_reference and has_record and has_context:
+        return _first_term(text, ("平均体重", "基准", "记作", "高于", "低于", "零上", "零下")) or "正负数表示量"
+    return ""
+
+
+def _triangle_side_validity_evidence(text: str) -> str:
+    if any(term in text for term in ("围成三角形", "组成三角形", "能围成")) and any(
+        term in text for term in ("小棒", "三条线", "三边", "cm", "厘米")
+    ):
+        return _first_term(text, ("围成三角形", "组成三角形", "小棒", "三条线", "三边")) or "三角形三边关系"
+    return ""
+
+
+def _number_fraction_percent_comparison_evidence(text: str) -> str:
+    has_compare_goal = any(term in text for term in ("比较大小", "从小到大", "从大到小", "最大的数", "最小的数", "排列"))
+    forms = 0
+    forms += 1 if re.search(r"\d+\.\d+", text) else 0
+    forms += 1 if re.search(r"\d+\s*/\s*\d+", text) or "分数" in text else 0
+    forms += 1 if "%" in text or "百分数" in text or "百分之" in text else 0
+    forms += 1 if "π" in text or "圆周率" in text else 0
+    if has_compare_goal and forms >= 2:
+        return _first_term(text, ("比较大小", "从小到大", "最大的数", "最小的数", "π", "%")) or "分小百比较大小"
+    return ""
+
+
+def _percent_rate_application_evidence(text: str) -> str:
+    rate_terms = ("出勤率", "合格率", "出油率", "成活率", "发芽率", "命中率", "百分率")
+    if any(term in text for term in rate_terms) and ("%" in text or "百分" in text or "率" in text):
+        return _first_term(text, rate_terms) or "百分率应用"
+    return ""
+
+
+def _school_ratio_context_choice_evidence(text: str) -> str:
+    if "情境中的比" in text or "比可以用" in text or "可以用比表示" in text:
+        return _first_term(text, ("情境中的比", "可以用", "表示的是", "比")) or "比的意义"
+    return ""
+
+
+def _graphic_sequence_pattern_evidence(text: str) -> str:
+    has_objects = any(term in text for term in ("小棒", "纽扣", "棋子", "图案", "图形"))
+    has_sequence = any(term in text for term in ("照这样", "按照一定规律", "按规律", "图1", "图2", "图 1", "图 2"))
+    has_target = any(term in text for term in ("第n", "第 n", "图6", "共需要", "有多少", "多少个", "根", "颗"))
+    if has_objects and has_sequence and has_target:
+        return _first_term(text, ("照这样", "按照一定规律", "小棒", "纽扣", "棋子", "图1", "图6")) or "图形规律"
+    return ""
+
+
+def _submerged_volume_water_rise_evidence(text: str) -> str:
+    has_water = any(term in text for term in ("水面上升", "水面会上升", "水面正好", "水未溢出", "未溢出", "容器", "水池"))
+    has_submerged = any(term in text for term in ("浸没", "放入水", "放到", "放入", "竖直放入"))
+    has_volume_context = any(term in text for term in ("底面半径", "底面积", "棱长", "体积", "容积", "高为", "水高", "单位:cm", "单位：cm"))
+    if has_water and has_submerged and has_volume_context:
+        return _first_term(text, ("完全浸没", "水面上升", "水未溢出", "竖直放入", "水面正好")) or "浸没水面上升"
+    return ""
+
+
+def _repeated_percent_change_evidence(text: str) -> str:
+    has_change = any(term in text for term in ("两次价格调整", "两次", "先后", "下降幅度", "上涨幅度", "增加", "减少"))
+    has_percent_or_price = any(term in text for term in ("%", "百分", "价格调整", "促销", "商品"))
+    if has_change and has_percent_or_price and any(term in text for term in ("相比", "变化幅度", "下降幅度", "最大")):
+        return _first_term(text, ("两次价格调整", "下降幅度", "促销", "相比", "价格调整")) or "连续百分数变化"
+    return ""
+
+
+def _fraction_unit_one_relation_evidence(text: str) -> str:
+    has_fraction_relation = any(term in text for term in ("比", "多", "少")) and (
+        re.search(r"\d+\s*/\s*\d+", text) or "几分之" in text or "分率" in text or "算式" in text
+    )
+    has_unit_goal = any(term in text for term in ("单位", "才能用算式", "补充", "刷卡消费", "现金消费"))
+    if has_fraction_relation and has_unit_goal:
+        return _first_term(text, ("比现金消费少", "现金消费比刷卡消费少", "才能用算式", "补充")) or "单位1关系"
+    return ""
+
+
+def _rotation_solid_volume_evidence(text: str) -> str:
+    has_rotation = any(term in text for term in ("旋转一周", "为轴旋转", "绕", "旋转形成"))
+    has_solid_goal = any(term in text for term in ("体积比", "体积", "形成的图形"))
+    has_plane_shape = any(term in text for term in ("正方形", "长方形", "三角形", "图形"))
+    if has_rotation and has_solid_goal and has_plane_shape:
+        return _first_term(text, ("以直线", "为轴旋转一周", "旋转形成", "体积比")) or "旋转体体积"
+    return ""
+
+
+def _parallel_triangle_area_relation_evidence(text: str) -> str:
+    if "平行四边形" in text and "三角形" in text and any(term in text for term in ("等底等高", "底是", "高是")) and "面积" in text:
+        return _first_term(text, ("等底等高", "平行四边形", "三角形的面积")) or "平行四边形三角形面积关系"
+    return ""
+
+
+def _probability_fair_game_evidence(text: str) -> str:
+    has_random_game = any(term in text for term in ("摸球", "任意摸", "摸后放回", "袋子"))
+    has_fair_goal = any(term in text for term in ("公平", "得1分", "不得分", "游戏"))
+    if has_random_game and has_fair_goal:
+        return _first_term(text, ("摸球游戏", "摸后放回", "公平", "得1分")) or "游戏公平性"
+    return ""
+
+
+def _fraction_ratio_distribution_evidence(text: str) -> str:
+    has_fraction_step = any(term in text for term in ("留下", "余下", "剩下", "自己留下")) and (
+        re.search(r"\d+\s*/\s*\d+", text) or "分数" in text or "块" in text
+    )
+    has_ratio_distribution = any(term in text for term in ("按照", "按", "分给")) and any(term in text for term in ("甲", "乙", "丙", "比"))
+    if has_fraction_step and has_ratio_distribution:
+        return _first_term(text, ("余下按照", "自己留下", "分给甲", "按比分配")) or "分数后按比分配"
+    return ""
+
+
+def _cylinder_surface_area_practical_evidence(text: str) -> str:
+    has_cylinder = "圆柱" in text and any(term in text for term in ("水池", "容器", "底面半径", "高是"))
+    has_surface = any(term in text for term in ("底面和四周", "四周", "抹水泥", "表面积", "侧面积"))
+    if has_cylinder and has_surface:
+        return _first_term(text, ("圆柱形水池", "底面和四周", "抹水泥", "表面积")) or "圆柱实际表面积"
+    return ""
+
+
+def _divisibility_digit_construction_evidence(text: str) -> str:
+    has_digits = any(term in text for term in ("选出三个数字", "写出三位数", "从0", "从 0"))
+    has_rules = all(term in text for term in ("2", "3", "5")) and any(term in text for term in ("倍数", "因数", "最大的", "最小的"))
+    if has_digits and has_rules:
+        return _first_term(text, ("选出三个数字", "三位数", "因数3", "因数5", "2,3,5倍数")) or "2、3、5倍数特征"
+    return ""
+
+
+def _fraction_remaining_after_cuts_evidence(text: str) -> str:
+    has_object = any(term in text for term in ("电线", "绳子", "木料", "还剩下"))
+    has_steps = "第一次" in text and "第二次" in text and any(term in text for term in ("剪去", "用去", "截去"))
+    if has_object and has_steps:
+        return _first_term(text, ("第一次剪去", "第二次剪去", "还剩下")) or "连续分数剩余"
+    return ""
+
+
+def _cylinder_cone_composite_volume_evidence(text: str) -> str:
+    if "圆柱" in text and "圆锥" in text and any(term in text for term in ("组成", "组合", "立体图形")) and "体积" in text:
+        return _first_term(text, ("圆锥和一个圆柱组成", "立体图形", "体积")) or "圆柱圆锥组合体积"
+    return ""
+
+
+def _circle_cut_rectangle_area_evidence(text: str) -> str:
+    if "圆" in text and any(term in text for term in ("平均分成", "拼成", "近似长方形")) and any(term in text for term in ("周长", "面积")):
+        return _first_term(text, ("平均分成", "近似长方形", "圆的周长", "面积")) or "圆拼成长方形"
+    return ""
+
+
+def _school_fraction_equation_ratio_evidence(text: str) -> str:
+    if any(term in text for term in ("解方程", "解比例", "比例的基本性质")):
+        return _first_term(text, ("解方程", "解比例", "比例的基本性质")) or "解方程解比例"
+    return ""
+
+
+def _school_circle_circumference_area_ring_evidence(text: str) -> str:
+    has_circle = any(term in text for term in ("圆形", "圆的周长", "圆的面积", "喷泉池", "防护栏"))
+    has_ring = any(term in text for term in ("一圈", "小路", "周围", "环形", "占地面积"))
+    if has_circle and has_ring and any(term in text for term in ("直径", "半径", "周长", "面积")):
+        return _first_term(text, ("圆形音乐喷泉池", "防护栏", "占地面积", "小路的面积")) or "圆周长面积环形面积"
+    return ""
+
+
+def _school_composite_perimeter_area_evidence(text: str) -> str:
+    if any(term in text for term in ("图形计算", "组合图形", "不规则图形", "涂色部分")) and any(
+        term in text for term in ("周长和面积", "求出下面图形的面积", "面积")
+    ):
+        return _first_term(text, ("图形计算", "涂色部分", "周长和面积", "组合图形")) or "组合图形周长面积"
+    return ""
+
+
+def _fan_chart_application_evidence(text: str) -> str:
+    has_chart = any(term in text for term in ("扇形统计图", "统计图和统计表", "统计图", "统计表"))
+    has_percent = any(term in text for term in ("百分之", "%", "占", "补充完整"))
+    has_specific_sheet_context = any(term in text for term in ("统计图和统计表", "统计表", "补充完整", "上网情况", "健康上网"))
+    if has_chart and has_percent and has_specific_sheet_context and any(term in text for term in ("解决问题", "共有多少人", "人数", "上网")):
+        return _first_term(text, ("扇形统计图", "统计图和统计表", "补充完整", "百分之")) or "扇形统计图应用"
+    return ""
+
+
+def _equal_area_sandglass_evidence(text: str) -> str:
+    if "正方形" in text and "阴影" in text and any(term in text for term in ("边长分别", "两个正方形", "沙漏")):
+        return _first_term(text, ("两个正方形", "边长分别", "阴影部分")) or "沙漏面积"
+    return ""
+
+
+def _work_split_collaboration_evidence(text: str) -> str:
+    has_work = any(term in text for term in ("仓库", "货物", "粉刷", "房间", "工程", "搬运"))
+    has_efficiency = any(term in text for term in ("单独做", "需要", "完成", "搬完", "共同完成", "合作"))
+    has_split = any(term in text for term in ("中途", "帮助", "同时", "先单独", "最后两个", "接下来"))
+    if has_work and has_efficiency and has_split:
+        return _first_term(text, ("中途", "帮助", "同时开始", "先单独", "共同完成")) or "分段合作工程"
+    return ""
+
+
+def _staircase_recurrence_evidence(text: str) -> str:
+    if "台阶" in text and any(term in text for term in ("每次可以迈", "每次只能上", "1级", "2级", "3级")) and any(
+        term in text for term in ("不同的走法", "多少种走法", "共有")
+    ):
+        return _first_term(text, ("每次可以迈", "每次只能上", "台阶", "不同的走法")) or "爬楼梯递推"
+    return ""
+
+
+def _new_operation_conditional_evidence(text: str) -> str:
+    has_defined = _defined_operation_rule_evidence(text) or bool(re.search(r"定义.{0,4}[※★☆△▲□○◎◇◆⊙#@].{0,8}运算", text))
+    has_condition_branch = any(term in text for term in ("偶数", "奇数", "自然数")) or bool(
+        re.search(r"如果.{0,24}则.{0,24}如果.{0,24}则", text)
+    )
+    if has_defined and has_condition_branch:
+        return _first_term(text, ("如果", "偶数", "奇数", "定义")) or "条件新定义运算"
+    return ""
+
+
+def _travel_inverse_speed_time_evidence(text: str) -> str:
+    has_travel = any(term in text for term in ("速度", "路上", "返回", "去时", "回家", "学校", "奶奶家"))
+    has_ratio = any(term in text for term in ("速度比", "速度与", "之比", "速度比是"))
+    has_same_distance = any(term in text for term in ("距离", "同一路程", "用时", "路上共用了", "从家到学校"))
+    if has_travel and has_ratio and has_same_distance:
+        return _first_term(text, ("速度与去时的速度之比", "速度比", "路上共用了", "从家到学校")) or "速度时间反比"
+    return ""
+
+
+def _trapezoid_auxiliary_area_evidence(text: str) -> str:
+    if "平行四边形" in text and "阴影" in text and any(term in text for term in ("三等分点", "等分点", "E点")) and "面积" in text:
+        return _first_term(text, ("三等分点", "平行四边形", "阴影部分")) or "梯形辅助线面积"
+    return ""
+
+
+def _geometric_series_area_sum_evidence(text: str) -> str:
+    has_geometry_sequence = any(term in text for term in ("系列图形", "图形1", "图形2", "图形n", "后一个"))
+    has_ratio = any(term in text for term in ("2倍", "倍", "斜边", "直角边", "等比"))
+    if has_geometry_sequence and has_ratio and "面积" in text:
+        return _first_term(text, ("系列图形", "图形n", "后一个", "2倍")) or "等比面积数列"
+    return ""
+
+
+def _parallel_line_area_comparison_evidence(text: str) -> str:
+    has_parallel_line = any(term in text for term in ("两条平行线", "平行线之间"))
+    has_all_shapes = all(term in text for term in ("平行四边形", "三角形", "梯形"))
+    has_area_compare = any(term in text for term in ("面积最大", "面积比较", "一样大"))
+    if (has_parallel_line or has_all_shapes) and has_area_compare and "面积" in text:
+        return _first_term(text, ("两条平行线", "平行线之间", "面积最大")) or "平行线间面积比较"
+    return ""
+
+
+def _tree_diagram_queue_counting_evidence(text: str) -> str:
+    has_arrange = any(term in text for term in ("放到书架", "排队", "不同的放法", "放法"))
+    has_restriction = any(term in text for term in ("不能放在第一", "不能放在第二", "不能放在第三", "不能放在第四", "不能"))
+    if has_arrange and has_restriction:
+        return _first_term(text, ("不能放在第一", "不同的放法", "书架")) or "树形图排队"
+    return ""
+
+
+def _cuboid_coloring_evidence(text: str) -> str:
+    if any(term in text for term in ("小立方体", "小正方体")) and any(term in text for term in ("长方体", "正方体")) and any(
+        term in text for term in ("刷漆", "涂色", "未刷漆", "面都未")
+    ):
+        return _first_term(text, ("小立方体", "刷上漆", "未刷漆")) or "长方体染色"
+    return ""
+
+
+def _downstream_upstream_current_evidence(text: str) -> str:
+    if any(term in text for term in ("顺流", "顺水")) and any(term in text for term in ("逆水", "逆流")) and any(
+        term in text for term in ("漂流", "水速", "航速", "航程")
+    ):
+        return _first_term(text, ("顺流", "顺水", "逆水", "漂流")) or "流水行船"
+    return ""
+
+
+def _partial_submerged_water_rise_evidence(text: str) -> str:
+    has_cylinder_pool = "圆柱" in text and "水池" in text
+    has_insert = any(term in text for term in ("竖直放入", "放入水池", "放入"))
+    has_partial_hint = any(term in text for term in ("里面存有", "池水", "不完全浸没", "水面会上升"))
+    if has_cylinder_pool and has_insert and has_partial_hint and "完全浸没" not in text:
+        return _first_term(text, ("竖直放入", "水面会上升", "里面存有", "池水")) or "不完全浸没水面上升"
+    return ""
+
+
+def _slicing_volume_method_evidence(text: str) -> str:
+    has_cube_cut = any(term in text for term in ("切割成若干个", "切成", "棱长为1厘米的小正方体"))
+    has_remove = any(term in text for term in ("挖空", "阴影区域", "剩下部分的体积", "剩下"))
+    if has_cube_cut and has_remove:
+        return _first_term(text, ("切割成若干个", "挖空", "剩下部分的体积")) or "切片法体积"
+    return ""
+
+
+def _floor_function_operation_evidence(text: str) -> str:
+    if any(term in text for term in ("整数部分", "不大于", "取整")) and any(term in text for term in ("表示", "规定")):
+        return _first_term(text, ("整数部分", "不大于", "规定")) or "取整计算"
+    return ""
+
+
+def _cross_concentration_mix_evidence(text: str) -> str:
+    if any(term in text for term in ("酒精", "盐水", "溶液")) and any(term in text for term in ("混合后", "纯酒精含量", "浓度")) and any(
+        term in text for term in ("72%", "58%", "63.25%", "多取", "第一次混合")
+    ):
+        return _first_term(text, ("混合后纯酒精含量", "多取", "第一次混合", "酒精")) or "十字交叉浓度"
+    return ""
+
+
+def _hidden_distance_meeting_evidence(text: str) -> str:
+    if any(term in text for term in ("同时出发", "相遇")) and any(term in text for term in ("一半还多", "距离的一半", "多0.75")) and "速度" in text:
+        return _first_term(text, ("一半还多", "相遇", "速度")) or "隐藏路程差"
+    return ""
+
+
+def _round_robin_counting_evidence(text: str) -> str:
+    has_round_robin = any(term in text for term in ("单循环比赛", "每两个队之间", "比赛场次", "线段条数"))
+    has_general = any(term in text for term in ("n个队", "m个小组", "共需要进行", "总的比赛场次"))
+    if has_round_robin and has_general:
+        return _first_term(text, ("单循环比赛", "比赛场次", "线段条数", "n个队")) or "循环赛规律"
+    return ""
+
+
+def _school_cone_package_surface_evidence(text: str) -> str:
+    if "圆锥" in text and "长方体纸盒" in text and any(term in text for term in ("体积", "纸板", "包装")):
+        return _first_term(text, ("圆锥形的玩具", "长方体纸盒", "纸板")) or "圆锥包装表面积"
+    return ""
+
+
+def _railway_ticket_counting_evidence(text: str) -> str:
+    if any(term in text for term in ("铁路", "车站", "车票")) and any(term in text for term in ("新增", "往返", "不一样", "需要增加")):
+        return _first_term(text, ("新增", "车站", "往返的车票不一样", "需要增加")) or "车票计数"
+    return ""
+
+
+def _magic_square_relation_evidence(text: str) -> str:
+    if any(term in text for term in ("三阶幻方", "幻方", "数阵")):
+        return _first_term(text, ("三阶幻方", "幻方", "数阵")) or "三阶幻方"
+    return ""
+
+
+def _list_ratio_analysis_evidence(text: str) -> str:
+    has_multiple_groups = all(term in text for term in ("甲", "乙", "丙")) and any(term in text for term in ("三个班", "总人数", "男生", "女生"))
+    has_ratios = text.count(":") + text.count("：") >= 2 or "人数比" in text
+    if has_multiple_groups and has_ratios:
+        return _first_term(text, ("三个班", "男生总人数和女生总人数", "人数比", "总人数的比")) or "列表分析"
+    return ""
+
+
+def _vertical_multiplication_digit_analysis_evidence(text: str) -> str:
+    if "乘法竖式" in text and any(term in text for term in ("数字被", "三角形盖住", "乘积")):
+        return _first_term(text, ("乘法竖式", "三角形盖住", "乘积")) or "乘法竖式位数分析"
+    return ""
+
+
+def _remainder_system_conditions_evidence(text: str) -> str:
+    if any(term in text for term in ("除余", "被7除余", "被8除余", "被9除余")) and len(re.findall(r"被\d+除余\d+", text)) >= 3:
+        return _first_term(text, ("被7除余", "被8除余", "被9除余", "除余")) or "多条件余数"
+    return ""
+
+
+def _complex_circle_overlap_area_evidence(text: str) -> str:
+    has_circle_overlap = any(term in text for term in ("圆和半圆", "两两相切", "小圆", "半圆"))
+    has_shadow_area = "阴影" in text and "面积" in text
+    if has_circle_overlap and has_shadow_area:
+        return _first_term(text, ("圆和半圆", "两两相切", "阴影部分的面积")) or "复杂圆形重叠面积"
+    return ""
+
+
+def _school_fraction_mixed_calculation_evidence(text: str) -> str:
+    if any(term in text for term in ("脱式计算", "直接写得数")) and any(term in text for term in ("分数", "小数", "百分数", "能简算", "计算", "写得数")):
+        return _first_term(text, ("脱式计算", "直接写得数", "能简算")) or "分数四则混合运算"
+    return ""
+
+
+def _school_clever_factor_calculation_evidence(text: str) -> str:
+    if any(term in text for term in ("提取公因数", "提公因数", "整体约分", "分拆构造公因数", "能简算")):
+        return _first_term(text, ("提取公因数", "提公因数", "整体约分", "能简算")) or "提公因数巧算"
+    return ""
+
+
 def _gaosi_permutation_combination_evidence(text: str) -> str:
-    if _number_table_position_pattern_evidence(text):
+    if (
+        _number_table_position_pattern_evidence(text)
+        or _graphic_sequence_pattern_evidence(text)
+        or _tree_diagram_queue_counting_evidence(text)
+    ):
         return ""
     if any(term in text for term in ("排列组合", "组合的巧算", "A和C", "分类与分步")):
         return _first_term(text, ("排列组合", "组合的巧算", "A和C", "分类与分步")) or "排列组合"
@@ -3613,6 +4546,78 @@ def _implicit_blocked_fact_keys(node: Dim5GraphNode, fact_keys: set[str]) -> Lis
         blocked.append("school_cube_net")
     if "graph_relation_network_counting" in fact_keys and node_name in {"整数除法", "除数是一位数的竖式计算", "平均分应用"}:
         blocked.append("graph_relation_network_counting")
+    if "signed_number_context" in fact_keys and node_name in {"平均分应用", "平均数问题初步", "除数是一位数的除法中求平均问题"}:
+        blocked.append("signed_number_context")
+    if "number_fraction_percent_comparison" in fact_keys and (
+        node_name in {"排列组合", "最值问题一", "最值问题二", "统筹与对策"}
+        or (node.knowledge_point_id.startswith(GAOSI_NODE_ID_PREFIX) and any(term in node_name for term in ("排列", "组合", "最值", "统筹")))
+    ):
+        blocked.append("number_fraction_percent_comparison")
+    if "graphic_sequence_pattern" in fact_keys and (
+        node_name == "排列组合"
+        or (node.knowledge_point_id.startswith(GAOSI_NODE_ID_PREFIX) and any(term in node_name for term in ("排列", "组合")))
+    ):
+        blocked.append("graphic_sequence_pattern")
+    if "parallel_line_area_comparison" in fact_keys and (
+        node_name in {"最值问题一", "最值问题二", "统筹与对策"}
+        or (node.knowledge_point_id.startswith(GAOSI_NODE_ID_PREFIX) and any(term in node_name for term in ("最值", "统筹")))
+    ):
+        blocked.append("parallel_line_area_comparison")
+    if "circle_cut_rectangle_area" in fact_keys and node_name in {"除法估算", "平均分应用", "除数是一位数的除法中求平均问题"}:
+        blocked.append("circle_cut_rectangle_area")
+    if "parallel_triangle_area_relation" in fact_keys and any(term in node_name for term in ("勾股", "面积比模型", "燕尾")):
+        blocked.append("parallel_triangle_area_relation")
+    if "divisibility_digit_construction" in fact_keys and node.knowledge_track == "olympiad" and any(
+        term in node_name for term in ("约数", "倍数", "整除")
+    ):
+        blocked.append("divisibility_digit_construction")
+    if (
+        {"cylinder_cone_composite_volume", "school_cone_package_surface", "submerged_volume_water_rise", "cylinder_surface_area_practical"}
+        & fact_keys
+        and node.knowledge_track == "olympiad"
+        and any(term in node_name for term in ("立体几何", "圆柱", "卷纸", "表面积", "体积"))
+    ):
+        blocked.append("school_solid_geometry_specific")
+    if "partial_submerged_water_rise" in fact_keys and node.knowledge_track == "school" and "浸没水面上升" in node_name:
+        blocked.append("partial_submerged_water_rise")
+    if "rotation_solid_volume" in fact_keys and (
+        (node.knowledge_point_id.startswith(GAOSI_NODE_ID_PREFIX) and any(term in node_name for term in ("比例", "几何图形剪拼", "面积比")))
+        or node_name in {"比例解应用题", "几何图形剪拼", "面积比模型"}
+    ):
+        blocked.append("rotation_solid_volume")
+    if "new_operation_conditional" in fact_keys and node.knowledge_track == "school":
+        blocked.append("new_operation_conditional")
+    if "new_operation_conditional" in fact_keys and node.knowledge_point_id == "dim5.number_operation.defined_operation":
+        blocked.append("new_operation_conditional")
+    if "school_fraction_equation_ratio" in fact_keys and node.knowledge_track == "olympiad" and any(term in node_name for term in ("方程", "比例")):
+        blocked.append("school_fraction_equation_ratio")
+    if "list_ratio_analysis" in fact_keys and node.knowledge_point_id.startswith(GAOSI_NODE_ID_PREFIX) and "比例" in node_name:
+        blocked.append("list_ratio_analysis")
+    if "travel_inverse_speed_time" in fact_keys and node.knowledge_point_id.startswith(GAOSI_NODE_ID_PREFIX) and (
+        "比例" in node_name or "行程问题" in node_name
+    ):
+        blocked.append("travel_inverse_speed_time")
+    if "hidden_distance_meeting" in fact_keys and node.knowledge_point_id.startswith(GAOSI_NODE_ID_PREFIX) and "行程问题" in node_name:
+        blocked.append("hidden_distance_meeting")
+    if "geometric_series_area_sum" in fact_keys and any(term in node_name for term in ("勾股", "基础几何公式", "三角形面积")):
+        blocked.append("geometric_series_area_sum")
+    if "round_robin_counting" in fact_keys and (
+        node_name in {"找规律", "简单规律与数列", "周期问题", "周期规律", "图论基础与关系网络计数", "平方数序列定位", "等式规律与公式递推"}
+    ):
+        blocked.append("round_robin_counting")
+    if (
+        "remainder_system_conditions" in fact_keys
+        and any(term in node_name for term in ("余数", "进位制与取整"))
+        and node.knowledge_point_id
+        not in {"dim5.number_theory.congruence_remainder_system", "dim5.number_theory.remainder_system_conditions"}
+    ):
+        blocked.append("remainder_system_conditions")
+    if "cross_concentration_mix" in fact_keys and node_name == "浓度问题与经济问题":
+        blocked.append("cross_concentration_mix")
+    if "tree_diagram_queue_counting" in fact_keys and node_name == "排列组合":
+        blocked.append("tree_diagram_queue_counting")
+    if "vertical_multiplication_digit_analysis" in fact_keys and node.knowledge_track == "school" and "乘法" in node_name:
+        blocked.append("vertical_multiplication_digit_analysis")
     return blocked
 
 

@@ -35,7 +35,7 @@ function buildDim1ScoreOverview(score: number): string {
   } else {
     explanation = '说明本卷计算要求以基础运算为主，主要看基本规则掌握和计算准确率。';
   }
-  return `计算维度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
+  return `计算难度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
 }
 
 function buildDim2ScoreOverview(score: number): string {
@@ -52,7 +52,7 @@ function buildDim2ScoreOverview(score: number): string {
   } else {
     explanation = '说明本卷主要覆盖基础识图和直接几何公式，重点看图形概念和基本关系是否掌握。';
   }
-  return `几何直观与空间想象维度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
+  return `几何难度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
 }
 
 function buildDim3ScoreOverview(score: number): string {
@@ -69,7 +69,7 @@ function buildDim3ScoreOverview(score: number): string {
   } else {
     explanation = '说明这张试卷在学生读题和理解题意上的要求比较基础，大多数题目读完后能较快明白题目在说什么。';
   }
-  return `场景理解复杂度维度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
+  return `读题难度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
 }
 
 function buildDim4ScoreOverview(score: number): string {
@@ -86,7 +86,7 @@ function buildDim4ScoreOverview(score: number): string {
   } else {
     explanation = '说明本卷在解题思路上的要求比较基础。多数题目读懂题意后，可以直接找到主要关系并完成解答。';
   }
-  return `综合得分为 ${formatScore(scoreValue)} 分，${explanation}`;
+  return `解题方法难度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
 }
 
 function buildDim5ScoreOverview(score: number): string {
@@ -95,7 +95,7 @@ function buildDim5ScoreOverview(score: number): string {
   if (scoreValue >= 9) {
     explanation = '说明本卷知识门槛很高，核心题多接近六年级奥数较难题、小升初压轴题或七年级核心前置知识。';
   } else if (scoreValue >= 8) {
-    explanation = '说明本卷知识广度较高，较多题目需要五六年级奥数典型方法或七年级基础前置知识。';
+    explanation = '说明本卷知识门槛较高，较多题目需要五六年级奥数典型方法或七年级基础前置知识。';
   } else if (scoreValue >= 6) {
     explanation = '说明本卷有一定知识拓展，除校内核心知识外，还覆盖校内综合或三四年级奥数入门模型。';
   } else if (scoreValue >= 4) {
@@ -103,7 +103,7 @@ function buildDim5ScoreOverview(score: number): string {
   } else {
     explanation = '说明本卷以一至三年级校内基础知识为主，主要考查基本概念、基础计算和直接应用。';
   }
-  return `知识广度综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
+  return `知识门槛难度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
 }
 
 function buildDim6ScoreOverview(score: number): string {
@@ -120,7 +120,7 @@ function buildDim6ScoreOverview(score: number): string {
   } else {
     explanation = '这张试卷多数题解题链条很短，通常读懂条件后一步判断即可。';
   }
-  return `逻辑推理综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
+  return `解题链路难度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
 }
 
 function formatDimensionEvidence(dim: DimensionScore): string {

@@ -186,8 +186,10 @@ describe('DimensionScoreCards', () => {
   it('renders all dimension cards', () => {
     render(<DimensionScoreCards dimensions={mockDimensions} />);
 
-    expect(screen.getByText('数学运算')).toBeInTheDocument();
-    expect(screen.getByText('几何直观与空间想象')).toBeInTheDocument();
+    expect(screen.getByText('计算难度')).toBeInTheDocument();
+    expect(screen.getByText('几何难度')).toBeInTheDocument();
+    expect(screen.queryByText('数学运算')).not.toBeInTheDocument();
+    expect(screen.queryByText('几何直观与空间想象')).not.toBeInTheDocument();
   });
 
   it('displays correct scores and evidence', () => {
@@ -196,8 +198,8 @@ describe('DimensionScoreCards', () => {
     expect(screen.getByText('7.5')).toBeInTheDocument();
     expect(screen.getByText('6.0')).toBeInTheDocument();
     expect(screen.getAllByText('得分概览')).toHaveLength(2);
-    expect(screen.getByText(/计算维度，综合得分 7.5 分/)).toBeInTheDocument();
-    expect(screen.getByText(/几何直观与空间想象维度，综合得分 6.0 分/)).toBeInTheDocument();
+    expect(screen.getByText(/计算难度，综合得分 7.5 分/)).toBeInTheDocument();
+    expect(screen.getByText(/几何难度，综合得分 6.0 分/)).toBeInTheDocument();
     expect(screen.getByText(/图形关系整理和模型识别/)).toBeInTheDocument();
   });
 
@@ -215,7 +217,7 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    const evidence = screen.getByText(/场景理解复杂度维度，综合得分 8.6 分/);
+    const evidence = screen.getByText(/读题难度，综合得分 8.6 分/);
     expect(evidence).toHaveTextContent('学生读题理解题意上设置了明显难度');
     expect(evidence).toHaveTextContent('场景相对复杂');
     expect(evidence).not.toHaveTextContent('按题目等级加权');
@@ -238,9 +240,9 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    expect(screen.getByText('逻辑链条')).toBeInTheDocument();
+    expect(screen.getByText('解题链路难度')).toBeInTheDocument();
     expect(screen.queryByText('逻辑链条长度')).not.toBeInTheDocument();
-    const evidence = screen.getByText(/逻辑推理综合得分 8.6 分/);
+    const evidence = screen.getByText(/解题链路难度，综合得分 8.6 分/);
     expect(evidence).toHaveTextContent('这张试卷不少题解题链条较长');
     expect(evidence).toHaveTextContent('连续推进 3-4 步');
     expect(evidence).not.toHaveTextContent('逻辑链条维度，综合得分');
@@ -262,8 +264,8 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    const evidence = screen.getByText(/知识广度综合得分 8.6 分/);
-    expect(evidence).toHaveTextContent('说明本卷知识广度较高');
+    const evidence = screen.getByText(/知识门槛难度，综合得分 8.6 分/);
+    expect(evidence).toHaveTextContent('说明本卷知识门槛较高');
     expect(evidence).toHaveTextContent('五六年级奥数典型方法或七年级基础前置知识');
     expect(evidence).not.toHaveTextContent('按知识范围等级权重计算');
   });
@@ -290,7 +292,7 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    const evidence = screen.getByText(/计算维度，综合得分 8.2 分/);
+    const evidence = screen.getByText(/计算难度，综合得分 8.2 分/);
     expect(evidence).toHaveTextContent('说明本卷计算难度较高');
     expect(evidence).not.toHaveTextContent('共 5 道题计入数学运算评分');
     expect(evidence).not.toHaveTextContent('1 道纯计算题和 4 道应用题中的核心计算');
@@ -617,7 +619,7 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    const evidence = screen.getByText(/综合得分为 8.2 分/);
+    const evidence = screen.getByText(/解题方法难度，综合得分 8.2 分/);
     expect(evidence).toHaveTextContent('在解题思路上有较明显难度');
     expect(evidence).toHaveTextContent('先把条件之间的关系理清楚');
     expect(evidence).not.toHaveTextContent('建模解题复杂度综合得分');

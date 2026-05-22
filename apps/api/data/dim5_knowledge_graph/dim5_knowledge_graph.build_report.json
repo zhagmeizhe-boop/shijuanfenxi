@@ -1,7 +1,7 @@
 {
   "graph_version": "dim5_knowledge_graph_v1",
-  "approved_node_count": 930,
-  "generated_school_node_count": 761,
+  "approved_node_count": 988,
+  "generated_school_node_count": 798,
   "generated_gaosi_node_count": 94,
   "validation_errors": [],
   "source_summaries": {
@@ -30,7 +30,7 @@
       "unique_topic_category": 0
     }
   },
-  "review_queue_count": 2644,
+  "review_queue_count": 2614,
   "review_queue": [
     {
       "term": "100以内数的认识",
@@ -208,12 +208,6 @@
     },
     {
       "term": "最大公因数和最小公倍数",
-      "frequency": 1,
-      "reason": "missing_structural_rule",
-      "source_file": "reference_standard_data.json"
-    },
-    {
-      "term": "图形规律初步",
       "frequency": 1,
       "reason": "missing_structural_rule",
       "source_file": "reference_standard_data.json"
@@ -903,12 +897,6 @@
       "source_file": "reference_standard_data.json"
     },
     {
-      "term": "用小棒摆图形",
-      "frequency": 1,
-      "reason": "missing_structural_rule",
-      "source_file": "reference_standard_data.json"
-    },
-    {
       "term": "组合法围三角形问题",
       "frequency": 1,
       "reason": "missing_structural_rule",
@@ -1353,19 +1341,7 @@
       "source_file": "reference_standard_data.json"
     },
     {
-      "term": "比的意义",
-      "frequency": 1,
-      "reason": "missing_structural_rule",
-      "source_file": "reference_standard_data.json"
-    },
-    {
       "term": "比的基本性质",
-      "frequency": 1,
-      "reason": "missing_structural_rule",
-      "source_file": "reference_standard_data.json"
-    },
-    {
-      "term": "分率与比的相互转化",
       "frequency": 1,
       "reason": "missing_structural_rule",
       "source_file": "reference_standard_data.json"
@@ -1384,12 +1360,6 @@
     },
     {
       "term": "三数连比",
-      "frequency": 1,
-      "reason": "missing_structural_rule",
-      "source_file": "reference_standard_data.json"
-    },
-    {
-      "term": "按比分配",
       "frequency": 1,
       "reason": "missing_structural_rule",
       "source_file": "reference_standard_data.json"
@@ -1467,55 +1437,13 @@
       "source_file": "reference_standard_data.json"
     },
     {
-      "term": "认识正、负数",
-      "frequency": 1,
-      "reason": "missing_structural_rule",
-      "source_file": "reference_standard_data.json"
-    },
-    {
-      "term": "正、负数在生活中的应用",
-      "frequency": 1,
-      "reason": "missing_structural_rule",
-      "source_file": "reference_standard_data.json"
-    },
-    {
       "term": "“±”的含义及应用",
       "frequency": 1,
       "reason": "missing_structural_rule",
       "source_file": "reference_standard_data.json"
     },
     {
-      "term": "用直线上的点表示正、负数",
-      "frequency": 1,
-      "reason": "missing_structural_rule",
-      "source_file": "reference_standard_data.json"
-    },
-    {
-      "term": "用正、负数解决问题",
-      "frequency": 1,
-      "reason": "missing_structural_rule",
-      "source_file": "reference_standard_data.json"
-    },
-    {
       "term": "比例的意义",
-      "frequency": 1,
-      "reason": "missing_structural_rule",
-      "source_file": "reference_standard_data.json"
-    },
-    {
-      "term": "比例的基本性质",
-      "frequency": 1,
-      "reason": "missing_structural_rule",
-      "source_file": "reference_standard_data.json"
-    },
-    {
-      "term": "解比例",
-      "frequency": 1,
-      "reason": "missing_structural_rule",
-      "source_file": "reference_standard_data.json"
-    },
-    {
-      "term": "比例的基本性质的简单应用",
       "frequency": 1,
       "reason": "missing_structural_rule",
       "source_file": "reference_standard_data.json"
@@ -2032,12 +1960,6 @@
     },
     {
       "term": "从同一方向观察不同的几何体",
-      "frequency": 1,
-      "reason": "missing_structural_rule",
-      "source_file": "dim2_geometry_knowledge_base.json"
-    },
-    {
-      "term": "用小棒摆图形",
       "frequency": 1,
       "reason": "missing_structural_rule",
       "source_file": "dim2_geometry_knowledge_base.json"
@@ -2886,14 +2808,79 @@
       "term": "组合问题第8讲",
       "frequency": 8,
       "reason": "needs_structure_split_before_approval"
+    },
+    {
+      "term": "计数问题第9讲",
+      "frequency": 8,
+      "reason": "needs_structure_split_before_approval"
+    },
+    {
+      "term": "第八章 数学广角──优化",
+      "frequency": 8,
+      "reason": "needs_manual_structure_rules"
+    },
+    {
+      "term": "小数乘法巧算",
+      "frequency": 8,
+      "reason": "needs_manual_structure_rules"
+    },
+    {
+      "term": "循环小数计算与应用",
+      "frequency": 8,
+      "reason": "needs_manual_structure_rules"
+    },
+    {
+      "term": "应用题第7讲",
+      "frequency": 7,
+      "reason": "needs_manual_structure_rules"
+    },
+    {
+      "term": "应用题第9讲",
+      "frequency": 7,
+      "reason": "needs_manual_structure_rules"
+    },
+    {
+      "term": "数宇谜问题第6讲",
+      "frequency": 7,
+      "reason": "needs_structure_split_before_approval"
+    },
+    {
+      "term": "计数问题第5讲",
+      "frequency": 7,
+      "reason": "needs_structure_split_before_approval"
+    },
+    {
+      "term": "应用题第25讲",
+      "frequency": 7,
+      "reason": "needs_manual_structure_rules"
+    },
+    {
+      "term": "第一章 时、分、秒",
+      "frequency": 7,
+      "reason": "needs_manual_structure_rules"
+    },
+    {
+      "term": "第五章 倍的认识",
+      "frequency": 7,
+      "reason": "needs_manual_structure_rules"
+    },
+    {
+      "term": "第一章 负数",
+      "frequency": 7,
+      "reason": "needs_manual_structure_rules"
+    },
+    {
+      "term": "方程初步",
+      "frequency": 7,
+      "reason": "needs_manual_structure_rules"
     }
   ],
   "rule_localization": {
-    "node_count": 930,
-    "required_structures_coverage": 930,
-    "fact_extraction_hints_coverage": 930,
-    "negative_hints_coverage": 930,
-    "chinese_rule_coverage": 930,
+    "node_count": 988,
+    "required_structures_coverage": 988,
+    "fact_extraction_hints_coverage": 988,
+    "negative_hints_coverage": 988,
+    "chinese_rule_coverage": 988,
     "english_template_residue_count": 0,
     "english_template_nodes": [],
     "low_quality_rule_count": 0,
@@ -3425,6 +3412,64 @@
         ]
       },
       {
+        "knowledge_point_id": "dim5.counting_combinatorics.round_robin_counting",
+        "name": "循环赛规律 / 比赛场次",
+        "required_structures": [
+          [
+            "round_robin_counting"
+          ]
+        ],
+        "supporting_structures": [],
+        "exclude_structures": [],
+        "confusable_with": [
+          "找规律",
+          "握手问题与比赛轮次",
+          "分数裂项求和",
+          "整除余数问题"
+        ],
+        "fact_extraction_hints": [
+          "识别题目是否满足「循环赛规律 / 比赛场次」的结构证据。必须命中这些结构组：第1组 round_robin_counting（单循环比赛或每两队比赛一次，用线段数或组合数统计场次）。别名线索只作为辅助，不可单独准入：循环赛规律、单循环比赛、比赛场次、数线段方法。每个结构标签都要能回溯到题干原文或图片证据。"
+        ],
+        "negative_hints": [
+          "不要只凭关键词、章节名、别名或来源标签确认「循环赛规律 / 比赛场次」；必须满足 required_structures 的结构证据。",
+          "这些近似但不成立的场景不能判为「循环赛规律 / 比赛场次」：普通数列找规律或没有两两配对比赛语义的题。；只问几个队比赛一次的直接加法。",
+          "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+        ]
+      },
+      {
+        "knowledge_point_id": "dim5.quantity_application.list_ratio_analysis",
+        "name": "列表分析 / 多对象比例",
+        "required_structures": [
+          [
+            "list_ratio_analysis"
+          ]
+        ],
+        "supporting_structures": [
+          "ratio_relation",
+          "whole_part_relation",
+          "proportion_application"
+        ],
+        "exclude_structures": [
+          "profit_discount",
+          "concentration_task"
+        ],
+        "confusable_with": [
+          "比例解应用题",
+          "百分数意义与计算",
+          "利润折扣问题",
+          "浓度问题"
+        ],
+        "fact_extraction_hints": [
+          "识别题目是否满足「列表分析 / 多对象比例」的结构证据。必须命中这些结构组：第1组 list_ratio_analysis（多个班级或对象的男女比、总人数比等多重比例信息用列表整理分析）。别名线索只作为辅助，不可单独准入：简单的列表分析、三个班男女生人数比、多对象比例整理。每个结构标签都要能回溯到题干原文或图片证据。"
+        ],
+        "negative_hints": [
+          "如果题目命中这些排除结构，则不确认或降级「列表分析 / 多对象比例」：profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）",
+          "不要只凭关键词、章节名、别名或来源标签确认「列表分析 / 多对象比例」；必须满足 required_structures 的结构证据。",
+          "这些近似但不成立的场景不能判为「列表分析 / 多对象比例」：没有多个对象和多重比例条件的题。；只有一个比例关系的普通比例应用题。",
+          "只有冒号、百分号或“比”字但没有两个或多个数量之间的比例关系时，不确认比例应用。"
+        ]
+      },
+      {
         "knowledge_point_id": "dim5.school.6.statistics_chart_comprehensive",
         "name": "统计图综合",
         "required_structures": [
@@ -3551,6 +3596,156 @@
         ]
       },
       {
+        "knowledge_point_id": "dim5.school.5.graphic_sequence_letter_pattern",
+        "name": "用字母表示数 / 图形规律",
+        "required_structures": [
+          [
+            "graphic_sequence_pattern"
+          ]
+        ],
+        "supporting_structures": [],
+        "exclude_structures": [
+          "pigeonhole"
+        ],
+        "confusable_with": [
+          "分数裂项求和",
+          "整除余数问题"
+        ],
+        "fact_extraction_hints": [
+          "识别题目是否满足「用字母表示数 / 图形规律」的结构证据。必须命中这些结构组：第1组 graphic_sequence_pattern（用小棒、纽扣、棋子或图形按规律排列，并用字母或项数表达数量关系）。别名线索只作为辅助，不可单独准入：用字母表示图形规律、小棒纽扣图形规律、棋子图形规律、图形规律。每个结构标签都要能回溯到题干原文或图片证据。"
+        ],
+        "negative_hints": [
+          "如果题目命中这些排除结构，则不确认或降级「用字母表示数 / 图形规律」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+          "不要只凭关键词、章节名、别名或来源标签确认「用字母表示数 / 图形规律」；必须满足 required_structures 的结构证据。",
+          "这些近似但不成立的场景不能判为「用字母表示数 / 图形规律」：宽泛章节名、来源标签或没有结构证据的题目；只出现“用字母表示数 / 图形规律”相近文字但没有题面结构证据",
+          "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+        ]
+      },
+      {
+        "knowledge_point_id": "dim5.school.5.divisibility_digit_construction",
+        "name": "3、5倍数特征 / 组数",
+        "required_structures": [
+          [
+            "divisibility_digit_construction"
+          ]
+        ],
+        "supporting_structures": [
+          "gaosi_divisibility",
+          "number_theory_factor_multiple",
+          "divisibility_rule",
+          "integer_constraint"
+        ],
+        "exclude_structures": [
+          "pigeonhole",
+          "decimal_fraction_calculation"
+        ],
+        "confusable_with": [
+          "数字谜",
+          "普通四则计算"
+        ],
+        "fact_extraction_hints": [
+          "识别题目是否满足「3、5倍数特征 / 组数」的结构证据。必须命中这些结构组：第1组 divisibility_digit_construction（从给定数字组成满足2、3、5倍数特征的多位数）。别名线索只作为辅助，不可单独准入：3、5的倍数特征、组成符合条件的三位数、有因数3、有因数5。每个结构标签都要能回溯到题干原文或图片证据。"
+        ],
+        "negative_hints": [
+          "如果题目命中这些排除结构，则不确认或降级「3、5倍数特征 / 组数」：pigeonhole（抽屉原理、最不利情况、保证至少相同）；decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+          "不要只凭关键词、章节名、别名或来源标签确认「3、5倍数特征 / 组数」；必须满足 required_structures 的结构证据。",
+          "这些近似但不成立的场景不能判为「3、5倍数特征 / 组数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“3、5倍数特征 / 组数”相近文字但没有题面结构证据",
+          "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+        ]
+      },
+      {
+        "knowledge_point_id": "dim5.school.6.fraction_equation_ratio",
+        "name": "方程与解比例 / 分小百方程",
+        "required_structures": [
+          [
+            "school_fraction_equation_ratio"
+          ]
+        ],
+        "supporting_structures": [
+          "ratio_relation",
+          "whole_part_relation",
+          "proportion_application"
+        ],
+        "exclude_structures": [
+          "pigeonhole",
+          "profit_discount",
+          "concentration_task"
+        ],
+        "confusable_with": [
+          "百分数意义与计算",
+          "利润折扣问题",
+          "浓度问题"
+        ],
+        "fact_extraction_hints": [
+          "识别题目是否满足「方程与解比例 / 分小百方程」的结构证据。必须命中这些结构组：第1组 school_fraction_equation_ratio（校内解方程、解比例或含分数小数百分数的方程求解）。别名线索只作为辅助，不可单独准入：多步计算的分数方程、依据比例的基本性质解比例、解稍复杂方程、解方程。每个结构标签都要能回溯到题干原文或图片证据。"
+        ],
+        "negative_hints": [
+          "如果题目命中这些排除结构，则不确认或降级「方程与解比例 / 分小百方程」：pigeonhole（抽屉原理、最不利情况、保证至少相同）；profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）",
+          "不要只凭关键词、章节名、别名或来源标签确认「方程与解比例 / 分小百方程」；必须满足 required_structures 的结构证据。",
+          "这些近似但不成立的场景不能判为「方程与解比例 / 分小百方程」：宽泛章节名、来源标签或没有结构证据的题目；只出现“方程与解比例 / 分小百方程”相近文字但没有题面结构证据",
+          "只有冒号、百分号或“比”字但没有两个或多个数量之间的比例关系时，不确认比例应用。"
+        ]
+      },
+      {
+        "knowledge_point_id": "dim5.school.6.fan_chart_application",
+        "name": "扇形统计图应用",
+        "required_structures": [
+          [
+            "fan_chart_application"
+          ]
+        ],
+        "supporting_structures": [],
+        "exclude_structures": [
+          "pigeonhole"
+        ],
+        "confusable_with": [
+          "圆与扇形",
+          "平均数"
+        ],
+        "fact_extraction_hints": [
+          "识别题目是否满足「扇形统计图应用」的结构证据。必须命中这些结构组：第1组 fan_chart_application（扇形统计图、统计表和百分比信息结合解决实际统计问题）。别名线索只作为辅助，不可单独准入：运用扇形统计图解决问题、统计图和统计表、百分比人数换算。每个结构标签都要能回溯到题干原文或图片证据。",
+          "扇形统计图/统计图综合准入必须命中 statistics_chart_context（统计图或统计表读图场景），并优先识别百分比、人数、圆心角或占比换算。"
+        ],
+        "negative_hints": [
+          "如果题目命中这些排除结构，则不确认或降级「扇形统计图应用」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+          "不要只凭关键词、章节名、别名或来源标签确认「扇形统计图应用」；必须满足 required_structures 的结构证据。",
+          "这些近似但不成立的场景不能判为「扇形统计图应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“扇形统计图应用”相近文字但没有题面结构证据",
+          "如果题目目标是几何阴影面积、弧长或圆与扇形公式计算，而不是统计图读图，不确认统计图知识点。"
+        ]
+      },
+      {
+        "knowledge_point_id": "dim5.school.6.clever_factor_calculation",
+        "name": "简便计算 / 提公因数巧算",
+        "required_structures": [
+          [
+            "school_clever_factor_calculation"
+          ]
+        ],
+        "supporting_structures": [
+          "gaosi_divisibility",
+          "number_theory_factor_multiple",
+          "divisibility_rule",
+          "integer_constraint"
+        ],
+        "exclude_structures": [
+          "pigeonhole",
+          "decimal_fraction_calculation"
+        ],
+        "confusable_with": [
+          "数字谜",
+          "普通四则计算"
+        ],
+        "fact_extraction_hints": [
+          "识别题目是否满足「简便计算 / 提公因数巧算」的结构证据。必须命中这些结构组：第1组 school_clever_factor_calculation（提公因数、整体约分或拆分构造公因数的简便计算）。别名线索只作为辅助，不可单独准入：提公因数巧算、整体约分、分拆构造公因数、能简算。每个结构标签都要能回溯到题干原文或图片证据。"
+        ],
+        "negative_hints": [
+          "如果题目命中这些排除结构，则不确认或降级「简便计算 / 提公因数巧算」：pigeonhole（抽屉原理、最不利情况、保证至少相同）；decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+          "不要只凭关键词、章节名、别名或来源标签确认「简便计算 / 提公因数巧算」；必须满足 required_structures 的结构证据。",
+          "这些近似但不成立的场景不能判为「简便计算 / 提公因数巧算」：宽泛章节名、来源标签或没有结构证据的题目；只出现“简便计算 / 提公因数巧算”相近文字但没有题面结构证据",
+          "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+        ]
+      },
+      {
         "knowledge_point_id": "dim5.school.3.12f9bf9c7493",
         "name": "平均数问题初步",
         "required_structures": [
@@ -3577,6 +3772,29 @@
           "不要只凭关键词、章节名、别名或来源标签确认「平均数问题初步」；必须满足 required_structures 的结构证据。",
           "这些近似但不成立的场景不能判为「平均数问题初步」：宽泛章节名、来源标签或没有结构证据的题目；只出现“平均数问题初步”相近文字但没有题面结构证据",
           "只有“每份”“每人”等除法词而没有平均量、总数与份数关系时，不确认平均数。"
+        ]
+      },
+      {
+        "knowledge_point_id": "dim5.school.1.96e1ef7407d4",
+        "name": "图形规律初步",
+        "required_structures": [
+          [
+            "graphic_sequence_pattern"
+          ]
+        ],
+        "supporting_structures": [],
+        "exclude_structures": [],
+        "confusable_with": [
+          "分数裂项求和",
+          "整除余数问题"
+        ],
+        "fact_extraction_hints": [
+          "识别题目是否满足「图形规律初步」的结构证据。必须命中这些结构组：第1组 graphic_sequence_pattern（用小棒、纽扣、棋子或图形按规律排列，并用字母或项数表达数量关系）。别名线索只作为辅助，不可单独准入：组合、图形规律初步、一阶、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+        ],
+        "negative_hints": [
+          "不要只凭关键词、章节名、别名或来源标签确认「图形规律初步」；必须满足 required_structures 的结构证据。",
+          "这些近似但不成立的场景不能判为「图形规律初步」：宽泛章节名、来源标签或没有结构证据的题目；只出现“图形规律初步”相近文字但没有题面结构证据",
+          "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
         ]
       },
       {
@@ -5881,6 +6099,102 @@
           "不要只凭关键词、章节名、别名或来源标签确认「折扣和税率的结合」；必须满足 required_structures 的结构证据。",
           "这些近似但不成立的场景不能判为「折扣和税率的结合」：宽泛章节名、来源标签或没有结构证据的题目；只出现“折扣和税率的结合”相近文字但没有题面结构证据",
           "只有百分号或比例词但没有进价、售价、标价、利润、折扣等商业关系时，不确认利润折扣。"
+        ]
+      },
+      {
+        "knowledge_point_id": "dim5.school.6.7ea6af16ebd3",
+        "name": "比例的基本性质",
+        "required_structures": [
+          [
+            "school_fraction_equation_ratio"
+          ]
+        ],
+        "supporting_structures": [
+          "ratio_relation",
+          "whole_part_relation",
+          "proportion_application"
+        ],
+        "exclude_structures": [
+          "profit_discount",
+          "concentration_task"
+        ],
+        "confusable_with": [
+          "百分数意义与计算",
+          "利润折扣问题",
+          "浓度问题"
+        ],
+        "fact_extraction_hints": [
+          "识别题目是否满足「比例的基本性质」的结构证据。必须命中这些结构组：第1组 school_fraction_equation_ratio（校内解方程、解比例或含分数小数百分数的方程求解）。别名线索只作为辅助，不可单独准入：比例、比例的意义和性质、比例的基本性质、六年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+        ],
+        "negative_hints": [
+          "如果题目命中这些排除结构，则不确认或降级「比例的基本性质」：profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）",
+          "不要只凭关键词、章节名、别名或来源标签确认「比例的基本性质」；必须满足 required_structures 的结构证据。",
+          "这些近似但不成立的场景不能判为「比例的基本性质」：宽泛章节名、来源标签或没有结构证据的题目；只出现“比例的基本性质”相近文字但没有题面结构证据",
+          "只有冒号、百分号或“比”字但没有两个或多个数量之间的比例关系时，不确认比例应用。"
+        ]
+      },
+      {
+        "knowledge_point_id": "dim5.school.6.5fef72687835",
+        "name": "解比例",
+        "required_structures": [
+          [
+            "school_fraction_equation_ratio"
+          ]
+        ],
+        "supporting_structures": [
+          "ratio_relation",
+          "whole_part_relation",
+          "proportion_application"
+        ],
+        "exclude_structures": [
+          "profit_discount",
+          "concentration_task"
+        ],
+        "confusable_with": [
+          "百分数意义与计算",
+          "利润折扣问题",
+          "浓度问题"
+        ],
+        "fact_extraction_hints": [
+          "识别题目是否满足「解比例」的结构证据。必须命中这些结构组：第1组 school_fraction_equation_ratio（校内解方程、解比例或含分数小数百分数的方程求解）。别名线索只作为辅助，不可单独准入：比例、比例的意义和性质、解比例、六年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+        ],
+        "negative_hints": [
+          "如果题目命中这些排除结构，则不确认或降级「解比例」：profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）",
+          "不要只凭关键词、章节名、别名或来源标签确认「解比例」；必须满足 required_structures 的结构证据。",
+          "这些近似但不成立的场景不能判为「解比例」：宽泛章节名、来源标签或没有结构证据的题目；只出现“解比例”相近文字但没有题面结构证据",
+          "只有冒号、百分号或“比”字但没有两个或多个数量之间的比例关系时，不确认比例应用。"
+        ]
+      },
+      {
+        "knowledge_point_id": "dim5.school.6.26336a10f499",
+        "name": "比例的基本性质的简单应用",
+        "required_structures": [
+          [
+            "school_fraction_equation_ratio"
+          ]
+        ],
+        "supporting_structures": [
+          "ratio_relation",
+          "whole_part_relation",
+          "proportion_application"
+        ],
+        "exclude_structures": [
+          "profit_discount",
+          "concentration_task"
+        ],
+        "confusable_with": [
+          "百分数意义与计算",
+          "利润折扣问题",
+          "浓度问题"
+        ],
+        "fact_extraction_hints": [
+          "识别题目是否满足「比例的基本性质的简单应用」的结构证据。必须命中这些结构组：第1组 school_fraction_equation_ratio（校内解方程、解比例或含分数小数百分数的方程求解）。别名线索只作为辅助，不可单独准入：比例、比例的意义和性质、比例的基本性质的简单应用、六年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+        ],
+        "negative_hints": [
+          "如果题目命中这些排除结构，则不确认或降级「比例的基本性质的简单应用」：profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）",
+          "不要只凭关键词、章节名、别名或来源标签确认「比例的基本性质的简单应用」；必须满足 required_structures 的结构证据。",
+          "这些近似但不成立的场景不能判为「比例的基本性质的简单应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“比例的基本性质的简单应用”相近文字但没有题面结构证据",
+          "只有冒号、百分号或“比”字但没有两个或多个数量之间的比例关系时，不确认比例应用。"
         ]
       },
       {

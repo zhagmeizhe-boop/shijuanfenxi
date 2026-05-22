@@ -28,43 +28,43 @@ DIM_META = [
     {
         "code": "dim1",
         "field": "computation",
-        "name": "数学运算",
-        "chart_name": "数学运算",
+        "name": "计算难度",
+        "chart_name": "计算\n难度",
         "color": "#295d8a",
     },
     {
         "code": "dim2",
         "field": "concept",
-        "name": "几何直观与空间想象",
-        "chart_name": "几何直观\n与空间想象",
+        "name": "几何难度",
+        "chart_name": "几何\n难度",
         "color": "#3d7a85",
     },
     {
         "code": "dim3",
         "field": "logic",
-        "name": "场景理解复杂度",
-        "chart_name": "场景理解\n复杂度",
+        "name": "读题难度",
+        "chart_name": "读题\n难度",
         "color": "#6f7d48",
     },
     {
         "code": "dim4",
         "field": "spatial",
-        "name": "建模解题复杂度",
-        "chart_name": "建模解题\n复杂度",
+        "name": "解题方法难度",
+        "chart_name": "解题方法\n难度",
         "color": "#8a6842",
     },
     {
         "code": "dim5",
         "field": "application",
-        "name": "知识广度",
-        "chart_name": "知识广度",
+        "name": "知识门槛难度",
+        "chart_name": "知识门槛\n难度",
         "color": "#8b5754",
     },
     {
         "code": "dim6",
         "field": "innovation",
-        "name": "逻辑链条",
-        "chart_name": "逻辑链条",
+        "name": "解题链路难度",
+        "chart_name": "解题链路\n难度",
         "color": "#5f567c",
     },
 ]
@@ -262,7 +262,7 @@ class PDFExportService:
             explanation = "说明本卷计算难度整体偏常规，重点考查校内计算的熟练度和稳定性。"
         else:
             explanation = "说明本卷计算要求以基础运算为主，主要看基本规则掌握和计算准确率。"
-        return f"计算维度，综合得分 {score_value:.1f} 分，{explanation}"
+        return f"计算难度，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim2_score_overview(cls, score: object) -> str:
@@ -281,7 +281,7 @@ class PDFExportService:
             explanation = "说明本卷以常规图形关系为主，重点考查读图准确性和单步空间转化。"
         else:
             explanation = "说明本卷主要覆盖基础识图和直接几何公式，重点看图形概念和基本关系是否掌握。"
-        return f"几何直观与空间想象维度，综合得分 {score_value:.1f} 分，{explanation}"
+        return f"几何难度，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim3_score_overview(cls, score: object) -> str:
@@ -300,7 +300,7 @@ class PDFExportService:
             explanation = "说明这张试卷在学生读题和理解题意上有常规要求，部分题目需要分清对象、顺序或图文对应关系。"
         else:
             explanation = "说明这张试卷在学生读题和理解题意上的要求比较基础，大多数题目读完后能较快明白题目在说什么。"
-        return f"场景理解复杂度维度，综合得分 {score_value:.1f} 分，{explanation}"
+        return f"读题难度，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim4_score_overview(cls, score: object) -> str:
@@ -319,7 +319,7 @@ class PDFExportService:
             explanation = "说明本卷在解题思路上的要求整体偏常规。多数题目读懂后可以沿常见思路完成，少量题需要先做简单整理再下手。"
         else:
             explanation = "说明本卷在解题思路上的要求比较基础。多数题目读懂题意后，可以直接找到主要关系并完成解答。"
-        return f"综合得分为 {score_value:.1f} 分，{explanation}"
+        return f"解题方法难度，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim5_score_overview(cls, score: object) -> str:
@@ -331,14 +331,14 @@ class PDFExportService:
         if score_value >= 9:
             explanation = "说明本卷知识门槛很高，核心题多接近六年级奥数较难题、小升初压轴题或七年级核心前置知识。"
         elif score_value >= 8:
-            explanation = "说明本卷知识广度较高，较多题目需要五六年级奥数典型方法或七年级基础前置知识。"
+            explanation = "说明本卷知识门槛较高，较多题目需要五六年级奥数典型方法或七年级基础前置知识。"
         elif score_value >= 6:
             explanation = "说明本卷有一定知识拓展，除校内核心知识外，还覆盖校内综合或三四年级奥数入门模型。"
         elif score_value >= 4:
             explanation = "说明本卷主要落在四至六年级校内核心知识，常规两三步应用、比例、图形公式等是主要要求。"
         else:
             explanation = "说明本卷以一至三年级校内基础知识为主，主要考查基本概念、基础计算和直接应用。"
-        return f"知识广度综合得分 {score_value:.1f} 分，{explanation}"
+        return f"知识门槛难度，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim6_score_overview(cls, score: object) -> str:
@@ -358,7 +358,7 @@ class PDFExportService:
         else:
             explanation = "这张试卷多数题解题链条很短，通常读懂条件后一步判断即可。"
 
-        return f"逻辑推理综合得分 {score_value:.1f} 分，{explanation}"
+        return f"解题链路难度，综合得分 {score_value:.1f} 分，{explanation}"
 
     DIM1_DIFFICULTY_LABELS = {
         "L1": "简单（2.0）",

@@ -65,12 +65,12 @@ class PaperDimensionSummary:
 
 class PaperAggregator:
     DIMENSION_NAMES = {
-        "dim1": "数学运算",
-        "dim2": "几何直观与空间想象",
-        "dim3": "场景理解复杂度",
-        "dim4": "建模解题复杂度",
-        "dim5": "知识广度",
-        "dim6": "逻辑链条",
+        "dim1": "计算难度",
+        "dim2": "几何难度",
+        "dim3": "读题难度",
+        "dim4": "解题方法难度",
+        "dim5": "知识门槛难度",
+        "dim6": "解题链路难度",
     }
 
     LEVEL_THRESHOLDS = [
@@ -422,7 +422,7 @@ class PaperAggregator:
             explanation = "说明本卷计算难度整体偏常规，重点考查校内计算的熟练度和稳定性。"
         else:
             explanation = "说明本卷计算要求以基础运算为主，主要看基本规则掌握和计算准确率。"
-        return f"计算维度，综合得分 {score_value:.1f} 分，{explanation}"
+        return f"计算难度，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim2_score_overview(cls, score: object) -> str:
@@ -441,7 +441,7 @@ class PaperAggregator:
             explanation = "说明本卷以常规图形关系为主，重点考查读图准确性和单步空间转化。"
         else:
             explanation = "说明本卷主要覆盖基础识图和直接几何公式，重点看图形概念和基本关系是否掌握。"
-        return f"几何直观与空间想象维度，综合得分 {score_value:.1f} 分，{explanation}"
+        return f"几何难度，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim3_score_overview(cls, score: object) -> str:
@@ -460,7 +460,7 @@ class PaperAggregator:
             explanation = "说明这张试卷在学生读题和理解题意上有常规要求，部分题目需要分清对象、顺序或图文对应关系。"
         else:
             explanation = "说明这张试卷在学生读题和理解题意上的要求比较基础，大多数题目读完后能较快明白题目在说什么。"
-        return f"场景理解复杂度维度，综合得分 {score_value:.1f} 分，{explanation}"
+        return f"读题难度，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim4_score_overview(cls, score: object) -> str:
@@ -479,7 +479,7 @@ class PaperAggregator:
             explanation = "说明本卷在解题思路上的要求整体偏常规。多数题目读懂后可以沿常见思路完成，少量题需要先做简单整理再下手。"
         else:
             explanation = "说明本卷在解题思路上的要求比较基础。多数题目读懂题意后，可以直接找到主要关系并完成解答。"
-        return f"综合得分为 {score_value:.1f} 分，{explanation}"
+        return f"解题方法难度，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim6_score_overview(cls, score: object) -> str:
@@ -499,7 +499,7 @@ class PaperAggregator:
         else:
             explanation = "这张试卷多数题解题链条很短，通常读懂条件后一步判断即可。"
 
-        return f"逻辑推理综合得分 {score_value:.1f} 分，{explanation}"
+        return f"解题链路难度，综合得分 {score_value:.1f} 分，{explanation}"
 
     @staticmethod
     def _dimension_status(question: QuestionDimensionScore, dimension_code: str) -> str:
@@ -1003,7 +1003,7 @@ class PaperAggregator:
                 + failed_excluded_count
             ),
             "high_level_question_count": level_counts["L4"] + level_counts["L5"],
-            "aggregation_rule": "能稳定自动判定 L1-L5 的题纳入场景理解复杂度评分；纯计算、裸公式或无真实读题场景负担的题自动未覆盖；卷级主分按题目等级加权，高等级题权重更高。",
+            "aggregation_rule": "能稳定自动判定 L1-L5 的题纳入读题难度评分；纯计算、裸公式或无真实读题场景负担的题自动未覆盖；卷级主分按题目等级加权，高等级题权重更高。",
         }
 
         if question_count == 0:
@@ -1021,7 +1021,7 @@ class PaperAggregator:
                 total_question_score=0.0,
                 question_count=0,
                 sample_warning=False,
-                evidence="场景理解复杂度暂无可评分题目，未计入综合分。",
+                evidence="读题难度暂无可评分题目，未计入综合分。",
                 warning_messages=zero_warning_messages,
                 counted_questions=[],
                 review_question_count=len(review_questions),
@@ -1045,7 +1045,7 @@ class PaperAggregator:
         )
 
         evidence = (
-            f"共 {question_count} 道题纳入场景理解复杂度评分；"
+            f"共 {question_count} 道题纳入读题难度评分；"
             "按题目等级加权，高等级题权重更高；"
             f"权重得分 {paper_score:.1f} 分，判定为 {level_label}。"
         )
@@ -1145,7 +1145,7 @@ class PaperAggregator:
             "unknown_level_count": ignored_question_count,
             "auto_ignored_count": ignored_question_count,
             "high_level_question_count": level_counts["L4"] + level_counts["L5"],
-            "aggregation_rule": "能稳定自动判定 L1-L5 的题纳入建模解题复杂度评分；纯计算、直接代公式或无真实解题组织负担的题自动未覆盖；卷级主分按题目等级加权，高等级题权重更高。",
+            "aggregation_rule": "能稳定自动判定 L1-L5 的题纳入解题方法难度评分；纯计算、直接代公式或无真实解题组织负担的题自动未覆盖；卷级主分按题目等级加权，高等级题权重更高。",
         }
 
         if question_count == 0:
@@ -1163,7 +1163,7 @@ class PaperAggregator:
                 total_question_score=0.0,
                 question_count=0,
                 sample_warning=False,
-                evidence="建模解题复杂度暂无可评分题目，未计入综合分。",
+                evidence="解题方法难度暂无可评分题目，未计入综合分。",
                 warning_messages=zero_warning_messages,
                 counted_questions=[],
                 review_question_count=review_question_count,
@@ -1188,7 +1188,7 @@ class PaperAggregator:
         )
 
         evidence_parts = [
-            f"共 {question_count} 道题纳入建模解题复杂度评分",
+            f"共 {question_count} 道题纳入解题方法难度评分",
             "按题目等级加权，高等级题权重更高",
         ]
         evidence_parts.append(f"权重得分 {paper_score:.1f} 分，判定为 {level_label}")
@@ -1241,7 +1241,7 @@ class PaperAggregator:
                 total_question_score=0.0,
                 question_count=0,
                 sample_warning=False,
-                evidence="数学运算自动评分未覆盖，未计入综合分。",
+                evidence="计算难度自动评分未覆盖，未计入综合分。",
                 warning_messages=[],
                 counted_questions=[],
                 review_question_count=review_question_count,
@@ -1445,7 +1445,7 @@ class PaperAggregator:
                 total_question_score=0.0,
                 question_count=0,
                 sample_warning=False,
-                evidence="知识广度自动评分未覆盖，未计入综合分。",
+                evidence="知识门槛难度未覆盖，未计入综合分。",
                 warning_messages=[],
                 counted_questions=[],
                 review_question_count=review_question_count,
@@ -1457,14 +1457,14 @@ class PaperAggregator:
         level, level_label = self._calculate_level(paper_score)
 
         evidence = (
-            f"共 {question_count} 道题纳入知识范围评分；"
+            f"共 {question_count} 道题纳入知识门槛难度评分；"
             f"按知识范围等级权重计算；"
             f"权重得分 {paper_score:.1f} 分，判定为{level_label}。"
         )
 
         warning_messages: List[str] = []
         if unscored_applicable_count:
-            warning_messages.append(f"有 {unscored_applicable_count} 道题缺少合法题级分或知识范围等级，未计入知识范围评分。")
+            warning_messages.append(f"有 {unscored_applicable_count} 道题缺少合法题级分或知识范围等级，未计入知识门槛难度评分。")
         for question in applicable_questions:
             warning_messages.extend(question.dim_warnings.get("dim5", []))
         deduped_warnings = list(

@@ -180,12 +180,6 @@
     "source_file": "reference_standard_data.json"
   },
   {
-    "term": "图形规律初步",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
     "term": "位置与方向",
     "frequency": 1,
     "reason": "missing_structural_rule",
@@ -870,12 +864,6 @@
     "source_file": "reference_standard_data.json"
   },
   {
-    "term": "用小棒摆图形",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
     "term": "组合法围三角形问题",
     "frequency": 1,
     "reason": "missing_structural_rule",
@@ -1320,19 +1308,7 @@
     "source_file": "reference_standard_data.json"
   },
   {
-    "term": "比的意义",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
     "term": "比的基本性质",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
-    "term": "分率与比的相互转化",
     "frequency": 1,
     "reason": "missing_structural_rule",
     "source_file": "reference_standard_data.json"
@@ -1351,12 +1327,6 @@
   },
   {
     "term": "三数连比",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
-    "term": "按比分配",
     "frequency": 1,
     "reason": "missing_structural_rule",
     "source_file": "reference_standard_data.json"
@@ -1434,55 +1404,13 @@
     "source_file": "reference_standard_data.json"
   },
   {
-    "term": "认识正、负数",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
-    "term": "正、负数在生活中的应用",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
     "term": "“±”的含义及应用",
     "frequency": 1,
     "reason": "missing_structural_rule",
     "source_file": "reference_standard_data.json"
   },
   {
-    "term": "用直线上的点表示正、负数",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
-    "term": "用正、负数解决问题",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
     "term": "比例的意义",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
-    "term": "比例的基本性质",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
-    "term": "解比例",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "reference_standard_data.json"
-  },
-  {
-    "term": "比例的基本性质的简单应用",
     "frequency": 1,
     "reason": "missing_structural_rule",
     "source_file": "reference_standard_data.json"
@@ -1999,12 +1927,6 @@
   },
   {
     "term": "从同一方向观察不同的几何体",
-    "frequency": 1,
-    "reason": "missing_structural_rule",
-    "source_file": "dim2_geometry_knowledge_base.json"
-  },
-  {
-    "term": "用小棒摆图形",
     "frequency": 1,
     "reason": "missing_structural_rule",
     "source_file": "dim2_geometry_knowledge_base.json"
@@ -2853,5 +2775,70 @@
     "term": "组合问题第8讲",
     "frequency": 8,
     "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "计数问题第9讲",
+    "frequency": 8,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "第八章 数学广角──优化",
+    "frequency": 8,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "小数乘法巧算",
+    "frequency": 8,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "循环小数计算与应用",
+    "frequency": 8,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第7讲",
+    "frequency": 7,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "应用题第9讲",
+    "frequency": 7,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "数宇谜问题第6讲",
+    "frequency": 7,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "计数问题第5讲",
+    "frequency": 7,
+    "reason": "needs_structure_split_before_approval"
+  },
+  {
+    "term": "应用题第25讲",
+    "frequency": 7,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第一章 时、分、秒",
+    "frequency": 7,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第五章 倍的认识",
+    "frequency": 7,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "第一章 负数",
+    "frequency": 7,
+    "reason": "needs_manual_structure_rules"
+  },
+  {
+    "term": "方程初步",
+    "frequency": 7,
+    "reason": "needs_manual_structure_rules"
   }
 ]

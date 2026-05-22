@@ -643,12 +643,12 @@ export function PDFUploadPage() {
   const submittedFile = uploadStatus.status !== 'idle' && uploadStatus.status !== 'error' ? uploadedFile : null;
 
   const features = [
-    { icon: Zap, title: '数学运算', desc: '识别试卷中的核心计算难度' },
-    { icon: Brain, title: '几何直观与空间想象', desc: '评估几何关系与图形推理要求' },
-    { icon: Target, title: '场景理解复杂度', desc: '分析场景、规则、过程和图文对应理解' },
-    { icon: FileCheck, title: '实践与创新', desc: '关注应用建模与开放表达' },
-    { icon: BarChart3, title: '知识点广度', desc: '总结整卷覆盖的知识层级' },
-    { icon: Sparkles, title: '逻辑链条长度', desc: '衡量推理步骤与结构复杂度' },
+    { icon: Zap, title: '计算难度', desc: '看核心计算是否复杂、是否容易算错' },
+    { icon: Brain, title: '几何难度', desc: '看图形关系、空间想象和几何推理要求' },
+    { icon: Target, title: '读题难度', desc: '看题意、规则、过程和图文对应是否难理解' },
+    { icon: FileCheck, title: '解题方法难度', desc: '看是否需要整理条件、换方法或找突破口' },
+    { icon: BarChart3, title: '知识门槛难度', desc: '看知识要求是否超出课内常规范围' },
+    { icon: Sparkles, title: '解题链路难度', desc: '看推理步骤是否长、是否需要连续推进' },
   ];
 
   return (

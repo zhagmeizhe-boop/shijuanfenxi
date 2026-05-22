@@ -4894,6 +4894,1221 @@
       ]
     },
     {
+      "knowledge_point_id": "dim5.number_operation.conditional_defined_operation",
+      "name": "条件判断型新定义运算",
+      "domain": "number_operation",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "unknown",
+      "knowledge_grade_label": "年级未确认",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数知识：条件判断型新定义运算",
+      "aliases": [
+        "条件判断型的普通规则新运算",
+        "定义☆运算",
+        "奇偶条件新运算",
+        "如果则新定义运算"
+      ],
+      "required_fact_groups": [
+        [
+          "new_operation_conditional"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "等量代换与简易方程",
+        "定义新运算"
+      ],
+      "positive_examples": [
+        "定义☆运算时按a+b是奇数或偶数给出不同公式，再代入求值。"
+      ],
+      "near_miss_examples": [
+        "只有△和□代表数的等量代换，没有新运算规则。"
+      ],
+      "negative_examples": [
+        "普通方程、等量代换或没有条件分支的新定义运算。"
+      ],
+      "source_refs": [
+        "curated:xsc_thinking:q7:new_operation_conditional"
+      ],
+      "required_structures": [
+        [
+          "new_operation_conditional"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「条件判断型新定义运算」的结构证据。必须命中这些结构组：第1组 new_operation_conditional（新定义运算按奇偶、大小或条件分支给出不同规则）。别名线索只作为辅助，不可单独准入：条件判断型的普通规则新运算、定义☆运算、奇偶条件新运算、如果则新定义运算。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「条件判断型新定义运算」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「条件判断型新定义运算」：普通方程、等量代换或没有条件分支的新定义运算。；只有△和□代表数的等量代换，没有新运算规则。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.geometry_spatial.equal_area_sandglass",
+      "name": "沙漏面积模型",
+      "domain": "geometry_spatial",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数五年级：沙漏面积模型",
+      "aliases": [
+        "大小正方形间的沙漏",
+        "沙漏面积",
+        "两个正方形阴影面积"
+      ],
+      "required_fact_groups": [
+        [
+          "equal_area_sandglass"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "basic_formula"
+      ],
+      "confusable_with": [
+        "基础几何公式应用",
+        "面积比模型"
+      ],
+      "positive_examples": [
+        "大小两个正方形边长已知，图中形成沙漏状阴影，求阴影部分面积。"
+      ],
+      "near_miss_examples": [
+        "只直接求一个正方形面积。"
+      ],
+      "negative_examples": [
+        "普通正方形面积公式题或没有沙漏/阴影关系的图形题。"
+      ],
+      "source_refs": [
+        "curated:xsc_thinking:q2:equal_area_sandglass"
+      ],
+      "required_structures": [
+        [
+          "equal_area_sandglass"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "basic_formula"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「沙漏面积模型」的结构证据。必须命中这些结构组：第1组 equal_area_sandglass（大小正方形或相似图形之间形成沙漏结构，用等高或比例求阴影面积）。别名线索只作为辅助，不可单独准入：大小正方形间的沙漏、沙漏面积、两个正方形阴影面积。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「沙漏面积模型」：basic_formula（程序内部结构标签，需要从题干或图片中找到可回溯证据）",
+        "不要只凭关键词、章节名、别名或来源标签确认「沙漏面积模型」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「沙漏面积模型」：普通正方形面积公式题或没有沙漏/阴影关系的图形题。；只直接求一个正方形面积。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.quantity_application.work_split_collaboration",
+      "name": "工程分段合作 / 来回帮忙",
+      "domain": "quantity_application",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数五年级：工程分段合作 / 来回帮忙",
+      "aliases": [
+        "工作量相同的来回帮忙问题",
+        "分段合作工程",
+        "中途帮助",
+        "两个仓库同时搬完"
+      ],
+      "required_fact_groups": [
+        [
+          "work_split_collaboration"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "工程问题"
+      ],
+      "positive_examples": [
+        "甲乙丙在两个仓库搬货，中途一人转去帮忙，最后两个仓库同时搬完。"
+      ],
+      "near_miss_examples": [
+        "甲乙单独做和合作完成的普通工程题。"
+      ],
+      "negative_examples": [
+        "没有分段、来回帮忙或同时完成条件的普通效率题。"
+      ],
+      "source_refs": [
+        "curated:xsc_thinking:q4:work_split_collaboration"
+      ],
+      "required_structures": [
+        [
+          "work_split_collaboration"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「工程分段合作 / 来回帮忙」的结构证据。必须命中这些结构组：第1组 work_split_collaboration（工程中多人分段合作、来回帮忙或两个任务同时完成的效率安排）。别名线索只作为辅助，不可单独准入：工作量相同的来回帮忙问题、分段合作工程、中途帮助、两个仓库同时搬完。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「工程分段合作 / 来回帮忙」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「工程分段合作 / 来回帮忙」：没有分段、来回帮忙或同时完成条件的普通效率题。；甲乙单独做和合作完成的普通工程题。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.quantity_application.travel_inverse_speed_time",
+      "name": "行程反比 / 速度时间关系",
+      "domain": "quantity_application",
+      "level": "L3",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数六年级：行程反比 / 速度时间关系",
+      "aliases": [
+        "速度和时间成反比解行程",
+        "速度时间反比",
+        "往返同路程速度比"
+      ],
+      "required_fact_groups": [
+        [
+          "travel_inverse_speed_time"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "比例解应用题",
+        "普通行程问题"
+      ],
+      "positive_examples": [
+        "往返同一路程，返回速度与去时速度之比已知，结合总时间求距离。"
+      ],
+      "near_miss_examples": [
+        "只给两个量的普通比例关系，没有同一路程速度时间反比。"
+      ],
+      "negative_examples": [
+        "一般比例分配或没有速度时间路程结构的题。"
+      ],
+      "source_refs": [
+        "curated:xsc_thinking:q13:travel_inverse_speed_time",
+        "curated:xsc_placement:q3:travel_inverse_speed_time"
+      ],
+      "required_structures": [
+        [
+          "travel_inverse_speed_time"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「行程反比 / 速度时间关系」的结构证据。必须命中这些结构组：第1组 travel_inverse_speed_time（同一路程下速度和时间成反比，结合速度比、时间和求行程量）。别名线索只作为辅助，不可单独准入：速度和时间成反比解行程、速度时间反比、往返同路程速度比。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「行程反比 / 速度时间关系」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「行程反比 / 速度时间关系」：一般比例分配或没有速度时间路程结构的题。；只给两个量的普通比例关系，没有同一路程速度时间反比。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.geometry_spatial.trapezoid_auxiliary_area",
+      "name": "梯形辅助线面积模型",
+      "domain": "geometry_spatial",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数五年级：梯形辅助线面积模型",
+      "aliases": [
+        "连辅助线后构造梯形模型",
+        "三等分点阴影面积",
+        "平行四边形辅助线面积"
+      ],
+      "required_fact_groups": [
+        [
+          "trapezoid_auxiliary_area"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "basic_formula"
+      ],
+      "confusable_with": [
+        "平行四边形面积",
+        "面积比模型"
+      ],
+      "positive_examples": [
+        "平行四边形面积已知，点在边上三等分，连辅助线构造梯形求阴影面积。"
+      ],
+      "near_miss_examples": [
+        "直接用平行四边形底高求面积。"
+      ],
+      "negative_examples": [
+        "没有辅助线或三等分点关系的普通面积题。"
+      ],
+      "source_refs": [
+        "curated:xsc_thinking:q14:trapezoid_auxiliary_area"
+      ],
+      "required_structures": [
+        [
+          "trapezoid_auxiliary_area"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "basic_formula"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「梯形辅助线面积模型」的结构证据。必须命中这些结构组：第1组 trapezoid_auxiliary_area（平行四边形、三等分点或辅助线构造梯形模型求阴影面积）。别名线索只作为辅助，不可单独准入：连辅助线后构造梯形模型、三等分点阴影面积、平行四边形辅助线面积。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「梯形辅助线面积模型」：basic_formula（程序内部结构标签，需要从题干或图片中找到可回溯证据）",
+        "不要只凭关键词、章节名、别名或来源标签确认「梯形辅助线面积模型」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「梯形辅助线面积模型」：没有辅助线或三等分点关系的普通面积题。；直接用平行四边形底高求面积。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.pattern_sequence.geometric_series_area_sum",
+      "name": "等比面积数列求和",
+      "domain": "pattern_sequence",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数六年级：等比面积数列求和",
+      "aliases": [
+        "整数型等比数列求和",
+        "等比面积数列",
+        "图形n的面积",
+        "后一个图形面积递推"
+      ],
+      "required_fact_groups": [
+        [
+          "geometric_series_area_sum"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pythagorean_area_relation"
+      ],
+      "confusable_with": [
+        "勾股面积关系",
+        "简单规律与数列",
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "positive_examples": [
+        "一系列等腰直角三角形面积按斜边和直角边倍比递推，求第n个图形面积。"
+      ],
+      "near_miss_examples": [
+        "单个直角三角形或正方形上的勾股面积关系。"
+      ],
+      "negative_examples": [
+        "没有面积倍比递推的普通几何题。"
+      ],
+      "source_refs": [
+        "curated:xsc_thinking:q17:geometric_series_area_sum"
+      ],
+      "required_structures": [
+        [
+          "geometric_series_area_sum"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pythagorean_area_relation"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「等比面积数列求和」的结构证据。必须命中这些结构组：第1组 geometric_series_area_sum（图形面积按固定倍比递推，形成等比数列或等比求和）。别名线索只作为辅助，不可单独准入：整数型等比数列求和、等比面积数列、图形n的面积、后一个图形面积递推。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「等比面积数列求和」：pythagorean_area_relation（几何图形、面积、长度或空间关系相关结构）",
+        "不要只凭关键词、章节名、别名或来源标签确认「等比面积数列求和」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「等比面积数列求和」：没有面积倍比递推的普通几何题。；单个直角三角形或正方形上的勾股面积关系。",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.counting_combinatorics.tree_diagram_queue_counting",
+      "name": "树形图排队 / 位置限制计数",
+      "domain": "counting_combinatorics",
+      "level": "L3",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "4",
+      "knowledge_grade_label": "四年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数四年级：树形图排队 / 位置限制计数",
+      "aliases": [
+        "树形图排队问题",
+        "错位排列放书",
+        "不能放在第一层",
+        "不同的放法"
+      ],
+      "required_fact_groups": [
+        [
+          "tree_diagram_queue_counting"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "排列组合"
+      ],
+      "positive_examples": [
+        "A、B、C、D四本书放书架，每本书都有不能放的位置，求不同放法。"
+      ],
+      "near_miss_examples": [
+        "没有位置限制的普通全排列。"
+      ],
+      "negative_examples": [
+        "只安排若干人排队但没有逐项位置约束的题。"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q9:tree_diagram_queue_counting"
+      ],
+      "required_structures": [
+        [
+          "tree_diagram_queue_counting"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「树形图排队 / 位置限制计数」的结构证据。必须命中这些结构组：第1组 tree_diagram_queue_counting（带位置限制的排队、放书或错位安排，适合树形图分类计数）。别名线索只作为辅助，不可单独准入：树形图排队问题、错位排列放书、不能放在第一层、不同的放法。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「树形图排队 / 位置限制计数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「树形图排队 / 位置限制计数」：只安排若干人排队但没有逐项位置约束的题。；没有位置限制的普通全排列。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.geometry_spatial.cuboid_coloring",
+      "name": "长方体染色计数",
+      "domain": "geometry_spatial",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数五年级：长方体染色计数",
+      "aliases": [
+        "长方体染色",
+        "刷漆小立方体",
+        "未刷漆的小立方体",
+        "涂色方块数"
+      ],
+      "required_fact_groups": [
+        [
+          "cuboid_coloring"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "school_cube_net"
+      ],
+      "confusable_with": [
+        "认识立体图形",
+        "正方体展开图"
+      ],
+      "positive_examples": [
+        "由48个小立方体堆成长方体，表面刷漆后问六个面都未刷漆的小立方体个数。"
+      ],
+      "near_miss_examples": [
+        "只识别长方体、正方体形状。"
+      ],
+      "negative_examples": [
+        "普通立体图形认识或没有刷漆计数的体积题。"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q10:cuboid_coloring"
+      ],
+      "required_structures": [
+        [
+          "cuboid_coloring"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "school_cube_net"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「长方体染色计数」的结构证据。必须命中这些结构组：第1组 cuboid_coloring（长方体或正方体由小立方体组成并刷漆，按涂色面数计数）。别名线索只作为辅助，不可单独准入：长方体染色、刷漆小立方体、未刷漆的小立方体、涂色方块数。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「长方体染色计数」：school_cube_net（正方体展开图、折叠成正方体、相对面或相邻面判断）",
+        "不要只凭关键词、章节名、别名或来源标签确认「长方体染色计数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「长方体染色计数」：普通立体图形认识或没有刷漆计数的体积题。；只识别长方体、正方体形状。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.quantity_application.downstream_upstream_current",
+      "name": "流水行船 / 顺逆水速度",
+      "domain": "quantity_application",
+      "level": "L3",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数五年级：流水行船 / 顺逆水速度",
+      "aliases": [
+        "根据顺速和逆速求船速和水速",
+        "顺水航行",
+        "逆水航行",
+        "顺水漂流"
+      ],
+      "required_fact_groups": [
+        [
+          "downstream_upstream_current"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "普通行程问题"
+      ],
+      "positive_examples": [
+        "顺水航行3小时和逆水航行5小时航程相等，求顺水漂流1小时的航程。"
+      ],
+      "near_miss_examples": [
+        "没有水流速度的普通速度时间路程题。"
+      ],
+      "negative_examples": [
+        "工程、比例或没有顺逆水结构的行程题。"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q11:downstream_upstream_current"
+      ],
+      "required_structures": [
+        [
+          "downstream_upstream_current"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「流水行船 / 顺逆水速度」的结构证据。必须命中这些结构组：第1组 downstream_upstream_current（顺水、逆水航行中由顺速、逆速关系求船速或水速）。别名线索只作为辅助，不可单独准入：根据顺速和逆速求船速和水速、顺水航行、逆水航行、顺水漂流。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「流水行船 / 顺逆水速度」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「流水行船 / 顺逆水速度」：工程、比例或没有顺逆水结构的行程题。；没有水流速度的普通速度时间路程题。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.geometry_spatial.slicing_volume_method",
+      "name": "切片法求体积",
+      "domain": "geometry_spatial",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数五年级：切片法求体积",
+      "aliases": [
+        "切片法求体积",
+        "挖空后剩下体积",
+        "正方体切割成小正方体"
+      ],
+      "required_fact_groups": [
+        [
+          "slicing_volume_method"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "school_cube_net",
+        "price_profit_relation"
+      ],
+      "confusable_with": [
+        "认识立体图形",
+        "长方体染色计数",
+        "阶梯计费与分段收费"
+      ],
+      "positive_examples": [
+        "正方体切成1厘米小正方体后，从正面、上面、右面沿阴影区域挖空，求剩余体积。"
+      ],
+      "near_miss_examples": [
+        "只求正方体体积或表面积。"
+      ],
+      "negative_examples": [
+        "没有切片、挖空或分层统计的立体几何题。",
+        "阶梯水价中的立方米是计费单位，不属于体积或立体几何。"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q14:slicing_volume_method"
+      ],
+      "required_structures": [
+        [
+          "slicing_volume_method"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "school_cube_net",
+        "price_profit_relation"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「切片法求体积」的结构证据。必须命中这些结构组：第1组 slicing_volume_method（正方体切成小立方体后按切片、挖空或分层统计剩余体积）。别名线索只作为辅助，不可单独准入：切片法求体积、挖空后剩下体积、正方体切割成小正方体。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「切片法求体积」：school_cube_net（正方体展开图、折叠成正方体、相对面或相邻面判断）；price_profit_relation（价格、成本、售价、利润、利润率之间的数量关系）",
+        "不要只凭关键词、章节名、别名或来源标签确认「切片法求体积」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「切片法求体积」：没有切片、挖空或分层统计的立体几何题。；阶梯水价中的立方米是计费单位，不属于体积或立体几何。；只求正方体体积或表面积。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.number_operation.floor_function_operation",
+      "name": "取整函数计算",
+      "domain": "number_operation",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数六年级：取整函数计算",
+      "aliases": [
+        "复杂取整取小",
+        "整数部分",
+        "不大于的整数",
+        "取整符号"
+      ],
+      "required_fact_groups": [
+        [
+          "floor_function_operation"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "school_comparison"
+      ],
+      "confusable_with": [
+        "普通四则计算"
+      ],
+      "positive_examples": [
+        "规定符号表示某数的整数部分或不大于某数的整数，再进行计算推理。"
+      ],
+      "near_miss_examples": [
+        "普通小数取近似数。"
+      ],
+      "negative_examples": [
+        "没有特殊取整定义的普通计算题。"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q15:floor_function_operation"
+      ],
+      "required_structures": [
+        [
+          "floor_function_operation"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "school_comparison"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「取整函数计算」的结构证据。必须命中这些结构组：第1组 floor_function_operation（整数部分、取整符号或特殊取整定义下的计算与推理）。别名线索只作为辅助，不可单独准入：复杂取整取小、整数部分、不大于的整数、取整符号。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「取整函数计算」：school_comparison（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）",
+        "不要只凭关键词、章节名、别名或来源标签确认「取整函数计算」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「取整函数计算」：没有特殊取整定义的普通计算题。；普通小数取近似数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.quantity_application.cross_concentration_mix",
+      "name": "十字交叉浓度问题",
+      "domain": "quantity_application",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数六年级：十字交叉浓度问题",
+      "aliases": [
+        "十字交叉法反求混合前重量",
+        "酒精浓度混合",
+        "纯酒精含量",
+        "多取15千克"
+      ],
+      "required_fact_groups": [
+        [
+          "cross_concentration_mix"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "profit_discount",
+        "guarantee_at_least"
+      ],
+      "confusable_with": [
+        "浓度问题与经济问题",
+        "天平称重找异常物"
+      ],
+      "positive_examples": [
+        "72%和58%酒精混合成62%，再各多取15千克后为63.25%，反求第一次两种酒精重量。"
+      ],
+      "near_miss_examples": [
+        "只加水稀释求新浓度。"
+      ],
+      "negative_examples": [
+        "普通百分数应用或没有两次混合差量关系的浓度题。",
+        "天平称重找异常盐水瓶属于称重策略，不属于浓度变化。"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q26:cross_concentration_mix"
+      ],
+      "required_structures": [
+        [
+          "cross_concentration_mix"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "profit_discount",
+        "guarantee_at_least"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「十字交叉浓度问题」的结构证据。必须命中这些结构组：第1组 cross_concentration_mix（两种浓度溶液混合后，用十字交叉或差量关系反求原重量）。别名线索只作为辅助，不可单独准入：十字交叉法反求混合前重量、酒精浓度混合、纯酒精含量、多取15千克。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「十字交叉浓度问题」：profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；guarantee_at_least（至少保证、无论怎样都至少出现的结论目标）",
+        "不要只凭关键词、章节名、别名或来源标签确认「十字交叉浓度问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「十字交叉浓度问题」：普通百分数应用或没有两次混合差量关系的浓度题。；天平称重找异常盐水瓶属于称重策略，不属于浓度变化。；只加水稀释求新浓度。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.quantity_application.hidden_distance_meeting",
+      "name": "相遇问题 / 隐藏路程差",
+      "domain": "quantity_application",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数五年级：相遇问题 / 隐藏路程差",
+      "aliases": [
+        "相遇过程中的隐藏路程差",
+        "距离的一半还多",
+        "同时出发相遇"
+      ],
+      "required_fact_groups": [
+        [
+          "hidden_distance_meeting"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "普通行程问题"
+      ],
+      "positive_examples": [
+        "两人同时从两村出发，相遇时一人走了全程一半还多0.75千米，求速度。"
+      ],
+      "near_miss_examples": [
+        "直接给两人速度和时间求路程。"
+      ],
+      "negative_examples": [
+        "没有相遇和隐藏路程差条件的行程题。"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q23:hidden_distance_meeting"
+      ],
+      "required_structures": [
+        [
+          "hidden_distance_meeting"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「相遇问题 / 隐藏路程差」的结构证据。必须命中这些结构组：第1组 hidden_distance_meeting（相遇问题中给出一半多若干等隐藏路程差，反求速度或路程）。别名线索只作为辅助，不可单独准入：相遇过程中的隐藏路程差、距离的一半还多、同时出发相遇。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「相遇问题 / 隐藏路程差」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「相遇问题 / 隐藏路程差」：没有相遇和隐藏路程差条件的行程题。；直接给两人速度和时间求路程。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.counting_combinatorics.round_robin_counting",
+      "name": "循环赛规律 / 比赛场次",
+      "domain": "counting_combinatorics",
+      "level": "L3",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "4",
+      "knowledge_grade_label": "四年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数四年级：循环赛规律 / 比赛场次",
+      "aliases": [
+        "循环赛规律",
+        "单循环比赛",
+        "比赛场次",
+        "数线段方法"
+      ],
+      "required_fact_groups": [
+        [
+          "round_robin_counting"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "找规律",
+        "握手问题与比赛轮次",
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "positive_examples": [
+        "n个队单循环比赛，每两个队之间比赛一场，用线段数推广比赛场次公式。"
+      ],
+      "near_miss_examples": [
+        "只问几个队比赛一次的直接加法。"
+      ],
+      "negative_examples": [
+        "普通数列找规律或没有两两配对比赛语义的题。"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q27:round_robin_counting"
+      ],
+      "required_structures": [
+        [
+          "round_robin_counting"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「循环赛规律 / 比赛场次」的结构证据。必须命中这些结构组：第1组 round_robin_counting（单循环比赛或每两队比赛一次，用线段数或组合数统计场次）。别名线索只作为辅助，不可单独准入：循环赛规律、单循环比赛、比赛场次、数线段方法。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「循环赛规律 / 比赛场次」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「循环赛规律 / 比赛场次」：普通数列找规律或没有两两配对比赛语义的题。；只问几个队比赛一次的直接加法。",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.counting_combinatorics.railway_ticket_counting",
+      "name": "车站车票计数",
+      "domain": "counting_combinatorics",
+      "level": "L3",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "4",
+      "knowledge_grade_label": "四年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数四年级：车站车票计数",
+      "aliases": [
+        "排列组合辨析",
+        "新增车站车票",
+        "往返车票不一样",
+        "需要增加车票种数"
+      ],
+      "required_fact_groups": [
+        [
+          "railway_ticket_counting"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "排列组合"
+      ],
+      "positive_examples": [
+        "原有7个车站，新增3个车站，往返车票不一样，求需要增加多少种车票。"
+      ],
+      "near_miss_examples": [
+        "普通无向两两配对只数线段。"
+      ],
+      "negative_examples": [
+        "没有车站、车票或有向往返语义的普通排列题。"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q13:railway_ticket_counting"
+      ],
+      "required_structures": [
+        [
+          "railway_ticket_counting"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「车站车票计数」的结构证据。必须命中这些结构组：第1组 railway_ticket_counting（新增车站后按有向往返车票统计新增票种数量）。别名线索只作为辅助，不可单独准入：排列组合辨析、新增车站车票、往返车票不一样、需要增加车票种数。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「车站车票计数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「车站车票计数」：没有车站、车票或有向往返语义的普通排列题。；普通无向两两配对只数线段。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.pattern_sequence.magic_square_relation",
+      "name": "三阶幻方关系",
+      "domain": "pattern_sequence",
+      "level": "L3",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "4",
+      "knowledge_grade_label": "四年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数四年级：三阶幻方关系",
+      "aliases": [
+        "三阶幻方",
+        "数阵填数",
+        "b+c=2×a"
+      ],
+      "required_fact_groups": [
+        [
+          "magic_square_relation"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "gaosi_permutation_combination"
+      ],
+      "confusable_with": [
+        "数阵图",
+        "简单规律"
+      ],
+      "positive_examples": [
+        "根据三阶幻方行列对角线和相等，利用b+c=2×a关系补全数阵。"
+      ],
+      "near_miss_examples": [
+        "普通表格填数，没有幻方等和关系。"
+      ],
+      "negative_examples": [
+        "没有幻方或数阵结构的规律题。"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q22:magic_square_relation"
+      ],
+      "required_structures": [
+        [
+          "magic_square_relation"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "gaosi_permutation_combination"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「三阶幻方关系」的结构证据。必须命中这些结构组：第1组 magic_square_relation（三阶幻方或数阵中利用行列对角和相等的数量关系填数）。别名线索只作为辅助，不可单独准入：三阶幻方、数阵填数、b+c=2×a。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「三阶幻方关系」：gaosi_permutation_combination（排列、组合、排队、选取或安排）",
+        "不要只凭关键词、章节名、别名或来源标签确认「三阶幻方关系」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「三阶幻方关系」：没有幻方或数阵结构的规律题。；普通表格填数，没有幻方等和关系。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.geometry_spatial.partial_submerged_water_rise",
+      "name": "不完全浸没水面上升",
+      "domain": "geometry_spatial",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数六年级：不完全浸没水面上升",
+      "aliases": [
+        "不完全浸没水未溢出",
+        "圆柱竖直放入水池",
+        "水面会上升"
+      ],
+      "required_fact_groups": [
+        [
+          "partial_submerged_water_rise"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "长正方体体积与容积 / 浸没水面上升"
+      ],
+      "positive_examples": [
+        "圆柱形水池中已有水，将较高圆柱竖直放入，水面上升但物体可能不完全浸没。"
+      ],
+      "near_miss_examples": [
+        "物体完全浸没且只用排水体积直接求水面上升。"
+      ],
+      "negative_examples": [
+        "普通圆柱体积或没有水位变化的题。"
+      ],
+      "source_refs": [
+        "curated:xsc_thinking:q5:partial_submerged_water_rise"
+      ],
+      "required_structures": [
+        [
+          "partial_submerged_water_rise"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「不完全浸没水面上升」的结构证据。必须命中这些结构组：第1组 partial_submerged_water_rise（物体不完全浸没或竖直放入水池时，用排水体积和水位变化分析）。别名线索只作为辅助，不可单独准入：不完全浸没水未溢出、圆柱竖直放入水池、水面会上升。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「不完全浸没水面上升」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「不完全浸没水面上升」：普通圆柱体积或没有水位变化的题。；物体完全浸没且只用排水体积直接求水面上升。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.quantity_application.list_ratio_analysis",
+      "name": "列表分析 / 多对象比例",
+      "domain": "quantity_application",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数六年级：列表分析 / 多对象比例",
+      "aliases": [
+        "简单的列表分析",
+        "三个班男女生人数比",
+        "多对象比例整理"
+      ],
+      "required_fact_groups": [
+        [
+          "list_ratio_analysis"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "比例解应用题",
+        "百分数意义与计算",
+        "利润折扣问题",
+        "浓度问题"
+      ],
+      "positive_examples": [
+        "甲乙丙三个班给出男女生总比、各班男女比和总人数比，列表整理求乙班男女比。"
+      ],
+      "near_miss_examples": [
+        "只有一个比例关系的普通比例应用题。"
+      ],
+      "negative_examples": [
+        "没有多个对象和多重比例条件的题。"
+      ],
+      "source_refs": [
+        "curated:xsc_thinking:q16:list_ratio_analysis"
+      ],
+      "required_structures": [
+        [
+          "list_ratio_analysis"
+        ]
+      ],
+      "supporting_structures": [
+        "ratio_relation",
+        "whole_part_relation",
+        "proportion_application"
+      ],
+      "exclude_structures": [
+        "profit_discount",
+        "concentration_task"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「列表分析 / 多对象比例」的结构证据。必须命中这些结构组：第1组 list_ratio_analysis（多个班级或对象的男女比、总人数比等多重比例信息用列表整理分析）。别名线索只作为辅助，不可单独准入：简单的列表分析、三个班男女生人数比、多对象比例整理。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「列表分析 / 多对象比例」：profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）",
+        "不要只凭关键词、章节名、别名或来源标签确认「列表分析 / 多对象比例」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「列表分析 / 多对象比例」：没有多个对象和多重比例条件的题。；只有一个比例关系的普通比例应用题。",
+        "只有冒号、百分号或“比”字但没有两个或多个数量之间的比例关系时，不确认比例应用。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.number_operation.vertical_multiplication_digit_analysis",
+      "name": "乘法竖式位数分析",
+      "domain": "number_operation",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数五年级：乘法竖式位数分析",
+      "aliases": [
+        "多位数乘多位数位数分析",
+        "乘法竖式数字被盖住",
+        "三角形盖住数字"
+      ],
+      "required_fact_groups": [
+        [
+          "vertical_multiplication_digit_analysis"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "school_multiplication"
+      ],
+      "confusable_with": [
+        "乘法竖式及应用",
+        "竖式数字谜"
+      ],
+      "positive_examples": [
+        "乘法竖式中部分数字被三角形盖住，利用位数和部分数字推断乘积。"
+      ],
+      "near_miss_examples": [
+        "直接进行多位数乘法竖式计算。"
+      ],
+      "negative_examples": [
+        "普通乘法运算或没有遮挡推理的竖式题。"
+      ],
+      "source_refs": [
+        "curated:xsc_thinking:q3:vertical_multiplication_digit_analysis"
+      ],
+      "required_structures": [
+        [
+          "vertical_multiplication_digit_analysis"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "school_multiplication"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「乘法竖式位数分析」的结构证据。必须命中这些结构组：第1组 vertical_multiplication_digit_analysis（乘法竖式中数字被遮挡，依据位数和乘积结构推断结果）。别名线索只作为辅助，不可单独准入：多位数乘多位数位数分析、乘法竖式数字被盖住、三角形盖住数字。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「乘法竖式位数分析」：school_multiplication（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）",
+        "不要只凭关键词、章节名、别名或来源标签确认「乘法竖式位数分析」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「乘法竖式位数分析」：普通乘法运算或没有遮挡推理的竖式题。；直接进行多位数乘法竖式计算。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.number_theory.remainder_system_conditions",
+      "name": "多条件余数问题",
+      "domain": "number_theory",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数五年级：多条件余数问题",
+      "aliases": [
+        "三个条件的逐级满足",
+        "被7除余2",
+        "被8除余3",
+        "被9除余1",
+        "同余与余数问题"
+      ],
+      "required_fact_groups": [
+        [
+          "remainder_system_conditions"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "余数",
+        "进位制与取整符号"
+      ],
+      "positive_examples": [
+        "一个小于200的自然数，同时满足被7、8、9除后的多个余数条件。"
+      ],
+      "near_miss_examples": [
+        "只做一个除法求余数。"
+      ],
+      "negative_examples": [
+        "普通大小比较或没有多个余数条件的题。"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q12:remainder_system_conditions"
+      ],
+      "required_structures": [
+        [
+          "remainder_system_conditions"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「多条件余数问题」的结构证据。必须命中这些结构组：第1组 remainder_system_conditions（一个整数同时满足多个除数余数条件，逐级筛选或同余定位）。别名线索只作为辅助，不可单独准入：三个条件的逐级满足、被7除余2、被8除余3、被9除余1、同余与余数问题。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「多条件余数问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「多条件余数问题」：普通大小比较或没有多个余数条件的题。；只做一个除法求余数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.geometry_spatial.complex_circle_overlap_area",
+      "name": "复杂圆形重叠与割补面积",
+      "domain": "geometry_spatial",
+      "level": "L4",
+      "quality_status": "approved",
+      "knowledge_track": "olympiad",
+      "knowledge_track_label": "奥数",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "奥数五年级：复杂圆形重叠与割补面积",
+      "aliases": [
+        "复杂重叠整体面积",
+        "割补法求复杂面积",
+        "圆和半圆两两相切",
+        "多块阴影面积"
+      ],
+      "required_fact_groups": [
+        [
+          "complex_circle_overlap_area"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "statistics_chart_context"
+      ],
+      "confusable_with": [
+        "圆与扇形",
+        "方圆重叠面积"
+      ],
+      "positive_examples": [
+        "多个圆和半圆两两相切，求多块阴影部分面积，需要整体或割补处理。"
+      ],
+      "near_miss_examples": [
+        "只求一个圆或扇形的直接面积。"
+      ],
+      "negative_examples": [
+        "统计图扇形或没有重叠/相切阴影结构的普通圆面积题。"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q21:complex_circle_overlap_area"
+      ],
+      "required_structures": [
+        [
+          "complex_circle_overlap_area"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "statistics_chart_context"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「复杂圆形重叠与割补面积」的结构证据。必须命中这些结构组：第1组 complex_circle_overlap_area（多个圆、半圆或阴影区域两两相切、重叠时，用整体或割补求复杂面积）。别名线索只作为辅助，不可单独准入：复杂重叠整体面积、割补法求复杂面积、圆和半圆两两相切、多块阴影面积。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「复杂圆形重叠与割补面积」：statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）",
+        "不要只凭关键词、章节名、别名或来源标签确认「复杂圆形重叠与割补面积」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「复杂圆形重叠与割补面积」：统计图扇形或没有重叠/相切阴影结构的普通圆面积题。；只求一个圆或扇形的直接面积。"
+      ]
+    },
+    {
       "knowledge_point_id": "dim5.school.4.equilateral_triangle_perimeter_transform",
       "name": "等边三角形周长转化",
       "domain": "geometry_spatial",
@@ -7050,6 +8265,1537 @@
       ]
     },
     {
+      "knowledge_point_id": "dim5.school.6.signed_number_context",
+      "name": "负数的认识 / 用正负数表示生活中的量",
+      "domain": "number_operation",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：负数的认识 / 用正负数表示生活中的量",
+      "aliases": [
+        "正负数表示生活中的量",
+        "基准数非0",
+        "记作正负数",
+        "平均值作基准"
+      ],
+      "required_fact_groups": [
+        [
+          "signed_number_context"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "positive_examples": [
+        "校内六年级：负数的认识 / 用正负数表示生活中的量需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“负数的认识 / 用正负数表示生活中的量”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q1:signed_number_context"
+      ],
+      "required_structures": [
+        [
+          "signed_number_context"
+        ]
+      ],
+      "supporting_structures": [
+        "number_table_position_pattern"
+      ],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「负数的认识 / 用正负数表示生活中的量」的结构证据。必须命中这些结构组：第1组 signed_number_context（以平均值、基准值或0为参照，用正负数表示生活中的相反意义的量）。别名线索只作为辅助，不可单独准入：正负数表示生活中的量、基准数非0、记作正负数、平均值作基准。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「负数的认识 / 用正负数表示生活中的量」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「负数的认识 / 用正负数表示生活中的量」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「负数的认识 / 用正负数表示生活中的量」：宽泛章节名、来源标签或没有结构证据的题目；只出现“负数的认识 / 用正负数表示生活中的量”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.triangle_side_validity",
+      "name": "三角形三边关系 / 判断能否组成三角形",
+      "domain": "geometry_spatial",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "4",
+      "knowledge_grade_label": "四年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内四年级：三角形三边关系 / 判断能否组成三角形",
+      "aliases": [
+        "三角形三边关系",
+        "判断组成三角形的三条线长度",
+        "小棒围三角形"
+      ],
+      "required_fact_groups": [
+        [
+          "triangle_side_validity"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内四年级：三角形三边关系 / 判断能否组成三角形需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“三角形三边关系 / 判断能否组成三角形”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q2:triangle_side_validity"
+      ],
+      "required_structures": [
+        [
+          "triangle_side_validity"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「三角形三边关系 / 判断能否组成三角形」的结构证据。必须命中这些结构组：第1组 triangle_side_validity（根据三角形三边关系或小棒长度判断能否围成三角形）。别名线索只作为辅助，不可单独准入：三角形三边关系、判断组成三角形的三条线长度、小棒围三角形。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「三角形三边关系 / 判断能否组成三角形」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「三角形三边关系 / 判断能否组成三角形」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「三角形三边关系 / 判断能否组成三角形」：宽泛章节名、来源标签或没有结构证据的题目；只出现“三角形三边关系 / 判断能否组成三角形”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.number_fraction_percent_comparison",
+      "name": "小数、分数、百分数的比较大小",
+      "domain": "number_operation",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：小数、分数、百分数的比较大小",
+      "aliases": [
+        "分小百比较大小",
+        "小数百分数比较大小",
+        "从小到大排列",
+        "最大的数"
+      ],
+      "required_fact_groups": [
+        [
+          "number_fraction_percent_comparison"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：小数、分数、百分数的比较大小需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“小数、分数、百分数的比较大小”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q3:number_fraction_percent_comparison",
+        "curated:xsc_placement:q6:number_fraction_percent_comparison"
+      ],
+      "required_structures": [
+        [
+          "number_fraction_percent_comparison"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「小数、分数、百分数的比较大小」的结构证据。必须命中这些结构组：第1组 number_fraction_percent_comparison（小数、分数、百分数、π等不同数形式之间的大小比较）。别名线索只作为辅助，不可单独准入：分小百比较大小、小数百分数比较大小、从小到大排列、最大的数。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「小数、分数、百分数的比较大小」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「小数、分数、百分数的比较大小」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「小数、分数、百分数的比较大小」：宽泛章节名、来源标签或没有结构证据的题目；只出现“小数、分数、百分数的比较大小”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.percent_rate_application",
+      "name": "百分数应用 / 常见百分率",
+      "domain": "quantity_application",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：百分数应用 / 常见百分率",
+      "aliases": [
+        "常见百分率",
+        "百分率实际应用",
+        "出勤率",
+        "合格率",
+        "出油率"
+      ],
+      "required_fact_groups": [
+        [
+          "percent_rate_application"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：百分数应用 / 常见百分率需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“百分数应用 / 常见百分率”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q4:percent_rate_application"
+      ],
+      "required_structures": [
+        [
+          "percent_rate_application"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「百分数应用 / 常见百分率」的结构证据。必须命中这些结构组：第1组 percent_rate_application（出勤率、合格率、出油率等常见百分率在实际语境中的判断和计算）。别名线索只作为辅助，不可单独准入：常见百分率、百分率实际应用、出勤率、合格率、出油率。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「百分数应用 / 常见百分率」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「百分数应用 / 常见百分率」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「百分数应用 / 常见百分率」：宽泛章节名、来源标签或没有结构证据的题目；只出现“百分数应用 / 常见百分率”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.ratio_context_choice",
+      "name": "比的意义与实际情境",
+      "domain": "quantity_application",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：比的意义与实际情境",
+      "aliases": [
+        "情境中的比",
+        "与比相关的综合题",
+        "比的意义",
+        "用比表示"
+      ],
+      "required_fact_groups": [
+        [
+          "school_ratio_context_choice"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：比的意义与实际情境需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“比的意义与实际情境”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q5:ratio_context_choice"
+      ],
+      "required_structures": [
+        [
+          "school_ratio_context_choice"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「比的意义与实际情境」的结构证据。必须命中这些结构组：第1组 school_ratio_context_choice（根据生活情境判断两个量之间的比或比的意义）。别名线索只作为辅助，不可单独准入：情境中的比、与比相关的综合题、比的意义、用比表示。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「比的意义与实际情境」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「比的意义与实际情境」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「比的意义与实际情境」：宽泛章节名、来源标签或没有结构证据的题目；只出现“比的意义与实际情境”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.graphic_sequence_letter_pattern",
+      "name": "用字母表示数 / 图形规律",
+      "domain": "pattern_sequence",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内五年级：用字母表示数 / 图形规律",
+      "aliases": [
+        "用字母表示图形规律",
+        "小棒纽扣图形规律",
+        "棋子图形规律",
+        "图形规律"
+      ],
+      "required_fact_groups": [
+        [
+          "graphic_sequence_pattern"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "positive_examples": [
+        "校内五年级：用字母表示数 / 图形规律需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“用字母表示数 / 图形规律”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q6:graphic_sequence_pattern",
+        "curated:xsc_placement:q5:graphic_sequence_pattern"
+      ],
+      "required_structures": [
+        [
+          "graphic_sequence_pattern"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「用字母表示数 / 图形规律」的结构证据。必须命中这些结构组：第1组 graphic_sequence_pattern（用小棒、纽扣、棋子或图形按规律排列，并用字母或项数表达数量关系）。别名线索只作为辅助，不可单独准入：用字母表示图形规律、小棒纽扣图形规律、棋子图形规律、图形规律。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「用字母表示数 / 图形规律」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「用字母表示数 / 图形规律」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「用字母表示数 / 图形规律」：宽泛章节名、来源标签或没有结构证据的题目；只出现“用字母表示数 / 图形规律”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.submerged_water_rise",
+      "name": "长正方体体积与容积 / 浸没水面上升",
+      "domain": "geometry_spatial",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：长正方体体积与容积 / 浸没水面上升",
+      "aliases": [
+        "浸没水面上升",
+        "物体完全浸没无水溢出",
+        "水面上升高度",
+        "体积容积说理"
+      ],
+      "required_fact_groups": [
+        [
+          "submerged_volume_water_rise"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：长正方体体积与容积 / 浸没水面上升需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“长正方体体积与容积 / 浸没水面上升”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q7:submerged_volume_water_rise",
+        "curated:xsc_thinking:q5:submerged_volume_water_rise",
+        "curated:xsc_school:q23:solid_volume_reasoning"
+      ],
+      "required_structures": [
+        [
+          "submerged_volume_water_rise"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「长正方体体积与容积 / 浸没水面上升」的结构证据。必须命中这些结构组：第1组 submerged_volume_water_rise（物体放入水中后通过浸没体积、水面上升和容器底面积建立体积关系）。别名线索只作为辅助，不可单独准入：浸没水面上升、物体完全浸没无水溢出、水面上升高度、体积容积说理。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「长正方体体积与容积 / 浸没水面上升」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「长正方体体积与容积 / 浸没水面上升」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「长正方体体积与容积 / 浸没水面上升」：宽泛章节名、来源标签或没有结构证据的题目；只出现“长正方体体积与容积 / 浸没水面上升”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.repeated_percent_change",
+      "name": "百分数应用 / 连续增减变化",
+      "domain": "quantity_application",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：百分数应用 / 连续增减变化",
+      "aliases": [
+        "连续百分数变化",
+        "两次价格调整",
+        "下降幅度比较",
+        "增减变化幅度"
+      ],
+      "required_fact_groups": [
+        [
+          "repeated_percent_change"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：百分数应用 / 连续增减变化需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“百分数应用 / 连续增减变化”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q8:repeated_percent_change"
+      ],
+      "required_structures": [
+        [
+          "repeated_percent_change"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「百分数应用 / 连续增减变化」的结构证据。必须命中这些结构组：第1组 repeated_percent_change（同一数量经过两次百分数增减或价格调整后比较总变化幅度）。别名线索只作为辅助，不可单独准入：连续百分数变化、两次价格调整、下降幅度比较、增减变化幅度。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「百分数应用 / 连续增减变化」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「百分数应用 / 连续增减变化」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「百分数应用 / 连续增减变化」：宽泛章节名、来源标签或没有结构证据的题目；只出现“百分数应用 / 连续增减变化”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.fraction_unit_one_relation",
+      "name": "分数应用题 / 单位1判断",
+      "domain": "quantity_application",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：分数应用题 / 单位1判断",
+      "aliases": [
+        "单位1判断",
+        "已知比一个数多的分率",
+        "已知比一个数少的分率",
+        "求单位1"
+      ],
+      "required_fact_groups": [
+        [
+          "fraction_unit_one_relation"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：分数应用题 / 单位1判断需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“分数应用题 / 单位1判断”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q9:fraction_unit_one_relation"
+      ],
+      "required_structures": [
+        [
+          "fraction_unit_one_relation"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「分数应用题 / 单位1判断」的结构证据。必须命中这些结构组：第1组 fraction_unit_one_relation（已知比一个数多或少几分之几，反推单位1或选择单位1条件）。别名线索只作为辅助，不可单独准入：单位1判断、已知比一个数多的分率、已知比一个数少的分率、求单位1。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「分数应用题 / 单位1判断」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「分数应用题 / 单位1判断」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「分数应用题 / 单位1判断」：宽泛章节名、来源标签或没有结构证据的题目；只出现“分数应用题 / 单位1判断”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.rotation_solid_volume",
+      "name": "旋转体体积 / 面积比与体积比",
+      "domain": "geometry_spatial",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：旋转体体积 / 面积比与体积比",
+      "aliases": [
+        "复杂图形的旋转体体积",
+        "正方形旋转体体积比",
+        "以直线为轴旋转一周"
+      ],
+      "required_fact_groups": [
+        [
+          "rotation_solid_volume"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：旋转体体积 / 面积比与体积比需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“旋转体体积 / 面积比与体积比”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q10:rotation_solid_volume"
+      ],
+      "required_structures": [
+        [
+          "rotation_solid_volume"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「旋转体体积 / 面积比与体积比」的结构证据。必须命中这些结构组：第1组 rotation_solid_volume（平面图形绕直线旋转一周形成旋转体，并比较或计算体积）。别名线索只作为辅助，不可单独准入：复杂图形的旋转体体积、正方形旋转体体积比、以直线为轴旋转一周。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「旋转体体积 / 面积比与体积比」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「旋转体体积 / 面积比与体积比」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「旋转体体积 / 面积比与体积比」：宽泛章节名、来源标签或没有结构证据的题目；只出现“旋转体体积 / 面积比与体积比”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.parallel_triangle_area_relation",
+      "name": "平行四边形和三角形面积关系",
+      "domain": "geometry_spatial",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内五年级：平行四边形和三角形面积关系",
+      "aliases": [
+        "等底等高三角形面积",
+        "三角形和平行四边形的关系",
+        "平行四边形面积"
+      ],
+      "required_fact_groups": [
+        [
+          "parallel_triangle_area_relation"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内五年级：平行四边形和三角形面积关系需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“平行四边形和三角形面积关系”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q11:parallel_triangle_area_relation"
+      ],
+      "required_structures": [
+        [
+          "parallel_triangle_area_relation"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「平行四边形和三角形面积关系」的结构证据。必须命中这些结构组：第1组 parallel_triangle_area_relation（平行四边形与等底等高三角形之间的面积倍半关系）。别名线索只作为辅助，不可单独准入：等底等高三角形面积、三角形和平行四边形的关系、平行四边形面积。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「平行四边形和三角形面积关系」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「平行四边形和三角形面积关系」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「平行四边形和三角形面积关系」：宽泛章节名、来源标签或没有结构证据的题目；只出现“平行四边形和三角形面积关系”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.probability_fair_game",
+      "name": "可能性 / 游戏规则公平性",
+      "domain": "statistics_probability",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内五年级：可能性 / 游戏规则公平性",
+      "aliases": [
+        "游戏规则的公平性判断",
+        "摸球游戏公平性",
+        "可能性公平"
+      ],
+      "required_fact_groups": [
+        [
+          "probability_fair_game"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "统计图综合",
+        "排列组合"
+      ],
+      "positive_examples": [
+        "校内五年级：可能性 / 游戏规则公平性需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“可能性 / 游戏规则公平性”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q12:probability_fair_game"
+      ],
+      "required_structures": [
+        [
+          "probability_fair_game"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_probability",
+        "school_probability",
+        "counting_target"
+      ],
+      "exclude_structures": [
+        "pigeonhole",
+        "statistics_chart_context"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「可能性 / 游戏规则公平性」的结构证据。必须命中这些结构组：第1组 probability_fair_game（摸球、放回、得分规则等随机游戏中判断规则是否公平）。别名线索只作为辅助，不可单独准入：游戏规则的公平性判断、摸球游戏公平性、可能性公平。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「可能性 / 游戏规则公平性」：pigeonhole（抽屉原理、最不利情况、保证至少相同）；statistics_chart_context（统计图、统计表、扇形统计图、条形统计图、折线统计图等读图场景）",
+        "不要只凭关键词、章节名、别名或来源标签确认「可能性 / 游戏规则公平性」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「可能性 / 游戏规则公平性」：宽泛章节名、来源标签或没有结构证据的题目；只出现“可能性 / 游戏规则公平性”相近文字但没有题面结构证据",
+        "只有普通计数或方案数问题但没有随机事件、等可能结果、摸取/抽取等概率结构时，不确认概率。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.fraction_ratio_distribution",
+      "name": "分数乘法与按比分配综合",
+      "domain": "quantity_application",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：分数乘法与按比分配综合",
+      "aliases": [
+        "分数乘法后按比分配",
+        "求出和后再按比分配",
+        "余下按照比例分配"
+      ],
+      "required_fact_groups": [
+        [
+          "fraction_ratio_distribution"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：分数乘法与按比分配综合需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“分数乘法与按比分配综合”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q13:fraction_ratio_distribution"
+      ],
+      "required_structures": [
+        [
+          "fraction_ratio_distribution"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「分数乘法与按比分配综合」的结构证据。必须命中这些结构组：第1组 fraction_ratio_distribution（先按分数求剩余或总量，再按给定比进行分配）。别名线索只作为辅助，不可单独准入：分数乘法后按比分配、求出和后再按比分配、余下按照比例分配。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「分数乘法与按比分配综合」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「分数乘法与按比分配综合」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「分数乘法与按比分配综合」：宽泛章节名、来源标签或没有结构证据的题目；只出现“分数乘法与按比分配综合”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.cylinder_surface_area_practical",
+      "name": "圆柱表面积 / 实际涂抹面积",
+      "domain": "geometry_spatial",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：圆柱表面积 / 实际涂抹面积",
+      "aliases": [
+        "圆柱实际表面积",
+        "底面和四周抹水泥",
+        "确定计算哪些面的面积"
+      ],
+      "required_fact_groups": [
+        [
+          "cylinder_surface_area_practical"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：圆柱表面积 / 实际涂抹面积需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“圆柱表面积 / 实际涂抹面积”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q14:cylinder_surface_area_practical"
+      ],
+      "required_structures": [
+        [
+          "cylinder_surface_area_practical"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「圆柱表面积 / 实际涂抹面积」的结构证据。必须命中这些结构组：第1组 cylinder_surface_area_practical（圆柱形水池、容器等实际场景中只计算底面和侧面等需要施工的表面积）。别名线索只作为辅助，不可单独准入：圆柱实际表面积、底面和四周抹水泥、确定计算哪些面的面积。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「圆柱表面积 / 实际涂抹面积」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「圆柱表面积 / 实际涂抹面积」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「圆柱表面积 / 实际涂抹面积」：宽泛章节名、来源标签或没有结构证据的题目；只出现“圆柱表面积 / 实际涂抹面积”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.divisibility_digit_construction",
+      "name": "3、5倍数特征 / 组数",
+      "domain": "number_theory",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内五年级：3、5倍数特征 / 组数",
+      "aliases": [
+        "3、5的倍数特征",
+        "组成符合条件的三位数",
+        "有因数3",
+        "有因数5"
+      ],
+      "required_fact_groups": [
+        [
+          "divisibility_digit_construction"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "positive_examples": [
+        "校内五年级：3、5倍数特征 / 组数需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“3、5倍数特征 / 组数”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q15:divisibility_digit_construction"
+      ],
+      "required_structures": [
+        [
+          "divisibility_digit_construction"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "pigeonhole",
+        "decimal_fraction_calculation"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「3、5倍数特征 / 组数」的结构证据。必须命中这些结构组：第1组 divisibility_digit_construction（从给定数字组成满足2、3、5倍数特征的多位数）。别名线索只作为辅助，不可单独准入：3、5的倍数特征、组成符合条件的三位数、有因数3、有因数5。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「3、5倍数特征 / 组数」：pigeonhole（抽屉原理、最不利情况、保证至少相同）；decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「3、5倍数特征 / 组数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「3、5倍数特征 / 组数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“3、5倍数特征 / 组数”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.fraction_remaining_after_cuts",
+      "name": "分数乘法应用 / 连续求剩余",
+      "domain": "quantity_application",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：分数乘法应用 / 连续求剩余",
+      "aliases": [
+        "分数乘法综合题",
+        "连续剪去求剩余",
+        "第一次剪去第二次剪去"
+      ],
+      "required_fact_groups": [
+        [
+          "fraction_remaining_after_cuts"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：分数乘法应用 / 连续求剩余需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“分数乘法应用 / 连续求剩余”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q16:fraction_remaining_after_cuts"
+      ],
+      "required_structures": [
+        [
+          "fraction_remaining_after_cuts"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「分数乘法应用 / 连续求剩余」的结构证据。必须命中这些结构组：第1组 fraction_remaining_after_cuts（连续剪去、用去或取走总量及余量的分数后求剩余）。别名线索只作为辅助，不可单独准入：分数乘法综合题、连续剪去求剩余、第一次剪去第二次剪去。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「分数乘法应用 / 连续求剩余」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「分数乘法应用 / 连续求剩余」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「分数乘法应用 / 连续求剩余」：宽泛章节名、来源标签或没有结构证据的题目；只出现“分数乘法应用 / 连续求剩余”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.cylinder_cone_composite_volume",
+      "name": "圆柱圆锥 / 组合图形体积",
+      "domain": "geometry_spatial",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：圆柱圆锥 / 组合图形体积",
+      "aliases": [
+        "圆柱圆锥组合体积",
+        "组合图形的体积计算",
+        "圆锥和圆柱组成"
+      ],
+      "required_fact_groups": [
+        [
+          "cylinder_cone_composite_volume"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：圆柱圆锥 / 组合图形体积需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“圆柱圆锥 / 组合图形体积”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q17:cylinder_cone_composite_volume"
+      ],
+      "required_structures": [
+        [
+          "cylinder_cone_composite_volume"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「圆柱圆锥 / 组合图形体积」的结构证据。必须命中这些结构组：第1组 cylinder_cone_composite_volume（由圆柱和圆锥组合成的立体图形体积计算）。别名线索只作为辅助，不可单独准入：圆柱圆锥组合体积、组合图形的体积计算、圆锥和圆柱组成。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「圆柱圆锥 / 组合图形体积」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「圆柱圆锥 / 组合图形体积」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「圆柱圆锥 / 组合图形体积」：宽泛章节名、来源标签或没有结构证据的题目；只出现“圆柱圆锥 / 组合图形体积”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.circle_cut_rectangle_area",
+      "name": "圆的周长和面积 / 圆拼成长方形",
+      "domain": "geometry_spatial",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：圆的周长和面积 / 圆拼成长方形",
+      "aliases": [
+        "圆拼成长方形",
+        "已知近似长方形求圆面积",
+        "圆平均分成若干份"
+      ],
+      "required_fact_groups": [
+        [
+          "circle_cut_rectangle_area"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：圆的周长和面积 / 圆拼成长方形需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“圆的周长和面积 / 圆拼成长方形”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q18:circle_cut_rectangle_area"
+      ],
+      "required_structures": [
+        [
+          "circle_cut_rectangle_area"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「圆的周长和面积 / 圆拼成长方形」的结构证据。必须命中这些结构组：第1组 circle_cut_rectangle_area（把圆平均分割后拼成近似长方形，利用长方形关系求圆的周长或面积）。别名线索只作为辅助，不可单独准入：圆拼成长方形、已知近似长方形求圆面积、圆平均分成若干份。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「圆的周长和面积 / 圆拼成长方形」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「圆的周长和面积 / 圆拼成长方形」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「圆的周长和面积 / 圆拼成长方形」：宽泛章节名、来源标签或没有结构证据的题目；只出现“圆的周长和面积 / 圆拼成长方形”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.fraction_equation_ratio",
+      "name": "方程与解比例 / 分小百方程",
+      "domain": "number_operation",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：方程与解比例 / 分小百方程",
+      "aliases": [
+        "多步计算的分数方程",
+        "依据比例的基本性质解比例",
+        "解稍复杂方程",
+        "解方程"
+      ],
+      "required_fact_groups": [
+        [
+          "school_fraction_equation_ratio"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "百分数意义与计算",
+        "利润折扣问题",
+        "浓度问题"
+      ],
+      "positive_examples": [
+        "校内六年级：方程与解比例 / 分小百方程需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“方程与解比例 / 分小百方程”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q21:school_fraction_equation_ratio"
+      ],
+      "required_structures": [
+        [
+          "school_fraction_equation_ratio"
+        ]
+      ],
+      "supporting_structures": [
+        "ratio_relation",
+        "whole_part_relation",
+        "proportion_application"
+      ],
+      "exclude_structures": [
+        "pigeonhole",
+        "profit_discount",
+        "concentration_task"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「方程与解比例 / 分小百方程」的结构证据。必须命中这些结构组：第1组 school_fraction_equation_ratio（校内解方程、解比例或含分数小数百分数的方程求解）。别名线索只作为辅助，不可单独准入：多步计算的分数方程、依据比例的基本性质解比例、解稍复杂方程、解方程。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「方程与解比例 / 分小百方程」：pigeonhole（抽屉原理、最不利情况、保证至少相同）；profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）",
+        "不要只凭关键词、章节名、别名或来源标签确认「方程与解比例 / 分小百方程」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「方程与解比例 / 分小百方程」：宽泛章节名、来源标签或没有结构证据的题目；只出现“方程与解比例 / 分小百方程”相近文字但没有题面结构证据",
+        "只有冒号、百分号或“比”字但没有两个或多个数量之间的比例关系时，不确认比例应用。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.circle_circumference_area_ring",
+      "name": "圆的周长、面积与环形面积",
+      "domain": "geometry_spatial",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：圆的周长、面积与环形面积",
+      "aliases": [
+        "圆周长面积环形面积",
+        "圆形喷泉池",
+        "防护栏",
+        "小路面积"
+      ],
+      "required_fact_groups": [
+        [
+          "school_circle_circumference_area_ring"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：圆的周长、面积与环形面积需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“圆的周长、面积与环形面积”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q22:school_circle_circumference_area_ring"
+      ],
+      "required_structures": [
+        [
+          "school_circle_circumference_area_ring"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「圆的周长、面积与环形面积」的结构证据。必须命中这些结构组：第1组 school_circle_circumference_area_ring（圆的周长、面积和环形面积在喷泉池、小路等实际场景中的综合应用）。别名线索只作为辅助，不可单独准入：圆周长面积环形面积、圆形喷泉池、防护栏、小路面积。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「圆的周长、面积与环形面积」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「圆的周长、面积与环形面积」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「圆的周长、面积与环形面积」：宽泛章节名、来源标签或没有结构证据的题目；只出现“圆的周长、面积与环形面积”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.composite_perimeter_area",
+      "name": "组合图形的周长和面积",
+      "domain": "geometry_spatial",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内五年级：组合图形的周长和面积",
+      "aliases": [
+        "组合图形周长面积",
+        "不规则图形周长面积",
+        "涂色部分周长和面积",
+        "分割法求组合图形面积"
+      ],
+      "required_fact_groups": [
+        [
+          "school_composite_perimeter_area"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内五年级：组合图形的周长和面积需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“组合图形的周长和面积”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q24:school_composite_perimeter_area"
+      ],
+      "required_structures": [
+        [
+          "school_composite_perimeter_area"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「组合图形的周长和面积」的结构证据。必须命中这些结构组：第1组 school_composite_perimeter_area（校内组合图形、不规则图形或涂色部分的周长面积计算）。别名线索只作为辅助，不可单独准入：组合图形周长面积、不规则图形周长面积、涂色部分周长和面积、分割法求组合图形面积。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「组合图形的周长和面积」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「组合图形的周长和面积」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「组合图形的周长和面积」：宽泛章节名、来源标签或没有结构证据的题目；只出现“组合图形的周长和面积”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.5.parallel_line_area_comparison",
+      "name": "平行线间图形面积比较",
+      "domain": "geometry_spatial",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "5",
+      "knowledge_grade_label": "五年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内五年级：平行线间图形面积比较",
+      "aliases": [
+        "夹在两条平行线之间的面积比较",
+        "平行四边形三角形梯形面积比较",
+        "等底等高面积比较"
+      ],
+      "required_fact_groups": [
+        [
+          "parallel_line_area_comparison"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内五年级：平行线间图形面积比较需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“平行线间图形面积比较”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q1:parallel_line_area_comparison"
+      ],
+      "required_structures": [
+        [
+          "parallel_line_area_comparison"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「平行线间图形面积比较」的结构证据。必须命中这些结构组：第1组 parallel_line_area_comparison（夹在两条平行线之间的平行四边形、三角形、梯形面积比较）。别名线索只作为辅助，不可单独准入：夹在两条平行线之间的面积比较、平行四边形三角形梯形面积比较、等底等高面积比较。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「平行线间图形面积比较」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「平行线间图形面积比较」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「平行线间图形面积比较」：宽泛章节名、来源标签或没有结构证据的题目；只出现“平行线间图形面积比较”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.fan_chart_application",
+      "name": "扇形统计图应用",
+      "domain": "statistics_probability",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：扇形统计图应用",
+      "aliases": [
+        "运用扇形统计图解决问题",
+        "统计图和统计表",
+        "百分比人数换算"
+      ],
+      "required_fact_groups": [
+        [
+          "fan_chart_application"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "圆与扇形",
+        "平均数"
+      ],
+      "positive_examples": [
+        "校内六年级：扇形统计图应用需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“扇形统计图应用”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_school:q25:fan_chart_application"
+      ],
+      "required_structures": [
+        [
+          "fan_chart_application"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「扇形统计图应用」的结构证据。必须命中这些结构组：第1组 fan_chart_application（扇形统计图、统计表和百分比信息结合解决实际统计问题）。别名线索只作为辅助，不可单独准入：运用扇形统计图解决问题、统计图和统计表、百分比人数换算。每个结构标签都要能回溯到题干原文或图片证据。",
+        "扇形统计图/统计图综合准入必须命中 statistics_chart_context（统计图或统计表读图场景），并优先识别百分比、人数、圆心角或占比换算。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「扇形统计图应用」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「扇形统计图应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「扇形统计图应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“扇形统计图应用”相近文字但没有题面结构证据",
+        "如果题目目标是几何阴影面积、弧长或圆与扇形公式计算，而不是统计图读图，不确认统计图知识点。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.cone_package_surface",
+      "name": "圆锥体积与长方体包装表面积",
+      "domain": "geometry_spatial",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：圆锥体积与长方体包装表面积",
+      "aliases": [
+        "圆柱与圆锥综合题基础",
+        "圆锥玩具体积",
+        "长方体纸盒包装",
+        "纸板面积"
+      ],
+      "required_fact_groups": [
+        [
+          "school_cone_package_surface"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：圆锥体积与长方体包装表面积需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“圆锥体积与长方体包装表面积”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_placement:q24:school_cone_package_surface"
+      ],
+      "required_structures": [
+        [
+          "school_cone_package_surface"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「圆锥体积与长方体包装表面积」的结构证据。必须命中这些结构组：第1组 school_cone_package_surface（圆锥体积与长方体包装纸板面积的校内立体几何综合）。别名线索只作为辅助，不可单独准入：圆柱与圆锥综合题基础、圆锥玩具体积、长方体纸盒包装、纸板面积。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「圆锥体积与长方体包装表面积」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「圆锥体积与长方体包装表面积」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「圆锥体积与长方体包装表面积」：宽泛章节名、来源标签或没有结构证据的题目；只出现“圆锥体积与长方体包装表面积”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.fraction_mixed_calculation",
+      "name": "分数四则混合运算",
+      "domain": "number_operation",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：分数四则混合运算",
+      "aliases": [
+        "分数四则混合运算",
+        "分小百混合运算",
+        "脱式计算",
+        "含百分数四则混合运算"
+      ],
+      "required_fact_groups": [
+        [
+          "school_fraction_mixed_calculation"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：分数四则混合运算需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“分数四则混合运算”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_calculation:fraction_mixed_calculation"
+      ],
+      "required_structures": [
+        [
+          "school_fraction_mixed_calculation"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「分数四则混合运算」的结构证据。必须命中这些结构组：第1组 school_fraction_mixed_calculation（分数、小数、百分数四则混合运算或脱式计算）。别名线索只作为辅助，不可单独准入：分数四则混合运算、分小百混合运算、脱式计算、含百分数四则混合运算。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「分数四则混合运算」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「分数四则混合运算」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「分数四则混合运算」：宽泛章节名、来源标签或没有结构证据的题目；只出现“分数四则混合运算”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.clever_factor_calculation",
+      "name": "简便计算 / 提公因数巧算",
+      "domain": "number_operation",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：简便计算 / 提公因数巧算",
+      "aliases": [
+        "提公因数巧算",
+        "整体约分",
+        "分拆构造公因数",
+        "能简算"
+      ],
+      "required_fact_groups": [
+        [
+          "school_clever_factor_calculation"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [
+        "数字谜",
+        "普通四则计算"
+      ],
+      "positive_examples": [
+        "校内六年级：简便计算 / 提公因数巧算需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“简便计算 / 提公因数巧算”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "curated:xsc_calculation:clever_factor_calculation"
+      ],
+      "required_structures": [
+        [
+          "school_clever_factor_calculation"
+        ]
+      ],
+      "supporting_structures": [
+        "gaosi_divisibility",
+        "number_theory_factor_multiple",
+        "divisibility_rule",
+        "integer_constraint"
+      ],
+      "exclude_structures": [
+        "pigeonhole",
+        "decimal_fraction_calculation"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「简便计算 / 提公因数巧算」的结构证据。必须命中这些结构组：第1组 school_clever_factor_calculation（提公因数、整体约分或拆分构造公因数的简便计算）。别名线索只作为辅助，不可单独准入：提公因数巧算、整体约分、分拆构造公因数、能简算。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「简便计算 / 提公因数巧算」：pigeonhole（抽屉原理、最不利情况、保证至少相同）；decimal_fraction_calculation（小数、分数或小数分数混合计算）",
+        "不要只凭关键词、章节名、别名或来源标签确认「简便计算 / 提公因数巧算」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「简便计算 / 提公因数巧算」：宽泛章节名、来源标签或没有结构证据的题目；只出现“简便计算 / 提公因数巧算”相近文字但没有题面结构证据",
+        "普通算式计算或小数分数计算中没有整数限制、整除条件、因数倍数条件时，不确认整除/因数倍数。"
+      ]
+    },
+    {
       "knowledge_point_id": "dim5.school.1.825f832820ca",
       "name": "竖式计算",
       "domain": "number_operation",
@@ -8635,6 +11381,62 @@
       "negative_hints": [
         "不要只凭关键词、章节名、别名或来源标签确认「等式加减法」；必须满足 required_structures 的结构证据。",
         "这些近似但不成立的场景不能判为「等式加减法」：宽泛章节名、来源标签或没有结构证据的题目；只出现“等式加减法”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.1.96e1ef7407d4",
+      "name": "图形规律初步",
+      "domain": "geometry_spatial",
+      "level": "L1",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "1",
+      "knowledge_grade_label": "一年级",
+      "knowledge_semester": "unknown",
+      "knowledge_display_name": "校内一年级：图形规律初步",
+      "aliases": [
+        "组合",
+        "图形规律初步",
+        "一阶",
+        "校内"
+      ],
+      "required_fact_groups": [
+        [
+          "graphic_sequence_pattern"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "分数裂项求和",
+        "整除余数问题"
+      ],
+      "positive_examples": [
+        "校内一年级：图形规律初步需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“图形规律初步”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "school_reference:reference_standard_data.json:as_tree:一阶:组合:图形规律初步"
+      ],
+      "required_structures": [
+        [
+          "graphic_sequence_pattern"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「图形规律初步」的结构证据。必须命中这些结构组：第1组 graphic_sequence_pattern（用小棒、纽扣、棋子或图形按规律排列，并用字母或项数表达数量关系）。别名线索只作为辅助，不可单独准入：组合、图形规律初步、一阶、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「图形规律初步」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「图形规律初步」：宽泛章节名、来源标签或没有结构证据的题目；只出现“图形规律初步”相近文字但没有题面结构证据",
+        "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
       ]
     },
     {
@@ -24302,6 +27104,59 @@
       "negative_hints": [
         "不要只凭关键词、章节名、别名或来源标签确认「根据大数的近似数求原数」；必须满足 required_structures 的结构证据。",
         "这些近似但不成立的场景不能判为「根据大数的近似数求原数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“根据大数的近似数求原数”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.4.3ccc878083a8",
+      "name": "用小棒摆图形",
+      "domain": "geometry_spatial",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "4",
+      "knowledge_grade_label": "四年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内四年级：用小棒摆图形",
+      "aliases": [
+        "三角形",
+        "三角形的特性",
+        "用小棒摆图形",
+        "四年级下册",
+        "校内"
+      ],
+      "required_fact_groups": [
+        [
+          "triangle_side_validity"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内四年级：用小棒摆图形需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“用小棒摆图形”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "school_reference:reference_standard_data.json:school:四年级下册:三角形:用小棒摆图形"
+      ],
+      "required_structures": [
+        [
+          "triangle_side_validity"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「用小棒摆图形」的结构证据。必须命中这些结构组：第1组 triangle_side_validity（根据三角形三边关系或小棒长度判断能否围成三角形）。别名线索只作为辅助，不可单独准入：三角形、三角形的特性、用小棒摆图形、四年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「用小棒摆图形」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「用小棒摆图形」：宽泛章节名、来源标签或没有结构证据的题目；只出现“用小棒摆图形”相近文字但没有题面结构证据"
       ]
     },
     {
@@ -41879,71 +44734,6 @@
       ]
     },
     {
-      "knowledge_point_id": "dim5.school.6.ea2f7b619f79",
-      "name": "分数四则混合运算",
-      "domain": "number_operation",
-      "level": "L2",
-      "quality_status": "approved",
-      "knowledge_track": "school",
-      "knowledge_track_label": "校内",
-      "knowledge_grade": "6",
-      "knowledge_grade_label": "六年级",
-      "knowledge_semester": "上册",
-      "knowledge_display_name": "校内六年级：分数四则混合运算",
-      "aliases": [
-        "分数除法",
-        "创新1",
-        "分数四则混合运算",
-        "六年级上册",
-        "校内"
-      ],
-      "required_fact_groups": [
-        [
-          "school_division"
-        ],
-        [
-          "school_mixed_operation"
-        ],
-        [
-          "school_fraction"
-        ]
-      ],
-      "exclude_fact_keys": [],
-      "confusable_with": [],
-      "positive_examples": [
-        "校内六年级：分数四则混合运算需要题面出现对应结构证据"
-      ],
-      "near_miss_examples": [
-        "只出现“分数四则混合运算”相近文字但没有题面结构证据"
-      ],
-      "negative_examples": [
-        "宽泛章节名、来源标签或没有结构证据的题目"
-      ],
-      "source_refs": [
-        "school_reference:reference_standard_data.json:school:六年级上册:分数除法:分数四则混合运算"
-      ],
-      "required_structures": [
-        [
-          "school_division"
-        ],
-        [
-          "school_mixed_operation"
-        ],
-        [
-          "school_fraction"
-        ]
-      ],
-      "supporting_structures": [],
-      "exclude_structures": [],
-      "fact_extraction_hints": [
-        "识别题目是否满足「分数四则混合运算」的结构证据。必须命中这些结构组：第1组 school_division（除法、被除数、除数、商、余数或平均分计算）；第2组 school_mixed_operation（四则混合运算、运算顺序或脱式计算）；第3组 school_fraction（校内知识结构，需要题面出现对应的概念、计算目标或应用场景）。别名线索只作为辅助，不可单独准入：分数除法、创新1、分数四则混合运算、六年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
-      ],
-      "negative_hints": [
-        "不要只凭关键词、章节名、别名或来源标签确认「分数四则混合运算」；必须满足 required_structures 的结构证据。",
-        "这些近似但不成立的场景不能判为「分数四则混合运算」：宽泛章节名、来源标签或没有结构证据的题目；只出现“分数四则混合运算”相近文字但没有题面结构证据"
-      ]
-    },
-    {
       "knowledge_point_id": "dim5.school.6.cd902bf4af53",
       "name": "乘法分配律逆运算在分数乘除混合运算中的应用",
       "domain": "quantity_application",
@@ -43268,6 +46058,164 @@
         "不要只凭关键词、章节名、别名或来源标签确认「周期性轮流工作问题」；必须满足 required_structures 的结构证据。",
         "这些近似但不成立的场景不能判为「周期性轮流工作问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“周期性轮流工作问题”相近文字但没有题面结构证据",
         "只有普通计算或单次求值，没有重复周期、位置定位、第 n 项或递推关系时，不确认找规律。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.032bce45a15c",
+      "name": "比的意义",
+      "domain": "quantity_application",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：比的意义",
+      "aliases": [
+        "比的意义",
+        "六年级上册",
+        "校内"
+      ],
+      "required_fact_groups": [
+        [
+          "school_ratio_context_choice"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：比的意义需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“比的意义”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "school_reference:reference_standard_data.json:school:六年级上册:比:比的意义"
+      ],
+      "required_structures": [
+        [
+          "school_ratio_context_choice"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「比的意义」的结构证据。必须命中这些结构组：第1组 school_ratio_context_choice（根据生活情境判断两个量之间的比或比的意义）。别名线索只作为辅助，不可单独准入：比的意义、六年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「比的意义」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「比的意义」：宽泛章节名、来源标签或没有结构证据的题目；只出现“比的意义”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.57902a3ccf46",
+      "name": "分率与比的相互转化",
+      "domain": "quantity_application",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：分率与比的相互转化",
+      "aliases": [
+        "分率与比的相互转化",
+        "六年级上册",
+        "校内"
+      ],
+      "required_fact_groups": [
+        [
+          "fraction_unit_one_relation"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：分率与比的相互转化需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“分率与比的相互转化”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "school_reference:reference_standard_data.json:school:六年级上册:比:分率与比的相互转化"
+      ],
+      "required_structures": [
+        [
+          "fraction_unit_one_relation"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「分率与比的相互转化」的结构证据。必须命中这些结构组：第1组 fraction_unit_one_relation（已知比一个数多或少几分之几，反推单位1或选择单位1条件）。别名线索只作为辅助，不可单独准入：分率与比的相互转化、六年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「分率与比的相互转化」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「分率与比的相互转化」：宽泛章节名、来源标签或没有结构证据的题目；只出现“分率与比的相互转化”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.9df382532da4",
+      "name": "按比分配",
+      "domain": "quantity_application",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "上册",
+      "knowledge_display_name": "校内六年级：按比分配",
+      "aliases": [
+        "按比分配",
+        "六年级上册",
+        "校内"
+      ],
+      "required_fact_groups": [
+        [
+          "fraction_ratio_distribution"
+        ]
+      ],
+      "exclude_fact_keys": [
+        "pigeonhole"
+      ],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：按比分配需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“按比分配”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "school_reference:reference_standard_data.json:school:六年级上册:比:按比分配"
+      ],
+      "required_structures": [
+        [
+          "fraction_ratio_distribution"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [
+        "pigeonhole"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「按比分配」的结构证据。必须命中这些结构组：第1组 fraction_ratio_distribution（先按分数求剩余或总量，再按给定比进行分配）。别名线索只作为辅助，不可单独准入：按比分配、六年级上册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「按比分配」：pigeonhole（抽屉原理、最不利情况、保证至少相同）",
+        "不要只凭关键词、章节名、别名或来源标签确认「按比分配」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「按比分配」：宽泛章节名、来源标签或没有结构证据的题目；只出现“按比分配”相近文字但没有题面结构证据"
       ]
     },
     {
@@ -45028,6 +47976,223 @@
       "negative_hints": [
         "不要只凭关键词、章节名、别名或来源标签确认「节约用水」；必须满足 required_structures 的结构证据。",
         "这些近似但不成立的场景不能判为「节约用水」：宽泛章节名、来源标签或没有结构证据的题目；只出现“节约用水”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.8044b12fce89",
+      "name": "认识正、负数",
+      "domain": "school_general",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：认识正、负数",
+      "aliases": [
+        "负数",
+        "认识正负数",
+        "认识正",
+        "六年级下册",
+        "校内",
+        "认识正、负数"
+      ],
+      "required_fact_groups": [
+        [
+          "signed_number_context"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：认识正、负数需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“认识正、负数”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "school_reference:reference_standard_data.json:school:六年级下册:负数:认识正、负数"
+      ],
+      "required_structures": [
+        [
+          "signed_number_context"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「认识正、负数」的结构证据。必须命中这些结构组：第1组 signed_number_context（以平均值、基准值或0为参照，用正负数表示生活中的相反意义的量）。别名线索只作为辅助，不可单独准入：负数、认识正负数、认识正、六年级下册、校内、认识正、负数。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「认识正、负数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「认识正、负数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“认识正、负数”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.a712d584745e",
+      "name": "正、负数在生活中的应用",
+      "domain": "quantity_application",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：正、负数在生活中的应用",
+      "aliases": [
+        "负数",
+        "正负数在生活中的应用",
+        "负数在生活中的应用",
+        "六年级下册",
+        "校内",
+        "正、负数在生活中的应用"
+      ],
+      "required_fact_groups": [
+        [
+          "signed_number_context"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：正、负数在生活中的应用需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“正、负数在生活中的应用”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "school_reference:reference_standard_data.json:school:六年级下册:负数:正、负数在生活中的应用"
+      ],
+      "required_structures": [
+        [
+          "signed_number_context"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「正、负数在生活中的应用」的结构证据。必须命中这些结构组：第1组 signed_number_context（以平均值、基准值或0为参照，用正负数表示生活中的相反意义的量）。别名线索只作为辅助，不可单独准入：负数、正负数在生活中的应用、负数在生活中的应用、六年级下册、校内、正、负数在生活中的应用。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「正、负数在生活中的应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「正、负数在生活中的应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“正、负数在生活中的应用”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.23d2fe8f288e",
+      "name": "用直线上的点表示正、负数",
+      "domain": "school_general",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：用直线上的点表示正、负数",
+      "aliases": [
+        "负数",
+        "用直线上的点表示正负数",
+        "用直线上的点表示正",
+        "六年级下册",
+        "校内",
+        "用直线上的点表示正、负数"
+      ],
+      "required_fact_groups": [
+        [
+          "signed_number_context"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：用直线上的点表示正、负数需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“用直线上的点表示正、负数”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "school_reference:reference_standard_data.json:school:六年级下册:负数:用直线上的点表示正、负数"
+      ],
+      "required_structures": [
+        [
+          "signed_number_context"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「用直线上的点表示正、负数」的结构证据。必须命中这些结构组：第1组 signed_number_context（以平均值、基准值或0为参照，用正负数表示生活中的相反意义的量）。别名线索只作为辅助，不可单独准入：负数、用直线上的点表示正负数、用直线上的点表示正、六年级下册、校内、用直线上的点表示正、负数。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「用直线上的点表示正、负数」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「用直线上的点表示正、负数」：宽泛章节名、来源标签或没有结构证据的题目；只出现“用直线上的点表示正、负数”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.a667907d1776",
+      "name": "用正、负数解决问题",
+      "domain": "school_general",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：用正、负数解决问题",
+      "aliases": [
+        "负数",
+        "用正负数解决问题",
+        "用正",
+        "负数解决问题",
+        "六年级下册",
+        "校内",
+        "用正、负数解决问题"
+      ],
+      "required_fact_groups": [
+        [
+          "signed_number_context"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [],
+      "positive_examples": [
+        "校内六年级：用正、负数解决问题需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“用正、负数解决问题”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "school_reference:reference_standard_data.json:school:六年级下册:负数:用正、负数解决问题"
+      ],
+      "required_structures": [
+        [
+          "signed_number_context"
+        ]
+      ],
+      "supporting_structures": [],
+      "exclude_structures": [],
+      "fact_extraction_hints": [
+        "识别题目是否满足「用正、负数解决问题」的结构证据。必须命中这些结构组：第1组 signed_number_context（以平均值、基准值或0为参照，用正负数表示生活中的相反意义的量）。别名线索只作为辅助，不可单独准入：负数、用正负数解决问题、用正、负数解决问题、六年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "不要只凭关键词、章节名、别名或来源标签确认「用正、负数解决问题」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「用正、负数解决问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“用正、负数解决问题”相近文字但没有题面结构证据"
       ]
     },
     {
@@ -50200,6 +53365,204 @@
       "negative_hints": [
         "不要只凭关键词、章节名、别名或来源标签确认「不完全浸没的水中浸物问题」；必须满足 required_structures 的结构证据。",
         "这些近似但不成立的场景不能判为「不完全浸没的水中浸物问题」：宽泛章节名、来源标签或没有结构证据的题目；只出现“不完全浸没的水中浸物问题”相近文字但没有题面结构证据"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.7ea6af16ebd3",
+      "name": "比例的基本性质",
+      "domain": "quantity_application",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：比例的基本性质",
+      "aliases": [
+        "比例",
+        "比例的意义和性质",
+        "比例的基本性质",
+        "六年级下册",
+        "校内"
+      ],
+      "required_fact_groups": [
+        [
+          "school_fraction_equation_ratio"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "百分数意义与计算",
+        "利润折扣问题",
+        "浓度问题"
+      ],
+      "positive_examples": [
+        "校内六年级：比例的基本性质需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“比例的基本性质”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "school_reference:reference_standard_data.json:school:六年级下册:比例:比例的基本性质"
+      ],
+      "required_structures": [
+        [
+          "school_fraction_equation_ratio"
+        ]
+      ],
+      "supporting_structures": [
+        "ratio_relation",
+        "whole_part_relation",
+        "proportion_application"
+      ],
+      "exclude_structures": [
+        "profit_discount",
+        "concentration_task"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「比例的基本性质」的结构证据。必须命中这些结构组：第1组 school_fraction_equation_ratio（校内解方程、解比例或含分数小数百分数的方程求解）。别名线索只作为辅助，不可单独准入：比例、比例的意义和性质、比例的基本性质、六年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「比例的基本性质」：profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）",
+        "不要只凭关键词、章节名、别名或来源标签确认「比例的基本性质」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「比例的基本性质」：宽泛章节名、来源标签或没有结构证据的题目；只出现“比例的基本性质”相近文字但没有题面结构证据",
+        "只有冒号、百分号或“比”字但没有两个或多个数量之间的比例关系时，不确认比例应用。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.5fef72687835",
+      "name": "解比例",
+      "domain": "quantity_application",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：解比例",
+      "aliases": [
+        "比例",
+        "比例的意义和性质",
+        "解比例",
+        "六年级下册",
+        "校内"
+      ],
+      "required_fact_groups": [
+        [
+          "school_fraction_equation_ratio"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "百分数意义与计算",
+        "利润折扣问题",
+        "浓度问题"
+      ],
+      "positive_examples": [
+        "校内六年级：解比例需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“解比例”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "school_reference:reference_standard_data.json:school:六年级下册:比例:解比例"
+      ],
+      "required_structures": [
+        [
+          "school_fraction_equation_ratio"
+        ]
+      ],
+      "supporting_structures": [
+        "ratio_relation",
+        "whole_part_relation",
+        "proportion_application"
+      ],
+      "exclude_structures": [
+        "profit_discount",
+        "concentration_task"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「解比例」的结构证据。必须命中这些结构组：第1组 school_fraction_equation_ratio（校内解方程、解比例或含分数小数百分数的方程求解）。别名线索只作为辅助，不可单独准入：比例、比例的意义和性质、解比例、六年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「解比例」：profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）",
+        "不要只凭关键词、章节名、别名或来源标签确认「解比例」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「解比例」：宽泛章节名、来源标签或没有结构证据的题目；只出现“解比例”相近文字但没有题面结构证据",
+        "只有冒号、百分号或“比”字但没有两个或多个数量之间的比例关系时，不确认比例应用。"
+      ]
+    },
+    {
+      "knowledge_point_id": "dim5.school.6.26336a10f499",
+      "name": "比例的基本性质的简单应用",
+      "domain": "quantity_application",
+      "level": "L2",
+      "quality_status": "approved",
+      "knowledge_track": "school",
+      "knowledge_track_label": "校内",
+      "knowledge_grade": "6",
+      "knowledge_grade_label": "六年级",
+      "knowledge_semester": "下册",
+      "knowledge_display_name": "校内六年级：比例的基本性质的简单应用",
+      "aliases": [
+        "比例",
+        "比例的意义和性质",
+        "比例的基本性质的简单应用",
+        "六年级下册",
+        "校内"
+      ],
+      "required_fact_groups": [
+        [
+          "school_fraction_equation_ratio"
+        ]
+      ],
+      "exclude_fact_keys": [],
+      "confusable_with": [
+        "百分数意义与计算",
+        "利润折扣问题",
+        "浓度问题"
+      ],
+      "positive_examples": [
+        "校内六年级：比例的基本性质的简单应用需要题面出现对应结构证据"
+      ],
+      "near_miss_examples": [
+        "只出现“比例的基本性质的简单应用”相近文字但没有题面结构证据"
+      ],
+      "negative_examples": [
+        "宽泛章节名、来源标签或没有结构证据的题目"
+      ],
+      "source_refs": [
+        "school_reference:reference_standard_data.json:school:六年级下册:比例:比例的基本性质的简单应用"
+      ],
+      "required_structures": [
+        [
+          "school_fraction_equation_ratio"
+        ]
+      ],
+      "supporting_structures": [
+        "ratio_relation",
+        "whole_part_relation",
+        "proportion_application"
+      ],
+      "exclude_structures": [
+        "profit_discount",
+        "concentration_task"
+      ],
+      "fact_extraction_hints": [
+        "识别题目是否满足「比例的基本性质的简单应用」的结构证据。必须命中这些结构组：第1组 school_fraction_equation_ratio（校内解方程、解比例或含分数小数百分数的方程求解）。别名线索只作为辅助，不可单独准入：比例、比例的意义和性质、比例的基本性质的简单应用、六年级下册、校内。每个结构标签都要能回溯到题干原文或图片证据。"
+      ],
+      "negative_hints": [
+        "如果题目命中这些排除结构，则不确认或降级「比例的基本性质的简单应用」：profit_discount（利润、折扣、打折、加价、进价、售价、标价等经济问题结构）；concentration_task（浓度、盐水、溶液、含盐率、加水或混合变化问题）",
+        "不要只凭关键词、章节名、别名或来源标签确认「比例的基本性质的简单应用」；必须满足 required_structures 的结构证据。",
+        "这些近似但不成立的场景不能判为「比例的基本性质的简单应用」：宽泛章节名、来源标签或没有结构证据的题目；只出现“比例的基本性质的简单应用”相近文字但没有题面结构证据",
+        "只有冒号、百分号或“比”字但没有两个或多个数量之间的比例关系时，不确认比例应用。"
       ]
     },
     {

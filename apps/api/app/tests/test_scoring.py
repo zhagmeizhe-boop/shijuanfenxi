@@ -5575,7 +5575,7 @@ class TestPaperAggregator:
         expected_score = (6.0 + 8.0) / 2
         assert abs(result.paper_score - expected_score) < 0.1
         assert result.evidence == (
-            "计算维度，综合得分 7.0 分，"
+            "计算难度，综合得分 7.0 分，"
             "说明本卷有一定计算难度，除准确率外，也考查多步运算和常见转化。"
         )
         assert result.score_breakdown["pure_calculation"]["question_count"] == 2
@@ -5668,27 +5668,27 @@ class TestPaperAggregator:
         cases = [
             (
                 2.0,
-                "计算维度，综合得分 2.0 分，"
+                "计算难度，综合得分 2.0 分，"
                 "说明本卷计算要求以基础运算为主，主要看基本规则掌握和计算准确率。",
             ),
             (
                 4.0,
-                "计算维度，综合得分 4.0 分，"
+                "计算难度，综合得分 4.0 分，"
                 "说明本卷计算难度整体偏常规，重点考查校内计算的熟练度和稳定性。",
             ),
             (
                 6.0,
-                "计算维度，综合得分 6.0 分，"
+                "计算难度，综合得分 6.0 分，"
                 "说明本卷有一定计算难度，除准确率外，也考查多步运算和常见转化。",
             ),
             (
                 8.6,
-                "计算维度，综合得分 8.6 分，"
+                "计算难度，综合得分 8.6 分，"
                 "说明本卷计算难度较高，计算题和应用题中的核心计算都会拉开学生差距。",
             ),
             (
                 9.5,
-                "计算维度，综合得分 9.5 分，"
+                "计算难度，综合得分 9.5 分，"
                 "说明本卷计算要求很高，包含较强的多步、结构化或拓展计算，对综合计算能力要求突出。",
             ),
         ]
@@ -5770,27 +5770,27 @@ class TestPaperAggregator:
         cases = [
             (
                 2.0,
-                "场景理解复杂度维度，综合得分 2.0 分，"
+                "读题难度，综合得分 2.0 分，"
                 "说明这张试卷在学生读题和理解题意上的要求比较基础，大多数题目读完后能较快明白题目在说什么。",
             ),
             (
                 4.0,
-                "场景理解复杂度维度，综合得分 4.0 分，"
+                "读题难度，综合得分 4.0 分，"
                 "说明这张试卷在学生读题和理解题意上有常规要求，部分题目需要分清对象、顺序或图文对应关系。",
             ),
             (
                 6.0,
-                "场景理解复杂度维度，综合得分 6.0 分，"
+                "读题难度，综合得分 6.0 分，"
                 "说明这张试卷在学生读题理解题意上设置了一定难度，部分题目需要先读懂关键问法、比较标准或简单规则。",
             ),
             (
                 8.6,
-                "场景理解复杂度维度，综合得分 8.6 分，"
+                "读题难度，综合得分 8.6 分，"
                 "说明这张试卷在学生读题理解题意上设置了明显难度，部分题目的场景相对复杂，学生需要先理清对象、阶段、规则或图文关系。",
             ),
             (
                 9.5,
-                "场景理解复杂度维度，综合得分 9.5 分，"
+                "读题难度，综合得分 9.5 分，"
                 "说明这张试卷在学生读题理解题意上设置了较高难度，不少题目需要完整读懂多条规则、多阶段过程或复杂图文关系。",
             ),
         ]
@@ -5849,7 +5849,7 @@ class TestPaperAggregator:
         result = aggregator.aggregate(question_scores, "dim3")
 
         assert result.evidence == (
-            "共 2 道题纳入场景理解复杂度评分；"
+            "共 2 道题纳入读题难度评分；"
             "按题目等级加权，高等级题权重更高；"
             "权重得分 7.1 分，判定为 拔高。"
         )
@@ -5883,23 +5883,23 @@ class TestPaperAggregator:
         cases = [
             (
                 2.0,
-                "逻辑推理综合得分 2.0 分，这张试卷多数题解题链条很短，通常读懂条件后一步判断即可。",
+                "解题链路难度，综合得分 2.0 分，这张试卷多数题解题链条很短，通常读懂条件后一步判断即可。",
             ),
             (
                 4.0,
-                "逻辑推理综合得分 4.0 分，这张试卷整体解题链条偏短，少量题需要 1-2 步衔接。",
+                "解题链路难度，综合得分 4.0 分，这张试卷整体解题链条偏短，少量题需要 1-2 步衔接。",
             ),
             (
                 6.0,
-                "逻辑推理综合得分 6.0 分，这张试卷部分题解题链条有一定长度，通常要把前后条件接起来推进 2-4 步。",
+                "解题链路难度，综合得分 6.0 分，这张试卷部分题解题链条有一定长度，通常要把前后条件接起来推进 2-4 步。",
             ),
             (
                 8.6,
-                "逻辑推理综合得分 8.6 分，这张试卷不少题解题链条较长，通常要连续推进 3-4 步，并穿插分类、倒推或回查。",
+                "解题链路难度，综合得分 8.6 分，这张试卷不少题解题链条较长，通常要连续推进 3-4 步，并穿插分类、倒推或回查。",
             ),
             (
                 9.5,
-                "逻辑推理综合得分 9.5 分，这张试卷有少量解题链条很长的压轴题，通常要连续推进 5 步以上，并检查多个条件。",
+                "解题链路难度，综合得分 9.5 分，这张试卷有少量解题链条很长的压轴题，通常要连续推进 5 步以上，并检查多个条件。",
             ),
         ]
 
@@ -5975,7 +5975,7 @@ class TestPaperAggregator:
         result = aggregator.aggregate(question_scores, "dim6")
 
         assert result.evidence == (
-            "逻辑推理综合得分 7.8 分，这张试卷部分题解题链条有一定长度，通常要把前后条件接起来推进 2-4 步。"
+            "解题链路难度，综合得分 7.8 分，这张试卷部分题解题链条有一定长度，通常要把前后条件接起来推进 2-4 步。"
         )
         assert result.counted_questions[0]["difficulty_label"] == "困难（9.5）"
         assert result.counted_questions[0]["full_reason"] == (
@@ -6126,7 +6126,7 @@ class TestPaperAggregator:
         assert result.score_breakdown["question_score_sum"] == pytest.approx(32.0)
         assert result.score_breakdown["weighted_question_average"] == pytest.approx(3.3636)
         assert result.score_breakdown["level_weights"] == {"L1": 1, "L2": 1, "L3": 2, "L4": 4, "L5": 6}
-        assert "纳入知识范围评分" in result.evidence
+        assert "纳入知识门槛难度评分" in result.evidence
         assert "权重得分 3.4 分" in result.evidence
 
     def test_dim5_low_gaosi_mix_keeps_question_average(self, aggregator):
@@ -6283,8 +6283,8 @@ class TestPaperAggregator:
         assert result.score_breakdown["bucket_counts"]["unknown"] == 1
         assert result.score_breakdown["bucket_ratios"]["unknown"] == 0.1
         assert result.score_breakdown["unknown_unscored_count"] == 1
-        assert "纳入知识范围评分" in result.evidence
-        assert any("未计入知识范围评分" in item for item in result.warning_messages)
+        assert "纳入知识门槛难度评分" in result.evidence
+        assert any("未计入知识门槛难度评分" in item for item in result.warning_messages)
 
     def test_dim5_unknown_bucket_with_valid_score_still_enters_average(self, aggregator):
         unknown = self._dim5_question(10, "unknown")
@@ -6650,7 +6650,7 @@ class TestPaperAggregator:
             expected_weighted,
             abs=0.0001,
         )
-        assert "综合得分为" in result.evidence
+        assert "解题方法难度，综合得分" in result.evidence
         assert "在解题思路上有一定难度" in result.evidence
         assert "建模解题复杂度评分" not in result.evidence
         assert "按题目等级加权" not in result.evidence
@@ -6683,7 +6683,7 @@ class TestPaperAggregator:
             level_weights[level] for level in levels
         )
         assert result.paper_score == pytest.approx(expected_weighted)
-        assert "综合得分为" in result.evidence
+        assert "解题方法难度，综合得分" in result.evidence
 
     def test_dim4_review_and_missing_score_are_auto_ignored(self, aggregator):
         questions = [
@@ -7232,7 +7232,7 @@ class TestPaperAggregator:
         assert abs(result.paper_score - expected_score) < 0.01
         assert result.score_breakdown["pure_calculation"]["weight"] == 0.7
         assert result.score_breakdown["embedded_calculation"]["weight"] == 0.3
-        assert result.evidence.startswith("计算维度，综合得分 6.2 分")
+        assert result.evidence.startswith("计算难度，综合得分 6.2 分")
         assert "有一定计算难度" in result.evidence
         assert "纯计算题" not in result.evidence
         assert "应用题中的核心计算" not in result.evidence
@@ -7283,7 +7283,7 @@ class TestPaperAggregator:
         assert result.paper_score == 5.0
         assert result.score_breakdown["pure_calculation"]["weight"] == 0.0
         assert result.score_breakdown["embedded_calculation"]["weight"] == 1.0
-        assert result.evidence.startswith("计算维度，综合得分 5.0 分")
+        assert result.evidence.startswith("计算难度，综合得分 5.0 分")
         assert "计算难度整体偏常规" in result.evidence
         assert "应用题中的核心计算" not in result.evidence
 
@@ -8010,6 +8010,16 @@ class TestIntegration:
             detail for detail in report["dimension_details"] if detail["level"] == 0
         ]
         assert len(na_dimensions) == 4
+        assert {
+            detail["code"]: detail["name"] for detail in report["dimension_details"]
+        } == {
+            "dim1": "计算难度",
+            "dim2": "几何难度",
+            "dim3": "读题难度",
+            "dim4": "解题方法难度",
+            "dim5": "知识门槛难度",
+            "dim6": "解题链路难度",
+        }
 
     def test_wmo_grade6_content_calibration_uses_dim5_average_without_contest_jump(self):
         service = ReportService()

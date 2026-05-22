@@ -2,6 +2,8 @@ from copy import deepcopy
 import json
 from pathlib import Path
 
+import pytest
+
 from app.services.ocr.base import ParsedQuestion, QuestionType
 from app.services.parser.ai_parser import AIParser
 from app.services.parser.dim5_knowledge_graph import (
@@ -15,7 +17,7 @@ from app.services.parser.dim5_knowledge_graph import (
 from app.services.scoring.dim5_knowledge import Dim5KnowledgeScorer
 
 
-EXPECTED_DIM5_GRAPH_NODE_COUNT = 930
+EXPECTED_DIM5_GRAPH_NODE_COUNT = 988
 
 
 def _match(text: str, question_type: str = "application"):
@@ -931,6 +933,68 @@ def test_dim5_specific_guards_do_not_block_true_ratio_permutation_or_discount():
     assert discount["confidence_status"] == "confirmed"
     assert {"profit_discount", "price_profit_relation"} <= set(discount["dim5_fact_profile"]["structures"])
     assert "rectangle_area_fraction_percent_change" not in discount["dim5_fact_profile"]["structures"]
+
+
+def test_dim5_graph_regresses_xsc_two_paper_diff_records():
+    diff_path = Path(__file__).resolve().parents[4] / "outputs" / "dim5_diff_20260522" / "dim5_diff_data.json"
+    if not diff_path.exists():
+        pytest.skip("小升初维度5差异清单不在当前工作区")
+
+    rows = json.loads(diff_path.read_text(encoding="utf-8"))["rows"]
+    allowed_review = {
+        ("学情诊断卷-思维", "9"),
+        ("学情诊断卷-思维", "10"),
+        ("学情诊断卷-思维", "11"),
+        ("学情诊断卷-思维", "12"),
+        ("分班考模拟卷", "17（1）"),
+        ("分班考模拟卷", "17（2）"),
+        ("分班考模拟卷", "18"),
+        ("分班考模拟卷", "19"),
+        ("分班考模拟卷", "20"),
+    }
+    expected_display_overrides = {
+        ("学情诊断卷-校内", "1"): "校内六年级：负数的认识 / 用正负数表示生活中的量",
+        ("学情诊断卷-校内", "2"): "校内四年级：三角形三边关系 / 判断能否组成三角形",
+        ("学情诊断卷-校内", "7"): "校内六年级：长正方体体积与容积 / 浸没水面上升",
+        ("学情诊断卷-校内", "10"): "校内六年级：旋转体体积 / 面积比与体积比",
+        ("学情诊断卷-校内", "17"): "校内六年级：圆柱圆锥 / 组合图形体积",
+        ("学情诊断卷-思维", "5"): "奥数六年级：不完全浸没水面上升",
+        ("学情诊断卷-思维", "7"): "奥数知识：条件判断型新定义运算",
+        ("学情诊断卷-思维", "13"): "奥数六年级：行程反比 / 速度时间关系",
+        ("学情诊断卷-思维", "16"): "奥数六年级：列表分析 / 多对象比例",
+        ("学情诊断卷-思维", "17"): "奥数六年级：等比面积数列求和",
+        ("分班考模拟卷", "5"): "校内五年级：用字母表示数 / 图形规律",
+        ("分班考模拟卷", "6"): "校内六年级：小数、分数、百分数的比较大小",
+        ("分班考模拟卷", "10"): "奥数五年级：长方体染色计数",
+        ("分班考模拟卷", "14"): "奥数五年级：切片法求体积",
+        ("分班考模拟卷", "24"): "校内六年级：圆锥体积与长方体包装表面积",
+        ("分班考模拟卷", "26"): "奥数六年级：十字交叉浓度问题",
+        ("分班考模拟卷", "27"): "奥数四年级：循环赛规律 / 比赛场次",
+    }
+
+    matcher = Dim5KnowledgeGraphMatcher()
+    confirmed = 0
+    review_only = 0
+    for row in rows:
+        key = (row["source_paper"], row["question_label"])
+        result = matcher.match(
+            question_text=row["question_text"],
+            question_type=row.get("question_type") or "",
+            max_candidates=24,
+        )
+        if key in allowed_review:
+            assert result["confidence_status"] == "review_required", key
+            review_only += 1
+            continue
+
+        assert result["confidence_status"] == "confirmed", key
+        assert result["knowledge_track_label"] == row["expected_track"], key
+        if key in expected_display_overrides:
+            assert result["knowledge_display_name"] == expected_display_overrides[key], key
+        confirmed += 1
+
+    assert confirmed == 62
+    assert review_only == 9
 
 
 def test_dim5_graph_review_signal_keeps_unconfirmed_dim5_in_applicability_flow():
