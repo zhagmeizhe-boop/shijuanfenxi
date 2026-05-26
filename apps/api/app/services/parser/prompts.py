@@ -86,7 +86,7 @@ dim2_spatial 只输出以下字段：
 - measurement_dependency：只能是 "none" / "direct" / "inferred"
 - global_view_required：只能是 0 / 1
 - image_dependency：只能是 "none" / "helpful" / "required"
-- geometry_model_types：数组，元素只能来自 "basic_area_formula" / "reverse_area_edge" / "butterfly_area" / "swallowtail_area" / "half_area" / "equal_height_area" / "shared_base_area" / "equal_area_transform" / "kite_area" / "bird_head_sandglass" / "pyramid_sandglass" / "cut_and_fill" / "grid_cut_fill" / "auxiliary_parallel" / "area_ratio_chain" / "composite_area_model" / "circle_sector_formula" / "circle_sector_cut_fill" / "rolling_rotation" / "solid_formula" / "water_displacement" / "surface_three_view" / "net_cut_join" / "solid_cut_join" / "length_translation" / "directed_length" / "angle_chasing_triangle" / "angle_chasing_polygon" / "polygon_angle_sum" / "figure_transformation" / "opposite_faces" / "geometric_counting"
+- geometry_model_types：数组，元素只能来自 "basic_area_formula" / "reverse_area_edge" / "butterfly_area" / "swallowtail_area" / "half_area" / "equal_height_area" / "shared_base_area" / "equal_area_transform" / "kite_area" / "bird_head_sandglass" / "similarity_model" / "pyramid_sandglass" / "cut_and_fill" / "grid_cut_fill" / "auxiliary_parallel" / "area_ratio_chain" / "composite_area_model" / "circle_sector_formula" / "circle_sector_cut_fill" / "rolling_rotation" / "solid_formula" / "water_displacement" / "surface_three_view" / "net_cut_join" / "solid_cut_join" / "length_translation" / "directed_length" / "angle_chasing_triangle" / "angle_chasing_polygon" / "polygon_angle_sum" / "figure_transformation" / "opposite_faces" / "geometric_counting"
 - geometry_model_count：只能是 "0" / "1" / "2" / "3+"
 - model_recognition_role：只能是 "none" / "supporting" / "core"
 - area_relation_chain：只能是 "none" / "single" / "multi" / "nested"
@@ -97,7 +97,7 @@ dim2_spatial 只输出以下字段：
 - need_manual_review
 - warning
 dim2 判定补充：
-- 小学平面几何面积模型需要显式抽取：蝴蝶模型写 butterfly_area，燕尾模型写 swallowtail_area，一半模型写 half_area，等高面积关系写 equal_height_area，共边面积关系写 shared_base_area，等积变形写 equal_area_transform，风筝模型写 kite_area，鸟头/沙漏写 bird_head_sandglass，金字塔与沙漏写 pyramid_sandglass，割补写 cut_and_fill，格点割补写 grid_cut_fill，平行辅助线写 auxiliary_parallel，面积比链写 area_ratio_chain，组合面积模型写 composite_area_model。
+- 小学平面几何面积模型需要显式抽取：蝴蝶模型写 butterfly_area，燕尾模型写 swallowtail_area，一半模型写 half_area，等高面积关系写 equal_height_area，共边面积关系写 shared_base_area，等积变形写 equal_area_transform，风筝模型写 kite_area，鸟头/沙漏写 bird_head_sandglass，相似模型写 similarity_model，金字塔与沙漏写 pyramid_sandglass，割补写 cut_and_fill，格点割补写 grid_cut_fill，平行辅助线写 auxiliary_parallel，面积比链写 area_ratio_chain，组合面积模型写 composite_area_model。
 - 圆与扇形、立体几何、长度角度也要按知识树事实抽取：圆/扇形直接公式写 circle_sector_formula，圆扇形割补/比例写 circle_sector_cut_fill，滚动旋转写 rolling_rotation，立体直接公式写 solid_formula，水中浸物写 water_displacement，三视图求表面积写 surface_three_view，展开图/切拼写 net_cut_join 或 solid_cut_join，长度平移法写 length_translation，标向法写 directed_length，三角形相关角度计算写 angle_chasing_triangle，多边形相关角度计算写 angle_chasing_polygon，多边形内角和直接应用写 polygon_angle_sum，图形变换写 figure_transformation，正方体相对面写 opposite_faces，几何图形计数写 geometric_counting。
 - 如果识别这些模型是解题核心门槛，model_recognition_role 应为 core；如果只是辅助说明，写 supporting；普通套长方形、三角形、圆、扇形、长方体/正方体公式不应写成核心模型，即使写入 basic_area_formula / circle_sector_formula / solid_formula，也不能把直接公式题抬高为高负担 dim2。
 - 单一稳定模型通常是 single_model / single；模型叠加割补、辅助线或面积比链写 model_plus_operation 或 multi；多模型嵌套、复杂面积比反推写 nested_model / nested。

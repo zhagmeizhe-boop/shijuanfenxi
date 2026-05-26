@@ -103,6 +103,7 @@ GEOMETRY_MODEL_DISPLAY_LABELS = {
     "equal_area_transform": "等积变形",
     "kite_area": "风筝模型",
     "bird_head_sandglass": "鸟头与沙漏模型",
+    "similarity_model": "相似模型",
     "pyramid_sandglass": "金字塔与沙漏模型",
     "cut_and_fill": "割补法",
     "grid_cut_fill": "格点与割补",
@@ -138,6 +139,7 @@ GEOMETRY_MODEL_MATCH_TERMS = {
     "equal_area_transform": ("等积变形", "等面积变换"),
     "kite_area": ("风筝模型",),
     "bird_head_sandglass": ("鸟头与沙漏模型", "鸟头模型", "沙漏模型"),
+    "similarity_model": ("相似模型", "相似三角形", "对应边成比例"),
     "pyramid_sandglass": ("金字塔与沙漏模型", "金字塔模型"),
     "cut_and_fill": ("割补法", "分割添补"),
     "grid_cut_fill": ("格点与割补", "格点图形"),
@@ -180,6 +182,7 @@ GEOMETRY_MODEL_DIFFICULTY_HINTS = {
     "equal_area_transform": "本题难点在于要利用等积变形，把不易直接计算的图形转成可比较图形。",
     "kite_area": "本题难点在于要识别风筝模型中的对称和面积分割关系。",
     "bird_head_sandglass": "本题难点在于要区分鸟头与沙漏模型的对应边和对应面积关系。",
+    "similarity_model": "本题难点在于要识别相似图形中的对应边比例关系，并把比例转成面积或长度关系。",
     "pyramid_sandglass": "本题难点在于要在金字塔与沙漏结构中连续追踪面积比例。",
     "rolling_rotation": "本题难点在于要把图形滚动或旋转过程转成位置和长度关系。",
     "opposite_faces": "本题难点在于要在展开图中定位正方体相对面，避免把相邻面误判为相对面。",
@@ -194,6 +197,27 @@ GEOMETRY_MODEL_DIFFICULTY_HINTS = {
     "angle_chasing_polygon": "本题难点在于要把多边形角度关系拆成可追踪的局部关系。",
     "polygon_angle_sum": "本题难点在于要准确使用多边形内角和，并处理拆分后的角度关系。",
     "figure_transformation": "本题难点在于要把平移、旋转或对称前后的图形关系对应起来。",
+}
+
+FOCUSED_GEOMETRY_MODEL_PRIORITY = (
+    "half_area",
+    "butterfly_area",
+    "swallowtail_area",
+    "bird_head_sandglass",
+    "kite_area",
+    "similarity_model",
+    "equal_area_transform",
+)
+BROAD_GEOMETRY_MODEL_TYPES = {"composite_area_model"}
+SIMILARITY_EVIDENCE_TERMS = ("相似", "相似三角形", "对应边", "对应角", "对应边成比例", "比例式")
+DIRECT_GEOMETRY_MODEL_KNOWLEDGE = {
+    "half_area": ("一半模型", "K5", "高思导引", 5, "area_model"),
+    "equal_area_transform": ("等积变形", "K5", "高思导引", 5, "area_model"),
+    "butterfly_area": ("蝴蝶模型", "K5", "高思导引", 5, "area_model"),
+    "swallowtail_area": ("燕尾模型", "K5", "高思导引", 6, "area_model"),
+    "bird_head_sandglass": ("鸟头模型", "K5", "高思导引", 5, "area_model"),
+    "kite_area": ("风筝模型", "K5", "高思导引", 5, "area_model"),
+    "similarity_model": ("相似模型", "K5", "高思导引", 5, "area_model"),
 }
 
 
@@ -255,6 +279,39 @@ def _as_list(value: Any) -> list[Any]:
     if isinstance(value, str):
         return [value]
     return []
+
+
+def _geometry_model_types(features: dict[str, Any]) -> list[str]:
+    model_types: list[str] = []
+    for item in _as_list(features.get("geometry_model_types")):
+        model_key = str(item or "").strip().lower()
+        if model_key and model_key not in model_types:
+            model_types.append(model_key)
+    return model_types
+
+
+def _combined_feature_text(features: dict[str, Any]) -> str:
+    values: list[Any] = [
+        features.get("evidence_summary"),
+        features.get("question_summary"),
+        features.get("raw_text"),
+    ]
+    values.extend(_as_list(features.get("evidence_tags")))
+    analysis_facts = features.get("analysis_facts", {})
+    if isinstance(analysis_facts, dict):
+        for key in (
+            "core_knowledge_points",
+            "core_methods",
+            "knowledge_tags",
+            "solution_steps",
+        ):
+            values.extend(_as_list(analysis_facts.get(key)))
+    return " ".join(str(value or "") for value in values)
+
+
+def _has_similarity_evidence(features: dict[str, Any]) -> bool:
+    evidence_text = _normalize_text(_combined_feature_text(features))
+    return any(_normalize_text(term) in evidence_text for term in SIMILARITY_EVIDENCE_TERMS)
 
 
 def _is_generic_term(value: object) -> bool:
@@ -385,6 +442,39 @@ def _match_quality(candidate_key: str, entry: dict[str, Any]) -> int:
 
 def _range_rank(range_level: str) -> int:
     return {"K1": 1, "K2": 2, "K3": 3, "K4": 4, "K5": 5}.get(range_level, 0)
+
+
+def _focused_geometry_model_key(features: dict[str, Any]) -> str:
+    model_types = _geometry_model_types(features)
+    if "similarity_model" in model_types or (
+        "area_ratio_chain" in model_types and _has_similarity_evidence(features)
+    ):
+        return "similarity_model"
+    if not BROAD_GEOMETRY_MODEL_TYPES.intersection(model_types):
+        return ""
+    for model_key in FOCUSED_GEOMETRY_MODEL_PRIORITY:
+        if model_key in model_types:
+            return model_key
+    return ""
+
+
+def _direct_focused_model_match(features: dict[str, Any]) -> Dim2KnowledgeMatch | None:
+    model_key = _focused_geometry_model_key(features)
+    metadata = DIRECT_GEOMETRY_MODEL_KNOWLEDGE.get(model_key)
+    if not metadata:
+        return None
+
+    knowledge_point, range_level, track, grade, category = metadata
+    return Dim2KnowledgeMatch(
+        knowledge_range_level=range_level,
+        knowledge_range_label=KNOWLEDGE_RANGE_LABELS[range_level],
+        track=track,
+        grade=grade,
+        category=category,
+        matched_knowledge_points=(knowledge_point,),
+        match_sources=("dim2.geometry_model_types",),
+        status="matched",
+    )
 
 
 def _is_displayable_term(value: object) -> bool:
@@ -521,6 +611,10 @@ def geometry_model_display_points(model_types: object, *, limit: int = 2) -> lis
 
 
 def match_dim2_knowledge_range(features: dict[str, Any]) -> Dim2KnowledgeMatch:
+    focused_model_match = _direct_focused_model_match(features)
+    if focused_model_match:
+        return focused_model_match
+
     candidates = _candidate_terms(features)
     matches = _best_matches(candidates)
     if not matches:

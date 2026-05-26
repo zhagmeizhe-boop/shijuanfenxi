@@ -44,6 +44,7 @@ GEOMETRY_MODEL_TYPE_VALUES = {
     "equal_area_transform",
     "kite_area",
     "bird_head_sandglass",
+    "similarity_model",
     "pyramid_sandglass",
     "cut_and_fill",
     "grid_cut_fill",
@@ -88,7 +89,7 @@ GEOMETRY_VISUAL_CATEGORIES = {
 }
 OCR_DAMAGE_MARKERS = ("OCR", "残缺", "缺损", "截断", "识别失败")
 GEOMETRY_NOUN_PATTERN = re.compile(
-    r"(三角形|四边形|多边形|长方形|正方形|平行四边形|梯形|圆|扇形|立方体|正方体|长方体|圆柱|圆锥|展开图|截面|视图|对角线|面积|表面积|体积|容积|蝴蝶模型|燕尾模型|一半模型|鸟头|沙漏|割补|等高|共边|格点|三视图|水中浸物|长度计算|角度计算|图形变换)"
+    r"(三角形|四边形|多边形|长方形|正方形|平行四边形|梯形|圆|扇形|立方体|正方体|长方体|圆柱|圆锥|展开图|截面|视图|对角线|面积|表面积|体积|容积|蝴蝶模型|燕尾模型|一半模型|鸟头|沙漏|相似|割补|等高|共边|格点|三视图|水中浸物|长度计算|角度计算|图形变换)"
 )
 FIGURE_REFERENCE_PATTERN = re.compile("(?:如图|下图|图中|图示|配图|右图|左图)")
 NON_GEOMETRY_DIAGRAM_PATTERN = re.compile(

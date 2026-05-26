@@ -41,6 +41,7 @@ GEOMETRY_MODEL_TYPE_VALUES = {
     "equal_area_transform",
     "kite_area",
     "bird_head_sandglass",
+    "similarity_model",
     "pyramid_sandglass",
     "cut_and_fill",
     "grid_cut_fill",
@@ -83,6 +84,7 @@ STABLE_AREA_MODEL_TYPES = {
     "equal_area_transform",
     "kite_area",
     "bird_head_sandglass",
+    "similarity_model",
     "grid_cut_fill",
     "circle_sector_cut_fill",
     "length_translation",
@@ -100,6 +102,7 @@ OLYMPIAD_AREA_MODEL_TYPES = {
     "equal_area_transform",
     "kite_area",
     "bird_head_sandglass",
+    "similarity_model",
     "pyramid_sandglass",
 }
 LOW_BARRIER_GEOMETRY_MODEL_TYPES = {

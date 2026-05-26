@@ -1150,6 +1150,71 @@ class TestDim2SpatialScorer:
         assert result.details["spatial_burden_level"] == "S4"
         assert result.details["knowledge_spatial_matrix_cell"] == "K5+S4"
 
+    @pytest.mark.parametrize(
+        "model_type,expected_point",
+        [
+            ("half_area", "一半模型"),
+            ("equal_area_transform", "等积变形"),
+            ("butterfly_area", "蝴蝶模型"),
+            ("swallowtail_area", "燕尾模型"),
+            ("bird_head_sandglass", "鸟头模型"),
+            ("kite_area", "风筝模型"),
+            ("similarity_model", "相似模型"),
+        ],
+    )
+    def test_focused_geometry_model_takes_primary_over_composite_area(self, scorer, model_type, expected_point):
+        result = scorer.score(
+            self._dim2_features(
+                geometry_model_types=[model_type, "composite_area_model"],
+                geometry_model_count="2",
+                model_recognition_role="core",
+                area_relation_chain="single",
+                model_combination_complexity="model_plus_operation",
+                evidence_summary="核心是识别具体几何模型，组合图形面积只是题型背景。",
+            )
+        )
+
+        assert result.applicable is True
+        assert result.details["knowledge_range_level"] == "K5"
+        assert result.details["matched_geometry_knowledge_points"][0] == expected_point
+        assert result.details["display_geometry_knowledge_points"][0] == expected_point
+        assert "一般的组合图形面积计算" not in result.details["matched_geometry_knowledge_points"]
+
+    def test_similarity_evidence_promotes_area_ratio_chain_over_composite_area(self, scorer):
+        result = scorer.score(
+            self._dim2_features(
+                geometry_model_types=["area_ratio_chain", "composite_area_model"],
+                geometry_model_count="2",
+                model_recognition_role="core",
+                area_relation_chain="multi",
+                model_combination_complexity="model_plus_operation",
+                evidence_summary="需要识别相似三角形的对应边比例，再转化面积关系。",
+                evidence_tags=["相似三角形", "对应边成比例", "组合图形"],
+            )
+        )
+
+        assert result.applicable is True
+        assert result.details["knowledge_range_level"] == "K5"
+        assert result.details["matched_geometry_knowledge_points"] == ["相似模型"]
+        assert result.details["display_geometry_knowledge_points"] == ["相似模型"]
+
+    def test_composite_area_model_alone_still_uses_composite_area_knowledge(self, scorer):
+        result = scorer.score(
+            self._dim2_features(
+                geometry_model_types=["composite_area_model"],
+                geometry_model_count="1",
+                model_recognition_role="core",
+                area_relation_chain="single",
+                model_combination_complexity="single_model",
+                evidence_summary="需要把组合图形拆成可计算部分。",
+            )
+        )
+
+        assert result.applicable is True
+        assert result.details["knowledge_range_level"] == "K2"
+        assert result.details["matched_geometry_knowledge_points"][0] == "一般的组合图形面积计算"
+        assert result.details["display_geometry_knowledge_points"][0] == "一般的组合图形面积计算"
+
     def test_nested_area_ratio_model_scores_l5(self, scorer):
         result = scorer.score(
             self._dim2_features(
