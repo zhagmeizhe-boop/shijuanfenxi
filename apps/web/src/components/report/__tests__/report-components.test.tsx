@@ -22,6 +22,34 @@ describe('SixDimensionsRadar', () => {
     innovation: 58,
   };
 
+  it('uses the knowledge-first dimension order', () => {
+    expect(REPORT_DIMENSIONS.map((item) => item.code)).toEqual([
+      'dim5',
+      'dim1',
+      'dim2',
+      'dim3',
+      'dim4',
+      'dim6',
+    ]);
+    expect(REPORT_DIMENSIONS.map((item) => item.name)).toEqual([
+      '知识广度',
+      '计算',
+      '几何',
+      '信息提取',
+      '实践创新',
+      '逻辑链条',
+    ]);
+    expect(REPORT_DIMENSIONS.map((item) => item.chartName)).toEqual([
+      '知识广度',
+      '计算',
+      '几何',
+      '信息提取',
+      '实践创新',
+      '逻辑链条',
+    ]);
+    expect(REPORT_DIMENSIONS.some((item) => item.chartName.includes('\n'))).toBe(false);
+  });
+
   it('renders radar panel title', () => {
     render(<SixDimensionsRadar dimensions={mockDimensions} />);
 
@@ -31,10 +59,11 @@ describe('SixDimensionsRadar', () => {
   });
 
   it('uses zero chart values for not-covered dimensions while keeping labels', () => {
+    const notCoveredDimension = REPORT_DIMENSIONS[1];
     const dimensionDetails: DimensionScore[] = [
       {
-        code: 'dim2',
-        name: REPORT_DIMENSIONS[1].name,
+        code: notCoveredDimension.code,
+        name: notCoveredDimension.name,
         score: 0,
         level: 0,
         level_label: '未覆盖',
@@ -138,7 +167,7 @@ describe('DifficultyPositioning', () => {
     expect(screen.getByText('15')).toBeInTheDocument();
     expect(screen.queryByText('（18）')).not.toBeInTheDocument();
     expect(screen.queryByText('三-15')).not.toBeInTheDocument();
-    expect(screen.getByText('另有 1 道题缺少可用于分桶的维度分，未强行归类。')).toBeInTheDocument();
+    expect(screen.queryByText('另有 1 道题缺少可用于分桶的维度分，未强行归类。')).not.toBeInTheDocument();
   });
 
   it('uses parent-friendly fallback summary when parent summary is missing', () => {
@@ -186,10 +215,68 @@ describe('DimensionScoreCards', () => {
   it('renders all dimension cards', () => {
     render(<DimensionScoreCards dimensions={mockDimensions} />);
 
-    expect(screen.getByText('计算难度')).toBeInTheDocument();
-    expect(screen.getByText('几何难度')).toBeInTheDocument();
+    expect(screen.getByText('计算')).toBeInTheDocument();
+    expect(screen.getByText('几何')).toBeInTheDocument();
     expect(screen.queryByText('数学运算')).not.toBeInTheDocument();
     expect(screen.queryByText('几何直观与空间想象')).not.toBeInTheDocument();
+  });
+
+  it('sanitizes historical internal failure text in counted questions', () => {
+    render(
+      <DimensionScoreCards
+        dimensions={[
+          {
+            code: 'dim1',
+            name: '数学运算',
+            score: 6,
+            level: 3,
+            level_label: '中等',
+            evidence: '旧报告数据。',
+            counted_questions: [
+              {
+                question_no: '4',
+                question_display_label: '（4）',
+                summary: '解析失败',
+                score: 6,
+                level_code: 'L3',
+                difficulty_label: '中等（6.0）',
+                reason: '中等（6.0）：主要考查解析失败；常见失分点是算式落地。',
+                full_reason: '中等（6.0）：主要考查 parse_failed；LLM request failed',
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.queryByText(/解析失败/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/parse_failed/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/LLM request failed/)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/中等（6.0）：主要考查四则运算/).length).toBeGreaterThan(0);
+  });
+
+  it('renders dimension cards in the knowledge-first order', () => {
+    const shuffledDimensions: DimensionScore[] = [
+      { code: 'dim3', name: '读题难度', score: 6, level: 3, level_label: '中等', evidence: '旧顺序输入。' },
+      { code: 'dim6', name: '解题链路难度', score: 6, level: 3, level_label: '中等', evidence: '旧顺序输入。' },
+      { code: 'dim1', name: '计算难度', score: 6, level: 3, level_label: '中等', evidence: '旧顺序输入。' },
+      { code: 'dim4', name: '解题方法难度', score: 6, level: 3, level_label: '中等', evidence: '旧顺序输入。' },
+      { code: 'dim5', name: '知识门槛难度', score: 6, level: 3, level_label: '中等', evidence: '旧顺序输入。' },
+      { code: 'dim2', name: '几何难度', score: 6, level: 3, level_label: '中等', evidence: '旧顺序输入。' },
+    ];
+
+    render(<DimensionScoreCards dimensions={shuffledDimensions} />);
+
+    expect(screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent)).toEqual([
+      '知识广度',
+      '计算',
+      '几何',
+      '信息提取',
+      '实践创新',
+      '逻辑链条',
+    ]);
+    expect(screen.queryByRole('heading', { level: 3, name: '知识门槛难度' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 3, name: '解题链路难度' })).not.toBeInTheDocument();
   });
 
   it('displays correct scores and evidence', () => {
@@ -198,8 +285,8 @@ describe('DimensionScoreCards', () => {
     expect(screen.getByText('7.5')).toBeInTheDocument();
     expect(screen.getByText('6.0')).toBeInTheDocument();
     expect(screen.getAllByText('得分概览')).toHaveLength(2);
-    expect(screen.getByText(/计算难度，综合得分 7.5 分/)).toBeInTheDocument();
-    expect(screen.getByText(/几何难度，综合得分 6.0 分/)).toBeInTheDocument();
+    expect(screen.getByText(/计算，综合得分 7.5 分/)).toBeInTheDocument();
+    expect(screen.getByText(/几何，综合得分 6.0 分/)).toBeInTheDocument();
     expect(screen.getByText(/图形关系整理和模型识别/)).toBeInTheDocument();
   });
 
@@ -217,8 +304,8 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    const evidence = screen.getByText(/读题难度，综合得分 8.6 分/);
-    expect(evidence).toHaveTextContent('学生读题理解题意上设置了明显难度');
+    const evidence = screen.getByText(/信息提取，综合得分 8.6 分/);
+    expect(evidence).toHaveTextContent('信息提取要求较高');
     expect(evidence).toHaveTextContent('场景相对复杂');
     expect(evidence).not.toHaveTextContent('按题目等级加权');
     expect(evidence).not.toHaveTextContent('高等级题');
@@ -240,10 +327,10 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    expect(screen.getByText('解题链路难度')).toBeInTheDocument();
+    expect(screen.getByText('逻辑链条')).toBeInTheDocument();
     expect(screen.queryByText('逻辑链条长度')).not.toBeInTheDocument();
-    const evidence = screen.getByText(/解题链路难度，综合得分 8.6 分/);
-    expect(evidence).toHaveTextContent('这张试卷不少题解题链条较长');
+    const evidence = screen.getByText(/逻辑链条，综合得分 8.6 分/);
+    expect(evidence).toHaveTextContent('这张试卷不少题逻辑链条较长');
     expect(evidence).toHaveTextContent('连续推进 3-4 步');
     expect(evidence).not.toHaveTextContent('逻辑链条维度，综合得分');
     expect(evidence).not.toHaveTextContent('共 4 道相关题目');
@@ -264,8 +351,8 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    const evidence = screen.getByText(/知识门槛难度，综合得分 8.6 分/);
-    expect(evidence).toHaveTextContent('说明本卷知识门槛较高');
+    const evidence = screen.getByText(/知识广度，综合得分 8.6 分/);
+    expect(evidence).toHaveTextContent('说明本卷知识广度较高');
     expect(evidence).toHaveTextContent('五六年级奥数典型方法或七年级基础前置知识');
     expect(evidence).not.toHaveTextContent('按知识范围等级权重计算');
   });
@@ -292,8 +379,8 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    const evidence = screen.getByText(/计算难度，综合得分 8.2 分/);
-    expect(evidence).toHaveTextContent('说明本卷计算难度较高');
+    const evidence = screen.getByText(/计算，综合得分 8.2 分/);
+    expect(evidence).toHaveTextContent('说明本卷计算要求较高');
     expect(evidence).not.toHaveTextContent('共 5 道题计入数学运算评分');
     expect(evidence).not.toHaveTextContent('1 道纯计算题和 4 道应用题中的核心计算');
     expect(screen.queryByText(/权重/)).not.toBeInTheDocument();
@@ -441,8 +528,8 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    expect(screen.getAllByText('较难（8.0）：这题的解题链条较长，通常需要多步推进，并伴随分类、倒推、回查或多条件检查；学生需要按阶段记录变化，把上一阶段的结果接到下一阶段条件中').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('中等（6.0）：这题的解题链条有一定长度，通常需要把前后条件连续接起来；学生需要把前一步得到的结果接到下一步条件里，连续推出中间结论').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('较难（8.0）：这题的逻辑链条较长，通常需要多步推进，并伴随分类、倒推、回查或多条件检查；学生需要按阶段记录变化，把上一阶段的结果接到下一阶段条件中').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('中等（6.0）：这题的逻辑链条有一定长度，通常需要把前后条件连续接起来；学生需要把前一步得到的结果接到下一步条件里，连续推出中间结论').length).toBeGreaterThan(0);
     expect(screen.queryByText(/依据是/)).not.toBeInTheDocument();
   });
 
@@ -619,8 +706,8 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    const evidence = screen.getByText(/解题方法难度，综合得分 8.2 分/);
-    expect(evidence).toHaveTextContent('在解题思路上有较明显难度');
+    const evidence = screen.getByText(/实践创新，综合得分 8.2 分/);
+    expect(evidence).toHaveTextContent('实践创新要求较高');
     expect(evidence).toHaveTextContent('先把条件之间的关系理清楚');
     expect(evidence).not.toHaveTextContent('建模解题复杂度综合得分');
     expect(evidence).not.toHaveTextContent('按题目等级加权');

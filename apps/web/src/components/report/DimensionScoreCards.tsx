@@ -13,6 +13,26 @@ interface DimensionScoreCardsProps {
 const COUNTED_QUESTION_AUDIT_MARKERS = ['依据标签：', '核心事实：', '依据来源：'];
 const COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN = /^(L[1-5])(?:\s+[^：:]{1,40})?[：:]\s*(.+)$/u;
 const COUNTED_QUESTION_SCORE_DESCRIPTOR_PATTERN = /^(\d+(?:\.\d+)?)分[：:]\s*(.+)$/u;
+const INTERNAL_FAILURE_DISPLAY_FRAGMENTS = [
+  '解析失败',
+  '解析异常',
+  '解析错误',
+  '调用失败',
+  '请求失败',
+  '修复失败',
+  '未能解析',
+  '响应解析异常',
+  'LLM request failed',
+  'parse_failed',
+  'json_repair_failed',
+  'request failed',
+  'request_failed',
+  'timed out',
+  'timeout',
+  'retry_failed',
+  'review_failed',
+  'failed',
+];
 const DIM1_DIFFICULTY_LABELS: Record<string, string> = {
   L1: '简单（2.0）',
   L2: '较易（4.0）',
@@ -27,15 +47,15 @@ function buildDim1ScoreOverview(score: number): string {
   if (scoreValue >= 9) {
     explanation = '说明本卷计算要求很高，包含较强的多步、结构化或拓展计算，对综合计算能力要求突出。';
   } else if (scoreValue >= 8) {
-    explanation = '说明本卷计算难度较高，计算题和应用题中的核心计算都会拉开学生差距。';
+    explanation = '说明本卷计算要求较高，计算题和应用题中的核心计算都会拉开学生差距。';
   } else if (scoreValue >= 6) {
-    explanation = '说明本卷有一定计算难度，除准确率外，也考查多步运算和常见转化。';
+    explanation = '说明本卷有一定计算要求，除准确率外，也考查多步运算和常见转化。';
   } else if (scoreValue >= 4) {
-    explanation = '说明本卷计算难度整体偏常规，重点考查校内计算的熟练度和稳定性。';
+    explanation = '说明本卷计算要求整体偏常规，重点考查校内计算的熟练度和稳定性。';
   } else {
     explanation = '说明本卷计算要求以基础运算为主，主要看基本规则掌握和计算准确率。';
   }
-  return `计算难度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
+  return `计算，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
 }
 
 function buildDim2ScoreOverview(score: number): string {
@@ -44,58 +64,58 @@ function buildDim2ScoreOverview(score: number): string {
   if (scoreValue >= 9) {
     explanation = '说明本卷几何与空间要求很高，包含高强度空间重构、多视图或高阶几何模型。';
   } else if (scoreValue >= 8) {
-    explanation = '说明本卷几何难度较高，复合图形、隐含关系或空间转换会明显拉开差距。';
+    explanation = '说明本卷几何要求较高，复合图形、隐含关系或空间转换会明显拉开差距。';
   } else if (scoreValue >= 6) {
-    explanation = '说明本卷有一定几何与空间难度，除基本公式外，也考查图形关系整理和模型识别。';
+    explanation = '说明本卷有一定几何与空间要求，除基本公式外，也考查图形关系整理和模型识别。';
   } else if (scoreValue >= 4) {
     explanation = '说明本卷以常规图形关系为主，重点考查读图准确性和单步空间转化。';
   } else {
     explanation = '说明本卷主要覆盖基础识图和直接几何公式，重点看图形概念和基本关系是否掌握。';
   }
-  return `几何难度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
+  return `几何，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
 }
 
 function buildDim3ScoreOverview(score: number): string {
   const scoreValue = Number.isFinite(score) ? score : 0;
   let explanation: string;
   if (scoreValue >= 9) {
-    explanation = '说明这张试卷在学生读题理解题意上设置了较高难度，不少题目需要完整读懂多条规则、多阶段过程或复杂图文关系。';
+    explanation = '说明这张试卷的信息提取要求很高，不少题目需要完整读懂多条规则、多阶段过程或复杂图文关系。';
   } else if (scoreValue >= 8) {
-    explanation = '说明这张试卷在学生读题理解题意上设置了明显难度，部分题目的场景相对复杂，学生需要先理清对象、阶段、规则或图文关系。';
+    explanation = '说明这张试卷的信息提取要求较高，部分题目的场景相对复杂，学生需要先理清对象、阶段、规则或图文关系。';
   } else if (scoreValue >= 6) {
-    explanation = '说明这张试卷在学生读题理解题意上设置了一定难度，部分题目需要先读懂关键问法、比较标准或简单规则。';
+    explanation = '说明这张试卷在信息提取上有一定要求，部分题目需要先读懂关键问法、比较标准或简单规则。';
   } else if (scoreValue >= 4) {
-    explanation = '说明这张试卷在学生读题和理解题意上有常规要求，部分题目需要分清对象、顺序或图文对应关系。';
+    explanation = '说明这张试卷在信息提取上有常规要求，部分题目需要分清对象、顺序或图文对应关系。';
   } else {
-    explanation = '说明这张试卷在学生读题和理解题意上的要求比较基础，大多数题目读完后能较快明白题目在说什么。';
+    explanation = '说明这张试卷的信息提取要求比较基础，大多数题目读完后能较快明白题目在说什么。';
   }
-  return `读题难度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
+  return `信息提取，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
 }
 
 function buildDim4ScoreOverview(score: number): string {
   const scoreValue = Number.isFinite(score) ? score : 0;
   let explanation: string;
   if (scoreValue >= 9) {
-    explanation = '说明本卷在解题思路上难度很高。孩子做核心题时，通常不能只按常规步骤推进，需要先找到关键突破口，再持续检查每一步是否和题目条件一致。';
+    explanation = '说明本卷实践创新要求很高。孩子做核心题时，通常不能只按常规步骤推进，需要先找到关键突破口，再持续检查每一步是否和题目条件一致。';
   } else if (scoreValue >= 8) {
-    explanation = '说明本卷在解题思路上有较明显难度。孩子做这类题时，往往需要先把条件之间的关系理清楚，再选择合适的切入方式逐步推进。';
+    explanation = '说明本卷实践创新要求较高。孩子做这类题时，往往需要先把条件之间的关系理清楚，再选择合适的切入方式逐步推进。';
   } else if (scoreValue >= 6) {
-    explanation = '说明本卷在解题思路上有一定难度。部分题目不是读完就能直接下手，需要孩子先整理已知条件和目标之间的关系，再按较清晰的步骤推进。';
+    explanation = '说明本卷实践创新有一定要求。部分题目不是读完就能直接下手，需要孩子先整理已知条件和目标之间的关系，再按较清晰的步骤推进。';
   } else if (scoreValue >= 4) {
-    explanation = '说明本卷在解题思路上的要求整体偏常规。多数题目读懂后可以沿常见思路完成，少量题需要先做简单整理再下手。';
+    explanation = '说明本卷实践创新要求整体偏常规。多数题目读懂后可以沿常见思路完成，少量题需要先做简单整理再下手。';
   } else {
-    explanation = '说明本卷在解题思路上的要求比较基础。多数题目读懂题意后，可以直接找到主要关系并完成解答。';
+    explanation = '说明本卷实践创新要求比较基础。多数题目读懂题意后，可以直接找到主要关系并完成解答。';
   }
-  return `解题方法难度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
+  return `实践创新，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
 }
 
 function buildDim5ScoreOverview(score: number): string {
   const scoreValue = Number.isFinite(score) ? score : 0;
   let explanation: string;
   if (scoreValue >= 9) {
-    explanation = '说明本卷知识门槛很高，核心题多接近六年级奥数较难题、小升初压轴题或七年级核心前置知识。';
+    explanation = '说明本卷知识广度很高，核心题多接近六年级奥数较难题、小升初压轴题或七年级核心前置知识。';
   } else if (scoreValue >= 8) {
-    explanation = '说明本卷知识门槛较高，较多题目需要五六年级奥数典型方法或七年级基础前置知识。';
+    explanation = '说明本卷知识广度较高，较多题目需要五六年级奥数典型方法或七年级基础前置知识。';
   } else if (scoreValue >= 6) {
     explanation = '说明本卷有一定知识拓展，除校内核心知识外，还覆盖校内综合或三四年级奥数入门模型。';
   } else if (scoreValue >= 4) {
@@ -103,24 +123,24 @@ function buildDim5ScoreOverview(score: number): string {
   } else {
     explanation = '说明本卷以一至三年级校内基础知识为主，主要考查基本概念、基础计算和直接应用。';
   }
-  return `知识门槛难度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
+  return `知识广度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
 }
 
 function buildDim6ScoreOverview(score: number): string {
   const scoreValue = Number.isFinite(score) ? score : 0;
   let explanation: string;
   if (scoreValue >= 9) {
-    explanation = '这张试卷有少量解题链条很长的压轴题，通常要连续推进 5 步以上，并检查多个条件。';
+    explanation = '这张试卷有少量逻辑链条很长的压轴题，通常要连续推进 5 步以上，并检查多个条件。';
   } else if (scoreValue >= 8) {
-    explanation = '这张试卷不少题解题链条较长，通常要连续推进 3-4 步，并穿插分类、倒推或回查。';
+    explanation = '这张试卷不少题逻辑链条较长，通常要连续推进 3-4 步，并穿插分类、倒推或回查。';
   } else if (scoreValue >= 6) {
-    explanation = '这张试卷部分题解题链条有一定长度，通常要把前后条件接起来推进 2-4 步。';
+    explanation = '这张试卷部分题逻辑链条有一定长度，通常要把前后条件接起来推进 2-4 步。';
   } else if (scoreValue >= 4) {
-    explanation = '这张试卷整体解题链条偏短，少量题需要 1-2 步衔接。';
+    explanation = '这张试卷整体逻辑链条偏短，少量题需要 1-2 步衔接。';
   } else {
-    explanation = '这张试卷多数题解题链条很短，通常读懂条件后一步判断即可。';
+    explanation = '这张试卷多数题逻辑链条很短，通常读懂条件后一步判断即可。';
   }
-  return `解题链路难度，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
+  return `逻辑链条，综合得分 ${formatScore(scoreValue)} 分，${explanation}`;
 }
 
 function formatDimensionEvidence(dim: DimensionScore): string {
@@ -209,12 +229,51 @@ function formatCountedQuestionDifficulty(item?: CountedQuestionDifficultyFields)
   return inferredLevel ? DIM1_DIFFICULTY_LABELS[inferredLevel] : '';
 }
 
+function containsInternalFailureText(value?: string): boolean {
+  const text = (value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  return Boolean(text) && INTERNAL_FAILURE_DISPLAY_FRAGMENTS.some((fragment) => text.includes(fragment.toLowerCase()));
+}
+
+function cleanPublicReportText(value?: string): string {
+  const text = (value || '').replace(/\s+/g, ' ').replace(/[。；;，,\s]+$/u, '').trim();
+  return text && !containsInternalFailureText(text) ? text : '';
+}
+
+function fallbackCountedQuestionText(dimCode: string, item?: CountedQuestion): string {
+  const difficultyLabel = formatCountedQuestionDifficulty(item);
+  const fallbackByDim: Record<string, string> = {
+    dim1: '主要考查四则运算',
+    dim2: '主要考查看图找关系',
+    dim3: '主要考查读懂题意',
+    dim4: '主要考查整理条件和选择方法',
+    dim5: '主要考查核心知识点',
+    dim6: '这题的逻辑链条需要连续推理',
+  };
+  const body = fallbackByDim[dimCode] || '主要考查常规解题能力';
+  return difficultyLabel ? `${difficultyLabel}：${body}` : body;
+}
+
+function sanitizeCountedQuestionDisplayText(
+  dimCode: string,
+  text: string,
+  item?: CountedQuestion,
+): string {
+  const normalized = (text || '').replace(/\s+/g, ' ').trim();
+  if (!normalized || containsInternalFailureText(normalized)) {
+    return fallbackCountedQuestionText(dimCode, item);
+  }
+  return normalized;
+}
+
 function formatCountedQuestionAnalysis(text: string, item?: CountedQuestion): string {
   let normalized = text.replace(/\s+/g, ' ').trim();
   for (const marker of COUNTED_QUESTION_AUDIT_MARKERS) {
     normalized = normalized.split(marker, 1)[0].trim();
   }
   normalized = normalized.replace(/[。；;，,\s]+$/u, '').trim();
+  if (containsInternalFailureText(normalized)) {
+    return '';
+  }
 
   const difficultyLabel = formatCountedQuestionDifficulty(item);
   const levelMatch = normalized.match(COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN);
@@ -228,12 +287,18 @@ function formatCountedQuestionAnalysis(text: string, item?: CountedQuestion): st
     const fallbackLabel = formatCountedQuestionDifficulty({ score });
     normalized = `${difficultyLabel || fallbackLabel || scoreMatch[1]}：${scoreMatch[2].trim()}`;
   }
+  if (containsInternalFailureText(normalized)) {
+    return '';
+  }
   return normalized.replace(/[。；;，,\s]+$/u, '').trim();
 }
 
 function cleanDim5DisplayText(value: string | undefined): string {
-  return (value || '')
-    .replace(/\s+/g, ' ')
+  const text = cleanPublicReportText(value);
+  if (!text) {
+    return '';
+  }
+  return text
     .replace(/竞赛数学导引/g, '奥数')
     .replace(/高思导引/g, '奥数')
     .replace(/奥数年级未确认[：:]\s*/g, '奥数知识：')
@@ -260,7 +325,7 @@ function normalizeCountedQuestionLabel(value: string | undefined): string {
 }
 
 function cleanDim4DisplayText(value: string | undefined): string {
-  return (value || '').replace(/\s+/g, ' ').trim();
+  return cleanPublicReportText(value);
 }
 
 function isProbablyEnglishDisplayText(value: string): boolean {
@@ -429,7 +494,7 @@ function dim6StudentActionFromTask(task: string, evidence: string): string {
 function cleanDim6StudentAction(value: string): string {
   let text = trimTrailingPunctuation(value.replace(/\s+/g, ' ').trim());
   const forbidden = ['reasoning_role', 'chain_span', 'constraint_coupling', '高阶收束', '逻辑负担', '依据是'];
-  if (!text || forbidden.some((term) => text.includes(term))) {
+  if (!text || containsInternalFailureText(text) || forbidden.some((term) => text.includes(term))) {
     return '把已有条件一步步接起来，并在最后检查结论是否符合题意';
   }
 
@@ -483,22 +548,27 @@ function formatDim6CountedQuestionText(item: CountedQuestion, fallbackText: stri
   if (!normalized) {
     return normalized;
   }
-  if (normalized.includes('这题的解题链条') && normalized.includes('学生需要')) {
-    return normalized;
+  if ((normalized.includes('这题的逻辑链条') || normalized.includes('这题的解题链条')) && normalized.includes('学生需要')) {
+    return normalized.replace(/这题的解题链条/g, '这题的逻辑链条');
   }
 
-  const currentStyleMatch = normalized.match(/^(.+?)：这题难在(.+?)；学生需要(.+)$/u);
+  const normalizedLegacyChainText = normalized.replace(/这题的解题链条/g, '这题的逻辑链条');
+  if (normalizedLegacyChainText !== normalized && normalizedLegacyChainText.includes('学生需要')) {
+    return normalizedLegacyChainText;
+  }
+
+  const currentStyleMatch = normalizedLegacyChainText.match(/^(.+?)：这题难在(.+?)；学生需要(.+)$/u);
   if (currentStyleMatch) {
     const [, difficulty, , action] = currentStyleMatch;
-    return `${difficulty}：这题的解题链条${dim6ChainDescriptionFromItem(
+    return `${difficulty}：这题的逻辑链条${dim6ChainDescriptionFromItem(
       item,
     )}；学生需要${action.trim()}`;
   }
 
-  const oldStyleMatch = normalized.match(/^(.+?)：本题逻辑链条难在(.+?)；依据是(.+)$/u);
+  const oldStyleMatch = normalizedLegacyChainText.match(/^(.+?)：本题逻辑链条难在(.+?)；依据是(.+)$/u);
   if (oldStyleMatch) {
     const [, difficulty, task, evidence] = oldStyleMatch;
-    return `${difficulty}：这题的解题链条${dim6ChainDescriptionFromItem(
+    return `${difficulty}：这题的逻辑链条${dim6ChainDescriptionFromItem(
       item,
     )}；学生需要${dim6StudentActionFromTask(
       task,
@@ -509,11 +579,11 @@ function formatDim6CountedQuestionText(item: CountedQuestion, fallbackText: stri
   const action = cleanDim6StudentAction(normalized);
   const difficultyLabel = formatCountedQuestionDifficulty(item);
   if (difficultyLabel && action !== normalized) {
-    return `${difficultyLabel}：这题的解题链条${dim6ChainDescriptionFromItem(
+    return `${difficultyLabel}：这题的逻辑链条${dim6ChainDescriptionFromItem(
       item,
     )}；学生需要${action}`;
   }
-  return normalized;
+  return normalizedLegacyChainText;
 }
 
 export function DimensionScoreCards({ dimensions }: DimensionScoreCardsProps) {
@@ -596,7 +666,7 @@ export function DimensionScoreCards({ dimensions }: DimensionScoreCardsProps) {
                     const itemKey = `${dim.code}-${index}-${questionLabel}-${item.summary}`;
                     const compactSource = item.reason || item.summary || item.full_reason || '';
                     const fullSource = item.full_reason || item.reason || item.summary || '';
-                    const compactReason =
+                    const rawCompactReason =
                       dim.code === 'dim4'
                         ? formatDim4CountedQuestionText(item, compactSource)
                         : dim.code === 'dim5'
@@ -604,7 +674,7 @@ export function DimensionScoreCards({ dimensions }: DimensionScoreCardsProps) {
                         : dim.code === 'dim6'
                         ? formatDim6CountedQuestionText(item, compactSource)
                         : formatCountedQuestionAnalysis(compactSource, item);
-                    const fullReason =
+                    const rawFullReason =
                       dim.code === 'dim4'
                         ? formatDim4CountedQuestionText(item, fullSource)
                         : dim.code === 'dim5'
@@ -612,6 +682,8 @@ export function DimensionScoreCards({ dimensions }: DimensionScoreCardsProps) {
                         : dim.code === 'dim6'
                         ? formatDim6CountedQuestionText(item, fullSource)
                         : formatCountedQuestionAnalysis(fullSource, item);
+                    const compactReason = sanitizeCountedQuestionDisplayText(dim.code, rawCompactReason, item);
+                    const fullReason = sanitizeCountedQuestionDisplayText(dim.code, rawFullReason, item);
                     const tooltipId = `counted-question-${dim.code}-${index}`;
 
                     return (

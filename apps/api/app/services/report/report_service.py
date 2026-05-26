@@ -56,7 +56,7 @@ class ReportService:
         2: "这张试卷难度适中，这是课内核心提升型试卷，主要看孩子能不能把学过的知识稳定用出来。",
         3: "这张试卷有一定难度，这是校内期中期末考试难度的试卷，题目有一定变化，适合检验孩子能否稳定拿到中高分。",
         4: "这张试卷难度偏高，这是小升初分班考难度的试卷，题目更绕、步骤更多，会明显考验孩子做难题的稳定性。",
-        5: "这张试卷难度很高，这是奥数杯赛竞赛难度的试卷，适合看孩子能不能挑战高难题和竞赛题。",
+        5: "这张试卷难度很高，这是奥数杯赛难度的试卷，适合用来做竞赛拓展训练。",
     }
 
     POSITION_SUMMARIES = {
@@ -64,7 +64,7 @@ class ReportService:
         2: "课内核心提升型试卷，主要看孩子能不能把学过的知识稳定用出来。",
         3: "校内期中期末考试难度试卷，题目有一定变化，适合检验孩子能否稳定拿到中高分。",
         4: "小升初分班考难度试卷，题目更绕、步骤更多，用来拉开学生差距。",
-        5: "奥数杯赛竞赛难度试卷，难度很高，适合挑战高难题和竞赛题。",
+        5: "奥数杯赛难度试卷，难度很高，适合竞赛拓展训练。",
     }
 
     PARENT_DIMENSION_DIFFICULTY_NOTES = {
@@ -490,6 +490,16 @@ class ReportService:
         return ReportService._sanitize_report_warnings(report_warnings)
 
     def _build_dimension_details_from_aggregated(self, aggregated: Dict[str, Any]) -> List[Dict[str, Any]]:
+        ordered_items = [
+            (dim_code, aggregated[dim_code])
+            for dim_code in self.aggregator.DIMENSION_ORDER
+            if dim_code in aggregated
+        ]
+        ordered_items.extend(
+            (dim_code, summary)
+            for dim_code, summary in aggregated.items()
+            if dim_code not in self.aggregator.DIMENSION_ORDER
+        )
         return [
             {
                 "code": dim_code,
@@ -506,7 +516,7 @@ class ReportService:
                 "counted_questions": summary.counted_questions,
                 "score_breakdown": getattr(summary, "score_breakdown", {}),
             }
-            for dim_code, summary in aggregated.items()
+            for dim_code, summary in ordered_items
         ]
 
     @staticmethod
@@ -909,12 +919,12 @@ class ReportService:
                 "parent_summary": parent_summary,
                 "question_distribution": question_distribution,
                 "dimension_distribution": [
-                    {"code": "dim1", "name": "计算难度", "percentage": 17, "color": "#3B82F6"},
-                    {"code": "dim2", "name": "几何难度", "percentage": 16, "color": "#8B5CF6"},
-                    {"code": "dim3", "name": "读题难度", "percentage": 17, "color": "#EC4899"},
-                    {"code": "dim4", "name": "解题方法难度", "percentage": 17, "color": "#10B981"},
-                    {"code": "dim5", "name": "知识门槛难度", "percentage": 16, "color": "#F59E0B"},
-                    {"code": "dim6", "name": "解题链路难度", "percentage": 17, "color": "#EF4444"},
+                    {"code": "dim5", "name": "知识广度", "percentage": 16, "color": "#F59E0B"},
+                    {"code": "dim1", "name": "计算", "percentage": 17, "color": "#3B82F6"},
+                    {"code": "dim2", "name": "几何", "percentage": 16, "color": "#8B5CF6"},
+                    {"code": "dim3", "name": "信息提取", "percentage": 17, "color": "#EC4899"},
+                    {"code": "dim4", "name": "实践创新", "percentage": 17, "color": "#10B981"},
+                    {"code": "dim6", "name": "逻辑链条", "percentage": 17, "color": "#EF4444"},
                 ],
             },
             "benchmark_comparisons": [],
@@ -1092,40 +1102,8 @@ class ReportService:
 
             "dimension_details": [
                 {
-                    "code": "dim1",
-                    "name": "计算难度",
-                    "score": 7.5,
-                    "level": 4,
-                    "level_label": "较难",
-                    "evidence": "数值类型为带分数/小数混合，运算层数为3-4层，无变形难度，特殊运算包含分数小数互化，易错程度为中等。基础分7.0，因分数小数互化+0.5。",
-                },
-                {
-                    "code": "dim2",
-                    "name": "几何难度",
-                    "score": 6.0,
-                    "level": 3,
-                    "level_label": "中等",
-                    "evidence": "图形熟悉度为标准图形，需要添加1条辅助线，图形变换包含单一变换，空间重构程度为中等。非强制规则判定。",
-                },
-                {
-                    "code": "dim3",
-                    "name": "读题难度",
-                    "score": 8.0,
-                    "level": 4,
-                    "level_label": "较难",
-                    "evidence": "需要读懂图文材料中的对象、规则和对应关系，场景理解负担较高。",
-                },
-                {
-                    "code": "dim4",
-                    "name": "解题方法难度",
-                    "score": 7.0,
-                    "level": 4,
-                    "level_label": "较难",
-                    "evidence": "读懂后还需要整理条件、构造中间量并组织解题路径，建模解题负担较高。",
-                },
-                {
                     "code": "dim5",
-                    "name": "知识门槛难度",
+                    "name": "知识广度",
                     "score": 5.5,
                     "level": 3,
                     "level_label": "中等",
@@ -1133,8 +1111,40 @@ class ReportService:
                     "warning": True,
                 },
                 {
+                    "code": "dim1",
+                    "name": "计算",
+                    "score": 7.5,
+                    "level": 4,
+                    "level_label": "较难",
+                    "evidence": "数值类型为带分数/小数混合，运算层数为3-4层，无变形难度，特殊运算包含分数小数互化，易错程度为中等。基础分7.0，因分数小数互化+0.5。",
+                },
+                {
+                    "code": "dim2",
+                    "name": "几何",
+                    "score": 6.0,
+                    "level": 3,
+                    "level_label": "中等",
+                    "evidence": "图形熟悉度为标准图形，需要添加1条辅助线，图形变换包含单一变换，空间重构程度为中等。非强制规则判定。",
+                },
+                {
+                    "code": "dim3",
+                    "name": "信息提取",
+                    "score": 8.0,
+                    "level": 4,
+                    "level_label": "较难",
+                    "evidence": "需要读懂图文材料中的对象、规则和对应关系，场景理解负担较高。",
+                },
+                {
+                    "code": "dim4",
+                    "name": "实践创新",
+                    "score": 7.0,
+                    "level": 4,
+                    "level_label": "较难",
+                    "evidence": "读懂后还需要整理条件、构造中间量并组织解题路径，建模解题负担较高。",
+                },
+                {
                     "code": "dim6",
-                    "name": "解题链路难度",
+                    "name": "逻辑链条",
                     "score": 8.5,
                     "level": 5,
                     "level_label": "困难",
@@ -1200,12 +1210,12 @@ class ReportService:
                     ],
                 },
                 "dimension_distribution": [
-                    {"code": "dim1", "name": "计算难度", "percentage": 18, "color": "#3B82F6"},
-                    {"code": "dim2", "name": "几何难度", "percentage": 16, "color": "#8B5CF6"},
-                    {"code": "dim3", "name": "读题难度", "percentage": 20, "color": "#EC4899"},
-                    {"code": "dim4", "name": "解题方法难度", "percentage": 14, "color": "#10B981"},
-                    {"code": "dim5", "name": "知识门槛难度", "percentage": 16, "color": "#F59E0B"},
-                    {"code": "dim6", "name": "解题链路难度", "percentage": 16, "color": "#EF4444"},
+                    {"code": "dim5", "name": "知识广度", "percentage": 16, "color": "#F59E0B"},
+                    {"code": "dim1", "name": "计算", "percentage": 18, "color": "#3B82F6"},
+                    {"code": "dim2", "name": "几何", "percentage": 16, "color": "#8B5CF6"},
+                    {"code": "dim3", "name": "信息提取", "percentage": 20, "color": "#EC4899"},
+                    {"code": "dim4", "name": "实践创新", "percentage": 14, "color": "#10B981"},
+                    {"code": "dim6", "name": "逻辑链条", "percentage": 16, "color": "#EF4444"},
                 ],
             },
 
@@ -1229,7 +1239,7 @@ class ReportService:
                     "question_no": "第1题",
                     "content": "计算：\\frac{3}{4} + \\frac{2}{5} - \\frac{1}{2}",
                     "dimension_code": "dim1",
-                    "dimension_name": "计算难度",
+                    "dimension_name": "计算",
                     "score": 7.5,
                     "level": 4,
                     "evidence": "分数运算，需要通分，复杂度中等",
@@ -1239,14 +1249,14 @@ class ReportService:
                     "question_no": "第3题",
                     "content": "甲、乙两数的比是3:5，它们的和是48，求这两个数。",
                     "dimension_code": "dim3",
-                    "dimension_name": "读题难度",
+                    "dimension_name": "信息提取",
                     "score": 8.0,
                     "level": 4,
                     "evidence": "需要读懂文字条件中对象与问题要求的对应关系",
                 },
             ],
 
-            "overall_summary": "本试卷整体难度较高，以拔高为主，重点看知识门槛、解题方法组织和解题链路推进能力。计算部分以分数运算为主，几何部分涉及空间判断，读题部分强调规则、过程和比较口径的理解。",
+            "overall_summary": "本试卷整体难度较高，以拔高为主，重点看知识广度、实践创新和逻辑链条推进能力。计算部分以分数运算为主，几何部分涉及空间判断，信息提取部分强调规则、过程和比较口径的理解。",
             "recommendations": [
                 "建议学生重点复习分数运算和比例应用",
                 "加强场景规则理解、条件整理和建模解题训练",
@@ -1284,7 +1294,7 @@ class ReportService:
         if dim5_override is not None:
             aggregated["dim5"] = PaperDimensionSummary(
                 dimension_code="dim5",
-                dimension_name="知识门槛难度",
+                dimension_name="知识广度",
                 paper_score=dim5_override.score,
                 level=dim5_override.level,
                 level_label=dim5_override.level_label,
@@ -1309,7 +1319,7 @@ class ReportService:
         return report
 
     def _calculate_difficulty_level(self, overall_score: float) -> int:
-        """计算难度等级"""
+        """计算等级"""
         if overall_score <= 2.0:
             return 1
         elif overall_score <= 4.0:

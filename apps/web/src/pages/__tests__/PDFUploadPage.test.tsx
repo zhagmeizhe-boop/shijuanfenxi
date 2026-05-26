@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import {
   getNextStalledPollAttempts,
   getProcessingDetail,
   getProcessingMessage,
   getStatusActivityKey,
+  PDFUploadPage,
   sanitizeProgressMessage,
 } from '@/pages/PDFUploadPage';
 
@@ -132,5 +135,26 @@ describe('PDFUploadPage progress copy', () => {
       updated_at: '2026-05-19T10:02:00',
     };
     expect(getNextStalledPollAttempts(progressedPayload, firstKey, 120).stalledAttempts).toBe(0);
+  });
+
+  it('shows dimension feature cards in the knowledge-first order', () => {
+    render(
+      <MemoryRouter>
+        <PDFUploadPage />
+      </MemoryRouter>,
+    );
+
+    const titles = [
+      '知识广度',
+      '计算',
+      '几何',
+      '信息提取',
+      '实践创新',
+      '逻辑链条',
+    ].map((title) => screen.getByText(title));
+
+    for (let index = 0; index < titles.length - 1; index += 1) {
+      expect(titles[index].compareDocumentPosition(titles[index + 1])).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    }
   });
 });

@@ -5575,8 +5575,8 @@ class TestPaperAggregator:
         expected_score = (6.0 + 8.0) / 2
         assert abs(result.paper_score - expected_score) < 0.1
         assert result.evidence == (
-            "计算难度，综合得分 7.0 分，"
-            "说明本卷有一定计算难度，除准确率外，也考查多步运算和常见转化。"
+            "计算，综合得分 7.0 分，"
+            "说明本卷有一定计算要求，除准确率外，也考查多步运算和常见转化。"
         )
         assert result.score_breakdown["pure_calculation"]["question_count"] == 2
         assert result.score_breakdown["pure_calculation"]["weight"] == 1.0
@@ -5664,31 +5664,114 @@ class TestPaperAggregator:
             for term in forbidden_terms:
                 assert term not in reason
 
+    def test_counted_question_wording_filters_internal_parse_failures(self, aggregator):
+        forbidden_terms = ["解析失败", "解析异常", "parse_failed", "LLM request failed"]
+        cases = [
+            (
+                "dim1",
+                aggregator._build_dim1_counted_question_reason,
+                {
+                    "dim1": {
+                        "dim1_level": "L3",
+                        "display_knowledge_points": ["解析失败"],
+                    }
+                },
+                "主要考查四则运算",
+            ),
+            (
+                "dim2",
+                aggregator._build_dim2_counted_question_reason,
+                {
+                    "dim2": {
+                        "dim2_level": "L3",
+                        "display_geometry_knowledge_points": ["解析失败"],
+                        "evidence_summary": "LLM request failed",
+                    }
+                },
+                "主要考查基础图形关系",
+            ),
+            (
+                "dim3",
+                aggregator._build_dim3_counted_question_reason,
+                {"dim3": {"dim3_level": "L3", "evidence_summary": "parse_failed"}},
+                "主要考查关键问法理解",
+            ),
+            (
+                "dim4",
+                aggregator._build_dim4_counted_question_reason,
+                {
+                    "dim4": {
+                        "dim4_level": "L3",
+                        "knowledge_point": "解析失败",
+                        "evidence_summary": "解析异常",
+                    }
+                },
+                "本题属于条件组织题",
+            ),
+            (
+                "dim5",
+                aggregator._build_dim5_counted_question_reason,
+                {
+                    "dim5": {
+                        "knowledge_level": "L3",
+                        "knowledge_point_name": "解析失败",
+                        "evidence_summary": "LLM request failed",
+                    }
+                },
+                "本题主要考查可识别的核心知识点",
+            ),
+            (
+                "dim6",
+                aggregator._build_dim6_counted_question_reason,
+                {"dim6": {"dim6_level": "L3", "evidence_summary": "解析失败"}},
+                "直接看清条件",
+            ),
+        ]
+
+        for dim_code, builder, details, expected_fallback in cases:
+            question = QuestionDimensionScore(
+                question_id=f"q-{dim_code}",
+                question_no="1",
+                score=6.0,
+                dim_scores={dim_code: 6.0},
+                applicable_dims=[dim_code],
+                question_summary="解析失败",
+                dim_reasons={dim_code: "LLM request failed"},
+                dim_confidences={dim_code: 0.9},
+                dim_details=details,
+            )
+
+            reason = builder(question)
+
+            assert expected_fallback in reason
+            for term in forbidden_terms:
+                assert term not in reason
+
     def test_dim1_score_overview_explains_score_bands(self, aggregator):
         cases = [
             (
                 2.0,
-                "计算难度，综合得分 2.0 分，"
+                "计算，综合得分 2.0 分，"
                 "说明本卷计算要求以基础运算为主，主要看基本规则掌握和计算准确率。",
             ),
             (
                 4.0,
-                "计算难度，综合得分 4.0 分，"
-                "说明本卷计算难度整体偏常规，重点考查校内计算的熟练度和稳定性。",
+                "计算，综合得分 4.0 分，"
+                "说明本卷计算要求整体偏常规，重点考查校内计算的熟练度和稳定性。",
             ),
             (
                 6.0,
-                "计算难度，综合得分 6.0 分，"
-                "说明本卷有一定计算难度，除准确率外，也考查多步运算和常见转化。",
+                "计算，综合得分 6.0 分，"
+                "说明本卷有一定计算要求，除准确率外，也考查多步运算和常见转化。",
             ),
             (
                 8.6,
-                "计算难度，综合得分 8.6 分，"
-                "说明本卷计算难度较高，计算题和应用题中的核心计算都会拉开学生差距。",
+                "计算，综合得分 8.6 分，"
+                "说明本卷计算要求较高，计算题和应用题中的核心计算都会拉开学生差距。",
             ),
             (
                 9.5,
-                "计算难度，综合得分 9.5 分，"
+                "计算，综合得分 9.5 分，"
                 "说明本卷计算要求很高，包含较强的多步、结构化或拓展计算，对综合计算能力要求突出。",
             ),
         ]
@@ -5770,28 +5853,28 @@ class TestPaperAggregator:
         cases = [
             (
                 2.0,
-                "读题难度，综合得分 2.0 分，"
-                "说明这张试卷在学生读题和理解题意上的要求比较基础，大多数题目读完后能较快明白题目在说什么。",
+                "信息提取，综合得分 2.0 分，"
+                "说明这张试卷的信息提取要求比较基础，大多数题目读完后能较快明白题目在说什么。",
             ),
             (
                 4.0,
-                "读题难度，综合得分 4.0 分，"
-                "说明这张试卷在学生读题和理解题意上有常规要求，部分题目需要分清对象、顺序或图文对应关系。",
+                "信息提取，综合得分 4.0 分，"
+                "说明这张试卷在信息提取上有常规要求，部分题目需要分清对象、顺序或图文对应关系。",
             ),
             (
                 6.0,
-                "读题难度，综合得分 6.0 分，"
-                "说明这张试卷在学生读题理解题意上设置了一定难度，部分题目需要先读懂关键问法、比较标准或简单规则。",
+                "信息提取，综合得分 6.0 分，"
+                "说明这张试卷在信息提取上有一定要求，部分题目需要先读懂关键问法、比较标准或简单规则。",
             ),
             (
                 8.6,
-                "读题难度，综合得分 8.6 分，"
-                "说明这张试卷在学生读题理解题意上设置了明显难度，部分题目的场景相对复杂，学生需要先理清对象、阶段、规则或图文关系。",
+                "信息提取，综合得分 8.6 分，"
+                "说明这张试卷的信息提取要求较高，部分题目的场景相对复杂，学生需要先理清对象、阶段、规则或图文关系。",
             ),
             (
                 9.5,
-                "读题难度，综合得分 9.5 分，"
-                "说明这张试卷在学生读题理解题意上设置了较高难度，不少题目需要完整读懂多条规则、多阶段过程或复杂图文关系。",
+                "信息提取，综合得分 9.5 分，"
+                "说明这张试卷的信息提取要求很高，不少题目需要完整读懂多条规则、多阶段过程或复杂图文关系。",
             ),
         ]
 
@@ -5849,7 +5932,7 @@ class TestPaperAggregator:
         result = aggregator.aggregate(question_scores, "dim3")
 
         assert result.evidence == (
-            "共 2 道题纳入读题难度评分；"
+            "共 2 道题纳入信息提取评分；"
             "按题目等级加权，高等级题权重更高；"
             "权重得分 7.1 分，判定为 拔高。"
         )
@@ -5883,23 +5966,23 @@ class TestPaperAggregator:
         cases = [
             (
                 2.0,
-                "解题链路难度，综合得分 2.0 分，这张试卷多数题解题链条很短，通常读懂条件后一步判断即可。",
+                "逻辑链条，综合得分 2.0 分，这张试卷多数题逻辑链条很短，通常读懂条件后一步判断即可。",
             ),
             (
                 4.0,
-                "解题链路难度，综合得分 4.0 分，这张试卷整体解题链条偏短，少量题需要 1-2 步衔接。",
+                "逻辑链条，综合得分 4.0 分，这张试卷整体逻辑链条偏短，少量题需要 1-2 步衔接。",
             ),
             (
                 6.0,
-                "解题链路难度，综合得分 6.0 分，这张试卷部分题解题链条有一定长度，通常要把前后条件接起来推进 2-4 步。",
+                "逻辑链条，综合得分 6.0 分，这张试卷部分题逻辑链条有一定长度，通常要把前后条件接起来推进 2-4 步。",
             ),
             (
                 8.6,
-                "解题链路难度，综合得分 8.6 分，这张试卷不少题解题链条较长，通常要连续推进 3-4 步，并穿插分类、倒推或回查。",
+                "逻辑链条，综合得分 8.6 分，这张试卷不少题逻辑链条较长，通常要连续推进 3-4 步，并穿插分类、倒推或回查。",
             ),
             (
                 9.5,
-                "解题链路难度，综合得分 9.5 分，这张试卷有少量解题链条很长的压轴题，通常要连续推进 5 步以上，并检查多个条件。",
+                "逻辑链条，综合得分 9.5 分，这张试卷有少量逻辑链条很长的压轴题，通常要连续推进 5 步以上，并检查多个条件。",
             ),
         ]
 
@@ -5909,7 +5992,7 @@ class TestPaperAggregator:
             assert overview == expected
             assert "共 " not in overview
             assert "题级平均" not in overview
-            assert "解题链条" in overview
+            assert "逻辑链条" in overview
 
     def test_dim6_representative_questions_explain_teacher_readable_logic_task(self, aggregator):
         question_scores = [
@@ -5975,19 +6058,19 @@ class TestPaperAggregator:
         result = aggregator.aggregate(question_scores, "dim6")
 
         assert result.evidence == (
-            "解题链路难度，综合得分 7.8 分，这张试卷部分题解题链条有一定长度，通常要把前后条件接起来推进 2-4 步。"
+            "逻辑链条，综合得分 7.8 分，这张试卷部分题逻辑链条有一定长度，通常要把前后条件接起来推进 2-4 步。"
         )
         assert result.counted_questions[0]["difficulty_label"] == "困难（9.5）"
         assert result.counted_questions[0]["full_reason"] == (
-            "困难（9.5）：这题的解题链条很长，通常需要连续推进 5 步以上，并同时检查多个条件；"
+            "困难（9.5）：这题的逻辑链条很长，通常需要连续推进 5 步以上，并同时检查多个条件；"
             "学生需要从结果往前还原每一步，再把还原出的状态代回多个条件检查。"
         )
         assert result.counted_questions[1]["full_reason"] == (
-            "较难（8.0）：这题的解题链条较长，通常需要多步推进，并伴随分类、倒推、回查或多条件检查；"
+            "较难（8.0）：这题的逻辑链条较长，通常需要多步推进，并伴随分类、倒推、回查或多条件检查；"
             "学生需要把可能情况分完整，逐一代回条件检查，避免漏掉或重复。"
         )
         assert result.counted_questions[2]["full_reason"] == (
-            "中等（6.0）：这题的解题链条较长，大约需要连续推进 3-4 步；"
+            "中等（6.0）：这题的逻辑链条较长，大约需要连续推进 3-4 步；"
             "学生需要把前一步得到的结果接到下一步条件里，连续推出中间结论。"
         )
         forbidden_terms = [
@@ -6001,7 +6084,7 @@ class TestPaperAggregator:
             "constraint_coupling",
         ]
         for counted_question in result.counted_questions:
-            assert "这题的解题链条" in counted_question["full_reason"]
+            assert "这题的逻辑链条" in counted_question["full_reason"]
             assert "学生需要" in counted_question["full_reason"]
             for term in forbidden_terms:
                 assert term not in counted_question["full_reason"]
@@ -6126,7 +6209,7 @@ class TestPaperAggregator:
         assert result.score_breakdown["question_score_sum"] == pytest.approx(32.0)
         assert result.score_breakdown["weighted_question_average"] == pytest.approx(3.3636)
         assert result.score_breakdown["level_weights"] == {"L1": 1, "L2": 1, "L3": 2, "L4": 4, "L5": 6}
-        assert "纳入知识门槛难度评分" in result.evidence
+        assert "纳入知识广度评分" in result.evidence
         assert "权重得分 3.4 分" in result.evidence
 
     def test_dim5_low_gaosi_mix_keeps_question_average(self, aggregator):
@@ -6283,8 +6366,8 @@ class TestPaperAggregator:
         assert result.score_breakdown["bucket_counts"]["unknown"] == 1
         assert result.score_breakdown["bucket_ratios"]["unknown"] == 0.1
         assert result.score_breakdown["unknown_unscored_count"] == 1
-        assert "纳入知识门槛难度评分" in result.evidence
-        assert any("未计入知识门槛难度评分" in item for item in result.warning_messages)
+        assert "纳入知识广度评分" in result.evidence
+        assert any("未计入知识广度评分" in item for item in result.warning_messages)
 
     def test_dim5_unknown_bucket_with_valid_score_still_enters_average(self, aggregator):
         unknown = self._dim5_question(10, "unknown")
@@ -6366,6 +6449,83 @@ class TestPaperAggregator:
         result = aggregator.aggregate([high, beyond], "dim5")
 
         assert result.counted_questions[0]["question_no"] == "2"
+
+    def test_representative_questions_prioritize_reliable_evidence_before_hardest(self, aggregator):
+        hardest = QuestionDimensionScore(
+            question_id="q1",
+            question_no="1",
+            score=5.0,
+            dim_scores={"dim1": 9.5},
+            applicable_dims=["dim1"],
+            dim_reasons={"dim1": "usable but weak evidence"},
+            dim_confidences={"dim1": 0.50},
+            dim_statuses={"dim1": "applicable"},
+        )
+        reliable = QuestionDimensionScore(
+            question_id="q2",
+            question_no="2",
+            score=5.0,
+            dim_scores={"dim1": 7.0},
+            applicable_dims=["dim1"],
+            dim_reasons={"dim1": "clear multi-step calculation evidence"},
+            dim_confidences={"dim1": 0.93},
+            dim_statuses={"dim1": "applicable"},
+        )
+
+        result = aggregator.aggregate([hardest, reliable], "dim1")
+
+        assert result.counted_questions[0]["question_no"] == "2"
+
+    def test_dim5_representative_questions_prioritize_complete_graph_match(self, aggregator):
+        hardest = self._dim5_question(1, "beyond")
+        hardest.dim_scores["dim5"] = 10.0
+        hardest.dim_confidences["dim5"] = 0.90
+        hardest.dim_details["dim5"].update({"knowledge_level": "L5"})
+
+        reliable = self._dim5_question(2, "high_gaosi")
+        reliable.dim_scores["dim5"] = 7.0
+        reliable.dim_confidences["dim5"] = 0.90
+        reliable.dim_details["dim5"].update(
+            {
+                "knowledge_level": "L4",
+                "knowledge_point_name": "triangle classification",
+                "knowledge_track_label": "school",
+                "knowledge_grade_label": "grade four",
+                "knowledge_display_name": "school grade four: triangle classification",
+                "confidence_status": "confirmed",
+                "selected_candidate_id": "dim5.school.test.triangle_classification",
+            }
+        )
+
+        result = aggregator.aggregate([hardest, reliable], "dim5")
+
+        assert result.counted_questions[0]["question_no"] == "2"
+
+    def test_representative_questions_prefer_topic_diversity_then_fill_duplicates(self, aggregator):
+        first_area = self._dim5_question(1, "high_gaosi")
+        second_area = self._dim5_question(2, "high_gaosi")
+        volume = self._dim5_question(3, "high_gaosi")
+        for question, point, score in (
+            (first_area, "area model", 9.5),
+            (second_area, "area model", 9.0),
+            (volume, "volume model", 8.0),
+        ):
+            question.dim_scores["dim5"] = score
+            question.dim_details["dim5"].update(
+                {
+                    "knowledge_level": "L4",
+                    "knowledge_point_name": point,
+                    "knowledge_track_label": "school",
+                    "knowledge_grade_label": "grade five",
+                    "knowledge_display_name": f"school grade five: {point}",
+                    "confidence_status": "confirmed",
+                    "selected_candidate_id": f"dim5.school.test.{point.replace(' ', '_')}",
+                }
+            )
+
+        result = aggregator.aggregate([first_area, second_area, volume], "dim5")
+
+        assert [item["question_no"] for item in result.counted_questions] == ["1", "3", "2"]
 
     def test_dim5_counted_questions_expose_structured_display_fields(self, aggregator):
         question = self._dim5_question(1, "high_gaosi")
@@ -6650,8 +6810,8 @@ class TestPaperAggregator:
             expected_weighted,
             abs=0.0001,
         )
-        assert "解题方法难度，综合得分" in result.evidence
-        assert "在解题思路上有一定难度" in result.evidence
+        assert "实践创新，综合得分" in result.evidence
+        assert "实践创新有一定要求" in result.evidence
         assert "建模解题复杂度评分" not in result.evidence
         assert "按题目等级加权" not in result.evidence
         assert "权重得分" not in result.evidence
@@ -6683,7 +6843,7 @@ class TestPaperAggregator:
             level_weights[level] for level in levels
         )
         assert result.paper_score == pytest.approx(expected_weighted)
-        assert "解题方法难度，综合得分" in result.evidence
+        assert "实践创新，综合得分" in result.evidence
 
     def test_dim4_review_and_missing_score_are_auto_ignored(self, aggregator):
         questions = [
@@ -7232,8 +7392,8 @@ class TestPaperAggregator:
         assert abs(result.paper_score - expected_score) < 0.01
         assert result.score_breakdown["pure_calculation"]["weight"] == 0.7
         assert result.score_breakdown["embedded_calculation"]["weight"] == 0.3
-        assert result.evidence.startswith("计算难度，综合得分 6.2 分")
-        assert "有一定计算难度" in result.evidence
+        assert result.evidence.startswith("计算，综合得分 6.2 分")
+        assert "有一定计算要求" in result.evidence
         assert "纯计算题" not in result.evidence
         assert "应用题中的核心计算" not in result.evidence
 
@@ -7283,8 +7443,8 @@ class TestPaperAggregator:
         assert result.paper_score == 5.0
         assert result.score_breakdown["pure_calculation"]["weight"] == 0.0
         assert result.score_breakdown["embedded_calculation"]["weight"] == 1.0
-        assert result.evidence.startswith("计算难度，综合得分 5.0 分")
-        assert "计算难度整体偏常规" in result.evidence
+        assert result.evidence.startswith("计算，综合得分 5.0 分")
+        assert "计算要求整体偏常规" in result.evidence
         assert "应用题中的核心计算" not in result.evidence
 
     def test_representative_questions_prefer_high_confidence_examples(self, aggregator):
@@ -7647,7 +7807,7 @@ class TestPaperAggregator:
         assert result.question_count == 4
         assert result.score_status == "scored"
         assert result.review_question_count == 0
-        assert result.paper_score == pytest.approx(8.75)
+        assert result.paper_score == pytest.approx((9.5 + 6.0 + 8.0 + 9.5) / 4)
 
     def test_dim2_wmo31_regression_counts_geometry_and_excludes_non_geometry_diagrams(self, aggregator):
         scorer = Dim2SpatialScorer()
@@ -7804,7 +7964,7 @@ class TestDifficultyPositioning:
             2: "课内核心提升型试卷，主要看孩子能不能把学过的知识稳定用出来。",
             3: "校内期中期末考试难度试卷，题目有一定变化，适合检验孩子能否稳定拿到中高分。",
             4: "小升初分班考难度试卷，题目更绕、步骤更多，用来拉开学生差距。",
-            5: "奥数杯赛竞赛难度试卷，难度很高，适合挑战高难题和竞赛题。",
+            5: "奥数杯赛难度试卷，难度很高，适合竞赛拓展训练。",
         }
 
     def test_report_difficulty_thresholds_put_scores_above_7_in_competition(self):
@@ -8010,15 +8170,23 @@ class TestIntegration:
             detail for detail in report["dimension_details"] if detail["level"] == 0
         ]
         assert len(na_dimensions) == 4
+        assert [detail["code"] for detail in report["dimension_details"]] == [
+            "dim5",
+            "dim1",
+            "dim2",
+            "dim3",
+            "dim4",
+            "dim6",
+        ]
         assert {
             detail["code"]: detail["name"] for detail in report["dimension_details"]
         } == {
-            "dim1": "计算难度",
-            "dim2": "几何难度",
-            "dim3": "读题难度",
-            "dim4": "解题方法难度",
-            "dim5": "知识门槛难度",
-            "dim6": "解题链路难度",
+            "dim1": "计算",
+            "dim2": "几何",
+            "dim3": "信息提取",
+            "dim4": "实践创新",
+            "dim5": "知识广度",
+            "dim6": "逻辑链条",
         }
 
     def test_wmo_grade6_content_calibration_uses_dim5_average_without_contest_jump(self):

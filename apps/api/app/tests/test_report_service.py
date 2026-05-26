@@ -119,9 +119,17 @@ def test_report_payload_builds_parent_summary_and_question_distribution():
     )
 
     position = report["difficulty_position"]
-    assert position["position_summary"] == "奥数杯赛竞赛难度试卷，难度很高，适合挑战高难题和竞赛题。"
+    assert [item["code"] for item in position["dimension_distribution"]] == [
+        "dim5",
+        "dim1",
+        "dim2",
+        "dim3",
+        "dim4",
+        "dim6",
+    ]
+    assert position["position_summary"] == "奥数杯赛难度试卷，难度很高，适合竞赛拓展训练。"
     assert position["target_students"] == "适合成绩优秀、准备挑战竞赛或高强度选拔的学生。"
-    assert position["parent_summary"][0] == "这张试卷难度很高，这是奥数杯赛竞赛难度的试卷，适合看孩子能不能挑战高难题和竞赛题。"
+    assert position["parent_summary"][0] == "这张试卷难度很高，这是奥数杯赛难度的试卷，适合用来做竞赛拓展训练。"
     assert "较难题约占 33.3%" in position["parent_summary"][1]
     assert "主要卡点在读懂题意和连续推理" in position["parent_summary"][1]
     assert "孩子要先读懂题意，并把步骤完整推下去" in position["parent_summary"][1]
@@ -286,6 +294,13 @@ def test_pdf_export_renders_parent_summary_and_question_distribution():
 
     html = PDFExportService()._generate_html(payload)
 
+    assert 'margin: 8mm;' in html
+    assert 'grid-template-columns: minmax(0, 1.35fr) minmax(230px, 0.85fr);' in html
+    assert 'class="report-overview-item report-overview-item--position"' in html
+    assert '.report-dimension-list {' in html
+    assert 'grid-template-columns: repeat(2, minmax(0, 1fr));' in html
+    assert 'grid-template-columns: 30px minmax(0, 1fr);' in html
+    assert 'report-dimension-row' not in html
     assert "家长速读" in html
     assert "主要卡点在读懂题意和连续推理" in html
     assert "较难题约占 33.3%" in html
@@ -301,6 +316,67 @@ def test_pdf_export_renders_parent_summary_and_question_distribution():
     assert "三-15" not in html
     assert "18" in html
     assert "15" in html
+
+
+def test_pdf_export_hides_unclassified_distribution_note():
+    payload = _build_pdf_report_payload([])
+    payload["difficulty_position"]["question_distribution"] = {
+        "basis": "question_count",
+        "classification": "average_applicable_dimension_score",
+        "total_count": 2,
+        "classified_count": 1,
+        "unclassified_count": 1,
+        "buckets": [
+            {
+                "key": "hard",
+                "label": "较难题",
+                "description": "更容易拉开差距。",
+                "count": 1,
+                "percentage": 100.0,
+                "questions": [{"question_display_label": "1.", "question_no": "1"}],
+            },
+        ],
+    }
+
+    html = PDFExportService()._generate_html(payload)
+
+    assert "共 1 道已归类题" in html
+    assert "未强行归类" not in html
+    assert "缺少可用于分桶" not in html
+
+
+def test_pdf_export_sanitizes_historical_internal_failure_counted_questions():
+    payload = _build_pdf_report_payload(
+        [
+            {
+                "code": "dim1",
+                "name": "数学运算",
+                "score": 6.0,
+                "level": 3,
+                "level_label": "中等",
+                "score_status": "scored",
+                "evidence": "计算难度，综合得分 6.0 分。",
+                "counted_questions": [
+                    {
+                        "question_no": "4",
+                        "question_display_label": "（4）",
+                        "summary": "解析失败",
+                        "score": 6.0,
+                        "level_code": "L3",
+                        "reason": "中等（6.0）：主要考查解析失败；常见失分点是算式落地。",
+                        "full_reason": "中等（6.0）：主要考查 parse_failed；LLM request failed",
+                    }
+                ],
+            }
+        ]
+    )
+
+    html = PDFExportService()._generate_html(payload)
+
+    assert "中等（6.0）：主要考查四则运算" in html
+    assert "解析失败" not in html
+    assert "parse_failed" not in html
+    assert "LLM request failed" not in html
 
 
 def test_pdf_export_parent_summary_fallback_is_parent_friendly():
@@ -347,8 +423,8 @@ def test_pdf_export_radar_renders_static_svg_for_not_covered_dimensions():
     assert 'data-testid="radar-data-area"' in html
     assert 'data-testid="radar-data-line"' in html
     assert 'stroke="#294766" stroke-width="3"' in html
-    assert "计算难度" in html
-    assert "几何难度" in html
+    assert "<h3>计算</h3>" in html
+    assert "<h3>几何</h3>" in html
     assert "数学运算" not in html
     assert "几何直观与空间想象" not in html
     assert "NaN" not in html
@@ -383,6 +459,9 @@ def test_pdf_export_radar_shows_empty_state_when_all_dimensions_not_covered():
     html = PDFExportService()._generate_html(_build_pdf_report_payload(dimension_details))
 
     assert 'id="radar-chart" class="is-empty"><span>暂无可绘制维度</span>' in html
+    ordered_names = ["知识广度", "计算", "几何", "信息提取", "实践创新", "逻辑链条"]
+    ordered_positions = [html.index(f"<h3>{name}</h3>") for name in ordered_names]
+    assert ordered_positions == sorted(ordered_positions)
     assert 'data-testid="radar-svg"' not in html
     assert 'data-testid="radar-data-line"' not in html
     assert "echarts.min.js" not in html
@@ -410,8 +489,8 @@ def test_pdf_export_dim1_evidence_explains_score_not_question_counts():
         )
     )
 
-    assert "计算难度，综合得分 8.6 分" in html
-    assert "说明本卷计算难度较高" in html
+    assert "计算，综合得分 8.6 分" in html
+    assert "说明本卷计算要求较高" in html
     assert "共 6 道题计入数学运算评分" not in html
     assert "纯计算题和" not in html
 
@@ -433,8 +512,8 @@ def test_pdf_export_dim3_evidence_explains_scenario_comprehension_score():
         )
     )
 
-    assert "读题难度，综合得分 8.6 分" in html
-    assert "学生读题理解题意上设置了明显难度" in html
+    assert "信息提取，综合得分 8.6 分" in html
+    assert "信息提取要求较高" in html
     assert "场景相对复杂" in html
     assert "按题目等级加权" not in html
     assert "高等级题" not in html
@@ -459,8 +538,8 @@ def test_pdf_export_dim6_evidence_explains_logic_chain_evaluation_point():
         )
     )
 
-    assert "解题链路难度，综合得分 8.6 分" in html
-    assert "这张试卷不少题解题链条较长" in html
+    assert "逻辑链条，综合得分 8.6 分" in html
+    assert "这张试卷不少题逻辑链条较长" in html
     assert "连续推进 3-4 步" in html
     assert "逻辑链条维度，综合得分" not in html
     assert "逻辑链条长度" not in html
@@ -485,8 +564,8 @@ def test_pdf_export_dim5_evidence_explains_knowledge_breadth_score():
         )
     )
 
-    assert "知识门槛难度，综合得分 8.6 分" in html
-    assert "说明本卷知识门槛较高" in html
+    assert "知识广度，综合得分 8.6 分" in html
+    assert "说明本卷知识广度较高" in html
     assert "五六年级奥数典型方法或七年级基础前置知识" in html
     assert "按知识范围等级权重计算" not in html
 
@@ -508,8 +587,8 @@ def test_pdf_export_dim4_evidence_explains_modeling_solution_score():
         )
     )
 
-    assert "解题方法难度，综合得分 8.2 分" in html
-    assert "在解题思路上有较明显难度" in html
+    assert "实践创新，综合得分 8.2 分" in html
+    assert "实践创新要求较高" in html
     assert "先把条件之间的关系理清楚" in html
     assert "建模解题复杂度综合得分" not in html
     assert "按题目等级加权" not in html

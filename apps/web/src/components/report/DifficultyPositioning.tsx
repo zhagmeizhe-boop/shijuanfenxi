@@ -191,11 +191,6 @@ export function DifficultyPositioning({ data }: DifficultyPositioningProps) {
           <div className="report-question-distribution__empty">暂无题目难度结构数据。</div>
         )}
 
-        {distribution && distribution.unclassified_count > 0 ? (
-          <p className="report-question-distribution__note">
-            另有 {distribution.unclassified_count} 道题缺少可用于分桶的维度分，未强行归类。
-          </p>
-        ) : null}
       </div>
     </div>
   );

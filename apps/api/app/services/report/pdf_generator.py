@@ -26,45 +26,45 @@ logger = logging.getLogger(__name__)
 
 DIM_META = [
     {
+        "code": "dim5",
+        "field": "application",
+        "name": "知识广度",
+        "chart_name": "知识广度",
+        "color": "#8b5754",
+    },
+    {
         "code": "dim1",
         "field": "computation",
-        "name": "计算难度",
-        "chart_name": "计算\n难度",
+        "name": "计算",
+        "chart_name": "计算",
         "color": "#295d8a",
     },
     {
         "code": "dim2",
         "field": "concept",
-        "name": "几何难度",
-        "chart_name": "几何\n难度",
+        "name": "几何",
+        "chart_name": "几何",
         "color": "#3d7a85",
     },
     {
         "code": "dim3",
         "field": "logic",
-        "name": "读题难度",
-        "chart_name": "读题\n难度",
+        "name": "信息提取",
+        "chart_name": "信息提取",
         "color": "#6f7d48",
     },
     {
         "code": "dim4",
         "field": "spatial",
-        "name": "解题方法难度",
-        "chart_name": "解题方法\n难度",
+        "name": "实践创新",
+        "chart_name": "实践创新",
         "color": "#8a6842",
-    },
-    {
-        "code": "dim5",
-        "field": "application",
-        "name": "知识门槛难度",
-        "chart_name": "知识门槛\n难度",
-        "color": "#8b5754",
     },
     {
         "code": "dim6",
         "field": "innovation",
-        "name": "解题链路难度",
-        "chart_name": "解题链路\n难度",
+        "name": "逻辑链条",
+        "chart_name": "逻辑链条",
         "color": "#5f567c",
     },
 ]
@@ -112,7 +112,7 @@ DIFFICULTY_META = {
         "surface": "#f4f0f8",
         "border": "#d9d0e6",
         "description": "整体强度高，突出竞赛型思维、跨模块综合和高难度解题技巧。",
-        "position_summary": "奥数杯赛竞赛难度试卷，难度很高，适合挑战高难题和竞赛题。",
+        "position_summary": "奥数杯赛难度试卷，难度很高，适合竞赛拓展训练。",
         "target_students": "适合成绩优秀、准备挑战竞赛或高强度选拔的学生。",
     },
 }
@@ -120,6 +120,27 @@ DIFFICULTY_META = {
 
 class PDFExportService:
     """Service responsible for PDF generation."""
+
+    INTERNAL_FAILURE_DISPLAY_FRAGMENTS = (
+        "解析失败",
+        "解析异常",
+        "解析错误",
+        "调用失败",
+        "请求失败",
+        "修复失败",
+        "未能解析",
+        "响应解析异常",
+        "LLM request failed",
+        "parse_failed",
+        "json_repair_failed",
+        "request failed",
+        "request_failed",
+        "timed out",
+        "timeout",
+        "retry_failed",
+        "review_failed",
+        "failed",
+    )
 
     def __init__(self) -> None:
         report_dir = settings.REPORT_OUTPUT_DIR
@@ -189,10 +210,10 @@ class PDFExportService:
                             format="A4",
                             print_background=True,
                             margin={
-                                "top": "10mm",
-                                "right": "10mm",
-                                "bottom": "12mm",
-                                "left": "10mm",
+                                "top": "8mm",
+                                "right": "8mm",
+                                "bottom": "9mm",
+                                "left": "8mm",
                             },
                         )
                     except Exception as exc:
@@ -255,14 +276,14 @@ class PDFExportService:
         if score_value >= 9:
             explanation = "说明本卷计算要求很高，包含较强的多步、结构化或拓展计算，对综合计算能力要求突出。"
         elif score_value >= 8:
-            explanation = "说明本卷计算难度较高，计算题和应用题中的核心计算都会拉开学生差距。"
+            explanation = "说明本卷计算要求较高，计算题和应用题中的核心计算都会拉开学生差距。"
         elif score_value >= 6:
-            explanation = "说明本卷有一定计算难度，除准确率外，也考查多步运算和常见转化。"
+            explanation = "说明本卷有一定计算要求，除准确率外，也考查多步运算和常见转化。"
         elif score_value >= 4:
-            explanation = "说明本卷计算难度整体偏常规，重点考查校内计算的熟练度和稳定性。"
+            explanation = "说明本卷计算要求整体偏常规，重点考查校内计算的熟练度和稳定性。"
         else:
             explanation = "说明本卷计算要求以基础运算为主，主要看基本规则掌握和计算准确率。"
-        return f"计算难度，综合得分 {score_value:.1f} 分，{explanation}"
+        return f"计算，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim2_score_overview(cls, score: object) -> str:
@@ -274,14 +295,14 @@ class PDFExportService:
         if score_value >= 9:
             explanation = "说明本卷几何与空间要求很高，包含高强度空间重构、多视图或高阶几何模型。"
         elif score_value >= 8:
-            explanation = "说明本卷几何难度较高，复合图形、隐含关系或空间转换会明显拉开差距。"
+            explanation = "说明本卷几何要求较高，复合图形、隐含关系或空间转换会明显拉开差距。"
         elif score_value >= 6:
-            explanation = "说明本卷有一定几何与空间难度，除基本公式外，也考查图形关系整理和模型识别。"
+            explanation = "说明本卷有一定几何与空间要求，除基本公式外，也考查图形关系整理和模型识别。"
         elif score_value >= 4:
             explanation = "说明本卷以常规图形关系为主，重点考查读图准确性和单步空间转化。"
         else:
             explanation = "说明本卷主要覆盖基础识图和直接几何公式，重点看图形概念和基本关系是否掌握。"
-        return f"几何难度，综合得分 {score_value:.1f} 分，{explanation}"
+        return f"几何，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim3_score_overview(cls, score: object) -> str:
@@ -291,16 +312,16 @@ class PDFExportService:
             score_value = 0.0
 
         if score_value >= 9:
-            explanation = "说明这张试卷在学生读题理解题意上设置了较高难度，不少题目需要完整读懂多条规则、多阶段过程或复杂图文关系。"
+            explanation = "说明这张试卷的信息提取要求很高，不少题目需要完整读懂多条规则、多阶段过程或复杂图文关系。"
         elif score_value >= 8:
-            explanation = "说明这张试卷在学生读题理解题意上设置了明显难度，部分题目的场景相对复杂，学生需要先理清对象、阶段、规则或图文关系。"
+            explanation = "说明这张试卷的信息提取要求较高，部分题目的场景相对复杂，学生需要先理清对象、阶段、规则或图文关系。"
         elif score_value >= 6:
-            explanation = "说明这张试卷在学生读题理解题意上设置了一定难度，部分题目需要先读懂关键问法、比较标准或简单规则。"
+            explanation = "说明这张试卷在信息提取上有一定要求，部分题目需要先读懂关键问法、比较标准或简单规则。"
         elif score_value >= 4:
-            explanation = "说明这张试卷在学生读题和理解题意上有常规要求，部分题目需要分清对象、顺序或图文对应关系。"
+            explanation = "说明这张试卷在信息提取上有常规要求，部分题目需要分清对象、顺序或图文对应关系。"
         else:
-            explanation = "说明这张试卷在学生读题和理解题意上的要求比较基础，大多数题目读完后能较快明白题目在说什么。"
-        return f"读题难度，综合得分 {score_value:.1f} 分，{explanation}"
+            explanation = "说明这张试卷的信息提取要求比较基础，大多数题目读完后能较快明白题目在说什么。"
+        return f"信息提取，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim4_score_overview(cls, score: object) -> str:
@@ -310,16 +331,16 @@ class PDFExportService:
             score_value = 0.0
 
         if score_value >= 9:
-            explanation = "说明本卷在解题思路上难度很高。孩子做核心题时，通常不能只按常规步骤推进，需要先找到关键突破口，再持续检查每一步是否和题目条件一致。"
+            explanation = "说明本卷实践创新要求很高。孩子做核心题时，通常不能只按常规步骤推进，需要先找到关键突破口，再持续检查每一步是否和题目条件一致。"
         elif score_value >= 8:
-            explanation = "说明本卷在解题思路上有较明显难度。孩子做这类题时，往往需要先把条件之间的关系理清楚，再选择合适的切入方式逐步推进。"
+            explanation = "说明本卷实践创新要求较高。孩子做这类题时，往往需要先把条件之间的关系理清楚，再选择合适的切入方式逐步推进。"
         elif score_value >= 6:
-            explanation = "说明本卷在解题思路上有一定难度。部分题目不是读完就能直接下手，需要孩子先整理已知条件和目标之间的关系，再按较清晰的步骤推进。"
+            explanation = "说明本卷实践创新有一定要求。部分题目不是读完就能直接下手，需要孩子先整理已知条件和目标之间的关系，再按较清晰的步骤推进。"
         elif score_value >= 4:
-            explanation = "说明本卷在解题思路上的要求整体偏常规。多数题目读懂后可以沿常见思路完成，少量题需要先做简单整理再下手。"
+            explanation = "说明本卷实践创新要求整体偏常规。多数题目读懂后可以沿常见思路完成，少量题需要先做简单整理再下手。"
         else:
-            explanation = "说明本卷在解题思路上的要求比较基础。多数题目读懂题意后，可以直接找到主要关系并完成解答。"
-        return f"解题方法难度，综合得分 {score_value:.1f} 分，{explanation}"
+            explanation = "说明本卷实践创新要求比较基础。多数题目读懂题意后，可以直接找到主要关系并完成解答。"
+        return f"实践创新，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim5_score_overview(cls, score: object) -> str:
@@ -329,16 +350,16 @@ class PDFExportService:
             score_value = 0.0
 
         if score_value >= 9:
-            explanation = "说明本卷知识门槛很高，核心题多接近六年级奥数较难题、小升初压轴题或七年级核心前置知识。"
+            explanation = "说明本卷知识广度很高，核心题多接近六年级奥数较难题、小升初压轴题或七年级核心前置知识。"
         elif score_value >= 8:
-            explanation = "说明本卷知识门槛较高，较多题目需要五六年级奥数典型方法或七年级基础前置知识。"
+            explanation = "说明本卷知识广度较高，较多题目需要五六年级奥数典型方法或七年级基础前置知识。"
         elif score_value >= 6:
             explanation = "说明本卷有一定知识拓展，除校内核心知识外，还覆盖校内综合或三四年级奥数入门模型。"
         elif score_value >= 4:
             explanation = "说明本卷主要落在四至六年级校内核心知识，常规两三步应用、比例、图形公式等是主要要求。"
         else:
             explanation = "说明本卷以一至三年级校内基础知识为主，主要考查基本概念、基础计算和直接应用。"
-        return f"知识门槛难度，综合得分 {score_value:.1f} 分，{explanation}"
+        return f"知识广度，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim6_score_overview(cls, score: object) -> str:
@@ -348,17 +369,17 @@ class PDFExportService:
             score_value = 0.0
 
         if score_value >= 9:
-            explanation = "这张试卷有少量解题链条很长的压轴题，通常要连续推进 5 步以上，并检查多个条件。"
+            explanation = "这张试卷有少量逻辑链条很长的压轴题，通常要连续推进 5 步以上，并检查多个条件。"
         elif score_value >= 8:
-            explanation = "这张试卷不少题解题链条较长，通常要连续推进 3-4 步，并穿插分类、倒推或回查。"
+            explanation = "这张试卷不少题逻辑链条较长，通常要连续推进 3-4 步，并穿插分类、倒推或回查。"
         elif score_value >= 6:
-            explanation = "这张试卷部分题解题链条有一定长度，通常要把前后条件接起来推进 2-4 步。"
+            explanation = "这张试卷部分题逻辑链条有一定长度，通常要把前后条件接起来推进 2-4 步。"
         elif score_value >= 4:
-            explanation = "这张试卷整体解题链条偏短，少量题需要 1-2 步衔接。"
+            explanation = "这张试卷整体逻辑链条偏短，少量题需要 1-2 步衔接。"
         else:
-            explanation = "这张试卷多数题解题链条很短，通常读懂条件后一步判断即可。"
+            explanation = "这张试卷多数题逻辑链条很短，通常读懂条件后一步判断即可。"
 
-        return f"解题链路难度，综合得分 {score_value:.1f} 分，{explanation}"
+        return f"逻辑链条，综合得分 {score_value:.1f} 分，{explanation}"
 
     DIM1_DIFFICULTY_LABELS = {
         "L1": "简单（2.0）",
@@ -565,6 +586,47 @@ class PDFExportService:
         return f"{normalized[:max_length].rstrip()}…"
 
     @classmethod
+    def _contains_internal_failure_text(cls, value: object) -> bool:
+        text = " ".join(str(value or "").split()).strip()
+        if not text:
+            return False
+        lower_text = text.lower()
+        return any(fragment.lower() in lower_text for fragment in cls.INTERNAL_FAILURE_DISPLAY_FRAGMENTS)
+
+    @classmethod
+    def _clean_public_display_text(cls, value: object) -> str:
+        text = " ".join(str(value or "").split()).strip(" 。；;，,")
+        if not text or cls._contains_internal_failure_text(text):
+            return ""
+        return text
+
+    @classmethod
+    def _fallback_counted_question_text(cls, dim_code: object, entry: dict | None = None) -> str:
+        difficulty = cls._counted_question_difficulty_label(entry)
+        prefix = f"{difficulty}：" if difficulty else ""
+        fallback_by_dim = {
+            "dim1": "主要考查四则运算",
+            "dim2": "主要考查看图找关系",
+            "dim3": "主要考查读懂题意",
+            "dim4": "主要考查整理条件和选择方法",
+            "dim5": "主要考查核心知识点",
+            "dim6": "这题的逻辑链条需要连续推理",
+        }
+        return f"{prefix}{fallback_by_dim.get(str(dim_code or ''), '主要考查常规解题能力')}"
+
+    @classmethod
+    def _sanitize_counted_question_display_text(
+        cls,
+        dim_code: object,
+        text: object,
+        entry: dict | None = None,
+    ) -> str:
+        normalized = " ".join(str(text or "").split()).strip()
+        if not normalized or cls._contains_internal_failure_text(normalized):
+            return cls._fallback_counted_question_text(dim_code, entry)
+        return normalized
+
+    @classmethod
     def _format_counted_question_analysis(
         cls,
         text: object,
@@ -574,6 +636,8 @@ class PDFExportService:
         for marker in ("依据标签：", "核心事实：", "依据来源："):
             normalized = normalized.split(marker, 1)[0].strip()
         normalized = normalized.rstrip(" 。；;，,")
+        if cls._contains_internal_failure_text(normalized):
+            return ""
 
         match = re.match(r"^(L[1-5])(?:\s+[^：:]{1,40})?[：:]\s*(.+)$", normalized)
         if match:
@@ -588,11 +652,13 @@ class PDFExportService:
                 f"{cls._counted_question_difficulty_label(entry, score_match.group(1))}："
                 f"{score_match.group(2).strip()}"
             )
+        if cls._contains_internal_failure_text(normalized):
+            return ""
         return normalized.rstrip(" 。；;，,")
 
-    @staticmethod
-    def _clean_dim4_display_text(value: object) -> str:
-        return " ".join(str(value or "").split()).strip(" 。；;，,")
+    @classmethod
+    def _clean_dim4_display_text(cls, value: object) -> str:
+        return cls._clean_public_display_text(value)
 
     @classmethod
     def _is_probably_english_display_text(cls, value: object) -> bool:
@@ -673,9 +739,9 @@ class PDFExportService:
 
         return cls._format_counted_question_analysis(fallback_text, entry)
 
-    @staticmethod
-    def _clean_dim5_display_text(value: object) -> str:
-        text = " ".join(str(value or "").split()).strip()
+    @classmethod
+    def _clean_dim5_display_text(cls, value: object) -> str:
+        text = cls._clean_public_display_text(value)
         if not text:
             return ""
         return (
@@ -751,21 +817,22 @@ class PDFExportService:
         normalized = cls._format_counted_question_analysis(fallback_text, entry)
         if not normalized:
             return normalized
-        if "这题的解题链条" in normalized and "学生需要" in normalized:
-            return normalized
+        normalized_chain_text = normalized.replace("这题的解题链条", "这题的逻辑链条")
+        if "这题的逻辑链条" in normalized_chain_text and "学生需要" in normalized_chain_text:
+            return normalized_chain_text
         current_style = re.match(r"^(.+?)：这题难在(.+?)；学生需要(.+)$", normalized)
         if current_style:
             difficulty, _task, action = current_style.groups()
             chain_description = cls._dim6_chain_description_from_entry(entry)
-            return f"{difficulty}：这题的解题链条{chain_description}；学生需要{action.strip()}"
+            return f"{difficulty}：这题的逻辑链条{chain_description}；学生需要{action.strip()}"
 
-        old_style = re.match(r"^(.+?)：本题逻辑链条难在(.+?)；依据是(.+)$", normalized)
+        old_style = re.match(r"^(.+?)：本题逻辑链条难在(.+?)；依据是(.+)$", normalized_chain_text)
         if old_style:
             difficulty, task, evidence = old_style.groups()
             action = cls._dim6_student_action_from_task(task.strip(), evidence.strip())
             chain_description = cls._dim6_chain_description_from_entry(entry)
-            return f"{difficulty}：这题的解题链条{chain_description}；学生需要{action}"
-        return normalized
+            return f"{difficulty}：这题的逻辑链条{chain_description}；学生需要{action}"
+        return normalized_chain_text
 
     def _build_report_warning_html(self, warnings: list[object]) -> str:
         del warnings
@@ -795,6 +862,11 @@ class PDFExportService:
                 reason_text = self._format_dim6_counted_question_analysis(entry, raw_reason)
             else:
                 reason_text = self._format_counted_question_analysis(raw_reason, entry)
+            reason_text = self._sanitize_counted_question_display_text(
+                detail.get("code"),
+                reason_text,
+                entry,
+            )
             reason = escape(reason_text)
             rendered_items.append(
                 f"""
@@ -901,12 +973,7 @@ class PDFExportService:
                 """
             )
 
-        rows_html: list[str] = []
-        for index in range(0, len(cards_html), 2):
-            row_cards = "".join(cards_html[index : index + 2])
-            rows_html.append(f'<div class="report-dimension-row">{row_cards}</div>')
-
-        return "".join(rows_html)
+        return "".join(cards_html)
 
     def _build_scale_html(self, difficulty_level: int) -> str:
         blocks: list[str] = []
@@ -1036,12 +1103,6 @@ class PDFExportService:
                 """
             )
 
-        unclassified_count = int(self._safe_float(distribution.get("unclassified_count"), 0))
-        note_html = (
-            f'<p class="report-question-distribution__note">另有 {unclassified_count} 道题缺少可用于分桶的维度分，未强行归类。</p>'
-            if unclassified_count > 0
-            else ""
-        )
         classified_count = int(self._safe_float(distribution.get("classified_count"), 0))
 
         return f"""
@@ -1054,7 +1115,6 @@ class PDFExportService:
             <span class="report-question-distribution__total">共 {classified_count} 道已归类题</span>
           </div>
           <div class="report-question-distribution__grid">{"".join(bucket_html)}</div>
-          {note_html}
         </div>
         """
 
@@ -1155,195 +1215,204 @@ class PDFExportService:
   <style>
     @page {{
       size: A4;
-      margin: 12mm 10mm 12mm;
+      margin: 8mm;
     }}
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
-      background: #f4f6f8;
+      background: #ffffff;
       color: #1f2933;
       font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+      font-size: 11px;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }}
-    .report-shell {{ padding: 8px 6px 0; }}
+    .report-shell {{ padding: 0; }}
     .report-header, .report-section, .report-difficulty-card, .report-radar-card {{
-      background: #fffdfb;
-      border: 1px solid #cfd6dc;
-      border-radius: 14px;
+      background: #ffffff;
+      border: 1px solid #d5dbe0;
+      border-radius: 10px;
     }}
-    .report-header {{ padding: 18px 20px; margin-bottom: 12px; }}
+    .report-header {{ padding: 12px 14px; margin-bottom: 8px; }}
     .report-header__top {{
       display: flex;
       justify-content: space-between;
-      gap: 14px;
+      gap: 10px;
       align-items: flex-start;
-      padding-bottom: 14px;
+      padding-bottom: 10px;
       border-bottom: 1px solid #d8dde2;
     }}
     .report-eyebrow, .report-section__eyebrow, .report-card-eyebrow {{
       display: inline-block;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       color: #294766;
-      font-size: 10px;
-      letter-spacing: 0.16em;
+      font-size: 9px;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
     }}
     h1, h2, h3 {{
       font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
       font-weight: 700;
     }}
-    h1 {{ font-size: 26px; line-height: 1.18; }}
+    h1 {{ font-size: 22px; line-height: 1.16; }}
     .report-header__paper {{
-      margin-top: 8px;
+      margin-top: 5px;
       max-width: 520px;
       color: #5d6a72;
-      font-size: 14px;
-      line-height: 1.55;
+      font-size: 12px;
+      line-height: 1.4;
     }}
     .report-overview-strip, .report-dimension-list, .report-radar-metrics {{
       display: grid;
-      gap: 10px;
+      gap: 8px;
     }}
-    .report-overview-strip {{ grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px; }}
+    .report-overview-strip {{ grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 8px; }}
     .report-overview-item, .report-radar-metric,
     .report-target-block, .report-score-panel {{
       background: #ffffff;
       border: 1px solid #d5dbe0;
-      border-radius: 12px;
+      border-radius: 8px;
     }}
-    .report-overview-item {{ padding: 12px 14px; min-height: 68px; }}
+    .report-overview-item {{ padding: 9px 10px; min-height: 50px; }}
     .report-overview-item span, .report-score-panel__label, .report-card-note,
     .report-target-block span, .report-dimension-card__label {{
       display: block;
       color: #8a9399;
-      font-size: 10px;
+      font-size: 9px;
       letter-spacing: 0.05em;
       text-transform: uppercase;
     }}
     .report-overview-item strong {{
       display: block;
-      margin-top: 6px;
+      margin-top: 4px;
       color: #1f2933;
-      font-size: 15px;
-      line-height: 1.45;
+      font-size: 14px;
+      line-height: 1.34;
       font-weight: 600;
     }}
-    .report-overview-item strong {{ font-size: 17px; }}
-    .report-core-grid {{
-      display: block;
-      margin-bottom: 12px;
+    .report-overview-item--level strong,
+    .report-overview-item--score strong {{ font-size: 16px; }}
+    .report-overview-item--position strong {{
+      font-size: 12px;
+      line-height: 1.42;
     }}
-    .report-core-grid > article + article {{ margin-top: 12px; }}
+    .report-core-grid {{
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(230px, 0.85fr);
+      gap: 8px;
+      align-items: start;
+      margin-bottom: 8px;
+    }}
+    .report-core-grid > article + article {{ margin-top: 0; }}
     .report-difficulty-card, .report-radar-card {{
-      padding: 18px;
+      padding: 12px;
       break-inside: avoid;
       page-break-inside: avoid;
     }}
     .report-card-heading {{
-      margin-bottom: 14px;
+      margin-bottom: 9px;
       break-after: avoid-page;
       page-break-after: avoid;
     }}
-    .report-card-heading h3 {{ font-size: 22px; line-height: 1.18; }}
-    .report-card-heading p {{ margin-top: 8px; color: #5d6a72; font-size: 12px; line-height: 1.65; }}
+    .report-card-heading h3 {{ font-size: 18px; line-height: 1.18; }}
+    .report-card-heading p {{ margin-top: 5px; color: #5d6a72; font-size: 10.5px; line-height: 1.48; }}
     .report-difficulty-card__top {{
       display: grid;
-      grid-template-columns: 148px 1fr;
-      gap: 14px;
-      margin-bottom: 14px;
+      grid-template-columns: 112px 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
     }}
-    .report-score-panel {{ padding: 14px; background: {difficulty_meta['surface']}; border-color: {difficulty_meta['border']}; break-inside: avoid; page-break-inside: avoid; }}
-    .report-score-panel__value {{ display: flex; align-items: baseline; gap: 8px; margin-top: 10px; }}
+    .report-score-panel {{ padding: 10px; background: {difficulty_meta['surface']}; border-color: {difficulty_meta['border']}; break-inside: avoid; page-break-inside: avoid; }}
+    .report-score-panel__value {{ display: flex; align-items: baseline; gap: 6px; margin-top: 6px; }}
     .report-score-panel__value strong, .report-dimension-card__score strong {{
       font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
       line-height: 1;
       font-weight: 700;
     }}
-    .report-score-panel__value strong {{ font-size: 34px; color: {difficulty_meta['color']}; }}
-    .report-score-panel__value small, .report-dimension-card__score span {{ color: #5d6a72; font-size: 13px; }}
+    .report-score-panel__value strong {{ font-size: 28px; color: {difficulty_meta['color']}; }}
+    .report-score-panel__value small, .report-dimension-card__score span {{ color: #5d6a72; font-size: 11px; }}
     .report-level-pill, .report-inline-tag {{
       display: inline-flex;
       align-items: center;
-      padding: 6px 10px;
+      padding: 4px 8px;
       border-radius: 999px;
       border: 1px solid transparent;
-      font-size: 10px;
-      letter-spacing: 0.06em;
+      font-size: 9px;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       white-space: nowrap;
     }}
     .report-inline-tag {{ color: #6d7277; background: #f3f4f5; border-color: #d8dde2; }}
-    .report-target-block {{ margin-top: 10px; padding: 12px 14px; break-inside: avoid; page-break-inside: avoid; }}
-    .report-target-block p {{ margin-top: 8px; color: #1f2933; font-size: 12px; line-height: 1.65; }}
-    .report-parent-summary {{ display: grid; gap: 7px; margin-top: 8px; }}
-    .report-parent-summary p {{ color: #5d6a72; font-size: 12px; line-height: 1.72; }}
+    .report-target-block {{ margin-top: 8px; padding: 9px 10px; break-inside: avoid; page-break-inside: avoid; }}
+    .report-target-block p {{ margin-top: 6px; color: #1f2933; font-size: 10.5px; line-height: 1.48; }}
+    .report-parent-summary {{ display: grid; gap: 5px; margin-top: 6px; }}
+    .report-parent-summary p {{ color: #5d6a72; font-size: 10.5px; line-height: 1.55; }}
     .report-difficulty-scale {{
       display: flex;
-      gap: 8px;
-      padding: 10px 12px;
-      margin-bottom: 12px;
+      gap: 5px;
+      padding: 7px 8px;
+      margin-bottom: 8px;
       background: #ffffff;
       border: 1px solid #d5dbe0;
-      border-radius: 12px;
+      border-radius: 8px;
       break-inside: avoid;
       page-break-inside: avoid;
     }}
     .report-difficulty-scale__item {{ flex: 1; min-width: 0; text-align: center; }}
-    .report-difficulty-scale__dot {{ width: 10px; height: 10px; margin: 0 auto 8px; border-radius: 999px; }}
-    .report-difficulty-scale__item strong {{ display: block; color: #5d6a72; font-size: 11px; font-weight: 600; }}
-    .report-difficulty-scale__item span, .report-radar-metric span {{ color: #8a9399; font-size: 10px; }}
+    .report-difficulty-scale__dot {{ width: 7px; height: 7px; margin: 0 auto 4px; border-radius: 999px; }}
+    .report-difficulty-scale__item strong {{ display: block; color: #5d6a72; font-size: 9.5px; font-weight: 600; line-height: 1.25; }}
+    .report-difficulty-scale__item span, .report-radar-metric span {{ color: #8a9399; font-size: 9px; }}
     .report-difficulty-scale__item.is-active strong {{ color: #1f2933; }}
     .report-question-distribution {{ padding-top: 2px; break-inside: avoid; page-break-inside: avoid; }}
     .report-question-distribution__header {{
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 8px;
+      margin-bottom: 6px;
     }}
-    .report-question-distribution__header h4 {{ margin-top: 0; color: #1f2933; font-size: 13px; line-height: 1.4; font-weight: 600; }}
-    .report-question-distribution__total {{ color: #8a9399; font-size: 10px; white-space: nowrap; }}
+    .report-question-distribution__header h4 {{ margin-top: 0; color: #1f2933; font-size: 11px; line-height: 1.3; font-weight: 600; }}
+    .report-question-distribution__total {{ color: #8a9399; font-size: 9px; white-space: nowrap; }}
     .report-question-distribution__grid {{
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
+      gap: 6px;
     }}
     .report-question-bucket {{
-      padding: 10px 10px 11px;
+      padding: 7px 8px 8px;
       background: #ffffff;
       border: 1px solid #d7dde2;
-      border-radius: 10px;
+      border-radius: 8px;
       break-inside: avoid;
       page-break-inside: avoid;
     }}
     .report-question-bucket__summary {{
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 4px 8px;
+      gap: 3px 6px;
       align-items: baseline;
     }}
-    .report-question-bucket__summary span {{ color: #1f2933; font-size: 11px; font-weight: 600; line-height: 1.35; }}
-    .report-question-bucket__summary strong {{ color: #294766; font-size: 18px; line-height: 1; font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif; }}
-    .report-question-bucket__summary small {{ grid-column: 1 / -1; color: #8a9399; font-size: 10px; }}
-    .report-question-bucket p {{ margin-top: 7px; color: #5d6a72; font-size: 10px; line-height: 1.55; }}
+    .report-question-bucket__summary span {{ color: #1f2933; font-size: 10px; font-weight: 600; line-height: 1.3; }}
+    .report-question-bucket__summary strong {{ color: #294766; font-size: 15px; line-height: 1; font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif; }}
+    .report-question-bucket__summary small {{ grid-column: 1 / -1; color: #8a9399; font-size: 8.5px; }}
+    .report-question-bucket p {{ margin-top: 5px; color: #5d6a72; font-size: 9px; line-height: 1.4; }}
     .report-question-bucket__questions {{
-      margin-top: 7px;
-      padding-top: 7px;
+      margin-top: 5px;
+      padding-top: 5px;
       color: #1f2933;
-      font-size: 10px;
-      line-height: 1.55;
+      font-size: 9px;
+      line-height: 1.4;
       border-top: 1px dashed #d7dde2;
       overflow-wrap: anywhere;
     }}
     .report-question-distribution__empty {{
-      padding: 10px 12px;
+      padding: 8px 10px;
       color: #8a9399;
-      font-size: 11px;
+      font-size: 10px;
       background: #ffffff;
       border: 1px dashed #d7dde2;
-      border-radius: 10px;
+      border-radius: 8px;
     }}
-    .report-question-distribution__note {{ margin-top: 8px; color: #8a9399; font-size: 10px; line-height: 1.55; }}
+    .report-question-distribution__note {{ margin-top: 6px; color: #8a9399; font-size: 9px; line-height: 1.4; }}
     .report-dimension-card__meter {{
       overflow: hidden;
       background: #dde3e7;
@@ -1352,11 +1421,11 @@ class PDFExportService:
     .report-dimension-card__meter div {{ height: 100%; border-radius: 999px; }}
     .report-radar-card__body {{
       display: grid;
-      gap: 14px;
+      gap: 8px;
     }}
     #radar-chart {{
       width: 100%;
-      height: 220px;
+      height: 170px;
       overflow: visible;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
@@ -1377,49 +1446,49 @@ class PDFExportService:
       align-items: center;
       justify-content: center;
       color: #8a9399;
-      font-size: 12px;
+      font-size: 10px;
       background: #f8fafc;
       border: 1px dashed #cfd6dc;
-      border-radius: 12px;
+      border-radius: 8px;
     }}
-    .report-radar-metrics {{ grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }}
-    .report-radar-metric {{ padding: 10px 12px; break-inside: avoid; page-break-inside: avoid; }}
+    .report-radar-metrics {{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }}
+    .report-radar-metric {{ padding: 7px 8px; break-inside: avoid; page-break-inside: avoid; }}
     .report-radar-metric strong {{
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       color: #1f2933;
-      font-size: 12px;
-      line-height: 1.35;
+      font-size: 10.5px;
+      line-height: 1.25;
       font-weight: 600;
     }}
     .report-section {{
-      padding: 18px 20px;
-      margin-bottom: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
     }}
     .report-section__header {{
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
       border-bottom: 1px solid #d8dde2;
       break-after: avoid-page;
       page-break-after: avoid;
     }}
-    .report-section__header h2 {{ font-size: 21px; line-height: 1.2; }}
-    .report-section__header p {{ max-width: 280px; color: #5d6a72; font-size: 12px; line-height: 1.6; }}
-    .report-dimension-list {{ gap: 12px; }}
-    .report-dimension-row {{
-      display: grid;
+    .report-section__header h2 {{ font-size: 18px; line-height: 1.18; }}
+    .report-section__header p {{ max-width: 260px; color: #5d6a72; font-size: 10.5px; line-height: 1.4; }}
+    .report-dimension-list {{
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      break-inside: avoid;
-      page-break-inside: avoid;
+      gap: 8px;
+      align-items: start;
     }}
     .report-dimension-card {{
-      padding: 14px 14px 16px;
-      border-top-width: 4px;
+      padding: 10px 10px 11px;
+      background: #ffffff;
+      border: 1px solid #d7dde2;
+      border-top: 3px solid;
+      border-radius: 8px;
       break-inside: avoid;
       page-break-inside: avoid;
     }}
@@ -1427,46 +1496,46 @@ class PDFExportService:
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 10px;
+      gap: 8px;
     }}
-    .report-dimension-card__title h3 {{ font-size: 15px; line-height: 1.35; font-weight: 600; }}
+    .report-dimension-card__title h3 {{ font-size: 13.5px; line-height: 1.28; font-weight: 600; }}
     .report-dimension-card__title p {{
-      margin-top: 6px;
+      margin-top: 3px;
       color: #8a9399;
-      font-size: 10px;
+      font-size: 8.5px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }}
-    .report-dimension-card__score {{ display: flex; align-items: baseline; gap: 8px; margin: 12px 0 10px; }}
-    .report-dimension-card__score strong {{ font-size: 30px; }}
-    .report-dimension-card__meter {{ height: 6px; margin-bottom: 12px; }}
-    .report-dimension-card__evidence {{ padding-top: 10px; border-top: 1px solid #dfe4e8; }}
-    .report-dimension-card__evidence p {{ margin-top: 6px; color: #5d6a72; font-size: 12px; line-height: 1.6; }}
-    .report-dimension-card__questions {{ margin-top: 12px; padding-top: 10px; border-top: 1px dashed #dfe4e8; }}
-    .report-counted-question-list {{ display: grid; gap: 8px; list-style: none; margin-top: 8px; }}
+    .report-dimension-card__score {{ display: flex; align-items: baseline; gap: 6px; margin: 7px 0 7px; }}
+    .report-dimension-card__score strong {{ font-size: 24px; }}
+    .report-dimension-card__meter {{ height: 4px; margin-bottom: 7px; }}
+    .report-dimension-card__evidence {{ padding-top: 7px; border-top: 1px solid #dfe4e8; }}
+    .report-dimension-card__evidence p {{ margin-top: 4px; color: #5d6a72; font-size: 10.5px; line-height: 1.45; }}
+    .report-dimension-card__questions {{ margin-top: 7px; padding-top: 6px; border-top: 1px dashed #dfe4e8; }}
+    .report-counted-question-list {{ display: grid; gap: 4px; list-style: none; margin-top: 5px; }}
     .report-counted-question-list li {{
-      padding: 9px 10px;
-      background: #ffffff;
-      border: 1px solid #d7dde2;
-      border-radius: 10px;
-      break-inside: avoid;
-      page-break-inside: avoid;
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr);
+      gap: 6px;
+      padding: 0 0 4px;
+      border-bottom: 1px dashed #e4e8ec;
     }}
+    .report-counted-question-list li:last-child {{ padding-bottom: 0; border-bottom: 0; }}
     .report-counted-question-list strong {{
       display: block;
       color: #1f2933;
-      font-size: 11px;
-      line-height: 1.4;
+      font-size: 10.5px;
+      line-height: 1.35;
       font-weight: 600;
     }}
     .report-counted-question-list span {{
       display: block;
-      margin-top: 4px;
+      margin-top: 0;
       color: #5d6a72;
-      font-size: 11px;
-      line-height: 1.55;
+      font-size: 9.8px;
+      line-height: 1.4;
     }}
-    .report-footer {{ padding-top: 0; margin-top: 8px; text-align: center; color: #8a9399; font-size: 10px; }}
+    .report-footer {{ padding-top: 0; margin-top: 6px; text-align: center; color: #8a9399; font-size: 9px; }}
     @media print {{
       .report-shell {{ padding: 0; }}
       .report-section,
@@ -1481,7 +1550,7 @@ class PDFExportService:
         page-break-inside: avoid;
       }}
       #radar-chart {{
-        min-height: 220px;
+        min-height: 170px;
       }}
     }}
   </style>
@@ -1498,9 +1567,9 @@ class PDFExportService:
         </div>
       </div>
       <div class="report-overview-strip">
-        <div class="report-overview-item"><span>整卷等级</span><strong>{difficulty_label}</strong></div>
-        <div class="report-overview-item"><span>试卷难度综合分</span><strong>{overall_score} / 10</strong></div>
-        <div class="report-overview-item"><span>试卷定位</span><strong>{position_summary}</strong></div>
+        <div class="report-overview-item report-overview-item--level"><span>整卷等级</span><strong>{difficulty_label}</strong></div>
+        <div class="report-overview-item report-overview-item--score"><span>试卷难度综合分</span><strong>{overall_score} / 10</strong></div>
+        <div class="report-overview-item report-overview-item--position"><span>试卷定位</span><strong>{position_summary}</strong></div>
       </div>
     </header>
 

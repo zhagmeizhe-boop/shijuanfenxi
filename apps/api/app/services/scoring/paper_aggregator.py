@@ -64,13 +64,14 @@ class PaperDimensionSummary:
 
 
 class PaperAggregator:
+    DIMENSION_ORDER = ("dim5", "dim1", "dim2", "dim3", "dim4", "dim6")
     DIMENSION_NAMES = {
-        "dim1": "计算难度",
-        "dim2": "几何难度",
-        "dim3": "读题难度",
-        "dim4": "解题方法难度",
-        "dim5": "知识门槛难度",
-        "dim6": "解题链路难度",
+        "dim5": "知识广度",
+        "dim1": "计算",
+        "dim2": "几何",
+        "dim3": "信息提取",
+        "dim4": "实践创新",
+        "dim6": "逻辑链条",
     }
 
     LEVEL_THRESHOLDS = [
@@ -349,6 +350,26 @@ class PaperAggregator:
         "chain_span",
         "constraint_coupling",
     )
+    INTERNAL_FAILURE_DISPLAY_FRAGMENTS = (
+        "解析失败",
+        "解析异常",
+        "解析错误",
+        "调用失败",
+        "请求失败",
+        "修复失败",
+        "未能解析",
+        "响应解析异常",
+        "LLM request failed",
+        "parse_failed",
+        "json_repair_failed",
+        "request failed",
+        "request_failed",
+        "timed out",
+        "timeout",
+        "retry_failed",
+        "review_failed",
+        "failed",
+    )
 
     COUNTED_QUESTION_FULL_REASON_HIDDEN_MARKERS = ("依据标签：", "核心事实：", "依据来源：")
 
@@ -374,15 +395,34 @@ class PaperAggregator:
     }
 
     @classmethod
+    def _contains_internal_failure_text(cls, value: object) -> bool:
+        text = " ".join(str(value or "").split()).strip()
+        if not text:
+            return False
+        lower_text = text.lower()
+        return any(fragment.lower() in lower_text for fragment in cls.INTERNAL_FAILURE_DISPLAY_FRAGMENTS)
+
+    @classmethod
+    def _clean_public_display_text(cls, value: object) -> str:
+        text = " ".join(str(value or "").split()).strip(" 。；;，,")
+        if not text or cls._contains_internal_failure_text(text):
+            return ""
+        return text
+
+    @classmethod
     def _format_counted_question_analysis(cls, text: object) -> str:
         normalized = " ".join(str(text or "").split()).strip()
         for marker in cls.COUNTED_QUESTION_FULL_REASON_HIDDEN_MARKERS:
             normalized = normalized.split(marker, 1)[0].strip()
         normalized = normalized.rstrip(" 。；;，,")
+        if cls._contains_internal_failure_text(normalized):
+            return ""
 
         match = cls.COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN.match(normalized)
         if match:
             normalized = f"{match.group(1)}：{match.group(2).strip()}"
+        if cls._contains_internal_failure_text(normalized):
+            return ""
         return normalized.rstrip(" 。；;，,")
 
     @classmethod
@@ -415,14 +455,14 @@ class PaperAggregator:
         if score_value >= 9:
             explanation = "说明本卷计算要求很高，包含较强的多步、结构化或拓展计算，对综合计算能力要求突出。"
         elif score_value >= 8:
-            explanation = "说明本卷计算难度较高，计算题和应用题中的核心计算都会拉开学生差距。"
+            explanation = "说明本卷计算要求较高，计算题和应用题中的核心计算都会拉开学生差距。"
         elif score_value >= 6:
-            explanation = "说明本卷有一定计算难度，除准确率外，也考查多步运算和常见转化。"
+            explanation = "说明本卷有一定计算要求，除准确率外，也考查多步运算和常见转化。"
         elif score_value >= 4:
-            explanation = "说明本卷计算难度整体偏常规，重点考查校内计算的熟练度和稳定性。"
+            explanation = "说明本卷计算要求整体偏常规，重点考查校内计算的熟练度和稳定性。"
         else:
             explanation = "说明本卷计算要求以基础运算为主，主要看基本规则掌握和计算准确率。"
-        return f"计算难度，综合得分 {score_value:.1f} 分，{explanation}"
+        return f"计算，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim2_score_overview(cls, score: object) -> str:
@@ -434,14 +474,14 @@ class PaperAggregator:
         if score_value >= 9:
             explanation = "说明本卷几何与空间要求很高，包含高强度空间重构、多视图或高阶几何模型。"
         elif score_value >= 8:
-            explanation = "说明本卷几何难度较高，复合图形、隐含关系或空间转换会明显拉开差距。"
+            explanation = "说明本卷几何要求较高，复合图形、隐含关系或空间转换会明显拉开差距。"
         elif score_value >= 6:
-            explanation = "说明本卷有一定几何与空间难度，除基本公式外，也考查图形关系整理和模型识别。"
+            explanation = "说明本卷有一定几何与空间要求，除基本公式外，也考查图形关系整理和模型识别。"
         elif score_value >= 4:
             explanation = "说明本卷以常规图形关系为主，重点考查读图准确性和单步空间转化。"
         else:
             explanation = "说明本卷主要覆盖基础识图和直接几何公式，重点看图形概念和基本关系是否掌握。"
-        return f"几何难度，综合得分 {score_value:.1f} 分，{explanation}"
+        return f"几何，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim3_score_overview(cls, score: object) -> str:
@@ -451,16 +491,16 @@ class PaperAggregator:
             score_value = 0.0
 
         if score_value >= 9:
-            explanation = "说明这张试卷在学生读题理解题意上设置了较高难度，不少题目需要完整读懂多条规则、多阶段过程或复杂图文关系。"
+            explanation = "说明这张试卷的信息提取要求很高，不少题目需要完整读懂多条规则、多阶段过程或复杂图文关系。"
         elif score_value >= 8:
-            explanation = "说明这张试卷在学生读题理解题意上设置了明显难度，部分题目的场景相对复杂，学生需要先理清对象、阶段、规则或图文关系。"
+            explanation = "说明这张试卷的信息提取要求较高，部分题目的场景相对复杂，学生需要先理清对象、阶段、规则或图文关系。"
         elif score_value >= 6:
-            explanation = "说明这张试卷在学生读题理解题意上设置了一定难度，部分题目需要先读懂关键问法、比较标准或简单规则。"
+            explanation = "说明这张试卷在信息提取上有一定要求，部分题目需要先读懂关键问法、比较标准或简单规则。"
         elif score_value >= 4:
-            explanation = "说明这张试卷在学生读题和理解题意上有常规要求，部分题目需要分清对象、顺序或图文对应关系。"
+            explanation = "说明这张试卷在信息提取上有常规要求，部分题目需要分清对象、顺序或图文对应关系。"
         else:
-            explanation = "说明这张试卷在学生读题和理解题意上的要求比较基础，大多数题目读完后能较快明白题目在说什么。"
-        return f"读题难度，综合得分 {score_value:.1f} 分，{explanation}"
+            explanation = "说明这张试卷的信息提取要求比较基础，大多数题目读完后能较快明白题目在说什么。"
+        return f"信息提取，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim4_score_overview(cls, score: object) -> str:
@@ -470,16 +510,16 @@ class PaperAggregator:
             score_value = 0.0
 
         if score_value >= 9:
-            explanation = "说明本卷在解题思路上难度很高。孩子做核心题时，通常不能只按常规步骤推进，需要先找到关键突破口，再持续检查每一步是否和题目条件一致。"
+            explanation = "说明本卷实践创新要求很高。孩子做核心题时，通常不能只按常规步骤推进，需要先找到关键突破口，再持续检查每一步是否和题目条件一致。"
         elif score_value >= 8:
-            explanation = "说明本卷在解题思路上有较明显难度。孩子做这类题时，往往需要先把条件之间的关系理清楚，再选择合适的切入方式逐步推进。"
+            explanation = "说明本卷实践创新要求较高。孩子做这类题时，往往需要先把条件之间的关系理清楚，再选择合适的切入方式逐步推进。"
         elif score_value >= 6:
-            explanation = "说明本卷在解题思路上有一定难度。部分题目不是读完就能直接下手，需要孩子先整理已知条件和目标之间的关系，再按较清晰的步骤推进。"
+            explanation = "说明本卷实践创新有一定要求。部分题目不是读完就能直接下手，需要孩子先整理已知条件和目标之间的关系，再按较清晰的步骤推进。"
         elif score_value >= 4:
-            explanation = "说明本卷在解题思路上的要求整体偏常规。多数题目读懂后可以沿常见思路完成，少量题需要先做简单整理再下手。"
+            explanation = "说明本卷实践创新要求整体偏常规。多数题目读懂后可以沿常见思路完成，少量题需要先做简单整理再下手。"
         else:
-            explanation = "说明本卷在解题思路上的要求比较基础。多数题目读懂题意后，可以直接找到主要关系并完成解答。"
-        return f"解题方法难度，综合得分 {score_value:.1f} 分，{explanation}"
+            explanation = "说明本卷实践创新要求比较基础。多数题目读懂题意后，可以直接找到主要关系并完成解答。"
+        return f"实践创新，综合得分 {score_value:.1f} 分，{explanation}"
 
     @classmethod
     def _build_dim6_score_overview(cls, score: object) -> str:
@@ -489,17 +529,17 @@ class PaperAggregator:
             score_value = 0.0
 
         if score_value >= 9:
-            explanation = "这张试卷有少量解题链条很长的压轴题，通常要连续推进 5 步以上，并检查多个条件。"
+            explanation = "这张试卷有少量逻辑链条很长的压轴题，通常要连续推进 5 步以上，并检查多个条件。"
         elif score_value >= 8:
-            explanation = "这张试卷不少题解题链条较长，通常要连续推进 3-4 步，并穿插分类、倒推或回查。"
+            explanation = "这张试卷不少题逻辑链条较长，通常要连续推进 3-4 步，并穿插分类、倒推或回查。"
         elif score_value >= 6:
-            explanation = "这张试卷部分题解题链条有一定长度，通常要把前后条件接起来推进 2-4 步。"
+            explanation = "这张试卷部分题逻辑链条有一定长度，通常要把前后条件接起来推进 2-4 步。"
         elif score_value >= 4:
-            explanation = "这张试卷整体解题链条偏短，少量题需要 1-2 步衔接。"
+            explanation = "这张试卷整体逻辑链条偏短，少量题需要 1-2 步衔接。"
         else:
-            explanation = "这张试卷多数题解题链条很短，通常读懂条件后一步判断即可。"
+            explanation = "这张试卷多数题逻辑链条很短，通常读懂条件后一步判断即可。"
 
-        return f"解题链路难度，综合得分 {score_value:.1f} 分，{explanation}"
+        return f"逻辑链条，综合得分 {score_value:.1f} 分，{explanation}"
 
     @staticmethod
     def _dimension_status(question: QuestionDimensionScore, dimension_code: str) -> str:
@@ -1003,7 +1043,7 @@ class PaperAggregator:
                 + failed_excluded_count
             ),
             "high_level_question_count": level_counts["L4"] + level_counts["L5"],
-            "aggregation_rule": "能稳定自动判定 L1-L5 的题纳入读题难度评分；纯计算、裸公式或无真实读题场景负担的题自动未覆盖；卷级主分按题目等级加权，高等级题权重更高。",
+            "aggregation_rule": "能稳定自动判定 L1-L5 的题纳入信息提取评分；纯计算、裸公式或无真实信息提取负担的题自动未覆盖；卷级主分按题目等级加权，高等级题权重更高。",
         }
 
         if question_count == 0:
@@ -1021,7 +1061,7 @@ class PaperAggregator:
                 total_question_score=0.0,
                 question_count=0,
                 sample_warning=False,
-                evidence="读题难度暂无可评分题目，未计入综合分。",
+                evidence="信息提取暂无可评分题目，未计入综合分。",
                 warning_messages=zero_warning_messages,
                 counted_questions=[],
                 review_question_count=len(review_questions),
@@ -1045,7 +1085,7 @@ class PaperAggregator:
         )
 
         evidence = (
-            f"共 {question_count} 道题纳入读题难度评分；"
+            f"共 {question_count} 道题纳入信息提取评分；"
             "按题目等级加权，高等级题权重更高；"
             f"权重得分 {paper_score:.1f} 分，判定为 {level_label}。"
         )
@@ -1145,7 +1185,7 @@ class PaperAggregator:
             "unknown_level_count": ignored_question_count,
             "auto_ignored_count": ignored_question_count,
             "high_level_question_count": level_counts["L4"] + level_counts["L5"],
-            "aggregation_rule": "能稳定自动判定 L1-L5 的题纳入解题方法难度评分；纯计算、直接代公式或无真实解题组织负担的题自动未覆盖；卷级主分按题目等级加权，高等级题权重更高。",
+            "aggregation_rule": "能稳定自动判定 L1-L5 的题纳入实践创新评分；纯计算、直接代公式或无真实解题组织负担的题自动未覆盖；卷级主分按题目等级加权，高等级题权重更高。",
         }
 
         if question_count == 0:
@@ -1163,7 +1203,7 @@ class PaperAggregator:
                 total_question_score=0.0,
                 question_count=0,
                 sample_warning=False,
-                evidence="解题方法难度暂无可评分题目，未计入综合分。",
+                evidence="实践创新暂无可评分题目，未计入综合分。",
                 warning_messages=zero_warning_messages,
                 counted_questions=[],
                 review_question_count=review_question_count,
@@ -1188,7 +1228,7 @@ class PaperAggregator:
         )
 
         evidence_parts = [
-            f"共 {question_count} 道题纳入解题方法难度评分",
+            f"共 {question_count} 道题纳入实践创新评分",
             "按题目等级加权，高等级题权重更高",
         ]
         evidence_parts.append(f"权重得分 {paper_score:.1f} 分，判定为 {level_label}")
@@ -1241,7 +1281,7 @@ class PaperAggregator:
                 total_question_score=0.0,
                 question_count=0,
                 sample_warning=False,
-                evidence="计算难度自动评分未覆盖，未计入综合分。",
+                evidence="计算自动评分未覆盖，未计入综合分。",
                 warning_messages=[],
                 counted_questions=[],
                 review_question_count=review_question_count,
@@ -1445,7 +1485,7 @@ class PaperAggregator:
                 total_question_score=0.0,
                 question_count=0,
                 sample_warning=False,
-                evidence="知识门槛难度未覆盖，未计入综合分。",
+                evidence="知识广度未覆盖，未计入综合分。",
                 warning_messages=[],
                 counted_questions=[],
                 review_question_count=review_question_count,
@@ -1457,14 +1497,14 @@ class PaperAggregator:
         level, level_label = self._calculate_level(paper_score)
 
         evidence = (
-            f"共 {question_count} 道题纳入知识门槛难度评分；"
+            f"共 {question_count} 道题纳入知识广度评分；"
             f"按知识范围等级权重计算；"
             f"权重得分 {paper_score:.1f} 分，判定为{level_label}。"
         )
 
         warning_messages: List[str] = []
         if unscored_applicable_count:
-            warning_messages.append(f"有 {unscored_applicable_count} 道题缺少合法题级分或知识范围等级，未计入知识门槛难度评分。")
+            warning_messages.append(f"有 {unscored_applicable_count} 道题缺少合法题级分或知识范围等级，未计入知识广度评分。")
         for question in applicable_questions:
             warning_messages.extend(question.dim_warnings.get("dim5", []))
         deduped_warnings = list(
@@ -1493,7 +1533,7 @@ class PaperAggregator:
     ) -> Dict[str, PaperDimensionSummary]:
         return {
             dim_code: self.aggregate(question_scores, dim_code)
-            for dim_code in ["dim1", "dim2", "dim3", "dim4", "dim5", "dim6"]
+            for dim_code in self.DIMENSION_ORDER
         }
 
     def _select_representative_questions(
@@ -1514,43 +1554,82 @@ class PaperAggregator:
         )
 
         selected: List[Dict[str, object]] = []
+        selected_questions: List[QuestionDimensionScore] = []
+        deferred_duplicates: List[QuestionDimensionScore] = []
         seen_display_labels: set[str] = set()
+        seen_diversity_keys: set[str] = set()
 
-        for question in ranked:
+        def select_question(question: QuestionDimensionScore, *, allow_duplicate_topic: bool) -> bool:
+            if len(selected_questions) >= self.REPRESENTATIVE_LIMIT:
+                return False
+
             question_display_label = self._build_question_display_label(question)
             dedupe_key = question_display_label or question.question_id
             if dedupe_key in seen_display_labels:
-                continue
+                return False
 
-            dim_score = question.dim_scores.get(dimension_code, 0.0)
-            level_code = self._question_level_code(question, dimension_code, dim_score)
+            diversity_key = self._representative_diversity_key(question, dimension_code)
+            if (
+                not allow_duplicate_topic
+                and diversity_key
+                and diversity_key in seen_diversity_keys
+            ):
+                deferred_duplicates.append(question)
+                return False
+
             seen_display_labels.add(dedupe_key)
-            selected_item = {
-                "page_no": question.page_no,
-                "question_no": question.question_no or question.question_id,
-                "question_label_raw": question.question_label_raw or question.question_no or question.question_id,
-                "section_index_raw": question.section_index_raw or "",
-                "question_display_label": question_display_label,
-                "summary": question.question_summary or "",
-                "score": round(dim_score, 1),
-                "level_code": level_code,
-                "difficulty_label": (
-                    self._dim1_difficulty_label(level_code)
-                    if dimension_code in {"dim1", "dim2", "dim3", "dim4", "dim5", "dim6"}
-                    else ""
-                ),
-                "reason": self._build_display_reason(question, dimension_code),
-                "full_reason": self._build_full_display_reason(question, dimension_code),
-            }
-            if dimension_code == "dim4":
-                selected_item.update(self._dim4_counted_question_fields(question, level_code))
-            if dimension_code == "dim5":
-                selected_item.update(self._dim5_counted_question_fields(question, level_code))
-            selected.append(selected_item)
-            if len(selected) >= self.REPRESENTATIVE_LIMIT:
+            if diversity_key:
+                seen_diversity_keys.add(diversity_key)
+            selected_questions.append(question)
+            return True
+
+        for question in ranked:
+            select_question(question, allow_duplicate_topic=False)
+            if len(selected_questions) >= self.REPRESENTATIVE_LIMIT:
                 break
 
+        if len(selected_questions) < self.REPRESENTATIVE_LIMIT:
+            for question in deferred_duplicates:
+                select_question(question, allow_duplicate_topic=True)
+                if len(selected_questions) >= self.REPRESENTATIVE_LIMIT:
+                    break
+
+        for question in selected_questions:
+            selected.append(self._build_representative_question_item(question, dimension_code))
+
         return selected
+
+    def _build_representative_question_item(
+        self,
+        question: QuestionDimensionScore,
+        dimension_code: str,
+    ) -> Dict[str, object]:
+        dim_score = self._dimension_score_value(question, dimension_code)
+        level_code = self._question_level_code(question, dimension_code, dim_score)
+        selected_item = {
+            "page_no": question.page_no,
+            "question_no": question.question_no or question.question_id,
+            "question_label_raw": question.question_label_raw or question.question_no or question.question_id,
+            "section_index_raw": question.section_index_raw or "",
+            "question_display_label": (
+                question.question_display_label or self._build_question_display_label(question)
+            ),
+            "summary": question.question_summary or "",
+            "score": round(dim_score, 1),
+            "level_code": level_code,
+            "difficulty_label": (
+                self._dim1_difficulty_label(level_code)
+                if dimension_code in {"dim1", "dim2", "dim3", "dim4", "dim5", "dim6"}
+                else ""
+            ),
+            "reason": self._build_display_reason(question, dimension_code),
+            "full_reason": self._build_full_display_reason(question, dimension_code),
+        }
+        if dimension_code == "dim4":
+            selected_item.update(self._dim4_counted_question_fields(question, level_code))
+        if dimension_code == "dim5":
+            selected_item.update(self._dim5_counted_question_fields(question, level_code))
+        return selected_item
 
     @classmethod
     def _question_level_code(
@@ -1707,14 +1786,115 @@ class PaperAggregator:
 
         return False
 
-    def _representative_sort_key(
+    @staticmethod
+    def _dimension_score_value(question: QuestionDimensionScore, dimension_code: str) -> float:
+        try:
+            return float(question.dim_scores.get(dimension_code, 0.0) or 0.0)
+        except (TypeError, ValueError):
+            return 0.0
+
+    @classmethod
+    def _representative_confidence_bucket(cls, confidence: float) -> int:
+        if confidence <= 0:
+            return 1
+        if confidence >= 0.85:
+            return 0
+        if confidence >= 0.70:
+            return 1
+        if confidence >= cls.REPRESENTATIVE_CONFIDENCE_THRESHOLD:
+            return 2
+        return 3
+
+    def _representative_quality_sort_key(
+        self,
+        question: QuestionDimensionScore,
+        dimension_code: str,
+        reason: str,
+        warnings: List[str],
+        confidence: float,
+    ) -> tuple:
+        status = self._dimension_status(question, dimension_code)
+        return (
+            0 if status == "applicable" else 1,
+            int(0 < confidence < 0.70),
+            self._representative_evidence_priority(question, dimension_code, reason),
+            len(warnings),
+            self._representative_confidence_bucket(confidence),
+            -confidence,
+        )
+
+    def _representative_evidence_priority(
+        self,
+        question: QuestionDimensionScore,
+        dimension_code: str,
+        reason: str,
+    ) -> int:
+        if not reason.strip():
+            return 9
+        if dimension_code == "dim5":
+            return self._dim5_representative_evidence_priority(question)
+        if dimension_code != "dim2":
+            return 0
+
+        details = self._dimension_details(question, "dim2")
+        fallback_source = str(details.get("fallback_source") or "")
+        evidence_summary = str(details.get("evidence_summary") or "")
+        model_types = self._dim2_model_types(details)
+        if (
+            fallback_source == "visual_geometry"
+            and (
+                evidence_summary.startswith("图像几何兜底事实")
+                or model_types == {"composite_area_model"}
+            )
+        ):
+            return 3
+        domain = str(details.get("geometry_domain_gate") or "").strip()
+        if not domain:
+            domain, _ = classify_dim2_geometry_domain(
+                question.question_summary or question.dim_reasons.get("dim2", ""),
+                details,
+                parse_audit=None,
+            )
+        if domain in {"geometry_area_relation", "solid_geometry", "geometry_core"}:
+            return 0
+        return 1
+
+    def _dim5_representative_evidence_priority(self, question: QuestionDimensionScore) -> int:
+        details = self._dim5_details_for_question(question)
+        if self._dim5_grounding_has_blocking_risk(details):
+            return 9
+        if self._dim5_source_for_question(question) == "llm_dim5_retry_failed":
+            return 9
+
+        point = self._dim5_knowledge_point_text(question, details)
+        source = self._dim5_knowledge_source_text(details)
+        display_name = self._dim5_knowledge_display_name(details, point)
+        confidence_status = str(details.get("confidence_status") or "").strip()
+        selected_candidate_id = str(details.get("selected_candidate_id") or "").strip()
+        has_confirmed_graph = (
+            confidence_status == "confirmed"
+            and bool(selected_candidate_id)
+            and selected_candidate_id != "no_match"
+        )
+
+        if has_confirmed_graph and display_name:
+            return 0
+        if display_name and point:
+            return 1
+        if self._dim5_grounded_confidence(details) >= 0.70 and point and source:
+            return 1
+        if point and source:
+            return 2
+        if point:
+            return 3
+        return 4
+
+    def _representative_diagnostic_sort_key(
         self,
         question: QuestionDimensionScore,
         dimension_code: str,
     ) -> tuple:
-        reason = self._build_display_reason(question, dimension_code)
-        warnings = question.dim_warnings.get(dimension_code, [])
-        confidence = question.dim_confidences.get(dimension_code, 0.0)
+        dim_score = self._dimension_score_value(question, dimension_code)
 
         if dimension_code == "dim5":
             level_priority = {
@@ -1724,16 +1904,7 @@ class PaperAggregator:
                 "L2": 3,
                 "L1": 4,
             }
-            knowledge_level = self._dim5_level_for_question(question)
-            return (
-                level_priority.get(knowledge_level, 99),
-                -question.dim_scores.get(dimension_code, 0.0),
-                -confidence,
-                -min(len(reason), 160),
-                len(warnings),
-                question.page_no if question.page_no is not None else 10**9,
-                self._question_no_sort_key(question.question_no),
-            )
+            return (level_priority.get(self._dim5_level_for_question(question), 99), -dim_score)
 
         if dimension_code == "dim4":
             level_priority = {
@@ -1743,21 +1914,10 @@ class PaperAggregator:
                 "L2": 3,
                 "L1": 4,
             }
-            dim4_level = self._dim4_level_for_question(question)
-            return (
-                level_priority.get(dim4_level, 99),
-                -question.dim_scores.get(dimension_code, 0.0),
-                -confidence,
-                -min(len(reason), 160),
-                len(warnings),
-                question.page_no if question.page_no is not None else 10**9,
-                self._question_no_sort_key(question.question_no),
-            )
+            return (level_priority.get(self._dim4_level_for_question(question), 99), -dim_score)
 
         if dimension_code == "dim2":
-            details = question.dim_details.get("dim2", {}) if isinstance(question.dim_details, dict) else {}
-            if not isinstance(details, dict):
-                details = {}
+            details = self._dimension_details(question, "dim2")
             domain = str(details.get("geometry_domain_gate") or "").strip()
             if not domain:
                 domain, _ = classify_dim2_geometry_domain(
@@ -1776,25 +1936,65 @@ class PaperAggregator:
                 fallback_source == "visual_geometry"
                 and (
                     evidence_summary.startswith("图像几何兜底事实")
-                    or details.get("geometry_model_types") == ["composite_area_model"]
+                    or self._dim2_model_types(details) == {"composite_area_model"}
                 )
             )
-            return (
-                domain_priority,
-                generic_visual_fallback,
-                len(warnings),
-                -question.dim_scores.get(dimension_code, 0.0),
-                -confidence,
-                -min(len(reason), 160),
-                question.page_no if question.page_no is not None else 10**9,
-                self._question_no_sort_key(question.question_no),
-            )
+            return (domain_priority, generic_visual_fallback, -dim_score)
 
+        return (-dim_score,)
+
+    def _representative_diversity_key(
+        self,
+        question: QuestionDimensionScore,
+        dimension_code: str,
+    ) -> str:
+        details = self._dimension_details(question, dimension_code)
+
+        if dimension_code == "dim5":
+            point = self._dim5_knowledge_point_text(question, details)
+            if point:
+                return f"dim5:{point}"
+            domain = str(details.get("canonical_knowledge_domain") or "").strip()
+            return f"dim5-domain:{domain}" if domain else ""
+
+        if dimension_code == "dim4":
+            point = self._clean_dim4_text(details.get("knowledge_point"))
+            if point:
+                return f"dim4:{point}"
+            level = self._dim4_level_for_question(question)
+            return f"dim4-level:{level}" if level else ""
+
+        if dimension_code == "dim2":
+            model_types = sorted(self._dim2_model_types(details))
+            if model_types:
+                return "dim2:" + ",".join(model_types)
+            domain = str(details.get("geometry_domain_gate") or "").strip()
+            return f"dim2-domain:{domain}" if domain else ""
+
+        if dimension_code == "dim1":
+            bucket = str(details.get("calc_bucket") or "").strip()
+            return f"dim1:{bucket}" if bucket else ""
+
+        return ""
+
+    def _representative_sort_key(
+        self,
+        question: QuestionDimensionScore,
+        dimension_code: str,
+    ) -> tuple:
+        reason = self._build_display_reason(question, dimension_code)
+        warnings = question.dim_warnings.get(dimension_code, [])
+        confidence = question.dim_confidences.get(dimension_code, 0.0)
         return (
-            -question.dim_scores.get(dimension_code, 0.0),
-            -confidence,
+            *self._representative_quality_sort_key(
+                question,
+                dimension_code,
+                reason,
+                warnings,
+                confidence,
+            ),
+            *self._representative_diagnostic_sort_key(question, dimension_code),
             -min(len(reason), 160),
-            len(warnings),
             question.page_no if question.page_no is not None else 10**9,
             self._question_no_sort_key(question.question_no),
         )
@@ -2077,9 +2277,9 @@ class PaperAggregator:
             return False
         return text not in cls.DIM4_GENERIC_KNOWLEDGE_POINTS
 
-    @staticmethod
-    def _clean_dim4_text(value: object) -> str:
-        return " ".join(str(value or "").split()).strip(" 。；;，,")
+    @classmethod
+    def _clean_dim4_text(cls, value: object) -> str:
+        return cls._clean_public_display_text(value)
 
     @classmethod
     def _dim5_counted_question_fields(
@@ -2567,9 +2767,9 @@ class PaperAggregator:
         text = cls._clean_dim5_text(value)
         return bool(text) and text not in cls.DIM5_GENERIC_KNOWLEDGE_POINTS and len(text) >= 2
 
-    @staticmethod
-    def _clean_dim5_text(value: object) -> str:
-        text = " ".join(str(value or "").split()).strip()
+    @classmethod
+    def _clean_dim5_text(cls, value: object) -> str:
+        text = cls._clean_public_display_text(value)
         if not text:
             return ""
         return (
@@ -2585,11 +2785,11 @@ class PaperAggregator:
         if not isinstance(details, dict):
             details = {}
 
-        range_label = str(
+        range_label = cls._clean_public_display_text(
             details.get("knowledge_range_label")
             or details.get("display_knowledge_range_label")
             or ""
-        ).strip()
+        )
         points = cls._dim1_display_points(details)
 
         if range_label and points:
@@ -2629,7 +2829,7 @@ class PaperAggregator:
 
     @classmethod
     def _is_specific_dim1_knowledge_text(cls, value: object) -> bool:
-        text = str(value or "").strip()
+        text = cls._clean_public_display_text(value)
         if not text:
             return False
         generic_terms = {
@@ -2649,7 +2849,7 @@ class PaperAggregator:
         question: QuestionDimensionScore,
         details: dict[str, Any],
     ) -> str:
-        summary = str(question.question_summary or "").strip().rstrip("。；;，,")
+        summary = cls._clean_public_display_text(question.question_summary)
         if cls._is_specific_dim1_knowledge_text(summary):
             return summary
 
@@ -2693,11 +2893,11 @@ class PaperAggregator:
         if not isinstance(details, dict):
             details = {}
 
-        range_label = str(
+        range_label = cls._clean_public_display_text(
             details.get("knowledge_range_label")
             or details.get("display_geometry_knowledge_range_label")
             or ""
-        ).strip()
+        )
         range_label = cls._dim2_display_range_label(question, details, range_label)
         points = cls._dim2_display_points(question, details)
 
@@ -2791,7 +2991,7 @@ class PaperAggregator:
 
     @classmethod
     def _is_specific_dim2_knowledge_text(cls, value: object) -> bool:
-        text = str(value or "").strip()
+        text = cls._clean_public_display_text(value)
         if not text:
             return False
         generic_terms = {
@@ -2813,7 +3013,7 @@ class PaperAggregator:
         question: QuestionDimensionScore,
         details: dict[str, Any],
     ) -> str:
-        summary = str(question.question_summary or "").strip().rstrip("。；;，,")
+        summary = cls._clean_public_display_text(question.question_summary)
         if cls._is_specific_dim2_knowledge_text(summary):
             return summary
 
@@ -2880,13 +3080,15 @@ class PaperAggregator:
     @classmethod
     def _dim2_note_from_evidence(cls, value: object) -> str:
         text = " ".join(str(value or "").split()).strip()
-        if not text:
+        if not text or cls._contains_internal_failure_text(text):
             return ""
         for marker in cls.COUNTED_QUESTION_FULL_REASON_HIDDEN_MARKERS:
             text = text.split(marker, 1)[0].strip()
         match = cls.COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN.match(text)
         if match:
             text = match.group(2).strip()
+        if cls._contains_internal_failure_text(text):
+            return ""
         text = re.sub(r"^图像几何兜底事实[：:]", "", text).strip()
         text = re.sub(r"^图形结构兜底事实[：:]", "", text).strip()
         text = text.rstrip("。；;，,")
@@ -3121,13 +3323,15 @@ class PaperAggregator:
     @classmethod
     def _dim3_note_from_evidence(cls, value: object) -> str:
         text = " ".join(str(value or "").split()).strip()
-        if not text:
+        if not text or cls._contains_internal_failure_text(text):
             return ""
         for marker in cls.COUNTED_QUESTION_FULL_REASON_HIDDEN_MARKERS:
             text = text.split(marker, 1)[0].strip()
         match = cls.COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN.match(text)
         if match:
             text = match.group(2).strip()
+        if cls._contains_internal_failure_text(text):
+            return ""
         text = text.rstrip("。；;，,")
         if not text:
             return ""
@@ -3195,7 +3399,7 @@ class PaperAggregator:
 
         chain_description = cls._dim6_chain_length_description(details, dim6_level)
         student_action = cls._dim6_student_action(question, details)
-        return f"{cls._dim1_difficulty_label(dim6_level)}：这题的解题链条{chain_description}；学生需要{student_action}。"
+        return f"{cls._dim1_difficulty_label(dim6_level)}：这题的逻辑链条{chain_description}；学生需要{student_action}。"
 
     @classmethod
     def _dim6_chain_length_description(cls, details: dict[str, Any], dim6_level: str) -> str:
@@ -3317,7 +3521,7 @@ class PaperAggregator:
         if evidence_note and cls._dim6_evidence_has_specific_content(evidence_note):
             return cls._clean_dim6_student_action(evidence_note)
 
-        summary = str(question.question_summary or "").strip().rstrip("。；;，,")
+        summary = cls._clean_public_display_text(question.question_summary)
         if summary and not any(fragment in summary for fragment in cls.DIM6_FORBIDDEN_DISPLAY_FRAGMENTS):
             return cls._clean_dim6_student_action(f"围绕{summary}，把相关条件一步步接到结论上")
         return "把已有条件一步步接起来，并在最后检查结论是否符合题意"
@@ -3385,7 +3589,11 @@ class PaperAggregator:
     @classmethod
     def _clean_dim6_student_action(cls, value: object) -> str:
         text = " ".join(str(value or "").split()).strip().rstrip("。；;，,")
-        if not text or any(fragment in text for fragment in cls.DIM6_FORBIDDEN_DISPLAY_FRAGMENTS):
+        if (
+            not text
+            or cls._contains_internal_failure_text(text)
+            or any(fragment in text for fragment in cls.DIM6_FORBIDDEN_DISPLAY_FRAGMENTS)
+        ):
             return "把已有条件一步步接起来，并在最后检查结论是否符合题意"
 
         prefixes = (
@@ -3425,7 +3633,7 @@ class PaperAggregator:
         if fact_evidence:
             return fact_evidence
 
-        summary = str(question.question_summary or "").strip().rstrip("。；;，,")
+        summary = cls._clean_public_display_text(question.question_summary)
         if summary:
             return f"题目摘要指向{summary}，需要把相关条件逐步接到最终结论"
         return "题目需要把已有条件逐步接到最终结论"
@@ -3433,13 +3641,15 @@ class PaperAggregator:
     @classmethod
     def _dim6_note_from_evidence(cls, value: object) -> str:
         text = " ".join(str(value or "").split()).strip()
-        if not text:
+        if not text or cls._contains_internal_failure_text(text):
             return ""
         for marker in cls.COUNTED_QUESTION_FULL_REASON_HIDDEN_MARKERS:
             text = text.split(marker, 1)[0].strip()
         match = cls.COUNTED_QUESTION_LEVEL_DESCRIPTOR_PATTERN.match(text)
         if match:
             text = match.group(2).strip()
+        if cls._contains_internal_failure_text(text):
+            return ""
         text = text.rstrip("。；;，,")
         if not text:
             return ""
@@ -3536,7 +3746,7 @@ class PaperAggregator:
     @classmethod
     def _dim6_evidence_has_specific_content(cls, evidence: str) -> bool:
         text = str(evidence or "").strip()
-        if not text:
+        if not text or cls._contains_internal_failure_text(text):
             return False
         generic_fragments = (
             "旧版分析不应直接展示",
