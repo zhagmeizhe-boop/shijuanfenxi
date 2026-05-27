@@ -586,134 +586,161 @@ function formatDim6CountedQuestionText(item: CountedQuestion, fallbackText: stri
   return normalizedLegacyChainText;
 }
 
+function buildRepresentativeQuestion(dimCode: string, item: CountedQuestion, index = 0) {
+  const rawQuestionLabel =
+    item.question_display_label || item.question_label_raw || item.question_no;
+  const questionLabel = normalizeCountedQuestionLabel(rawQuestionLabel) || rawQuestionLabel || '未标注题号';
+  const compactSource = item.reason || item.summary || item.full_reason || '';
+  const fullSource = item.full_reason || item.reason || item.summary || '';
+  const rawCompactReason =
+    dimCode === 'dim4'
+      ? formatDim4CountedQuestionText(item, compactSource)
+      : dimCode === 'dim5'
+      ? formatDim5CountedQuestionText(item, compactSource)
+      : dimCode === 'dim6'
+      ? formatDim6CountedQuestionText(item, compactSource)
+      : formatCountedQuestionAnalysis(compactSource, item);
+  const rawFullReason =
+    dimCode === 'dim4'
+      ? formatDim4CountedQuestionText(item, fullSource)
+      : dimCode === 'dim5'
+      ? formatDim5CountedQuestionText(item, fullSource)
+      : dimCode === 'dim6'
+      ? formatDim6CountedQuestionText(item, fullSource)
+      : formatCountedQuestionAnalysis(fullSource, item);
+  const compactReason = sanitizeCountedQuestionDisplayText(dimCode, rawCompactReason, item);
+  const fullReason = sanitizeCountedQuestionDisplayText(dimCode, rawFullReason, item);
+
+  return {
+    key: `${dimCode}-${index}-${questionLabel}-${item.summary || ''}`,
+    questionLabel,
+    compactReason,
+    fullReason,
+    tooltipId: `counted-question-${dimCode}-${index}`,
+  };
+}
+
+function normalizeRepresentativeReason(value: string): string {
+  return value.replace(/\s+/g, ' ').replace(/[。；;，,\s]+$/u, '').trim();
+}
+
 export function DimensionScoreCards({ dimensions }: DimensionScoreCardsProps) {
   const orderedDimensions = [...dimensions].sort(
     (left, right) => getDimensionOrder(left.code) - getDimensionOrder(right.code),
   );
 
   return (
-    <div className="report-dimension-grid">
+    <div className="report-dimension-table" role="table" aria-label="六维评价明细">
+      <div className="report-dimension-table__head" role="row">
+        <span role="columnheader">维度</span>
+        <span role="columnheader">得分/等级</span>
+        <span role="columnheader">得分概览</span>
+        <span role="columnheader">代表题</span>
+      </div>
+
       {orderedDimensions.map((dim) => {
         const meta = getDimensionMetaByCode(dim.code);
         const color = meta?.color || '#66737d';
         const name = meta?.name || dim.name;
-        const countedQuestions = (dim.counted_questions || []).slice(0, 3);
+        const representativeQuestion = (dim.counted_questions || [])[0];
+        const representative = representativeQuestion
+          ? buildRepresentativeQuestion(dim.code, representativeQuestion)
+          : null;
         const isNotCovered = dim.score_status === 'not_covered' || dim.level <= 0;
         const displayEvidence = formatDimensionEvidence(dim);
 
         return (
           <div
             key={dim.code}
-            className="report-dimension-card"
-            style={{ borderTopColor: color }}
+            className={`report-dimension-row${isNotCovered ? ' is-not-covered' : ''}`}
+            role="row"
+            style={{ borderLeftColor: color }}
           >
-            <div className="report-dimension-card__header">
+            <div className="report-dimension-row__dimension" role="cell">
+              <span
+                className="report-dimension-row__marker"
+                style={{ backgroundColor: color }}
+                aria-hidden="true"
+              />
               <div className="report-dimension-card__title">
                 <h3>{name}</h3>
-                <p>{dim.code.toUpperCase()}</p>
-              </div>
-
-              <div className="report-dimension-card__badges">
-                <span
-                  className="report-level-pill"
-                  style={{
-                    color,
-                    backgroundColor: `${color}14`,
-                    borderColor: `${color}33`,
-                  }}
-                >
-                  {isNotCovered ? '未覆盖' : dim.level_label}
-                </span>
-                {dim.warning && !isNotCovered ? (
-                  <span className="report-inline-tag report-status-tag">评分提示</span>
-                ) : null}
               </div>
             </div>
 
-            <div className="report-dimension-card__score">
+            <div className="report-dimension-row__score" role="cell">
               {isNotCovered ? (
                 <strong style={{ color }}>未覆盖</strong>
               ) : (
                 <>
-                  <strong style={{ color }}>{formatScore(dim.score)}</strong>
-                  <span>/ 10</span>
+                  <span className="report-dimension-row__score-value">
+                    <strong style={{ color }}>{formatScore(dim.score)}</strong>
+                    <small>/ 10</small>
+                  </span>
+                  <span
+                    className="report-level-pill"
+                    style={{
+                      color,
+                      backgroundColor: `${color}14`,
+                      borderColor: `${color}33`,
+                    }}
+                  >
+                    {dim.level_label}
+                  </span>
                 </>
               )}
             </div>
 
-            <div className="report-dimension-card__meter">
-              <div
-                style={{
-                  width: isNotCovered ? '0%' : `${Math.max(0, Math.min(dim.score * 10, 100))}%`,
-                  backgroundColor: color,
-                }}
-              />
+            <div className="report-dimension-row__evidence" role="cell">
+              <span className="report-dimension-card__label">
+                {isNotCovered ? '覆盖状态' : '得分概览'}
+              </span>
+              <p title={displayEvidence}>{summarizeEvidence(displayEvidence, 108)}</p>
             </div>
 
-            <div className="report-dimension-card__evidence">
-              <span className="report-dimension-card__label">得分概览</span>
-              <p title={displayEvidence}>{summarizeEvidence(displayEvidence)}</p>
-            </div>
+            <div className="report-dimension-row__question" role="cell">
+              <span className="report-dimension-card__label">代表题</span>
+              {representative ? (
+                (() => {
+                  const visibleReason = summarizeEvidence(representative.compactReason, 58);
+                  const normalizedVisibleReason = normalizeRepresentativeReason(visibleReason);
+                  const normalizedCompactReason = normalizeRepresentativeReason(
+                    representative.compactReason,
+                  );
+                  const normalizedFullReason = normalizeRepresentativeReason(representative.fullReason);
+                  const hasTruncatedReason = normalizedVisibleReason !== normalizedCompactReason;
+                  const hasExtraReason =
+                    normalizedFullReason !== normalizedCompactReason;
+                  const shouldShowTooltip = hasExtraReason || hasTruncatedReason;
+                  const tooltipReason = hasExtraReason
+                    ? representative.fullReason
+                    : representative.compactReason;
 
-            {countedQuestions.length > 0 ? (
-              <div className="report-dimension-card__questions">
-                <span className="report-dimension-card__label">计入题目</span>
-                <ul className="report-counted-question-list">
-                  {countedQuestions.map((item, index) => {
-                    const rawQuestionLabel =
-                      item.question_display_label || item.question_label_raw || item.question_no;
-                    const questionLabel = normalizeCountedQuestionLabel(rawQuestionLabel) || rawQuestionLabel;
-                    const itemKey = `${dim.code}-${index}-${questionLabel}-${item.summary}`;
-                    const compactSource = item.reason || item.summary || item.full_reason || '';
-                    const fullSource = item.full_reason || item.reason || item.summary || '';
-                    const rawCompactReason =
-                      dim.code === 'dim4'
-                        ? formatDim4CountedQuestionText(item, compactSource)
-                        : dim.code === 'dim5'
-                        ? formatDim5CountedQuestionText(item, compactSource)
-                        : dim.code === 'dim6'
-                        ? formatDim6CountedQuestionText(item, compactSource)
-                        : formatCountedQuestionAnalysis(compactSource, item);
-                    const rawFullReason =
-                      dim.code === 'dim4'
-                        ? formatDim4CountedQuestionText(item, fullSource)
-                        : dim.code === 'dim5'
-                        ? formatDim5CountedQuestionText(item, fullSource)
-                        : dim.code === 'dim6'
-                        ? formatDim6CountedQuestionText(item, fullSource)
-                        : formatCountedQuestionAnalysis(fullSource, item);
-                    const compactReason = sanitizeCountedQuestionDisplayText(dim.code, rawCompactReason, item);
-                    const fullReason = sanitizeCountedQuestionDisplayText(dim.code, rawFullReason, item);
-                    const tooltipId = `counted-question-${dim.code}-${index}`;
-
-                    return (
-                      <li key={itemKey}>
-                        <strong>{questionLabel}</strong>
+                  return (
+                    <div className="report-representative-question" key={representative.key}>
+                      <strong>{representative.questionLabel}</strong>
+                      <span
+                        className="report-counted-question-summary"
+                        tabIndex={shouldShowTooltip ? 0 : undefined}
+                        aria-describedby={shouldShowTooltip ? representative.tooltipId : undefined}
+                      >
+                        {visibleReason}
+                      </span>
+                      {shouldShowTooltip ? (
                         <span
-                          className="report-counted-question-summary"
-                          tabIndex={fullReason ? 0 : undefined}
-                          aria-describedby={fullReason ? tooltipId : undefined}
+                          id={representative.tooltipId}
+                          role="tooltip"
+                          className="report-counted-question-tooltip"
                         >
-                          {summarizeEvidence(compactReason, 54)}
+                          {tooltipReason}
                         </span>
-                        {fullReason ? (
-                          <>
-                            <span
-                              id={tooltipId}
-                              role="tooltip"
-                              className="report-counted-question-tooltip"
-                            >
-                              {fullReason}
-                            </span>
-                            <span className="report-counted-question-print">{fullReason}</span>
-                          </>
-                        ) : null}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ) : null}
+                      ) : null}
+                    </div>
+                  );
+                })()
+              ) : (
+                <p className="report-dimension-row__empty">暂无代表题</p>
+              )}
+            </div>
           </div>
         );
       })}

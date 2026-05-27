@@ -51,11 +51,14 @@ describe('SixDimensionsRadar', () => {
   });
 
   it('renders radar panel title', () => {
-    render(<SixDimensionsRadar dimensions={mockDimensions} />);
+    const { container } = render(<SixDimensionsRadar dimensions={mockDimensions} />);
 
     expect(screen.getByTestId('radar-svg')).toBeInTheDocument();
     expect(screen.getByTestId('radar-data-area')).toHaveAttribute('points');
     expect(screen.getByTestId('radar-data-line')).toHaveAttribute('stroke', '#294766');
+    expect(container.querySelectorAll('.report-radar-score-item')).toHaveLength(6);
+    expect(screen.getByText('75 / 100')).toBeInTheDocument();
+    expect(screen.getByText('82 / 100')).toBeInTheDocument();
   });
 
   it('uses zero chart values for not-covered dimensions while keeping labels', () => {
@@ -72,8 +75,9 @@ describe('SixDimensionsRadar', () => {
       },
     ];
 
-    render(<SixDimensionsRadar dimensions={mockDimensions} dimensionDetails={dimensionDetails} />);
+    const { container } = render(<SixDimensionsRadar dimensions={mockDimensions} dimensionDetails={dimensionDetails} />);
 
+    expect(container.querySelector('.report-radar-metric')).not.toBeInTheDocument();
     expect(screen.getByText('未覆盖')).toBeInTheDocument();
     const areaPoints = screen.getByTestId('radar-data-area').getAttribute('points') ?? '';
     const linePoints = screen.getByTestId('radar-data-line').getAttribute('points') ?? '';
@@ -95,9 +99,11 @@ describe('SixDimensionsRadar', () => {
       evidence: '该维度未覆盖。',
     }));
 
-    render(<SixDimensionsRadar dimensions={mockDimensions} dimensionDetails={dimensionDetails} />);
+    const { container } = render(<SixDimensionsRadar dimensions={mockDimensions} dimensionDetails={dimensionDetails} />);
 
     expect(screen.getByText('暂无可绘制维度')).toBeInTheDocument();
+    expect(container.querySelectorAll('.report-radar-score-item')).toHaveLength(6);
+    expect(screen.getAllByText('未覆盖')).toHaveLength(6);
     expect(screen.queryByTestId('radar-svg')).not.toBeInTheDocument();
     expect(screen.queryByTestId('radar-data-line')).not.toBeInTheDocument();
   });
@@ -162,6 +168,8 @@ describe('DifficultyPositioning', () => {
     expect(screen.getByText('基础题')).toBeInTheDocument();
     expect(screen.getByText('中等题')).toBeInTheDocument();
     expect(screen.getByText('较难题')).toBeInTheDocument();
+    expect(screen.queryByText('Level 4')).not.toBeInTheDocument();
+    expect(screen.queryByText('主要检查基本概念、直接计算和常规方法。')).not.toBeInTheDocument();
     expect(screen.getAllByText('33.3%')).toHaveLength(3);
     expect(screen.getByText('18')).toBeInTheDocument();
     expect(screen.getByText('15')).toBeInTheDocument();
@@ -212,11 +220,16 @@ describe('DimensionScoreCards', () => {
     },
   ];
 
-  it('renders all dimension cards', () => {
+  it('renders all dimension rows', () => {
     render(<DimensionScoreCards dimensions={mockDimensions} />);
 
+    expect(screen.getByRole('table', { name: '六维评价明细' })).toBeInTheDocument();
+    expect(screen.getAllByRole('row')).toHaveLength(3);
     expect(screen.getByText('计算')).toBeInTheDocument();
     expect(screen.getByText('几何')).toBeInTheDocument();
+    expect(screen.queryByText('DIM1')).not.toBeInTheDocument();
+    expect(screen.queryByText('DIM2')).not.toBeInTheDocument();
+    expect(screen.queryByText('评分提示')).not.toBeInTheDocument();
     expect(screen.queryByText('数学运算')).not.toBeInTheDocument();
     expect(screen.queryByText('几何直观与空间想象')).not.toBeInTheDocument();
   });
@@ -284,7 +297,7 @@ describe('DimensionScoreCards', () => {
 
     expect(screen.getByText('7.5')).toBeInTheDocument();
     expect(screen.getByText('6.0')).toBeInTheDocument();
-    expect(screen.getAllByText('得分概览')).toHaveLength(2);
+    expect(screen.getAllByText('得分概览')).toHaveLength(3);
     expect(screen.getByText(/计算，综合得分 7.5 分/)).toBeInTheDocument();
     expect(screen.getByText(/几何，综合得分 6.0 分/)).toBeInTheDocument();
     expect(screen.getByText(/图形关系整理和模型识别/)).toBeInTheDocument();
@@ -386,7 +399,7 @@ describe('DimensionScoreCards', () => {
     expect(screen.queryByText(/权重/)).not.toBeInTheDocument();
   });
 
-  it('renders compact counted-question text plus full analysis for hover and print', () => {
+  it('renders compact counted-question text plus one full analysis tooltip', () => {
     const fullReason = 'L5 高阶结构巧算：完整分析：需要识别结构特征。核心事实：结构特征、依据来源。依据来源：文本。';
     const displayedFullReason = '困难（9.5）：完整分析：需要识别结构特征';
     const dimensions: DimensionScore[] = [
@@ -411,7 +424,7 @@ describe('DimensionScoreCards', () => {
 
     expect(screen.getByText('困难（9.5）：短摘要：结构计算题')).toBeInTheDocument();
     const fullReasonNodes = screen.getAllByText(displayedFullReason);
-    expect(fullReasonNodes).toHaveLength(2);
+    expect(fullReasonNodes).toHaveLength(1);
     expect(screen.queryByText(/高阶结构巧算/)).not.toBeInTheDocument();
     expect(screen.queryByText(/核心事实：/)).not.toBeInTheDocument();
     expect(screen.queryByText(/依据来源：/)).not.toBeInTheDocument();
@@ -420,14 +433,59 @@ describe('DimensionScoreCards', () => {
         node.classList.contains('report-counted-question-tooltip'),
       ),
     ).toBe(true);
-    expect(
-      fullReasonNodes.some((node: Element) =>
-        node.classList.contains('report-counted-question-print'),
-      ),
-    ).toBe(true);
+    expect(document.querySelector('.report-counted-question-print')).not.toBeInTheDocument();
   });
 
-  it('normalizes historical counted-question prefixes to dim1 difficulty labels', () => {
+  it('does not render a duplicate tooltip when representative reasons are identical', () => {
+    const dimensions: DimensionScore[] = [
+      {
+        ...mockDimensions[0],
+        counted_questions: [
+          {
+            question_no: '9',
+            question_display_label: '9',
+            summary: '结构计算',
+            reason: '较难（8.0）：主要考查结构计算',
+            full_reason: '较难（8.0）：主要考查结构计算',
+          },
+        ],
+      },
+    ];
+
+    render(<DimensionScoreCards dimensions={dimensions} />);
+
+    expect(screen.getAllByText('较难（8.0）：主要考查结构计算')).toHaveLength(1);
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+  });
+
+  it('renders a tooltip when identical representative reasons are truncated', () => {
+    const longReason =
+      'This representative explanation is intentionally long enough to be shortened in the visible table cell while keeping the full text available on hover.';
+    const dimensions: DimensionScore[] = [
+      {
+        ...mockDimensions[0],
+        counted_questions: [
+          {
+            question_no: '9',
+            question_display_label: '9',
+            summary: 'long representative explanation',
+            reason: longReason,
+            full_reason: longReason,
+          },
+        ],
+      },
+    ];
+
+    render(<DimensionScoreCards dimensions={dimensions} />);
+
+    const summary = document.querySelector('.report-counted-question-summary');
+    expect(summary).toBeInTheDocument();
+    expect(summary).not.toHaveTextContent(longReason);
+    expect(screen.getByRole('tooltip')).toHaveTextContent(longReason);
+    expect(document.querySelector('.report-counted-question-print')).not.toBeInTheDocument();
+  });
+
+  it('normalizes the first dim1 counted question as the representative item', () => {
     const dimensions: DimensionScore[] = [
       {
         ...mockDimensions[0],
@@ -460,11 +518,11 @@ describe('DimensionScoreCards', () => {
     render(<DimensionScoreCards dimensions={dimensions} />);
 
     expect(screen.getAllByText('较难（8.0）：主要考查分数裂项；常见失分点是连续化简').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('中等（6.0）：主要考查百分数应用；常见失分点是算式落地').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('较易（4.0）：主要考查小数除法；主要区分熟练度和准确率').length).toBeGreaterThan(0);
+    expect(screen.queryByText('中等（6.0）：主要考查百分数应用；常见失分点是算式落地')).not.toBeInTheDocument();
+    expect(screen.queryByText('较易（4.0）：主要考查小数除法；主要区分熟练度和准确率')).not.toBeInTheDocument();
   });
 
-  it('normalizes dim3 counted-question prefixes to difficulty labels', () => {
+  it('normalizes the first dim3 counted question as the representative item', () => {
     const dimensions: DimensionScore[] = [
       {
         code: 'dim3',
@@ -495,10 +553,10 @@ describe('DimensionScoreCards', () => {
     render(<DimensionScoreCards dimensions={dimensions} />);
 
     expect(screen.getAllByText('较难（8.0）：主要考查比较基准理解；本题难点在于要分清变化前后的基准量').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('中等（6.0）：主要考查图文对应理解；本题难点在于要先看懂表格项目和题目问法的对应关系').length).toBeGreaterThan(0);
+    expect(screen.queryByText('中等（6.0）：主要考查图文对应理解；本题难点在于要先看懂表格项目和题目问法的对应关系')).not.toBeInTheDocument();
   });
 
-  it('normalizes dim6 counted-question prefixes to difficulty labels', () => {
+  it('normalizes the first dim6 counted question as the representative item', () => {
     const dimensions: DimensionScore[] = [
       {
         code: 'dim6',
@@ -528,8 +586,13 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    expect(screen.getAllByText('较难（8.0）：这题的逻辑链条较长，通常需要多步推进，并伴随分类、倒推、回查或多条件检查；学生需要按阶段记录变化，把上一阶段的结果接到下一阶段条件中').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('中等（6.0）：这题的逻辑链条有一定长度，通常需要把前后条件连续接起来；学生需要把前一步得到的结果接到下一步条件里，连续推出中间结论').length).toBeGreaterThan(0);
+    expect(
+      screen
+        .getAllByText(/较难（8\.0）：这题的逻辑链条较长/)
+        .some((node) => node.classList.contains('report-counted-question-summary')),
+    ).toBe(true);
+    expect(screen.getByRole('tooltip')).toHaveTextContent(/较难（8\.0）：这题的逻辑链条较长/);
+    expect(screen.queryByText('中等（6.0）：这题的逻辑链条有一定长度，通常需要把前后条件连续接起来；学生需要把前一步得到的结果接到下一步条件里，连续推出中间结论')).not.toBeInTheDocument();
     expect(screen.queryByText(/依据是/)).not.toBeInTheDocument();
   });
 
@@ -561,11 +624,14 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    const expected = (
-      '较难（8.0）：本题属于五六年级奥数的面积比模型；' +
-      '难点在于要识别等高、共边或割补关系，并把图形面积关系转化为比例关系。'
+    expect(
+      screen
+        .getAllByText(/较难（8\.0）：本题属于五六年级奥数的面积比模型/)
+        .some((node) => node.classList.contains('report-counted-question-summary')),
+    ).toBe(true);
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+      /较难（8\.0）：本题属于五六年级奥数的面积比模型/,
     );
-    expect(screen.getAllByText(expected).length).toBeGreaterThan(0);
     expect(screen.queryByText(/命中/)).not.toBeInTheDocument();
     expect(screen.queryByText(/因此计为/)).not.toBeInTheDocument();
   });
@@ -638,10 +704,13 @@ describe('DimensionScoreCards', () => {
     render(<DimensionScoreCards dimensions={dimensions} />);
 
     expect(
-      screen.getAllByText(
-        '困难（9.5）：本题属于奥数知识：博弈策略与必胜策略；难点在于不能只看当前一步能不能走，要从最终胜负倒推必胜和必败局面。'
-      ).length
-    ).toBeGreaterThan(0);
+      screen
+        .getAllByText(/困难（9\.5）：本题属于奥数知识：博弈策略与必胜策略/)
+        .some((node) => node.classList.contains('report-counted-question-summary')),
+    ).toBe(true);
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+      /困难（9\.5）：本题属于奥数知识：博弈策略与必胜策略/,
+    );
     expect(screen.getAllByText('5').length).toBeGreaterThan(0);
     expect(screen.queryByText(/奥数年级未确认/)).not.toBeInTheDocument();
     expect(screen.queryByText(/游戏；获胜/)).not.toBeInTheDocument();
@@ -750,11 +819,7 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    const expected = (
-      '困难（9.5）：本题是数论约束中的综合构造建模；' +
-      '难点在于要把整除、余数和范围条件一起回查，逐步排除不满足条件的数。'
-    );
-    expect(screen.getAllByText(expected).length).toBeGreaterThan(0);
+    expect(screen.getByText(/困难（9\.5）：本题是数论约束中的综合构造建模/)).toBeInTheDocument();
     expect(screen.queryByText(/校准/)).not.toBeInTheDocument();
     expect(screen.queryByText(/参考画像/)).not.toBeInTheDocument();
   });
@@ -788,11 +853,7 @@ describe('DimensionScoreCards', () => {
 
     render(<DimensionScoreCards dimensions={dimensions} />);
 
-    const expected = (
-      '较难（8.0）：本题是反射路径中的多关系建模；' +
-      '难点在于不能直接套模板，需要构造中间量、分类回查或重组关系。'
-    );
-    expect(screen.getAllByText(expected).length).toBeGreaterThan(0);
+    expect(screen.getByText(/较难（8\.0）：本题是反射路径中的多关系建模/)).toBeInTheDocument();
     expect(screen.queryByText(/This problem/)).not.toBeInTheDocument();
     expect(screen.queryByText(/requires understanding/)).not.toBeInTheDocument();
   });

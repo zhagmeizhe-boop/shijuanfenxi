@@ -297,10 +297,19 @@ def test_pdf_export_renders_parent_summary_and_question_distribution():
     assert 'margin: 8mm;' in html
     assert 'grid-template-columns: minmax(0, 1.35fr) minmax(230px, 0.85fr);' in html
     assert 'class="report-overview-item report-overview-item--position"' in html
-    assert '.report-dimension-list {' in html
-    assert 'grid-template-columns: repeat(2, minmax(0, 1fr));' in html
-    assert 'grid-template-columns: 30px minmax(0, 1fr);' in html
-    assert 'report-dimension-row' not in html
+    assert 'class="report-dimension-table"' in html
+    assert 'grid-template-columns: 0.58fr 0.54fr 1.46fr 1.86fr;' in html
+    assert "report-dimension-card" not in html
+    assert "report-radar-metric" not in html
+    assert "report-radar-score-strip" in html
+    assert "DIM1" not in html
+    assert "DIM2" not in html
+    assert "DIM3" not in html
+    assert "DIM4" not in html
+    assert "DIM5" not in html
+    assert "DIM6" not in html
+    assert "评分提示" not in html
+    assert "Level 3" not in html
     assert "家长速读" in html
     assert "主要卡点在读懂题意和连续推理" in html
     assert "较难题约占 33.3%" in html
@@ -311,6 +320,8 @@ def test_pdf_export_renders_parent_summary_and_question_distribution():
     assert "基础题" in html
     assert "中等题" in html
     assert "较难题" in html
+    assert "主要检查基本概念、直接计算和常规方法。" not in html
+    assert "需要一定转化、综合运用或稳定的解题步骤。" not in html
     assert "33.3%" in html
     assert "（18）" not in html
     assert "三-15" not in html
@@ -379,6 +390,42 @@ def test_pdf_export_sanitizes_historical_internal_failure_counted_questions():
     assert "LLM request failed" not in html
 
 
+def test_pdf_export_renders_only_first_representative_question_per_dimension():
+    payload = _build_pdf_report_payload(
+        [
+            {
+                "code": "dim1",
+                "name": "数学运算",
+                "score": 8.0,
+                "level": 4,
+                "level_label": "较难",
+                "score_status": "scored",
+                "evidence": "计算，综合得分 8.0 分。",
+                "counted_questions": [
+                    {
+                        "question_no": "1",
+                        "question_display_label": "1",
+                        "score": 8.0,
+                        "reason": "8.0分：主要考查分数裂项；常见失分点是连续化简。",
+                    },
+                    {
+                        "question_no": "2",
+                        "question_display_label": "2",
+                        "score": 6.0,
+                        "reason": "6.0分：主要考查百分数应用；常见失分点是算式落地。",
+                    },
+                ],
+            }
+        ]
+    )
+
+    html = PDFExportService()._generate_html(payload)
+
+    assert "代表题" in html
+    assert "较难（8.0）：主要考查分数裂项；常见失分点是连续化简" in html
+    assert "主要考查百分数应用" not in html
+
+
 def test_pdf_export_parent_summary_fallback_is_parent_friendly():
     html = PDFExportService()._build_parent_summary_html(
         {},
@@ -422,6 +469,9 @@ def test_pdf_export_radar_renders_static_svg_for_not_covered_dimensions():
     assert '<svg class="report-radar-svg"' in html
     assert 'data-testid="radar-data-area"' in html
     assert 'data-testid="radar-data-line"' in html
+    assert 'class="report-radar-score-strip"' in html
+    assert "70 / 100" in html
+    assert "未覆盖" in html
     assert 'stroke="#294766" stroke-width="3"' in html
     assert "<h3>计算</h3>" in html
     assert "<h3>几何</h3>" in html
@@ -459,6 +509,8 @@ def test_pdf_export_radar_shows_empty_state_when_all_dimensions_not_covered():
     html = PDFExportService()._generate_html(_build_pdf_report_payload(dimension_details))
 
     assert 'id="radar-chart" class="is-empty"><span>暂无可绘制维度</span>' in html
+    assert 'class="report-radar-score-strip"' in html
+    assert html.count("<strong>未覆盖</strong>") >= 6
     ordered_names = ["知识广度", "计算", "几何", "信息提取", "实践创新", "逻辑链条"]
     ordered_positions = [html.index(f"<h3>{name}</h3>") for name in ordered_names]
     assert ordered_positions == sorted(ordered_positions)

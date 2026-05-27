@@ -148,7 +148,6 @@ export function DifficultyPositioning({ data }: DifficultyPositioningProps) {
                 style={{ backgroundColor: isActive ? config.color : undefined }}
               />
               <strong>{item.label}</strong>
-              <span>Level {item.level}</span>
             </div>
           );
         })}
@@ -179,7 +178,6 @@ export function DifficultyPositioning({ data }: DifficultyPositioningProps) {
                     <strong>{formatPercentage(bucket.percentage)}%</strong>
                     <small>{bucket.count} 道</small>
                   </div>
-                  <p>{bucket.description || '暂无说明。'}</p>
                   <div className="report-question-bucket__questions">
                     {questionLabels.length > 0 ? questionLabels.join('、') : '暂无题目'}
                   </div>

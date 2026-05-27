@@ -841,139 +841,103 @@ class PDFExportService:
     def _build_counted_questions_html(self, detail: dict) -> str:
         counted_questions = detail.get("counted_questions", [])
         if not isinstance(counted_questions, list) or not counted_questions:
-            return ""
+            return '<p class="report-dimension-row__empty">暂无代表题</p>'
 
-        rendered_items = []
-        for entry in counted_questions[:3]:
-            question_label = escape(
-                str(
-                    entry.get("question_display_label")
-                    or entry.get("question_label_raw")
-                    or entry.get("question_no")
-                    or ""
-                )
+        entry = counted_questions[0]
+        question_label = (
+            self._normalize_question_short_label(entry.get("question_display_label"))
+            or self._normalize_question_short_label(entry.get("question_label_raw"))
+            or self._normalize_question_short_label(entry.get("question_no"))
+            or str(
+                entry.get("question_display_label")
+                or entry.get("question_label_raw")
+                or entry.get("question_no")
+                or "未标注题号"
             )
-            raw_reason = entry.get("full_reason") or entry.get("reason") or entry.get("summary") or ""
-            if detail.get("code") == "dim4":
-                reason_text = self._format_dim4_counted_question_analysis(entry, raw_reason)
-            elif detail.get("code") == "dim5":
-                reason_text = self._format_dim5_counted_question_analysis(entry, raw_reason)
-            elif detail.get("code") == "dim6":
-                reason_text = self._format_dim6_counted_question_analysis(entry, raw_reason)
-            else:
-                reason_text = self._format_counted_question_analysis(raw_reason, entry)
-            reason_text = self._sanitize_counted_question_display_text(
-                detail.get("code"),
-                reason_text,
-                entry,
-            )
-            reason = escape(reason_text)
-            rendered_items.append(
-                f"""
-                <li>
-                  <strong>{question_label}</strong>
-                  <span>{reason}</span>
-                </li>
-                """
-            )
-
-        return (
-            '<div class="report-dimension-card__questions">'
-            '<span class="report-dimension-card__label">计入题目</span>'
-            f'<ul class="report-counted-question-list">{"".join(rendered_items)}</ul>'
-            "</div>"
         )
-
-        items = []
-        for entry in counted_questions[:3]:
-            question_label = escape(
-                str(entry.get("question_label_raw") or entry.get("question_no") or "")
-            )
-            question_label = (
-                f"第 {escape(str(page_no))} 页 / 第 {question_no} 题"
-                if page_no
-                else f"第 {question_no} 题"
-            )
-            question_no = (
-                f"{escape(str(page_no))} 页 / 第 {raw_question_no}"
-                if page_no
-                else raw_question_no
-            )
-            reason = escape(self._truncate_text(entry.get("reason") or entry.get("summary"), 58))
-            items.append(
-                f"""
-                <li>
-                  <strong>第 {question_no} 题</strong>
-                  <span>{reason}</span>
-                </li>
-                """
-            )
-        return (
-            '<div class="report-dimension-card__questions">'
-            '<span class="report-dimension-card__label">计入题目</span>'
-            f'<ul class="report-counted-question-list">{"".join(items)}</ul>'
-            "</div>"
+        raw_reason = entry.get("reason") or entry.get("summary") or entry.get("full_reason") or ""
+        if detail.get("code") == "dim4":
+            reason_text = self._format_dim4_counted_question_analysis(entry, raw_reason)
+        elif detail.get("code") == "dim5":
+            reason_text = self._format_dim5_counted_question_analysis(entry, raw_reason)
+        elif detail.get("code") == "dim6":
+            reason_text = self._format_dim6_counted_question_analysis(entry, raw_reason)
+        else:
+            reason_text = self._format_counted_question_analysis(raw_reason, entry)
+        reason_text = self._sanitize_counted_question_display_text(
+            detail.get("code"),
+            reason_text,
+            entry,
         )
+        reason = escape(self._truncate_text(reason_text, 88))
+
+        return f"""
+        <div class="report-representative-question">
+          <strong>{escape(str(question_label))}</strong>
+          <span>{reason}</span>
+        </div>
+        """
 
     def _build_dimension_cards_html(self, details_by_code: dict[str, dict]) -> str:
-        cards_html: list[str] = []
+        rows_html: list[str] = []
         for dim_meta in DIM_META:
             detail = details_by_code.get(dim_meta["code"], {})
-            if detail.get("score_status") == "not_covered":
-                detail["warning"] = False
             score = self._safe_float(detail.get("score"))
             is_not_covered = detail.get("score_status") == "not_covered" or int(detail.get("level") or 0) <= 0
-            score_html = f'<strong style="color:{dim_meta["color"]}">未覆盖</strong>' if is_not_covered else (
-                f'<strong style="color:{dim_meta["color"]}">{self._format_score(score)}</strong><span>/ 10</span>'
-            )
-            meter_width = 0 if is_not_covered else max(0, min(score * 10, 100))
-            evidence_label = "覆盖状态" if is_not_covered else "得分概览"
             level_label = escape(str(detail.get("level_label") or "未评级"))
-            evidence_max_length = 120 if detail.get("code") in {"dim3", "dim4"} else 56
+            score_html = (
+                f'<strong style="color:{dim_meta["color"]}">未覆盖</strong>'
+                if is_not_covered
+                else (
+                    f'<span class="report-dimension-row__score-value">'
+                    f'<strong style="color:{dim_meta["color"]}">{self._format_score(score)}</strong>'
+                    f'<small>/ 10</small></span>'
+                    f'<span class="report-level-pill" style="color:{dim_meta["color"]};'
+                    f'background:{dim_meta["color"]}14;border-color:{dim_meta["color"]}33">{level_label}</span>'
+                )
+            )
+            evidence_max_length = 112 if detail.get("code") in {"dim3", "dim4"} else 94
             evidence = escape(
                 self._truncate_text(
                     self._format_dimension_evidence(detail),
                     max_length=evidence_max_length,
                 )
             )
-            warning_html = (
-                '<span class="report-inline-tag report-status-tag">评分提示</span>'
-                if detail.get("warning")
-                else ""
-            )
             counted_questions_html = self._build_counted_questions_html(detail)
 
-            cards_html.append(
+            rows_html.append(
                 f"""
-                <article class="report-dimension-card" style="border-top-color:{dim_meta['color']}">
-                  <div class="report-dimension-card__header">
-                    <div class="report-dimension-card__title">
+                <div class="report-dimension-row" style="border-left-color:{dim_meta['color']}">
+                  <div class="report-dimension-row__dimension">
+                    <span class="report-dimension-row__marker" style="background:{dim_meta['color']}"></span>
+                    <div class="report-dimension-title">
                       <h3>{escape(dim_meta['name'])}</h3>
-                      <p>{escape(dim_meta['code'].upper())}</p>
-                    </div>
-                    <div class="report-dimension-card__badges">
-                      <span class="report-level-pill" style="color:{dim_meta['color']};background:{dim_meta['color']}14;border-color:{dim_meta['color']}33">
-                        {level_label}
-                      </span>
-                      {warning_html}
                     </div>
                   </div>
-                  <div class="report-dimension-card__score">
+                  <div class="report-dimension-row__score">
                     {score_html}
                   </div>
-                  <div class="report-dimension-card__meter">
-                    <div style="width:{meter_width:.0f}%;background:{dim_meta['color']}"></div>
-                  </div>
-                  <div class="report-dimension-card__evidence">
-                    <span class="report-dimension-card__label">{evidence_label}</span>
+                  <div class="report-dimension-row__evidence">
                     <p>{evidence}</p>
                   </div>
-                  {counted_questions_html}
-                </article>
+                  <div class="report-dimension-row__question">
+                    {counted_questions_html}
+                  </div>
+                </div>
                 """
             )
 
-        return "".join(cards_html)
+        return f"""
+        <div class="report-dimension-table">
+          <div class="report-dimension-table__head">
+            <span>维度</span>
+            <span>得分/等级</span>
+            <span>得分概览</span>
+            <span>代表题</span>
+          </div>
+          {"".join(rows_html)}
+        </div>
+        """
 
     def _build_scale_html(self, difficulty_level: int) -> str:
         blocks: list[str] = []
@@ -985,7 +949,6 @@ class PDFExportService:
                 <div class="report-difficulty-scale__item{active_class}">
                   <div class="report-difficulty-scale__dot" style="background:{dot_color}"></div>
                   <strong>{escape(meta['label'])}</strong>
-                  <span>Level {level}</span>
                 </div>
                 """
             )
@@ -1097,7 +1060,6 @@ class PDFExportService:
                     <strong>{percentage:.1f}%</strong>
                     <small>{count} 道</small>
                   </div>
-                  <p>{escape(str(bucket.get("description") or "暂无说明。"))}</p>
                   <div class="report-question-bucket__questions">{escape(question_text)}</div>
                 </div>
                 """
@@ -1189,20 +1151,25 @@ class PDFExportService:
             else "<span>暂无可绘制维度</span>"
         )
         warning_banner_html = self._build_report_warning_html(report_warnings)
-
-        def radar_metric_text(meta: dict) -> str:
-            detail = details_by_code.get(meta["code"], {})
-            if detail.get("score_status") == "not_covered" or int(detail.get("level") or 0) <= 0:
-                return "未覆盖"
-            return f"{self._format_score(dimensions.get(meta['field'], 0), 0)} / 100"
-
-        radar_metrics_html = "".join(
-            f"""
-            <div class="report-radar-metric">
-              <strong>{escape(meta['name'])}</strong>
-              <span>{radar_metric_text(meta)}</span>
-            </div>
-            """
+        radar_scores_html = "".join(
+            (
+                f"""
+                <div class="report-radar-score-item">
+                  <span>{escape(meta['name'])}</span>
+                  <strong>未覆盖</strong>
+                </div>
+                """
+                if (
+                    details_by_code.get(meta["code"], {}).get("score_status") == "not_covered"
+                    or int(details_by_code.get(meta["code"], {}).get("level") or 0) <= 0
+                )
+                else f"""
+                <div class="report-radar-score-item">
+                  <span>{escape(meta['name'])}</span>
+                  <strong>{self._format_score(dimensions.get(meta['field'], 0), 0)} / 100</strong>
+                </div>
+                """
+            )
             for meta in DIM_META
         )
 
@@ -1261,20 +1228,19 @@ class PDFExportService:
       font-size: 12px;
       line-height: 1.4;
     }}
-    .report-overview-strip, .report-dimension-list, .report-radar-metrics {{
+    .report-overview-strip {{
       display: grid;
       gap: 8px;
     }}
     .report-overview-strip {{ grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 8px; }}
-    .report-overview-item, .report-radar-metric,
-    .report-target-block, .report-score-panel {{
+    .report-overview-item, .report-target-block, .report-score-panel {{
       background: #ffffff;
       border: 1px solid #d5dbe0;
       border-radius: 8px;
     }}
     .report-overview-item {{ padding: 9px 10px; min-height: 50px; }}
     .report-overview-item span, .report-score-panel__label, .report-card-note,
-    .report-target-block span, .report-dimension-card__label {{
+    .report-target-block span {{
       display: block;
       color: #8a9399;
       font-size: 9px;
@@ -1323,13 +1289,13 @@ class PDFExportService:
     }}
     .report-score-panel {{ padding: 10px; background: {difficulty_meta['surface']}; border-color: {difficulty_meta['border']}; break-inside: avoid; page-break-inside: avoid; }}
     .report-score-panel__value {{ display: flex; align-items: baseline; gap: 6px; margin-top: 6px; }}
-    .report-score-panel__value strong, .report-dimension-card__score strong {{
+    .report-score-panel__value strong, .report-dimension-row__score-value strong {{
       font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
       line-height: 1;
       font-weight: 700;
     }}
     .report-score-panel__value strong {{ font-size: 28px; color: {difficulty_meta['color']}; }}
-    .report-score-panel__value small, .report-dimension-card__score span {{ color: #5d6a72; font-size: 11px; }}
+    .report-score-panel__value small, .report-dimension-row__score-value small {{ color: #5d6a72; font-size: 11px; }}
     .report-level-pill, .report-inline-tag {{
       display: inline-flex;
       align-items: center;
@@ -1360,7 +1326,6 @@ class PDFExportService:
     .report-difficulty-scale__item {{ flex: 1; min-width: 0; text-align: center; }}
     .report-difficulty-scale__dot {{ width: 7px; height: 7px; margin: 0 auto 4px; border-radius: 999px; }}
     .report-difficulty-scale__item strong {{ display: block; color: #5d6a72; font-size: 9.5px; font-weight: 600; line-height: 1.25; }}
-    .report-difficulty-scale__item span, .report-radar-metric span {{ color: #8a9399; font-size: 9px; }}
     .report-difficulty-scale__item.is-active strong {{ color: #1f2933; }}
     .report-question-distribution {{ padding-top: 2px; break-inside: avoid; page-break-inside: avoid; }}
     .report-question-distribution__header {{
@@ -1394,7 +1359,6 @@ class PDFExportService:
     .report-question-bucket__summary span {{ color: #1f2933; font-size: 10px; font-weight: 600; line-height: 1.3; }}
     .report-question-bucket__summary strong {{ color: #294766; font-size: 15px; line-height: 1; font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif; }}
     .report-question-bucket__summary small {{ grid-column: 1 / -1; color: #8a9399; font-size: 8.5px; }}
-    .report-question-bucket p {{ margin-top: 5px; color: #5d6a72; font-size: 9px; line-height: 1.4; }}
     .report-question-bucket__questions {{
       margin-top: 5px;
       padding-top: 5px;
@@ -1413,12 +1377,6 @@ class PDFExportService:
       border-radius: 8px;
     }}
     .report-question-distribution__note {{ margin-top: 6px; color: #8a9399; font-size: 9px; line-height: 1.4; }}
-    .report-dimension-card__meter {{
-      overflow: hidden;
-      background: #dde3e7;
-      border-radius: 999px;
-    }}
-    .report-dimension-card__meter div {{ height: 100%; border-radius: 999px; }}
     .report-radar-card__body {{
       display: grid;
       gap: 8px;
@@ -1451,15 +1409,33 @@ class PDFExportService:
       border: 1px dashed #cfd6dc;
       border-radius: 8px;
     }}
-    .report-radar-metrics {{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }}
-    .report-radar-metric {{ padding: 7px 8px; break-inside: avoid; page-break-inside: avoid; }}
-    .report-radar-metric strong {{
-      display: block;
-      margin-bottom: 3px;
+    .report-radar-score-strip {{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 5px;
+    }}
+    .report-radar-score-item {{
+      display: flex;
+      justify-content: space-between;
+      gap: 5px;
+      min-width: 0;
+      padding: 5px 6px;
+      background: #ffffff;
+      border: 1px solid #d7dde2;
+      border-radius: 6px;
+    }}
+    .report-radar-score-item span {{
+      color: #5d6a72;
+      font-size: 8.8px;
+      line-height: 1.25;
+      white-space: nowrap;
+    }}
+    .report-radar-score-item strong {{
       color: #1f2933;
-      font-size: 10.5px;
+      font-size: 8.8px;
       line-height: 1.25;
       font-weight: 600;
+      white-space: nowrap;
     }}
     .report-section {{
       padding: 12px 14px;
@@ -1478,62 +1454,80 @@ class PDFExportService:
     }}
     .report-section__header h2 {{ font-size: 18px; line-height: 1.18; }}
     .report-section__header p {{ max-width: 260px; color: #5d6a72; font-size: 10.5px; line-height: 1.4; }}
-    .report-dimension-list {{
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      align-items: start;
-    }}
-    .report-dimension-card {{
-      padding: 10px 10px 11px;
+    .report-dimension-table {{
       background: #ffffff;
       border: 1px solid #d7dde2;
-      border-top: 3px solid;
       border-radius: 8px;
+      overflow: hidden;
+    }}
+    .report-dimension-table__head,
+    .report-dimension-row {{
+      display: grid;
+      grid-template-columns: 0.58fr 0.54fr 1.46fr 1.86fr;
+      gap: 6px;
+      align-items: start;
+    }}
+    .report-dimension-table__head {{
+      padding: 6px 8px;
+      color: #8a9399;
+      font-size: 8.8px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: #f0f3f5;
+      border-bottom: 1px solid #d7dde2;
+    }}
+    .report-dimension-row {{
+      padding: 7px 8px;
+      border-left: 3px solid transparent;
+      border-bottom: 1px solid #e1e6ea;
       break-inside: avoid;
       page-break-inside: avoid;
     }}
-    .report-dimension-card__header {{
+    .report-dimension-row:last-child {{ border-bottom: 0; }}
+    .report-dimension-row__dimension {{
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-    }}
-    .report-dimension-card__title h3 {{ font-size: 13.5px; line-height: 1.28; font-weight: 600; }}
-    .report-dimension-card__title p {{
-      margin-top: 3px;
-      color: #8a9399;
-      font-size: 8.5px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }}
-    .report-dimension-card__score {{ display: flex; align-items: baseline; gap: 6px; margin: 7px 0 7px; }}
-    .report-dimension-card__score strong {{ font-size: 24px; }}
-    .report-dimension-card__meter {{ height: 4px; margin-bottom: 7px; }}
-    .report-dimension-card__evidence {{ padding-top: 7px; border-top: 1px solid #dfe4e8; }}
-    .report-dimension-card__evidence p {{ margin-top: 4px; color: #5d6a72; font-size: 10.5px; line-height: 1.45; }}
-    .report-dimension-card__questions {{ margin-top: 7px; padding-top: 6px; border-top: 1px dashed #dfe4e8; }}
-    .report-counted-question-list {{ display: grid; gap: 4px; list-style: none; margin-top: 5px; }}
-    .report-counted-question-list li {{
-      display: grid;
-      grid-template-columns: 30px minmax(0, 1fr);
       gap: 6px;
-      padding: 0 0 4px;
-      border-bottom: 1px dashed #e4e8ec;
+      min-width: 0;
     }}
-    .report-counted-question-list li:last-child {{ padding-bottom: 0; border-bottom: 0; }}
-    .report-counted-question-list strong {{
-      display: block;
-      color: #1f2933;
-      font-size: 10.5px;
-      line-height: 1.35;
-      font-weight: 600;
+    .report-dimension-row__marker {{
+      flex: 0 0 auto;
+      width: 6px;
+      height: 6px;
+      margin-top: 5px;
+      border-radius: 999px;
     }}
-    .report-counted-question-list span {{
-      display: block;
-      margin-top: 0;
+    .report-dimension-title h3 {{ font-size: 11.5px; line-height: 1.28; font-weight: 600; }}
+    .report-dimension-row__score {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+      min-width: 0;
+    }}
+    .report-dimension-row__score > strong,
+    .report-dimension-row__score-value strong {{ font-size: 18px; }}
+    .report-dimension-row__score-value {{
+      display: inline-flex;
+      align-items: baseline;
+      gap: 3px;
+    }}
+    .report-dimension-row__evidence p,
+    .report-dimension-row__empty,
+    .report-representative-question span {{
       color: #5d6a72;
       font-size: 9.8px;
-      line-height: 1.4;
+      line-height: 1.38;
+    }}
+    .report-representative-question {{
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr);
+      gap: 5px;
+    }}
+    .report-representative-question strong {{
+      color: #1f2933;
+      font-size: 10px;
+      line-height: 1.35;
+      font-weight: 600;
     }}
     .report-footer {{ padding-top: 0; margin-top: 6px; text-align: center; color: #8a9399; font-size: 9px; }}
     @media print {{
@@ -1610,7 +1604,7 @@ class PDFExportService:
 
           <div class="report-radar-card__body">
             <div id="radar-chart"{radar_empty_class}>{radar_chart_html}</div>
-            <div class="report-radar-metrics">{radar_metrics_html}</div>
+            <div class="report-radar-score-strip">{radar_scores_html}</div>
           </div>
         </article>
       </section>
@@ -1623,7 +1617,7 @@ class PDFExportService:
           </div>
           <p>统一呈现维度名称、得分、等级与得分概览，减少冗余噪音，突出可读性。</p>
         </div>
-        <div class="report-dimension-list">{self._build_dimension_cards_html(details_by_code)}</div>
+        {self._build_dimension_cards_html(details_by_code)}
       </section>
 
     </main>

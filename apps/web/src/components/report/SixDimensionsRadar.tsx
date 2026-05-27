@@ -198,17 +198,13 @@ export function SixDimensionsRadar({ dimensions, dimensionDetails = [] }: SixDim
             </svg>
           )}
         </div>
-
-        <div className="report-radar-metrics">
-          {REPORT_DIMENSIONS.map((item) => {
-            const isNotCovered = dimensionDetails.some(
-              (detail) => detail.code === item.code && detail.score_status === 'not_covered',
-            );
-
+        <div className="report-radar-score-strip" aria-label="六维分数">
+          {REPORT_DIMENSIONS.map((item, index) => {
+            const isNotCovered = radarValues[index] === null;
             return (
-              <div key={item.code} className="report-radar-metric">
-                <strong>{item.name}</strong>
-                <span>{isNotCovered ? '未覆盖' : `${formatScore(dimensions[item.field], 0)} / 100`}</span>
+              <div key={item.code} className="report-radar-score-item">
+                <span>{item.name}</span>
+                <strong>{isNotCovered ? '未覆盖' : `${formatScore(dimensions[item.field], 0)} / 100`}</strong>
               </div>
             );
           })}
