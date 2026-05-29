@@ -12,6 +12,8 @@ from app.services.concurrency.analysis_slots import (
     try_acquire_analysis_slot,
 )
 from app.services.paper_analysis_runner import (
+    is_paper_cancel_requested_sync,
+    mark_paper_cancelled_sync,
     mark_paper_waiting_for_analysis_slot_sync,
     run_paper_analysis_sync,
 )
@@ -59,6 +61,10 @@ def _safe_mark_waiting_for_slot(paper_id: str) -> None:
 def paper_analysis_task(self, paper_id: str, file_path: str) -> None:
     slot = None
     heartbeat = None
+    if is_paper_cancel_requested_sync(paper_id):
+        mark_paper_cancelled_sync(paper_id)
+        return
+
     try:
         slot = try_acquire_analysis_slot(
             paper_id=paper_id,
@@ -69,6 +75,9 @@ def paper_analysis_task(self, paper_id: str, file_path: str) -> None:
         raise self.retry(exc=exc, countdown=max(1, int(settings.ANALYSIS_SLOT_RETRY_SECONDS or 30)))
 
     if slot is None:
+        if is_paper_cancel_requested_sync(paper_id):
+            mark_paper_cancelled_sync(paper_id)
+            return
         _safe_mark_waiting_for_slot(paper_id)
         raise self.retry(
             exc=RuntimeError("analysis running slot unavailable"),
@@ -76,6 +85,9 @@ def paper_analysis_task(self, paper_id: str, file_path: str) -> None:
         )
 
     try:
+        if is_paper_cancel_requested_sync(paper_id):
+            mark_paper_cancelled_sync(paper_id)
+            return
         heartbeat = AnalysisSlotHeartbeat(slot)
         heartbeat.start()
         run_paper_analysis_sync(paper_id=paper_id, file_path=file_path)

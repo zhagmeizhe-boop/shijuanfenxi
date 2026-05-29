@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import axios from 'axios';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import {
   getNextStalledPollAttempts,
@@ -23,7 +24,7 @@ describe('PDFUploadPage progress copy', () => {
         },
         2,
       ),
-    ).toBe('已进入分析队列，等待开始分析...');
+    ).toBe('已有试卷在分析，正在排队等待...');
 
     expect(
       getProcessingMessage(
@@ -36,7 +37,7 @@ describe('PDFUploadPage progress copy', () => {
         },
         2,
       ),
-    ).toBe('正在等待分析资源空闲...');
+    ).toBe('已有试卷在分析，正在排队等待...');
   });
 
   it('keeps the generic pending copy when no queue stage is available', () => {
@@ -157,4 +158,40 @@ describe('PDFUploadPage progress copy', () => {
       expect(titles[index].compareDocumentPosition(titles[index + 1])).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     }
   });
+
+  it('alerts when the analysis queue is full', async () => {
+    const postSpy = vi.spyOn(axios, 'post').mockRejectedValue({
+      isAxiosError: true,
+      response: {
+        status: 429,
+        data: {
+          detail: '当前分析队列已满（3/3），请稍后再上传。',
+        },
+      },
+    });
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+
+    render(
+      <MemoryRouter>
+        <PDFUploadPage />
+      </MemoryRouter>,
+    );
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['paper'], 'paper.pdf', { type: 'application/pdf' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await screen.findByRole('button', { name: /开始分析/ });
+    fireEvent.click(screen.getByRole('button', { name: /开始分析/ }));
+
+    await waitFor(() => {
+      expect(postSpy).toHaveBeenCalled();
+      expect(alertSpy).toHaveBeenCalledWith('提示，现在分析队列已经满了，请稍后重试');
+      expect(screen.getByText('提示，现在分析队列已经满了，请稍后重试')).toBeInTheDocument();
+    });
+  });
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });

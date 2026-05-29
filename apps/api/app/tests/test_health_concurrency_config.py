@@ -14,6 +14,7 @@ def test_settings_defaults_use_single_task_fast_profile():
 
     assert defaults["MAX_RUNNING_ANALYSIS_TASKS"].default == 1
     assert defaults["MAX_ACTIVE_ANALYSIS_TASKS"].default == 1
+    assert defaults["MAX_QUEUED_ANALYSIS_TASKS"].default == 3
     assert defaults["VISION_LLM_CONCURRENCY"].default == 4
     assert defaults["QUESTION_LLM_CONCURRENCY"].default == 10
     assert defaults["GLOBAL_LLM_CONCURRENCY"].default == 14
@@ -65,6 +66,7 @@ def test_health_exposes_llm_pool_and_capacity_config():
     assert data["db_pool_size"] == settings.DB_POOL_SIZE
     assert data["db_max_overflow"] == settings.DB_MAX_OVERFLOW
     assert data["analysis_running_limit"] == settings.MAX_RUNNING_ANALYSIS_TASKS
+    assert data["analysis_queue_limit"] == settings.MAX_QUEUED_ANALYSIS_TASKS
     assert data["vision_llm_concurrency"] == settings.VISION_LLM_CONCURRENCY
     assert data["vision_llm_page_timeout"] == settings.VISION_LLM_PAGE_TIMEOUT
     assert data["vision_llm_max_attempts"] == settings.VISION_LLM_MAX_ATTEMPTS

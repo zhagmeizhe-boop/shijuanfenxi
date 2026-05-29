@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     # 安全配置
     SECRET_KEY: str = Field(default="your-secret-key-change-this-in-production")
     JWT_SECRET_KEY: str = Field(default="your-jwt-secret-key-change-this")
+    ADMIN_TOKEN: Optional[str] = None
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
@@ -64,7 +65,7 @@ class Settings(BaseSettings):
     TASK_STALE_MINUTES: int = 60
     MAX_ACTIVE_ANALYSIS_TASKS: int = 1  # legacy name; use MAX_RUNNING_ANALYSIS_TASKS for new deployments
     MAX_RUNNING_ANALYSIS_TASKS: Optional[int] = 1
-    MAX_QUEUED_ANALYSIS_TASKS: int = 10
+    MAX_QUEUED_ANALYSIS_TASKS: int = 3
     ANALYSIS_SLOT_RETRY_SECONDS: int = 30
     ANALYSIS_SLOT_TTL_SECONDS: int = 900
     ANALYSIS_SLOT_HEARTBEAT_SECONDS: int = 60

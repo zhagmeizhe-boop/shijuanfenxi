@@ -151,6 +151,45 @@ class PaperStatusResponse(BaseModel):
     progress_message: Optional[str] = None
 
 
+class AdminPaperSummaryResponse(BaseModel):
+    total: int
+    parsing: int
+    success: int
+    failed: int
+
+
+class AdminPaperItemResponse(BaseModel):
+    paper_id: str
+    paper_name: str
+    parse_status: ParseStatus
+    last_stage: Optional[str] = None
+    stage_display: str
+    error_message: Optional[str] = None
+    failure_reason_display: Optional[str] = None
+    failure_solution_display: Optional[str] = None
+    cancel_requested: bool = False
+    cancel_requested_at: Optional[datetime] = None
+    can_cancel: bool = False
+    total_question_count: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+
+class AdminPaperListResponse(BaseModel):
+    summary: AdminPaperSummaryResponse
+    items: List[AdminPaperItemResponse]
+    page: int
+    page_size: int
+    total: int
+
+
+class AdminPaperCancelResponse(BaseModel):
+    paper_id: str
+    parse_status: ParseStatus
+    cancel_requested: bool
+    message: str
+
+
 class ParsedPaperResponse(BaseModel):
     """解析后的试卷响应"""
     paper_id: str

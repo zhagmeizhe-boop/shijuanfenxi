@@ -371,6 +371,8 @@ async def analyze_paper(
 
     try:
         task_id = enqueue_paper_analysis_task(paper_id=paper_id, file_path=str(analysis_input.path))
+        db_paper.analysis_task_id = task_id
+        await db.commit()
         logger.info(
             "Paper analysis task enqueued paper=%s task_id=%s ocr=%s broker=%s backend=%s",
             paper_id,

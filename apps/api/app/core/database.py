@@ -118,6 +118,9 @@ def _ensure_runtime_schema(sync_conn) -> None:
     runtime_columns = {
         "last_stage": "ALTER TABLE paper ADD COLUMN last_stage VARCHAR(64)",
         "error_message": "ALTER TABLE paper ADD COLUMN error_message TEXT",
+        "analysis_task_id": "ALTER TABLE paper ADD COLUMN analysis_task_id VARCHAR(128)",
+        "cancel_requested": "ALTER TABLE paper ADD COLUMN cancel_requested BOOLEAN DEFAULT FALSE NOT NULL",
+        "cancel_requested_at": "ALTER TABLE paper ADD COLUMN cancel_requested_at TIMESTAMP",
         "progress_current": "ALTER TABLE paper ADD COLUMN progress_current INTEGER",
         "progress_total": "ALTER TABLE paper ADD COLUMN progress_total INTEGER",
         "progress_message": "ALTER TABLE paper ADD COLUMN progress_message VARCHAR(255)",

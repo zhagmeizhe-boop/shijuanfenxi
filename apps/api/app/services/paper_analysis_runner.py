@@ -78,6 +78,9 @@ from app.services.scoring.paper_aggregator import QuestionDimensionScore
 
 logger = logging.getLogger(__name__)
 
+ADMIN_CANCELLED_STAGE = "admin_cancelled"
+ADMIN_CANCELLED_MESSAGE = "管理员手动终止分析"
+
 STAGE_LABELS = {
     "upload_saved": "文件保存",
     "ocr_parse": "OCR 解析",
@@ -85,9 +88,14 @@ STAGE_LABELS = {
     "llm_parse": "LLM 分析",
     "report_build": "报告生成",
     "snapshot_save": "报告快照保存",
+    ADMIN_CANCELLED_STAGE: "管理员终止",
 }
 
 _UNSET = object()
+
+
+class AnalysisCancelled(RuntimeError):
+    pass
 
 
 def _get_ocr_provider():
@@ -527,6 +535,38 @@ async def _update_paper_state(
         await db.commit()
 
 
+async def is_paper_cancel_requested(paper_id: str) -> bool:
+    async with AsyncSessionLocal() as db:
+        paper = await db.get(Paper, paper_id)
+        if not paper:
+            return False
+        return bool(getattr(paper, "cancel_requested", False))
+
+
+async def _mark_paper_cancelled(paper_id: str) -> None:
+    async with AsyncSessionLocal() as db:
+        paper = await db.get(Paper, paper_id)
+        if not paper:
+            return
+        paper.parse_status = ModelParseStatus.PARSE_FAILED
+        paper.last_stage = ADMIN_CANCELLED_STAGE
+        paper.error_message = ADMIN_CANCELLED_MESSAGE
+        paper.cancel_requested = True
+        if not paper.cancel_requested_at:
+            paper.cancel_requested_at = datetime.utcnow()
+        paper.progress_current = None
+        paper.progress_total = None
+        paper.progress_message = None
+        await db.commit()
+
+
+async def _raise_if_cancel_requested(paper_id: str) -> None:
+    if not await is_paper_cancel_requested(paper_id):
+        return
+    await _mark_paper_cancelled(paper_id)
+    raise AnalysisCancelled(ADMIN_CANCELLED_MESSAGE)
+
+
 async def mark_stale_analysis_tasks(stale_minutes: int | None = None) -> int:
     stale_minutes = stale_minutes or settings.TASK_STALE_MINUTES
     cutoff = datetime.utcnow() - timedelta(minutes=stale_minutes)
@@ -543,8 +583,14 @@ async def mark_stale_analysis_tasks(stale_minutes: int | None = None) -> int:
 
         for paper in stale_papers:
             paper.parse_status = ModelParseStatus.PARSE_FAILED
-            paper.last_stage = paper.last_stage or "parsing"
-            paper.error_message = "任务中断或 worker 退出，请重新上传"
+            if getattr(paper, "cancel_requested", False):
+                paper.last_stage = ADMIN_CANCELLED_STAGE
+                paper.error_message = ADMIN_CANCELLED_MESSAGE
+                if not getattr(paper, "cancel_requested_at", None):
+                    paper.cancel_requested_at = datetime.utcnow()
+            else:
+                paper.last_stage = paper.last_stage or "parsing"
+                paper.error_message = "任务中断或 worker 退出，请重新上传"
 
         stale_count = len(stale_papers)
         if stale_papers:
@@ -571,7 +617,7 @@ async def mark_paper_waiting_for_analysis_slot(paper_id: str) -> None:
         error_message=None,
         progress_current=None,
         progress_total=None,
-        progress_message="正在排队等待分析 worker 空闲槽位",
+        progress_message="已有试卷在分析，正在排队等待",
     )
 
 
@@ -579,9 +625,9 @@ def mark_paper_waiting_for_analysis_slot_sync(paper_id: str) -> None:
     _run_in_isolated_event_loop(mark_paper_waiting_for_analysis_slot(paper_id))
 
 
-async def _run_with_db_cleanup(awaitable: Awaitable[None]) -> None:
+async def _run_with_db_cleanup(awaitable: Awaitable[Any]) -> Any:
     try:
-        await awaitable
+        return await awaitable
     finally:
         try:
             await close_db()
@@ -589,12 +635,12 @@ async def _run_with_db_cleanup(awaitable: Awaitable[None]) -> None:
             logger.warning("Failed to close async database pool before closing task event loop", exc_info=True)
 
 
-def _run_in_isolated_event_loop(awaitable: Awaitable[None]) -> None:
+def _run_in_isolated_event_loop(awaitable: Awaitable[Any]) -> Any:
     loop = asyncio.new_event_loop()
     try:
         asyncio.set_event_loop(loop)
         try:
-            loop.run_until_complete(_run_with_db_cleanup(awaitable))
+            return loop.run_until_complete(_run_with_db_cleanup(awaitable))
         finally:
             try:
                 loop.run_until_complete(loop.shutdown_asyncgens())
@@ -605,13 +651,23 @@ def _run_in_isolated_event_loop(awaitable: Awaitable[None]) -> None:
         loop.close()
 
 
+def is_paper_cancel_requested_sync(paper_id: str) -> bool:
+    return bool(_run_in_isolated_event_loop(is_paper_cancel_requested(paper_id)))
+
+
+def mark_paper_cancelled_sync(paper_id: str) -> None:
+    _run_in_isolated_event_loop(_mark_paper_cancelled(paper_id))
+
+
 async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
-    report_service = ReportService()
-    ocr_provider = _get_ocr_provider()
-    logger.info("Executing paper analysis with OCR provider=%s paper=%s", settings.OCR_PROVIDER, paper_id)
     current_stage = "ocr_parse"
 
     try:
+        await _raise_if_cancel_requested(paper_id)
+        report_service = ReportService()
+        ocr_provider = _get_ocr_provider()
+        logger.info("Executing paper analysis with OCR provider=%s paper=%s", settings.OCR_PROVIDER, paper_id)
+
         await _update_paper_state(
             paper_id,
             parse_status=ModelParseStatus.PARSING,
@@ -621,12 +677,14 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
             progress_total=None,
             progress_message=None,
         )
+        await _raise_if_cancel_requested(paper_id)
 
         async with AsyncSessionLocal() as db:
             paper = await db.get(Paper, paper_id)
             paper_name = paper.paper_name if paper else f"试卷_{paper_id}"
 
         async def _persist_ocr_progress(progress: dict[str, Any]) -> None:
+            await _raise_if_cancel_requested(paper_id)
             page_no = str(progress.get("page_no", "")).strip() or "?"
             completed = int(progress.get("completed", 0) or 0)
             total = int(progress.get("total", 0) or 0)
@@ -653,6 +711,7 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
             paper_id=paper_id,
             progress_callback=_persist_ocr_progress,
         )
+        await _raise_if_cancel_requested(paper_id)
 
         await _update_paper_state(
             paper_id,
@@ -665,6 +724,7 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
         current_stage = "question_persist"
         logger.info("Entering stage=%s paper=%s total_questions=%s", current_stage, paper_id, len(parsed_paper.questions))
         await _update_paper_state(paper_id, last_stage=current_stage)
+        await _raise_if_cancel_requested(paper_id)
 
         question_records: List[tuple[str, Any]] = []
         async with AsyncSessionLocal() as db:
@@ -723,6 +783,7 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
             progress_total=len(parsed_paper.questions),
             progress_message="LLM 分析已启动",
         )
+        await _raise_if_cancel_requested(paper_id)
 
         api_key = settings.ANTHROPIC_API_KEY or settings.MOONSHOT_API_KEY
         ai_parser = create_ai_parser(
@@ -734,6 +795,7 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
             llm_pool="question",
         )
         async def _persist_llm_progress(progress: dict[str, Any]) -> None:
+            await _raise_if_cancel_requested(paper_id)
             question_no = str(progress.get("question_no", "")).strip() or "?"
             completed = int(progress.get("completed", 0) or 0)
             total = int(progress.get("total", 0) or 0)
@@ -763,6 +825,7 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
             question_max_attempts=settings.QUESTION_LLM_MAX_ATTEMPTS,
             retry_base_seconds=settings.QUESTION_LLM_RETRY_BASE_SECONDS,
         )
+        await _raise_if_cancel_requested(paper_id)
         if len(question_features) != len(question_records):
             raise RuntimeError(
                 f"LLM 结果数量不匹配：题目 {len(question_records)}，特征 {len(question_features)}"
@@ -790,6 +853,7 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
             progress_total=None,
             progress_message=None,
         )
+        await _raise_if_cancel_requested(paper_id)
 
         qds_list: List[QuestionDimensionScore] = []
         paper_report_warnings = list(getattr(parsed_paper, "report_warnings", []) or [])
@@ -1529,6 +1593,7 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
             progress_total=None,
             progress_message=None,
         )
+        await _raise_if_cancel_requested(paper_id)
 
         async with AsyncSessionLocal() as db:
             db.add(
@@ -1551,6 +1616,9 @@ async def execute_paper_analysis(paper_id: str, file_path: str) -> None:
             await db.commit()
 
         logger.info("试卷分析完成 paper=%s", paper_id)
+    except AnalysisCancelled:
+        logger.info("Paper analysis cancelled by admin paper=%s", paper_id)
+        return
     except Exception as exc:
         error_message = _describe_exception(current_stage, exc)
         try:

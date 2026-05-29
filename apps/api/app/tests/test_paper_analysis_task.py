@@ -8,6 +8,12 @@ from app.models import ParseStatus, Question
 from app.tasks import paper_analysis as task_module
 
 
+@pytest.fixture(autouse=True)
+def default_no_cancel(monkeypatch):
+    monkeypatch.setattr(task_module, "is_paper_cancel_requested_sync", lambda _paper_id: False)
+    monkeypatch.setattr(task_module, "mark_paper_cancelled_sync", lambda _paper_id: None)
+
+
 def test_paper_analysis_task_runs_when_slot_is_acquired(monkeypatch):
     slot = object()
     calls = []
@@ -98,6 +104,22 @@ def test_paper_analysis_task_retries_when_slot_unavailable(monkeypatch):
     assert "analysis running slot unavailable" in str(captured["exc"])
 
 
+def test_paper_analysis_task_skips_cancelled_paper(monkeypatch):
+    calls = []
+
+    monkeypatch.setattr(task_module, "is_paper_cancel_requested_sync", lambda _paper_id: True)
+    monkeypatch.setattr(task_module, "mark_paper_cancelled_sync", lambda paper_id: calls.append(("cancel", paper_id)))
+    monkeypatch.setattr(
+        task_module,
+        "try_acquire_analysis_slot",
+        lambda **_kwargs: calls.append(("acquire", None)),
+    )
+
+    task_module.paper_analysis_task.run("paper-1", "paper.pdf")
+
+    assert calls == [("cancel", "paper-1")]
+
+
 def test_question_section_index_column_allows_long_headings():
     assert Question.__table__.c.section_index_raw.type.length == 100
 
@@ -158,6 +180,49 @@ def test_mark_stale_analysis_tasks_marks_stale_and_cleans_slots(monkeypatch):
     assert stale_paper.error_message
     assert captured["session"].commits == 1
     assert captured["active_ids"] == ["active-paper"]
+
+
+def test_cancel_requested_marks_paper_cancelled(monkeypatch):
+    paper = SimpleNamespace(
+        paper_id="paper-cancel",
+        parse_status=ParseStatus.PARSING,
+        last_stage="ocr_parse",
+        error_message=None,
+        cancel_requested=True,
+        cancel_requested_at=None,
+        progress_current=1,
+        progress_total=2,
+        progress_message="running",
+    )
+
+    class FakeSession:
+        def __init__(self):
+            self.commits = 0
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_args):
+            return None
+
+        async def get(self, _model, paper_id):
+            return paper if paper_id == paper.paper_id else None
+
+        async def commit(self):
+            self.commits += 1
+
+    monkeypatch.setattr(paper_analysis_runner, "AsyncSessionLocal", FakeSession)
+
+    with pytest.raises(paper_analysis_runner.AnalysisCancelled):
+        asyncio.run(paper_analysis_runner._raise_if_cancel_requested("paper-cancel"))
+
+    assert paper.parse_status == ParseStatus.PARSE_FAILED
+    assert paper.last_stage == paper_analysis_runner.ADMIN_CANCELLED_STAGE
+    assert paper.error_message == paper_analysis_runner.ADMIN_CANCELLED_MESSAGE
+    assert paper.cancel_requested_at is not None
+    assert paper.progress_current is None
+    assert paper.progress_total is None
+    assert paper.progress_message is None
 
 
 def test_question_persist_truncation_error_is_user_friendly():

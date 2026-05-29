@@ -68,6 +68,7 @@ const MAX_SINGLE_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_IMAGE_COUNT = 20;
 const PDF_EXTENSION = '.pdf';
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png']);
+const QUEUE_FULL_MESSAGE = '提示，现在分析队列已经满了，请稍后重试';
 
 const STAGE_MESSAGES: Record<string, string> = {
   upload_saved: '文件已上传，等待分析任务启动',
@@ -131,11 +132,11 @@ export function getProcessingMessage(payload: PaperStatusPayload, attempt: numbe
   const dots = '.'.repeat((attempt % 3) + 1);
 
   if (payload.parse_status === 'pending' && payload.last_stage === 'queued') {
-    return `已进入分析队列，等待开始分析${dots}`;
+    return `已有试卷在分析，正在排队等待${dots}`;
   }
 
   if (payload.parse_status === 'pending' && payload.last_stage === 'queued_waiting_for_analysis_slot') {
-    return `正在等待分析资源空闲${dots}`;
+    return `已有试卷在分析，正在排队等待${dots}`;
   }
 
   if (payload.parse_status === 'pending') {
@@ -570,7 +571,10 @@ export function PDFUploadPage() {
       let errorMessage = '上传失败，请重试。';
 
       if (axios.isAxiosError(error)) {
-        if (error.code === 'ECONNABORTED') {
+        if (error.response?.status === 429) {
+          errorMessage = QUEUE_FULL_MESSAGE;
+          window.alert(QUEUE_FULL_MESSAGE);
+        } else if (error.code === 'ECONNABORTED') {
           errorMessage = '任务派发失败：请求超时，请检查 Redis 是否可用。';
         } else if (error.code === 'ERR_NETWORK') {
           errorMessage = '无法连接到后端服务，请确认 API 已启动。';
